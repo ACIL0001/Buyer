@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Mazad Click',
   webDir: 'www',
     "server": {
-    "url": "https://buyer-mazad.vercel.app/mobile",
+    "url": "https://mazadclick.vercel.app//mobile",
     "cleartext": false
   }
 };

@@ -16,7 +16,7 @@ const app = {
   baseURL: "https://mazadclick-server.onrender.com/",
 
   // Frontend URLs - Dynamic based on environment
-  frontendUrl: process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://buyer-mazad.vercel.app',
+  frontendUrl: process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://mazadclick.vercel.app/',
   frontendPort: process.env.NODE_ENV === 'development' ? ':3001' : '',
 
   // Seller Application URL - Dynamic based on environment

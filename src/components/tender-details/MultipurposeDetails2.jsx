@@ -493,6 +493,24 @@ const MultipurposeDetails2 = () => {
     fetchTenderBids();
   }, [tenderId]);
 
+  // Calculate current lowest bid price for placeholder
+  const currentLowestBidPrice = useMemo(() => {
+    if (!offers || offers.length === 0) {
+      // If no bids, use maxBudget as reference or return null
+      return tenderData?.maxBudget || null;
+    }
+    
+    const bidAmounts = offers
+      .filter(bid => bid.bidAmount != null && bid.bidAmount > 0)
+      .map(bid => bid.bidAmount);
+    
+    if (bidAmounts.length === 0) {
+      return tenderData?.maxBudget || null;
+    }
+    
+    return Math.min(...bidAmounts);
+  }, [offers, tenderData]);
+
   // Fetch user's tender bids using TendersAPI
   const fetchMyTenderBids = async () => {
     if (!isLogged || !auth.tokens || !auth.user?._id) return;
@@ -2110,8 +2128,14 @@ const MultipurposeDetails2 = () => {
                         <div className="quantity-counter-and-btn-area">
                           <HandleQuantity
                             initialValue=""
-                            startingPrice={0}
-                            placeholder="Entrez n'importe quel prix"
+                            startingPrice={currentLowestBidPrice || tenderData?.maxBudget || 0}
+                            placeholder={
+                              currentLowestBidPrice 
+                                ? `Prix actuel: ${currentLowestBidPrice.toLocaleString('fr-FR')} DA (proposez moins)`
+                                : tenderData?.maxBudget
+                                  ? `Budget max: ${tenderData.maxBudget.toLocaleString('fr-FR')} DA`
+                                  : "Entrez votre prix"
+                            }
                           />
                           <button
                             className="bid-btn-modern"

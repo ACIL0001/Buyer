@@ -1690,8 +1690,15 @@ const MultipurposeDetails1 = () => {
                         )}
                         <div className="quantity-counter-and-btn-area">
                           <HandleQuantity
-                            initialValue={formatPrice(safeCurrentPrice)}
-                            startingPrice={safeStartingPrice}
+                            initialValue=""
+                            startingPrice={safeCurrentPrice || safeStartingPrice}
+                            placeholder={
+                              safeCurrentPrice && safeCurrentPrice > 0
+                                ? `Prix actuel: ${safeCurrentPrice.toLocaleString('fr-FR')} DA (proposez plus)`
+                                : safeStartingPrice && safeStartingPrice > 0
+                                  ? `Prix de départ: ${safeStartingPrice.toLocaleString('fr-FR')} DA`
+                                  : "Entrez votre offre"
+                            }
                           />
                           <button
                             className="bid-btn-modern"

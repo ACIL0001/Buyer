@@ -838,8 +838,8 @@ function ProfilePage() {
                                 }}
                             >
                                 <div className="avatar-container">
-                                    <div className="avatar-wrapper">
-                                        <div className="avatar-frame" style={{ position: 'relative' }}>
+                                    <div className="avatar-wrapper" style={{ position: 'relative' }}>
+                                        <div className="avatar-frame">
                                             <img
                                                 key={avatarKey}
                                                 src={avatarSrc}
@@ -847,7 +847,7 @@ function ProfilePage() {
                                                 style={{ 
                                                     width: '100%', 
                                                     height: '100%', 
-                                                    objectFit: 'cover',
+                                                    objectFit: 'contain',
                                                     borderRadius: '50%'
                                                 }}
                                                 loading="lazy"
@@ -899,53 +899,52 @@ function ProfilePage() {
                                                     console.log('✅ Avatar loaded successfully');
                                                 }}
                                             />
-                                            {/* Golden Rating Badge */}
-                                            {auth.user?.rate && auth.user.rate > 0 && (
-                                                <motion.div
-                                                    className="rating-badge-avatar"
-                                                    initial={{ opacity: 0, scale: 0 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                                        </div>
+                                        {/* Golden Rating Badge - Outside the image */}
+                                        {auth.user?.rate && auth.user.rate > 0 && (
+                                            <motion.div
+                                                className="rating-badge-avatar"
+                                                initial={{ opacity: 0, scale: 0 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: '-8px',
+                                                    right: '-8px',
+                                                    background: 'transparent',
+                                                    borderRadius: '50%',
+                                                    width: 'auto',
+                                                    height: 'auto',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    zIndex: 10,
+                                                    cursor: 'default',
+                                                    padding: '4px'
+                                                }}
+                                            >
+                                                <motion.span
+                                                    animate={{
+                                                        scale: [1, 1.05, 1],
+                                                    }}
+                                                    transition={{
+                                                        duration: 2,
+                                                        repeat: Number.POSITIVE_INFINITY,
+                                                        ease: "easeInOut"
+                                                    }}
                                                     style={{
-                                                        position: 'absolute',
-                                                        top: '2px',
-                                                        right: '2px',
-                                                        background: 'transparent',
-                                                        borderRadius: '50%',
-                                                        width: 'auto',
-                                                        height: 'auto',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        zIndex: 10,
-                                                        cursor: 'default',
-                                                        padding: '2px'
+                                                        fontSize: '18px',
+                                                        fontWeight: '800',
+                                                        color: '#FFD700',
+                                                        textShadow: '0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3)',
+                                                        letterSpacing: '-0.5px',
+                                                        lineHeight: '1'
                                                     }}
                                                 >
-                                                    <motion.span
-                                                        animate={{
-                                                            scale: [1, 1.05, 1],
-                                                        }}
-                                                        transition={{
-                                                            duration: 2,
-                                                            repeat: Number.POSITIVE_INFINITY,
-                                                            ease: "easeInOut"
-                                                        }}
-                                                        style={{
-                                                            fontSize: '20px',
-                                                            fontWeight: '800',
-                                                            color: '#FFD700',
-                                                            textShadow: '0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3)',
-                                                            letterSpacing: '-0.5px',
-                                                            lineHeight: '1'
-                                                        }}
-                                                    >
-                                                        +{Math.round(auth.user.rate)}
-                                                    </motion.span>
-                                                </motion.div>
-                                            )}
-                                        </div>
-
+                                                    +{Math.round(auth.user.rate)}
+                                                </motion.span>
+                                            </motion.div>
+                                        )}
                                         <input
                                             type="file"
                                             ref={fileInputRef}
@@ -1759,4 +1758,4 @@ function ProfilePage() {
     );
 }
 
-export default ProfilePageWrapper
+export default ProfilePageWrapper;

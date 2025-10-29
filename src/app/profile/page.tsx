@@ -92,12 +92,6 @@ function ProfilePage() {
     // Document field configurations
     const requiredDocuments = [
         {
-            key: 'identityCard',
-            label: 'Carte d\'identité',
-            description: 'Document d\'identité officiel',
-            required: true
-        },
-        {
             key: 'registreCommerceCarteAuto',
             label: 'RC/ Autres',
             description: 'Registre de commerce ou autres documents',
@@ -563,7 +557,7 @@ function ProfilePage() {
                             <i className="bi-info-circle-fill"></i>
                             <div className="modern-document-note-content">
                                 <h4>Documents Optionnels</h4>
-                                <p>Ajoutez ces documents si vous souhaitez être vérifié en tant que professionnel. Ils ne sont pas obligatoires mais peuvent accélérer le processus de vérification.</p>
+                                <p>Ajoutez ces documents si vous souhaitez être professionnel certified</p>
                             </div>
                         </div>
                     </div>

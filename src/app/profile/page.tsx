@@ -906,27 +906,23 @@ function ProfilePage() {
                                                     transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
                                                     style={{
                                                         position: 'absolute',
-                                                        top: '-5px',
-                                                        right: '-5px',
-                                                        background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-                                                        color: '#1a1a1a',
+                                                        top: '2px',
+                                                        right: '2px',
+                                                        background: 'transparent',
                                                         borderRadius: '50%',
-                                                        width: '48px',
-                                                        height: '48px',
+                                                        width: 'auto',
+                                                        height: 'auto',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
-                                                        fontSize: '18px',
-                                                        fontWeight: '700',
-                                                        boxShadow: '0 4px 12px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3)',
-                                                        border: '3px solid rgba(255, 255, 255, 0.9)',
                                                         zIndex: 10,
-                                                        cursor: 'default'
+                                                        cursor: 'default',
+                                                        padding: '2px'
                                                     }}
                                                 >
                                                     <motion.span
                                                         animate={{
-                                                            scale: [1, 1.1, 1],
+                                                            scale: [1, 1.05, 1],
                                                         }}
                                                         transition={{
                                                             duration: 2,
@@ -934,7 +930,12 @@ function ProfilePage() {
                                                             ease: "easeInOut"
                                                         }}
                                                         style={{
-                                                            textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+                                                            fontSize: '20px',
+                                                            fontWeight: '800',
+                                                            color: '#FFD700',
+                                                            textShadow: '0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3)',
+                                                            letterSpacing: '-0.5px',
+                                                            lineHeight: '1'
                                                         }}
                                                     >
                                                         +{Math.round(auth.user.rate)}

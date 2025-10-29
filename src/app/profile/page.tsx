@@ -167,8 +167,8 @@ function ProfilePage() {
         if (typeof avatar === 'string') {
             // Handle string avatar (direct URL or path)
             if (avatar.startsWith('http')) {
-                // Full URL - replace localhost with production
-                return avatar.replace('http://localhost:3000', 'https://api.mazad.click');
+                // Full URL - replace localhost with production API URL from config
+                return avatar.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
             } else {
                 // Relative path - ensure we use the correct base URL
                 const cleanPath = avatar.startsWith('/') ? avatar.substring(1) : avatar;
@@ -177,12 +177,12 @@ function ProfilePage() {
         }
 
         if (avatar?.fullUrl) {
-            return avatar.fullUrl.replace('http://localhost:3000', 'https://api.mazad.click');
+            return avatar.fullUrl.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
         }
 
         if (avatar?.url) {
             if (avatar.url.startsWith('http')) {
-                return avatar.url.replace('http://localhost:3000', 'https://api.mazad.click');
+                return avatar.url.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
             } else {
                 // Ensure proper URL construction
                 const cleanPath = avatar.url.startsWith('/') ? avatar.url.substring(1) : avatar.url;
@@ -714,14 +714,16 @@ function ProfilePage() {
         
         // Priority 1: photoURL (direct from backend)
         if (auth.user.photoURL && auth.user.photoURL.trim() !== "") {
-            const cleanUrl = auth.user.photoURL.replace('http://localhost:3000', 'https://api.mazad.click');
+            // Replace localhost with production API URL from config
+            const cleanUrl = auth.user.photoURL.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
             console.log('📸 Using photoURL:', cleanUrl);
             return `${cleanUrl}?v=${avatarKey}`;
         }
         
         // Priority 2: avatar object with fullUrl
         if (auth.user.avatar && 'fullUrl' in auth.user.avatar && auth.user.avatar.fullUrl) {
-            const avatarUrl = (auth.user.avatar as any).fullUrl.replace('http://localhost:3000', 'https://api.mazad.click');
+            // Replace localhost with production API URL from config
+            const avatarUrl = (auth.user.avatar as any).fullUrl.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
             console.log('📸 Using avatar.fullUrl:', avatarUrl);
             return `${avatarUrl}?v=${avatarKey}`;
         }
@@ -731,21 +733,23 @@ function ProfilePage() {
             let avatarUrl = auth.user.avatar.url;
             if (!avatarUrl.startsWith('http')) {
                 if (avatarUrl.startsWith('/static/')) {
-                    avatarUrl = `${API_BASE_URL}${avatarUrl}`;
+                    avatarUrl = `${API_BASE_URL.replace(/\/$/, '')}${avatarUrl}`;
                 } else if (avatarUrl.startsWith('/')) {
-                    avatarUrl = `${API_BASE_URL}/static${avatarUrl}`;
+                    avatarUrl = `${API_BASE_URL.replace(/\/$/, '')}/static${avatarUrl}`;
                 } else {
-                    avatarUrl = `${API_BASE_URL}/static/${avatarUrl}`;
+                    avatarUrl = `${API_BASE_URL.replace(/\/$/, '')}/static/${avatarUrl}`;
                 }
+            } else {
+                // Replace localhost with production API URL from config
+                avatarUrl = avatarUrl.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
             }
-            avatarUrl = avatarUrl.replace('http://localhost:3000', 'https://api.mazad.click');
             console.log('📸 Using avatar.url:', avatarUrl);
             return `${avatarUrl}?v=${avatarKey}`;
         }
         
         // Priority 4: avatar.filename
         if (auth.user.avatar?.filename) {
-            const avatarUrl = `${API_BASE_URL}/static/${auth.user.avatar.filename}`.replace('http://localhost:3000', 'https://api.mazad.click');
+            const avatarUrl = `${API_BASE_URL.replace(/\/$/, '')}/static/${auth.user.avatar.filename}`;
             console.log('📸 Using avatar.filename:', avatarUrl);
             return `${avatarUrl}?v=${avatarKey}`;
         }

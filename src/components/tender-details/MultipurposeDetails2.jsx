@@ -795,11 +795,52 @@ const MultipurposeDetails2 = () => {
         return;
       }
 
-      // For tenders, only validate that the bid amount is positive
-      // No maximum or minimum limits - tenders accept any price
-
       // Round to avoid floating point issues
       const finalBidAmount = Math.round(numericBidAmount);
+
+      // For tenders, validate that the bid is less than the current lowest bid
+      // Get current lowest bid from existing bids
+      let currentLowestBid = null;
+      
+      // Try to get bids from offers state (tender bids)
+      if (offers && offers.length > 0) {
+        // Find the lowest bid amount from existing bids
+        const bidAmounts = offers
+          .filter(bid => bid.bidAmount != null && bid.bidAmount > 0)
+          .map(bid => bid.bidAmount);
+        
+        if (bidAmounts.length > 0) {
+          currentLowestBid = Math.min(...bidAmounts);
+        }
+      }
+      
+      // If no bids in offers state, try fetching from API
+      if (currentLowestBid === null && tenderId) {
+        try {
+          const bidsResponse = await TendersAPI.getTenderBids(tenderId);
+          const bids = bidsResponse?.data || bidsResponse || [];
+          
+          if (bids.length > 0) {
+            const bidAmounts = bids
+              .filter(bid => bid.bidAmount != null && bid.bidAmount > 0)
+              .map(bid => bid.bidAmount);
+            
+            if (bidAmounts.length > 0) {
+              currentLowestBid = Math.min(...bidAmounts);
+            }
+          }
+        } catch (err) {
+          console.warn("Could not fetch current bids for validation:", err);
+        }
+      }
+      
+      // Validate that new bid is less than current lowest bid
+      if (currentLowestBid !== null && finalBidAmount >= currentLowestBid) {
+        toast.error(
+          `Votre offre doit être inférieure à la dernière offre actuelle de ${currentLowestBid.toLocaleString('fr-FR')} DA. Vous ne pouvez pas faire une offre supérieure ou égale à la dernière offre.`
+        );
+        return;
+      }
 
       console.log("[MultipurposeDetails2] Final bid amount:", finalBidAmount);
       console.log("[MultipurposeDetails2] Tender data:", tenderData);
@@ -934,8 +975,10 @@ const MultipurposeDetails2 = () => {
         console.log("Server error message:", serverMessage);
         
         // Handle specific error messages from server
-        if (serverMessage.includes('Bid amount must be lower than current lowest bid')) {
-          errorMessage = `Votre offre doit être inférieure à l'offre actuelle la plus basse. ${serverMessage}`;
+        if (serverMessage.includes('doit être inférieure à la dernière offre') || 
+            serverMessage.includes('Bid amount must be lower than current lowest bid')) {
+          // Use the server message directly as it already contains the formatted error
+          errorMessage = serverMessage;
         } else if (serverMessage.includes('Bid amount is below minimum acceptable price')) {
           errorMessage = `Le montant de votre offre est inférieur au prix minimum acceptable. ${serverMessage}`;
         } else if (serverMessage.includes('Tender is no longer accepting bids')) {

@@ -1690,7 +1690,7 @@ const MultipurposeDetails1 = () => {
                         )}
                         <div className="quantity-counter-and-btn-area">
                           <HandleQuantity
-                            initialValue=""
+                            initialValue={safeCurrentPrice || safeStartingPrice || 0}
                             startingPrice={safeCurrentPrice || safeStartingPrice}
                             placeholder={
                               safeCurrentPrice && safeCurrentPrice > 0

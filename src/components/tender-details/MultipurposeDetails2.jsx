@@ -493,11 +493,11 @@ const MultipurposeDetails2 = () => {
     fetchTenderBids();
   }, [tenderId]);
 
-  // Calculate current lowest bid price for placeholder
+  // Calculate current lowest bid price for display
   const currentLowestBidPrice = useMemo(() => {
     if (!offers || offers.length === 0) {
-      // If no bids, use maxBudget as reference or return null
-      return tenderData?.maxBudget || null;
+      // If no bids, use maxBudget as reference
+      return tenderData?.maxBudget || 0;
     }
     
     const bidAmounts = offers
@@ -505,7 +505,7 @@ const MultipurposeDetails2 = () => {
       .map(bid => bid.bidAmount);
     
     if (bidAmounts.length === 0) {
-      return tenderData?.maxBudget || null;
+      return tenderData?.maxBudget || 0;
     }
     
     return Math.min(...bidAmounts);
@@ -2127,12 +2127,12 @@ const MultipurposeDetails2 = () => {
                         
                         <div className="quantity-counter-and-btn-area">
                           <HandleQuantity
-                            initialValue=""
-                            startingPrice={currentLowestBidPrice || tenderData?.maxBudget || 0}
+                            initialValue={currentLowestBidPrice > 0 ? currentLowestBidPrice : (tenderData?.maxBudget || 0)}
+                            startingPrice={currentLowestBidPrice > 0 ? currentLowestBidPrice : (tenderData?.maxBudget || 0)}
                             placeholder={
-                              currentLowestBidPrice 
+                              currentLowestBidPrice > 0
                                 ? `Prix actuel: ${currentLowestBidPrice.toLocaleString('fr-FR')} DA (proposez moins)`
-                                : tenderData?.maxBudget
+                                : tenderData?.maxBudget && tenderData.maxBudget > 0
                                   ? `Budget max: ${tenderData.maxBudget.toLocaleString('fr-FR')} DA`
                                   : "Entrez votre prix"
                             }

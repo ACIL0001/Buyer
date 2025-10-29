@@ -360,8 +360,13 @@ function ProfilePage() {
             type: file.type
         });
 
-        if (file.size > 5 * 1024 * 1024) {
-            enqueueSnackbar('File size must be less than 5MB', { variant: 'error' });
+        // Validate file size (max 5MB)
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+            enqueueSnackbar('File size too large. Please select an image smaller than 5MB', { variant: 'error' });
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
             return;
         }
 
@@ -389,38 +394,44 @@ function ProfilePage() {
                     fileInputRef.current.value = '';
                 }
 
-                // Force a cache-bust for the avatar
+                // Get the updated user data
+                const updatedUser = response.user || response.data;
+                console.log('✅ Avatar uploaded successfully. Updated user:', updatedUser);
+
+                // Update auth state with new user data including avatar
+                if (updatedUser) {
+                    const currentUser = auth.user;
+                    const mergedUser = {
+                        ...currentUser,
+                        ...updatedUser,
+                        avatar: updatedUser.avatar || currentUser?.avatar,
+                        photoURL: updatedUser.photoURL || updatedUser.avatar?.url || currentUser?.photoURL,
+                        type: (updatedUser.type || updatedUser.accountType || currentUser?.type || 'CLIENT') as any,
+                    };
+                    
+                    set({
+                        user: mergedUser as any,
+                        tokens: auth.tokens
+                    });
+                }
+
+                // Force a cache-bust for the avatar by updating the key
                 setAvatarKey(Date.now());
 
                 // Show success message
-                enqueueSnackbar(response.message || t("avatarUpdated"), { variant: "success" });
+                enqueueSnackbar(response.message || t("avatarUpdated") || "Avatar updated successfully", { variant: "success" });
 
-                // Log the actual URL being returned
-                const user = response.user || response.data;
-                const avatar = user?.avatar;
-                if (avatar?.url || avatar?.filename) {
-                    const actualUrl = avatar.url || `/static/${avatar.filename}`;
-                    console.log('🔗 Actual avatar URL from server:', actualUrl);
-                    
-                    // Test if the URL is accessible
-                    fetch(actualUrl.startsWith('http') ? actualUrl : `https://api.mazad.click${actualUrl}`)
-                        .then(res => {
-                            if (res.ok) {
-                                console.log('✅ Avatar URL is accessible');
-                            } else {
-                                console.warn('⚠️ Avatar URL returned status:', res.status);
-                            }
-                        })
-                        .catch(err => {
-                            console.warn('⚠️ Avatar URL test failed:', err);
-                        });
-                }
-
-                // Fetch fresh user data once, without triggering updates
+                // Fetch fresh user data to ensure consistency
+                setTimeout(async () => {
+                    try {
                 await fetchFreshUserData();
+                    } catch (err) {
+                        console.warn('⚠️ Error refreshing user data after avatar upload:', err);
+                    }
+                }, 500);
             } else {
                 console.error('❌ Upload response indicates failure:', response);
-                enqueueSnackbar('Avatar upload failed - no success response', { variant: "error" });
+                enqueueSnackbar(response?.message || 'Avatar upload failed - no success response', { variant: "error" });
             }
         } catch (error: any) {
             console.error('❌ Error uploading avatar:', error);
@@ -835,56 +846,53 @@ function ProfilePage() {
                                                     objectFit: 'cover',
                                                     borderRadius: '50%'
                                                 }}
+                                                loading="lazy"
                                                 onError={(e) => {
-                                                    const target = e.currentTarget;
+                                                    const target = e.currentTarget as HTMLImageElement;
                                                     const attemptedUrl = target.src;
                                                     
                                                     console.log('🖼️ Image failed to load:', attemptedUrl);
-                                                    console.log('🖼️ User avatar data:', auth.user?.avatar);
                                                     
-                                                    // Prevent infinite loop
-                                                    if (attemptedUrl.includes('avatar.jpg')) {
+                                                    // Prevent infinite loop - if already on fallback, stop
+                                                    if (attemptedUrl.includes('/assets/images/avatar.jpg') || attemptedUrl.endsWith('avatar.jpg')) {
+                                                        target.onerror = null;
                                                         return;
                                                     }
                                                     
-                                                    // Try alternative URL constructions
-                                                    if (auth.user?.avatar?.url && !attemptedUrl.includes('static')) {
-                                                        const cleanUrl = auth.user.avatar.url.startsWith('http') 
+                                                    // Try alternative URLs in order
+                                                    let nextUrl: string | null = null;
+                                                    
+                                                    // Try photoURL
+                                                    if (auth.user?.photoURL && !attemptedUrl.includes(auth.user.photoURL)) {
+                                                        nextUrl = auth.user.photoURL.startsWith('http') 
+                                                            ? auth.user.photoURL 
+                                                            : `${API_BASE_URL.replace(/\/$/, '')}${auth.user.photoURL.startsWith('/') ? auth.user.photoURL : '/' + auth.user.photoURL}`;
+                                                    }
+                                                    // Try avatar.url
+                                                    else if (auth.user?.avatar?.url && !attemptedUrl.includes(auth.user.avatar.url)) {
+                                                        nextUrl = auth.user.avatar.url.startsWith('http') 
                                                             ? auth.user.avatar.url 
-                                                            : `https://api.mazad.click${auth.user.avatar.url}`;
-                                                        console.log('🔄 Trying alternative URL:', cleanUrl);
-                                                        target.src = cleanUrl;
+                                                            : `${API_BASE_URL.replace(/\/$/, '')}${auth.user.avatar.url.startsWith('/') ? auth.user.avatar.url : '/static/' + auth.user.avatar.url}`;
+                                                    }
+                                                    // Try avatar.filename
+                                                    else if (auth.user?.avatar?.filename && !attemptedUrl.includes(auth.user.avatar.filename)) {
+                                                        nextUrl = `${API_BASE_URL.replace(/\/$/, '')}/static/${auth.user.avatar.filename}`;
+                                                    }
+                                                    
+                                                    if (nextUrl) {
+                                                        console.log('🔄 Trying alternative URL:', nextUrl);
+                                                        target.onerror = null; // Reset error handler
+                                                        target.src = `${nextUrl}?v=${Date.now()}`;
                                                         return;
                                                     }
                                                     
-                                                    // Try with filename
-                                                    if (auth.user?.avatar?.filename) {
-                                                        const filenameUrl = `https://api.mazad.click/static/${auth.user.avatar.filename}`;
-                                                        console.log('🔄 Trying filename URL:', filenameUrl);
-                                                        target.src = filenameUrl;
-                                                        return;
-                                                    }
-                                                    
-                                                    // Try localhost fallback for development
-                                                    if (attemptedUrl.includes('api.mazad.click') && !attemptedUrl.includes('localhost')) {
-                                                        const localhostUrl = attemptedUrl.replace('https://api.mazad.click', 'http://localhost:3000');
-                                                        console.log('🔄 Trying localhost fallback:', localhostUrl);
-                                                        target.src = localhostUrl;
-                                                        return;
-                                                    }
-                                                    
-                                                    // Show user-friendly message for production 404s
-                                                    if (attemptedUrl.includes('api.mazad.click')) {
-                                                        console.warn('⚠️ Avatar not available on production server. This is a deployment issue.');
-                                                        // You could show a toast notification here if needed
-                                                    }
-                                                    
-                                                    // Final fallback
+                                                    // Final fallback to default avatar
+                                                    console.log('🔄 Using fallback avatar');
                                                     target.onerror = null;
                                                     target.src = "/assets/images/avatar.jpg";
                                                 }}
                                                 onLoad={() => {
-                                                    // Avatar loaded successfully
+                                                    console.log('✅ Avatar loaded successfully');
                                                 }}
                                             />
                                             {/* Golden Rating Badge */}

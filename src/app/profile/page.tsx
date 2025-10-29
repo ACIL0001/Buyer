@@ -823,13 +823,9 @@ function ProfilePage() {
                                 }}
                             >
                                 <div className="avatar-container">
-                                    <motion.div
-                                        className="avatar-wrapper"
-                                        whileHover={{ scale: 1.05 }}
-                                        transition={{ type: "spring", stiffness: 300 }}
-                                    >
+                                    <div className="avatar-wrapper">
                                         <div className="avatar-frame" style={{ position: 'relative' }}>
-                                            <motion.img
+                                            <img
                                                 key={avatarKey}
                                                 src={avatarSrc}
                                                 alt="Profile"
@@ -890,13 +886,7 @@ function ProfilePage() {
                                                 onLoad={() => {
                                                     // Avatar loaded successfully
                                                 }}
-                                                whileHover={{ scale: 1.1 }}
-                                                transition={{ duration: 0.3 }}
                                             />
-                                            <div className="avatar-ring"></div>
-                                            <div className="status-indicator online">
-                                                <div className="pulse-ring"></div>
-                                            </div>
                                             {/* Golden Rating Badge */}
                                             {auth.user?.rate && auth.user.rate > 0 && (
                                                 <motion.div
@@ -973,7 +963,7 @@ function ProfilePage() {
                                                 <i className="bi bi-camera-fill"></i>
                                             )}
                                         </motion.button>
-                                    </motion.div>
+                                    </div>
 
                                     <div className="avatar-info">
                                         <motion.h3

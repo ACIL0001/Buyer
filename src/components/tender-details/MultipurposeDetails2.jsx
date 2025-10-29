@@ -493,22 +493,40 @@ const MultipurposeDetails2 = () => {
     fetchTenderBids();
   }, [tenderId]);
 
-  // Calculate current lowest bid price for display
+  // Calculate current lowest bid price for display (works for both SERVICE and PRODUIT tender types)
   const currentLowestBidPrice = useMemo(() => {
+    console.log('[Tender Price Display] Calculating current price:', {
+      tenderType: tenderData?.tenderType,
+      offersCount: offers?.length,
+      hasOffers: !!offers && offers.length > 0,
+      maxBudget: tenderData?.maxBudget
+    });
+    
     if (!offers || offers.length === 0) {
       // If no bids, use maxBudget as reference
-      return tenderData?.maxBudget || 0;
+      const fallbackPrice = tenderData?.maxBudget || 0;
+      console.log('[Tender Price Display] No offers, using maxBudget:', fallbackPrice);
+      return fallbackPrice;
     }
     
+    // Extract bid amounts (works for both SERVICE and PRODUIT)
     const bidAmounts = offers
-      .filter(bid => bid.bidAmount != null && bid.bidAmount > 0)
-      .map(bid => bid.bidAmount);
+      .filter(bid => {
+        // Handle both bidAmount (for tender bids) and price (for regular offers)
+        const amount = bid.bidAmount || bid.price;
+        return amount != null && amount > 0;
+      })
+      .map(bid => bid.bidAmount || bid.price);
     
     if (bidAmounts.length === 0) {
-      return tenderData?.maxBudget || 0;
+      const fallbackPrice = tenderData?.maxBudget || 0;
+      console.log('[Tender Price Display] No valid bid amounts, using maxBudget:', fallbackPrice);
+      return fallbackPrice;
     }
     
-    return Math.min(...bidAmounts);
+    const lowestPrice = Math.min(...bidAmounts);
+    console.log('[Tender Price Display] Lowest bid found:', lowestPrice);
+    return lowestPrice;
   }, [offers, tenderData]);
 
   // Fetch user's tender bids using TendersAPI
@@ -2127,8 +2145,16 @@ const MultipurposeDetails2 = () => {
                         
                         <div className="quantity-counter-and-btn-area">
                           <HandleQuantity
-                            initialValue={currentLowestBidPrice > 0 ? currentLowestBidPrice : (tenderData?.maxBudget || 0)}
-                            startingPrice={currentLowestBidPrice > 0 ? currentLowestBidPrice : (tenderData?.maxBudget || 0)}
+                            initialValue={
+                              currentLowestBidPrice > 0 
+                                ? currentLowestBidPrice 
+                                : (tenderData?.maxBudget || 0)
+                            }
+                            startingPrice={
+                              currentLowestBidPrice > 0 
+                                ? currentLowestBidPrice 
+                                : (tenderData?.maxBudget || 0)
+                            }
                             placeholder={
                               currentLowestBidPrice > 0
                                 ? `Prix actuel: ${currentLowestBidPrice.toLocaleString('fr-FR')} DA (proposez moins)`

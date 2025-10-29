@@ -828,7 +828,7 @@ function ProfilePage() {
                                         whileHover={{ scale: 1.05 }}
                                         transition={{ type: "spring", stiffness: 300 }}
                                     >
-                                        <div className="avatar-frame">
+                                        <div className="avatar-frame" style={{ position: 'relative' }}>
                                             <motion.img
                                                 key={avatarKey}
                                                 src={avatarSrc}
@@ -897,6 +897,50 @@ function ProfilePage() {
                                             <div className="status-indicator online">
                                                 <div className="pulse-ring"></div>
                                             </div>
+                                            {/* Golden Rating Badge */}
+                                            {auth.user?.rate && auth.user.rate > 0 && (
+                                                <motion.div
+                                                    className="rating-badge-avatar"
+                                                    initial={{ opacity: 0, scale: 0 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: '-5px',
+                                                        right: '-5px',
+                                                        background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+                                                        color: '#1a1a1a',
+                                                        borderRadius: '50%',
+                                                        width: '48px',
+                                                        height: '48px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        fontSize: '18px',
+                                                        fontWeight: '700',
+                                                        boxShadow: '0 4px 12px rgba(255, 215, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3)',
+                                                        border: '3px solid rgba(255, 255, 255, 0.9)',
+                                                        zIndex: 10,
+                                                        cursor: 'default'
+                                                    }}
+                                                >
+                                                    <motion.span
+                                                        animate={{
+                                                            scale: [1, 1.1, 1],
+                                                        }}
+                                                        transition={{
+                                                            duration: 2,
+                                                            repeat: Number.POSITIVE_INFINITY,
+                                                            ease: "easeInOut"
+                                                        }}
+                                                        style={{
+                                                            textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+                                                        }}
+                                                    >
+                                                        +{Math.round(auth.user.rate)}
+                                                    </motion.span>
+                                                </motion.div>
+                                            )}
                                         </div>
 
                                         <input
@@ -1012,248 +1056,6 @@ function ProfilePage() {
                                                     <span>VERIFIED</span>
                                                 </motion.div>
                                             )}
-                                        </motion.div>
-
-                                        {/* Modern Star Rating Display */}
-                                        <motion.div
-                                            className="modern-star-rating-container"
-                                            initial={{ opacity: 0, y: 20, scale: 0.8 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            transition={{ duration: 0.8, delay: 1.3, type: "spring", stiffness: 120 }}
-                                        >
-                                            <div className="rating-header">
-                                                <motion.h4
-                                                    initial={{ opacity: 0, x: -20 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ delay: 1.5, duration: 0.6 }}
-                                                    className="rating-title"
-                                                >
-                                                    User rating
-                                                </motion.h4>
-                                                <motion.div
-                                                    className="rating-score"
-                                                    initial={{ opacity: 0, scale: 0 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    transition={{ delay: 1.6, type: "spring", stiffness: 200 }}
-                                                >
-                                                    <span className="score-number">{auth.user?.rate?.toFixed(1) || '0.0'}</span>
-                                                    <span className="score-total">/10.0</span>
-                                                </motion.div>
-                                            </div>
-
-                                            <div className="modern-stars-container">
-                                                <div className="stars-background"></div>
-                                                <div className="stars-glow"></div>
-
-                                                <div className="rating-stars-modern">
-                                                    {auth.user?.rate && auth.user.rate > 0 ? (
-                                                        Array(10).fill(0).map((_, index) => {
-                                                            const userRate = auth.user?.rate || 0;
-                                                            const isStarFilled = index < Math.floor(userRate);
-                                                            const isPartialFill = index === Math.floor(userRate) && userRate % 1 > 0;
-                                                            const fillPercentage = isPartialFill ? (userRate % 1) * 100 : 0;
-
-                                                            return (
-                                                                <motion.div
-                                                                    key={index}
-                                                                    className="star-wrapper"
-                                                                    initial={{
-                                                                        opacity: 0,
-                                                                        scale: 0,
-                                                                        rotate: -180,
-                                                                        y: 50
-                                                                    }}
-                                                                    animate={{
-                                                                        opacity: 1,
-                                                                        scale: 1,
-                                                                        rotate: 0,
-                                                                        y: 0
-                                                                    }}
-                                                                    transition={{
-                                                                        delay: 1.7 + (index * 0.15),
-                                                                        duration: 0.8,
-                                                                        type: "spring",
-                                                                        stiffness: 150,
-                                                                        damping: 12
-                                                                    }}
-                                                                    whileHover={{
-                                                                        scale: 1.2,
-                                                                        rotate: 15,
-                                                                        y: -5,
-                                                                        transition: { duration: 0.3, type: "spring", stiffness: 400 }
-                                                                    }}
-                                                                >
-                                                                    {/* Star Background */}
-                                                                    <motion.div
-                                                                        className="star-background"
-                                                                        animate={isStarFilled ? {
-                                                                            scale: [1, 1.1, 1],
-                                                                            opacity: [0.3, 0.6, 0.3]
-                                                                        } : {}}
-                                                                        transition={{
-                                                                            duration: 2,
-                                                                            repeat: Number.POSITIVE_INFINITY,
-                                                                            delay: index * 0.2
-                                                                        }}
-                                                                    />
-
-                                                                    {/* Star Icon */}
-                                                                    <motion.i
-                                                                        className={`bi bi-star${isStarFilled ? '-fill' : ''} star-icon`}
-                                                                        animate={isStarFilled ? {
-                                                                            textShadow: [
-                                                                                "0 0 10px rgba(255, 215, 0, 0.5)",
-                                                                                "0 0 20px rgba(255, 215, 0, 0.8)",
-                                                                                "0 0 30px rgba(255, 215, 0, 0.6)",
-                                                                                "0 0 10px rgba(255, 215, 0, 0.5)"
-                                                                            ]
-                                                                        } : {}}
-                                                                        transition={{
-                                                                            duration: 3,
-                                                                            repeat: Number.POSITIVE_INFINITY,
-                                                                            delay: index * 0.3
-                                                                        }}
-                                                                    />
-
-                                                                    {/* Partial Fill Overlay */}
-                                                                    {isPartialFill && (
-                                                                        <motion.div
-                                                                            className="star-partial-fill"
-                                                                            initial={{ width: 0 }}
-                                                                            animate={{ width: `${fillPercentage}%` }}
-                                                                            transition={{
-                                                                                delay: 2.2 + (index * 0.1),
-                                                                                duration: 1,
-                                                                                ease: "easeOut"
-                                                                            }}
-                                                                        >
-                                                                            <i className="bi bi-star-fill star-icon partial" />
-                                                                        </motion.div>
-                                                                    )}
-
-                                                                    {/* Sparkle Effects */}
-                                                                    {isStarFilled && (
-                                                                        <>
-                                                                            <motion.div
-                                                                                className="star-sparkle sparkle-1"
-                                                                                animate={{
-                                                                                    scale: [0, 1, 0],
-                                                                                    rotate: [0, 180, 360],
-                                                                                    opacity: [0, 1, 0]
-                                                                                }}
-                                                                                transition={{
-                                                                                    duration: 2,
-                                                                                    repeat: Number.POSITIVE_INFINITY,
-                                                                                    delay: 2.5 + (index * 0.4)
-                                                                                }}
-                                                                            />
-                                                                            <motion.div
-                                                                                className="star-sparkle sparkle-2"
-                                                                                animate={{
-                                                                                    scale: [0, 1, 0],
-                                                                                    rotate: [360, 180, 0],
-                                                                                    opacity: [0, 0.8, 0]
-                                                                                }}
-                                                                                transition={{
-                                                                                    duration: 2.5,
-                                                                                    repeat: Number.POSITIVE_INFINITY,
-                                                                                    delay: 3 + (index * 0.3)
-                                                                                }}
-                                                                            />
-                                                                        </>
-                                                                    )}
-
-                                                                    {/* Shooting Star Effect */}
-                                                                    {isStarFilled && index === Math.floor(userRate) - 1 && (
-                                                                        <motion.div
-                                                                            className="shooting-star"
-                                                                            initial={{
-                                                                                x: -100,
-                                                                                y: -100,
-                                                                                opacity: 0,
-                                                                                rotate: 45
-                                                                            }}
-                                                                            animate={{
-                                                                                x: 100,
-                                                                                y: 100,
-                                                                                opacity: [0, 1, 0],
-                                                                                rotate: 45
-                                                                            }}
-                                                                            transition={{
-                                                                                duration: 2,
-                                                                                repeat: Number.POSITIVE_INFINITY,
-                                                                                repeatDelay: 5,
-                                                                                delay: 4
-                                                                            }}
-                                                                        />
-                                                                    )}
-                                                                </motion.div>
-                                                            );
-                                                        })
-                                                    ) : (
-                                                        <motion.div
-                                                            className="no-rating-modern"
-                                                            initial={{ opacity: 0, y: 20 }}
-                                                            animate={{ opacity: 1, y: 0 }}
-                                                            transition={{ delay: 1.8 }}
-                                                        >
-                                                            <i className="bi bi-star-half"></i>
-                                                            <span>No rating available</span>
-                                                        </motion.div>
-                                                    )}
-                                                </div>
-
-                                                {/* Floating Particles */}
-                                                {auth.user?.rate && auth.user.rate > 0 && (
-                                                    <div className="rating-particles">
-                                                        {Array(8).fill(0).map((_, i) => (
-                                                            <motion.div
-                                                                key={i}
-                                                                className="particle"
-                                                                animate={{
-                                                                    y: [-20, -60, -20],
-                                                                    x: [0, Math.random() * 40 - 20, 0],
-                                                                    opacity: [0, 1, 0],
-                                                                    scale: [0, 1, 0]
-                                                                }}
-                                                                transition={{
-                                                                    duration: 3,
-                                                                    repeat: Number.POSITIVE_INFINITY,
-                                                                    delay: 3 + (i * 0.5),
-                                                                    ease: "easeInOut"
-                                                                }}
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <motion.div
-                                                className="rating-progress-bar"
-                                                initial={{ width: 0, opacity: 0 }}
-                                                animate={{
-                                                    width: `${((auth.user?.rate || 0) / 5) * 100}%`,
-                                                    opacity: 1
-                                                }}
-                                                transition={{
-                                                    delay: 2.5,
-                                                    duration: 1.5,
-                                                    ease: "easeOut"
-                                                }}
-                                            >
-                                                <motion.div
-                                                    className="progress-glow"
-                                                    animate={{
-                                                        x: ["-100%", "100%"],
-                                                    }}
-                                                    transition={{
-                                                        duration: 2,
-                                                        repeat: Number.POSITIVE_INFINITY,
-                                                        repeatDelay: 3,
-                                                        delay: 3.5
-                                                    }}
-                                                />
-                                            </motion.div>
                                         </motion.div>
 
                                         {/* User Type Badge */}

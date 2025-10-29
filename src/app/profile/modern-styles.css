@@ -2711,3 +2711,25 @@
     width: 100%;
   }
 }
+
+/* Golden Rating Badge on Avatar */
+.rating-badge-avatar {
+  animation: pulse-golden 2s ease-in-out infinite;
+}
+
+@keyframes pulse-golden {
+  0%, 100% {
+    box-shadow: 
+      0 4px 12px rgba(255, 215, 0, 0.5), 
+      0 0 20px rgba(255, 215, 0, 0.3),
+      0 0 0 0 rgba(255, 215, 0, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 
+      0 4px 16px rgba(255, 215, 0, 0.7), 
+      0 0 30px rgba(255, 215, 0, 0.5),
+      0 0 0 8px rgba(255, 215, 0, 0);
+    transform: scale(1.05);
+  }
+}

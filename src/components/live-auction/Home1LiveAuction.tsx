@@ -47,6 +47,7 @@ interface Auction {
   wilaya?: string;
   description?: string;
   biddersCount?: number;
+  bidType?: string; // PRODUCT or SERVICE
   // --- Image properties for enhanced image loading ---
   images?: string[];
   image?: string;

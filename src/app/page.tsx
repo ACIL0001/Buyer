@@ -18,6 +18,8 @@ import SocketProvider from "@/contexts/socket";
 import { useCreateSocket } from '@/contexts/socket';
 import { getSellerUrl } from '@/config';
 import { CategoryAPI } from '@/app/api/category';
+import { AuctionsAPI } from '@/app/api/auctions';
+import { TendersAPI } from '@/app/api/tenders';
 import { useRouter } from 'next/navigation';
 import ResponsiveTest from '@/components/common/ResponsiveTest';
 
@@ -58,12 +60,15 @@ export default function Home() {
   const [auctionDropdownOpen, setAuctionDropdownOpen] = useState(false);
   const [tenderDropdownOpen, setTenderDropdownOpen] = useState(false);
 
-  // State for category search
+  // State for search (categories, auctions, tenders)
   const [categories, setCategories] = useState<any[]>([]);
+  const [allAuctions, setAllAuctions] = useState<any[]>([]);
+  const [allTenders, setAllTenders] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const [loadingSearch, setLoadingSearch] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchResultsRef = useRef<HTMLDivElement>(null);
 
@@ -115,44 +120,99 @@ export default function Home() {
     }
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
     
     if (query.length > 0) {
-      const filtered = categories.filter((category: any) => 
-        category.name.toLowerCase().includes(query.toLowerCase())
-      );
-      setSearchResults(filtered);
+      setLoadingSearch(true);
+      try {
+        const lowerQuery = query.toLowerCase();
+        
+        // Search categories
+        const filteredCategories = categories.filter((category: any) => 
+          category.name.toLowerCase().includes(lowerQuery)
+        ).map(cat => ({ ...cat, type: 'category' }));
+        
+        // Search auctions by name/title
+        const filteredAuctions = allAuctions.filter((auction: any) => 
+          (auction.title || auction.name || '').toLowerCase().includes(lowerQuery)
+        ).map(auction => ({ ...auction, type: 'auction' }));
+        
+        // Search tenders by name/title
+        const filteredTenders = allTenders.filter((tender: any) => 
+          (tender.title || tender.name || '').toLowerCase().includes(lowerQuery)
+        ).map(tender => ({ ...tender, type: 'tender' }));
+        
+        // Combine all results
+        const combinedResults = [
+          ...filteredCategories,
+          ...filteredAuctions,
+          ...filteredTenders
+        ];
+        
+        setSearchResults(combinedResults);
       setShowSearchResults(true);
+      } catch (error) {
+        console.error('Error searching:', error);
+        setSearchResults([]);
+      } finally {
+        setLoadingSearch(false);
+      }
     } else {
       setSearchResults([]);
       setShowSearchResults(false);
     }
   };
 
-  const handleCategorySelect = (category: any) => {
-    setSearchQuery(category.name);
+  const handleSearchSelect = (item: any) => {
+    setSearchQuery(item.title || item.name || '');
     setShowSearchResults(false);
     
-    // Debug: Log the category and URL
-    console.log('Selected category:', category);
-    
-    // Navigate to category page (same as Explore Categories section)
-    const categoryId = category._id || category.id;
-    const categoryName = category.name;
-    const categoryUrl = `/category?category=${categoryId}&name=${encodeURIComponent(categoryName)}`;
-    
-    console.log('Navigating to:', categoryUrl);
-    router.push(categoryUrl);
+    // Navigate based on item type
+    if (item.type === 'category') {
+      const categoryId = item._id || item.id;
+      const categoryName = item.name;
+      const categoryUrl = `/category?category=${categoryId}&name=${encodeURIComponent(categoryName)}`;
+      router.push(categoryUrl);
+    } else if (item.type === 'auction') {
+      const auctionId = item._id || item.id;
+      router.push(`/auction-details/${auctionId}`);
+    } else if (item.type === 'tender') {
+      const tenderId = item._id || item.id;
+      router.push(`/tender-details/${tenderId}`);
+    }
   };
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchResults.length > 0) {
-      handleCategorySelect(searchResults[0]);
+      handleSearchSelect(searchResults[0]);
     }
   };
+
+  // Fetch auctions and tenders on component mount for search
+  useEffect(() => {
+    const fetchAuctionsAndTenders = async () => {
+      try {
+        const [auctionsRes, tendersRes] = await Promise.all([
+          AuctionsAPI.getAuctions().catch(() => ({ data: [] })),
+          TendersAPI.getActiveTenders().catch(() => [])
+        ]);
+        
+        // Handle different response structures
+        const auctions = auctionsRes?.data || auctionsRes || [];
+        const tenders = tendersRes?.data || tendersRes || [];
+        
+        setAllAuctions(Array.isArray(auctions) ? auctions : []);
+        setAllTenders(Array.isArray(tenders) ? tenders : []);
+      } catch (error) {
+        console.error('Error fetching auctions and tenders for search:', error);
+      }
+    };
+    
+    fetchAuctionsAndTenders();
+  }, []);
 
   // Fetch categories on component mount
   useEffect(() => {
@@ -1211,15 +1271,15 @@ export default function Home() {
                     data-section="banner"
                     className="hero-banner-section"
                     style={{ 
-                      minHeight: '100vh',
+                      minHeight: '70vh', 
                       position: 'relative',
                       overflow: 'hidden',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      padding: 'clamp(40px, 8vw, 80px) clamp(16px, 4vw, 20px)',
-                      paddingTop: 'clamp(80px, 15vw, 120px)',
-                      paddingBottom: 'clamp(40px, 8vw, 80px)',
+                      padding: 'clamp(12px, 3vw, 24px) clamp(12px, 3vw, 16px)',
+                      paddingTop: 'clamp(12px, 3vw, 24px)',
+                      paddingBottom: 'clamp(24px, 5vw, 48px)',
                       width: '100%',
                       maxWidth: '100vw',
                       
@@ -1383,7 +1443,7 @@ export default function Home() {
                       zIndex: 3,
                       maxWidth: '1400px',
                       margin: '0 auto',
-                      padding: '40px 20px',
+                      padding: '12px 20px 40px 20px',
                       textAlign: 'center',
                       color: 'white',
                       width: '100%',
@@ -1395,7 +1455,7 @@ export default function Home() {
                         style={{
                           position: 'relative',
                           maxWidth: '500px',
-                          margin: '0 auto 32px auto',
+                          margin: '0 auto 12px auto',
                           width: '100%',
                         }}
                       >
@@ -1436,7 +1496,7 @@ export default function Home() {
                             <input
                               ref={searchInputRef}
                               type="text"
-                              placeholder="Rechercher par catégorie..."
+                              placeholder="Rechercher des enchères, soumissions ou catégories..."
                               value={searchQuery}
                               onChange={handleSearchChange}
                               style={{
@@ -1509,54 +1569,88 @@ export default function Home() {
                               overflowY: 'auto',
                             }}
                           >
-                            {searchResults.map((category: any, index: number) => (
-                              <div
-                                key={category._id}
-                                onClick={() => handleCategorySelect(category)}
-                                style={{
-                                  padding: '16px 20px',
-                                  cursor: 'pointer',
-                                  borderBottom: index < searchResults.length - 1 ? '1px solid rgba(0, 0, 0, 0.1)' : 'none',
-                                  transition: 'all 0.3s ease',
-                                  color: '#1e293b',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '12px',
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
-                                  e.currentTarget.style.color = '#2563eb';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.background = 'transparent';
-                                  e.currentTarget.style.color = '#1e293b';
-                                }}
-                              >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                                  <polyline points="9,22 9,12 15,12 15,22"/>
-                        </svg>
-                                <span style={{ fontWeight: '500' }}>{category.name}</span>
-                                {category.description && (
-                                  <span style={{ 
-                                    fontSize: '12px', 
-                                    color: '#64748b',
-                                    marginLeft: 'auto',
-                                    maxWidth: '200px',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                  }}>
-                                    {category.description}
-                                  </span>
-                                )}
-                              </div>
-                            ))}
+                            {searchResults.map((item: any, index: number) => {
+                              const itemName = item.name || item.title || '';
+                              const itemId = item._id || item.id || index;
+                              const isCategory = item.type === 'category';
+                              const isAuction = item.type === 'auction';
+                              const isTender = item.type === 'tender';
+                              
+                              return (
+                                <div
+                                  key={`${item.type}-${itemId}`}
+                                  onClick={() => handleSearchSelect(item)}
+                                  style={{
+                                    padding: '16px 20px',
+                                    cursor: 'pointer',
+                                    borderBottom: index < searchResults.length - 1 ? '1px solid rgba(0, 0, 0, 0.1)' : 'none',
+                                    transition: 'all 0.3s ease',
+                                    color: '#1e293b',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+                                    e.currentTarget.style.color = '#2563eb';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'transparent';
+                                    e.currentTarget.style.color = '#1e293b';
+                                  }}
+                                >
+                                  {isCategory && (
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                      <polyline points="9,22 9,12 15,12 15,22"/>
+                                    </svg>
+                                  )}
+                                  {isAuction && (
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 13H13V17H11V13H7V11H11V7H13V11H17V13Z"/>
+                                    </svg>
+                                  )}
+                                  {isTender && (
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <path d="M9 12l2 2 4-4"/>
+                                      <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.09 0 2.13.2 3.1.56"/>
+                                      <path d="M21 3l-6 6-4-4"/>
+                                    </svg>
+                                  )}
+                                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <span style={{ fontWeight: '500' }}>{itemName}</span>
+                                    <span style={{ 
+                                      fontSize: '11px', 
+                                      color: '#64748b',
+                                      textTransform: 'uppercase',
+                                      letterSpacing: '0.5px',
+                                    }}>
+                                      {isCategory && 'Catégorie'}
+                                      {isAuction && 'Enchère'}
+                                      {isTender && 'Soumission'}
+                                    </span>
+                                  </div>
+                                  {(item.description || item.category?.name) && (
+                                    <span style={{ 
+                                      fontSize: '12px', 
+                                      color: '#64748b',
+                                      marginLeft: 'auto',
+                                      maxWidth: '200px',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                    }}>
+                                      {item.description || item.category?.name}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
 
                         {/* No Results Message */}
-                        {showSearchResults && searchResults.length === 0 && searchQuery.length > 0 && (
+                        {showSearchResults && searchResults.length === 0 && searchQuery.length > 0 && !loadingSearch && (
                           <div style={{
                             position: 'absolute',
                             top: '100%',
@@ -1572,7 +1666,28 @@ export default function Home() {
                             color: '#64748b',
                             zIndex: 1000,
                           }}>
-                            Aucune catégorie trouvée pour "{searchQuery}"
+                            Aucun résultat trouvé pour "{searchQuery}"
+                          </div>
+                        )}
+                        
+                        {/* Loading Message */}
+                        {loadingSearch && (
+                          <div style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: '0',
+                            right: '0',
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            borderRadius: '16px',
+                            marginTop: '8px',
+                            padding: '20px',
+                            textAlign: 'center',
+                            color: '#64748b',
+                            zIndex: 1000,
+                          }}>
+                            Recherche en cours...
                           </div>
                         )}
                       </div>
@@ -1581,11 +1696,11 @@ export default function Home() {
                       <h1 
                         className="hero-headline"
                         style={{
-                          fontSize: 'clamp(3rem, 6vw, 5.5rem)',
+                          fontSize: 'clamp(1.8rem, 3.8vw, 3.2rem)',
                           fontWeight: '900',
                           lineHeight: '1.1',
-                          marginBottom: '32px',
-                          marginTop: '32px',
+                          marginBottom: '8px',
+                          marginTop: '24px',
                           color: 'white',
                           textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
                           cursor: 'default',
@@ -1607,28 +1722,7 @@ export default function Home() {
                         </span>
                       </h1>
 
-                      {/* Subtitle */}
-                      <p 
-                        className="hero-subtitle"
-                        style={{
-                          fontSize: '1.4rem',
-                          color: 'rgba(255, 255, 255, 0.9)',
-                          lineHeight: '1.6',
-                          marginBottom: '48px',
-                          marginTop: '24px',
-                          maxWidth: '700px',
-                          marginLeft: 'auto',
-                          marginRight: 'auto',
-                          textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
-                          padding: '0 20px',
-                        }}
-                      >
-                        Découvrez Mazad Click, la première application B2B d'enchères et de soumissions dédiée aux entreprises algériennes.
-                        <br /><br />
-                        Une solution moderne pour acheter, vendre et collaborer plus vite, en toute transparence.
-                        <br /><br />
-                        Avec Mazad Click, accélérez vos opportunités et boostez votre business.
-                      </p>
+                      {/* Subtitle removed as requested */}
 
                       {/* CTA Buttons */}
                       <div 
@@ -1653,38 +1747,38 @@ export default function Home() {
                             className={`dropdown-button primary-cta ${auctionDropdownOpen ? 'open' : ''}`}
                           style={{
                             display: 'inline-flex',
+                            flexDirection: 'column',
                             alignItems: 'center',
-                            gap: '12px',
-                            background: 'var(--primary-gradient)',
-                            backgroundSize: '200% 200%',
+                            gap: '10px',
+                            background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
                             color: 'white',
-                            padding: '20px 40px',
-                            borderRadius: '50px',
-                            border: 'none',
+                            padding: '24px 36px',
+                            borderRadius: '18px',
+                            border: '1px solid rgba(255,255,255,0.2)',
                             fontSize: '18px',
-                            fontWeight: '700',
+                            fontWeight: 800,
                             cursor: 'pointer',
-                            boxShadow: 'var(--shadow-lg)',
+                            boxShadow: '0 6px 20px rgba(0,99,177,0.3)',
                             transition: 'var(--transition)',
                             position: 'relative',
                             overflow: 'hidden',
-                            animation: 'gradientShift 3s ease infinite',
+                            minWidth: '220px'
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.transform = 'translateY(-6px) scale(1.05)';
-                            e.currentTarget.style.boxShadow = 'var(--shadow-xl)';
+                            e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,99,177,0.4)';
                             e.currentTarget.style.filter = 'brightness(1.1)';
                           }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                            e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+                            e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,99,177,0.3)';
                             e.currentTarget.style.filter = 'brightness(1)';
                           }}
                         >
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                          <svg width="36" height="36" viewBox="0 0 24 24" fill="white">
                             <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 13H13V17H11V13H7V11H11V7H13V11H17V13Z"/>
                           </svg>
-                            Auctions
+                          <span style={{color:'white'}}>Auctions</span>
                             <svg className="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M6 9l6 6 6-6"/>
                             </svg>
@@ -1730,38 +1824,38 @@ export default function Home() {
                             className={`dropdown-button secondary-cta glass-morphism ${tenderDropdownOpen ? 'open' : ''}`}
                           style={{
                             display: 'inline-flex',
+                            flexDirection: 'column',
                             alignItems: 'center',
-                            gap: '8px',
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            backdropFilter: 'blur(20px)',
+                            gap: '10px',
+                            background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
                             color: 'white',
-                            padding: '20px 36px',
-                            borderRadius: '50px',
-                            border: '2px solid rgba(147, 197, 253, 0.3)',
-                            fontSize: '16px',
-                            fontWeight: '600',
+                            padding: '24px 36px',
+                            borderRadius: '18px',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            fontSize: '18px',
+                            fontWeight: 800,
                             cursor: 'pointer',
                             transition: 'var(--transition)',
+                            boxShadow: '0 6px 20px rgba(0,99,177,0.3)',
+                            minWidth: '220px'
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-                            e.currentTarget.style.borderColor = 'rgba(147, 197, 253, 0.6)';
                             e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
-                            e.currentTarget.style.boxShadow = '0 12px 30px rgba(59, 130, 246, 0.3)';
+                            e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,99,177,0.4)';
+                            e.currentTarget.style.filter = 'brightness(1.1)';
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                            e.currentTarget.style.borderColor = 'rgba(147, 197, 253, 0.3)';
                             e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                            e.currentTarget.style.boxShadow = 'none';
+                            e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,99,177,0.3)';
+                            e.currentTarget.style.filter = 'brightness(1)';
                           }}
                         >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <svg width="36" height="36" viewBox="0 0 24 24" fill="white">
                             <path d="M9 12l2 2 4-4"/>
                             <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.09 0 2.13.2 3.1.56"/>
                             <path d="M21 3l-6 6-4-4"/>
                           </svg>
-                            Tenders
+                          <span style={{color:'white'}}>Tenders</span>
                             <svg className="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <path d="M6 9l6 6 6-6"/>
                             </svg>

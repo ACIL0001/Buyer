@@ -905,7 +905,7 @@ const Home1LiveAuction = () => {
                           {/* Location and Quantity Info */}
                           <div style={{
                             display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
+                            gridTemplateColumns: auction?.bidType === 'SERVICE' ? '1fr' : '1fr 1fr',
                             gap: '12px',
                             marginBottom: '16px',
                           }}>
@@ -944,45 +944,58 @@ const Home1LiveAuction = () => {
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
                               }}>
-                                {auction.location || auction.wilaya || 'Non spécifiée'}
+                                {(() => {
+                                  const place = (auction as any).place || '';
+                                  const address = (auction as any).address || '';
+                                  const location = auction.location || '';
+                                  const wilaya = auction.wilaya || '';
+                                  // For auctions, 'place' contains the full address
+                                  // Combine: place (full address), address, location, wilaya
+                                  const parts = [place, address, location, wilaya].filter(Boolean);
+                                  // Remove duplicates and join
+                                  const uniqueParts = [...new Set(parts)];
+                                  return uniqueParts.length > 0 ? uniqueParts.join(', ') : 'Non spécifiée';
+                                })()}
                               </p>
                             </div>
 
-                            <div style={{
-                              background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                              borderRadius: '12px',
-                              padding: '12px',
-                              border: '1px solid #e9ecef',
-                              borderLeft: '4px solid #0063b1',
-                              position: 'relative',
-                              overflow: 'hidden',
-                            }}>
+                            {auction?.bidType !== 'SERVICE' && (
                               <div style={{
-                                position: 'absolute',
-                                top: 0,
-                                right: 0,
-                                width: '30px',
-                                height: '30px',
-                                background: 'linear-gradient(45deg, rgba(0, 99, 177, 0.1), rgba(0, 163, 224, 0.1))',
-                                borderRadius: '0 12px 0 100%',
-                              }}></div>
-                              <p style={{
-                                fontSize: '12px',
-                                color: '#666',
-                                margin: '0 0 4px 0',
-                                fontWeight: '600',
+                                background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                borderRadius: '12px',
+                                padding: '12px',
+                                border: '1px solid #e9ecef',
+                                borderLeft: '4px solid #0063b1',
+                                position: 'relative',
+                                overflow: 'hidden',
                               }}>
-                                📦 Quantité
-                              </p>
-                              <p style={{
-                                fontSize: '14px',
-                                color: '#333',
-                                margin: 0,
-                                fontWeight: '500',
-                              }}>
-                                {auction.quantity || 'Non spécifiée'}
-                              </p>
-                            </div>
+                                <div style={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  right: 0,
+                                  width: '30px',
+                                  height: '30px',
+                                  background: 'linear-gradient(45deg, rgba(0, 99, 177, 0.1), rgba(0, 163, 224, 0.1))',
+                                  borderRadius: '0 12px 0 100%',
+                                }}></div>
+                                <p style={{
+                                  fontSize: '12px',
+                                  color: '#666',
+                                  margin: '0 0 4px 0',
+                                  fontWeight: '600',
+                                }}>
+                                  📦 Quantité
+                                </p>
+                                <p style={{
+                                  fontSize: '14px',
+                                  color: '#333',
+                                  margin: 0,
+                                  fontWeight: '500',
+                                }}>
+                                  {auction.quantity || 'Non spécifiée'}
+                                </p>
+                              </div>
+                            )}
                           </div>
 
                           {/* Description */}

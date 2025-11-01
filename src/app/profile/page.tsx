@@ -257,6 +257,7 @@ function ProfilePage() {
                         rate: currentUser?.rate || 1,
                         isPhoneVerified: (currentUser as any)?.isPhoneVerified,
                         isVerified: (currentUser as any)?.isVerified,
+                        isCertified: (currentUser as any)?.isCertified,
                         isHasIdentity: currentUser?.isHasIdentity,
                         isActive: (currentUser as any)?.isActive,
                         isBanned: (currentUser as any)?.isBanned,
@@ -385,29 +386,70 @@ function ProfilePage() {
             formDataToUpload.append('avatar', file);
             const response = await UserAPI.uploadAvatar(formDataToUpload);
 
-            console.log('✅ Avatar upload response:', response);
-            console.log('📦 Avatar user data:', response?.user?.avatar);
+                console.log('✅ Avatar upload response:', response);
+                console.log('📦 Avatar user data:', response?.user?.avatar);
 
-            if (response && response.success) {
-                // Clear the input immediately to prevent re-triggering
-                if (fileInputRef.current) {
-                    fileInputRef.current.value = '';
-                }
+                if (response && response.success) {
+                    // Clear the input immediately to prevent re-triggering
+                    if (fileInputRef.current) {
+                        fileInputRef.current.value = '';
+                    }
 
-                // Get the updated user data
-                const updatedUser = response.user || response.data;
-                console.log('✅ Avatar uploaded successfully. Updated user:', updatedUser);
+                    // Get the updated user data
+                    const updatedUser = response.user || response.data;
+                    const responseWithAttachment = response as any; // Type assertion for attachment property
+                    console.log('✅ Avatar uploaded successfully. Updated user:', updatedUser);
+                    console.log('✅ Updated user avatar:', updatedUser?.avatar);
+                    console.log('✅ Response attachment:', (response as any)?.attachment);
 
-                // Update auth state with new user data including avatar
-                if (updatedUser) {
-                    const currentUser = auth.user;
+                    // Update auth state with new user data including avatar
+                    if (updatedUser) {
+                        const currentUser = auth.user;
+                        
+                        // Ensure avatar has proper URL format
+                        let avatarObj = updatedUser.avatar;
+                        
+                        // If response has attachment info, use it to construct proper avatar URL
+                        if (responseWithAttachment?.attachment) {
+                            const attachment = responseWithAttachment.attachment;
+                        const normalizedUrl = attachment.url?.startsWith('http') 
+                            ? attachment.url 
+                            : `${API_BASE_URL.replace(/\/$/, '')}${attachment.url?.startsWith('/') ? attachment.url : '/static/' + attachment.url}`;
+                        
+                        avatarObj = {
+                            _id: attachment._id,
+                            url: attachment.url,
+                            filename: attachment.filename,
+                            fullUrl: attachment.fullUrl ? normalizeUrl(attachment.fullUrl) : normalizedUrl
+                        };
+                    }
+                    
+                    // Construct photoURL from avatar if not present
+                    let photoURL = updatedUser.photoURL;
+                    if (!photoURL && avatarObj) {
+                        const avatar = avatarObj as any;
+                        if (avatar.fullUrl) {
+                            photoURL = normalizeUrl(avatar.fullUrl);
+                        } else if (avatar.url) {
+                            photoURL = normalizeUrl(avatar.url);
+                        } else if (avatar.filename) {
+                            photoURL = normalizeUrl(avatar.filename);
+                        }
+                    } else if (photoURL) {
+                        photoURL = normalizeUrl(photoURL);
+                    }
+                    
                     const mergedUser = {
                         ...currentUser,
                         ...updatedUser,
-                        avatar: updatedUser.avatar || currentUser?.avatar,
-                        photoURL: updatedUser.photoURL || updatedUser.avatar?.url || currentUser?.photoURL,
+                        avatar: avatarObj || currentUser?.avatar,
+                        photoURL: photoURL || currentUser?.photoURL,
                         type: (updatedUser.type || updatedUser.accountType || currentUser?.type || 'CLIENT') as any,
                     };
+                    
+                    console.log('👤 Merged user with avatar:', mergedUser);
+                    console.log('👤 Merged user avatar:', mergedUser.avatar);
+                    console.log('👤 Merged user photoURL:', mergedUser.photoURL);
                     
                     set({
                         user: mergedUser as any,
@@ -706,52 +748,93 @@ function ProfilePage() {
         );
     };
 
+    // Helper to normalize URL - always return full URL with correct port
+    const normalizeUrl = React.useCallback((url: string): string => {
+        if (!url || url.trim() === '') return '';
+        
+        // Clean up the URL first - remove trailing slashes and whitespace
+        const cleanUrl = url.trim();
+        
+        // If already a full HTTP/HTTPS URL, normalize it
+        if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+            // Replace localhost:3000 or localhost (without port) with API_BASE_URL
+            let normalized = cleanUrl
+                .replace(/http:\/\/localhost:3000/g, API_BASE_URL.replace(/\/$/, ''))
+                .replace(/http:\/\/localhost\//g, API_BASE_URL.replace(/\/$/, '') + '/')
+                .replace(/http:\/\/localhost$/g, API_BASE_URL.replace(/\/$/, ''));
+            
+            // If it still doesn't have the correct base, try to fix it
+            if (normalized.startsWith('http://localhost') && !normalized.includes(API_BASE_URL.replace(/^https?:\/\//, '').replace(/\/$/, ''))) {
+                try {
+                    // Extract the path part
+                    const urlObj = new URL(cleanUrl);
+                    const path = urlObj.pathname;
+                    normalized = `${API_BASE_URL.replace(/\/$/, '')}${path}`;
+                } catch (e) {
+                    // If URL parsing fails, just use the cleaned URL
+                    console.warn('Failed to parse URL:', cleanUrl);
+                }
+            }
+            
+            return normalized;
+        }
+        
+        // If starts with /static/, prepend API_BASE_URL
+        if (cleanUrl.startsWith('/static/')) {
+            return `${API_BASE_URL.replace(/\/$/, '')}${cleanUrl}`;
+        }
+        
+        // If starts with / but not /static/, try /static/
+        if (cleanUrl.startsWith('/')) {
+            return `${API_BASE_URL.replace(/\/$/, '')}/static${cleanUrl}`;
+        }
+        
+        // If no leading slash, assume it's a filename and prepend /static/
+        return `${API_BASE_URL.replace(/\/$/, '')}/static/${cleanUrl}`;
+    }, []);
+
     // Construct avatar source with multiple fallback options
     const getAvatarSrc = () => {
         if (!auth.user) return "/assets/images/avatar.jpg";
         
         console.log('🖼️ Constructing avatar URL from:', auth.user);
+        console.log('🖼️ Avatar object:', auth.user.avatar);
+        console.log('🖼️ photoURL:', auth.user.photoURL);
         
         // Priority 1: photoURL (direct from backend)
         if (auth.user.photoURL && auth.user.photoURL.trim() !== "") {
-            // Replace localhost with production API URL from config
-            const cleanUrl = auth.user.photoURL.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
-            console.log('📸 Using photoURL:', cleanUrl);
-            return `${cleanUrl}?v=${avatarKey}`;
+            const cleanUrl = normalizeUrl(auth.user.photoURL);
+            if (cleanUrl && !cleanUrl.includes('mock-images')) {
+                console.log('📸 Using photoURL:', cleanUrl);
+                return `${cleanUrl}?v=${avatarKey}`;
+            }
         }
         
         // Priority 2: avatar object with fullUrl
         if (auth.user.avatar && 'fullUrl' in auth.user.avatar && auth.user.avatar.fullUrl) {
-            // Replace localhost with production API URL from config
-            const avatarUrl = (auth.user.avatar as any).fullUrl.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
-            console.log('📸 Using avatar.fullUrl:', avatarUrl);
-            return `${avatarUrl}?v=${avatarKey}`;
+            const avatarUrl = normalizeUrl((auth.user.avatar as any).fullUrl);
+            if (avatarUrl && !avatarUrl.includes('mock-images')) {
+                console.log('📸 Using avatar.fullUrl:', avatarUrl);
+                return `${avatarUrl}?v=${avatarKey}`;
+            }
         }
         
         // Priority 3: avatar.url
         if (auth.user.avatar?.url) {
-            let avatarUrl = auth.user.avatar.url;
-            if (!avatarUrl.startsWith('http')) {
-                if (avatarUrl.startsWith('/static/')) {
-                    avatarUrl = `${API_BASE_URL.replace(/\/$/, '')}${avatarUrl}`;
-                } else if (avatarUrl.startsWith('/')) {
-                    avatarUrl = `${API_BASE_URL.replace(/\/$/, '')}/static${avatarUrl}`;
-                } else {
-                    avatarUrl = `${API_BASE_URL.replace(/\/$/, '')}/static/${avatarUrl}`;
-                }
-            } else {
-                // Replace localhost with production API URL from config
-                avatarUrl = avatarUrl.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
+            const avatarUrl = normalizeUrl(auth.user.avatar.url);
+            if (avatarUrl && !avatarUrl.includes('mock-images')) {
+                console.log('📸 Using avatar.url:', avatarUrl);
+                return `${avatarUrl}?v=${avatarKey}`;
             }
-            console.log('📸 Using avatar.url:', avatarUrl);
-            return `${avatarUrl}?v=${avatarKey}`;
         }
         
         // Priority 4: avatar.filename
         if (auth.user.avatar?.filename) {
-            const avatarUrl = `${API_BASE_URL.replace(/\/$/, '')}/static/${auth.user.avatar.filename}`;
-            console.log('📸 Using avatar.filename:', avatarUrl);
-            return `${avatarUrl}?v=${avatarKey}`;
+            const avatarUrl = normalizeUrl(auth.user.avatar.filename);
+            if (avatarUrl && !avatarUrl.includes('mock-images')) {
+                console.log('📸 Using avatar.filename:', avatarUrl);
+                return `${avatarUrl}?v=${avatarKey}`;
+            }
         }
         
         // Priority 5: fallback
@@ -839,7 +922,14 @@ function ProfilePage() {
                             >
                                 <div className="avatar-container">
                                     <div className="avatar-wrapper" style={{ position: 'relative' }}>
-                                        <div className="avatar-frame">
+                                        <div className="avatar-frame" style={{
+                                            boxShadow: '0 0 0 2px #e5e7eb',
+                                            border: '4px solid #fff',
+                                            background: '#fff',
+                                            borderRadius: '50%',
+                                            padding: 0,
+                                            overflow: 'hidden'
+                                        }}>
                                             <img
                                                 key={avatarKey}
                                                 src={avatarSrc}
@@ -847,8 +937,9 @@ function ProfilePage() {
                                                 style={{ 
                                                     width: '100%', 
                                                     height: '100%', 
-                                                    objectFit: 'contain',
-                                                    borderRadius: '50%'
+                                                    objectFit: 'cover',
+                                                    borderRadius: '50%',
+                                                    display: 'block'
                                                 }}
                                                 loading="lazy"
                                                 onError={(e) => {
@@ -1051,11 +1142,37 @@ function ProfilePage() {
                                                         fontSize: '12px',
                                                         fontWeight: '600',
                                                         boxShadow: '0 2px 8px rgba(17, 153, 142, 0.3)',
-                                                        border: '1px solid rgba(255, 255, 255, 0.2)'
+                                                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                                                        marginRight: '8px'
                                                     }}
                                                 >
                                                     <i className="bi bi-check-circle-fill" style={{ fontSize: '10px' }}></i>
                                                     <span>VERIFIED</span>
+                                                </motion.div>
+                                            )}
+                                            {/* Certified Badge */}
+                                            {(auth.user as any)?.isCertified && (
+                                                <motion.div
+                                                    className="user-badge certified"
+                                                    initial={{ opacity: 0, scale: 0.8 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    transition={{ duration: 0.3, delay: 1.6 }}
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '4px',
+                                                        padding: '4px 8px',
+                                                        background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+                                                        color: 'white',
+                                                        borderRadius: '12px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '600',
+                                                        boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+                                                        border: '1px solid rgba(255, 255, 255, 0.2)'
+                                                    }}
+                                                >
+                                                    <i className="bi bi-award-fill" style={{ fontSize: '10px' }}></i>
+                                                    <span>CERTIFIED</span>
                                                 </motion.div>
                                             )}
                                         </motion.div>

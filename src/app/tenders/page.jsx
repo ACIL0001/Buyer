@@ -1718,28 +1718,30 @@ const MultipurposeTenderSidebar = () => {
                                                         {/* Quantity and Location Info */}
                                                         <div style={{
                                                             display: 'grid',
-                                                            gridTemplateColumns: '1fr 1fr',
+                                                            gridTemplateColumns: tender?.tenderType === 'SERVICE' ? '1fr' : '1fr 1fr',
                                                             gap: '12px',
                                                             marginBottom: '16px',
                                                         }}>
-                                                            <div>
-                                                                <p style={{
-                                                                    fontSize: '12px',
-                                                                    color: '#666',
-                                                                    margin: '0 0 4px 0',
-                                                                    fontWeight: '600',
-                                                                }}>
-                                                                    Quantité
-                                                                </p>
-                                                                <p style={{
-                                                                    fontSize: '14px',
-                                                                    color: '#333',
-                                                                    margin: 0,
-                                                                    fontWeight: '500',
-                                                                }}>
-                                                                    {tender.quantity || 'Non spécifiée'}
-                                                                </p>
-                                                            </div>
+                                                            {tender?.tenderType !== 'SERVICE' && (
+                                                                <div>
+                                                                    <p style={{
+                                                                        fontSize: '12px',
+                                                                        color: '#666',
+                                                                        margin: '0 0 4px 0',
+                                                                        fontWeight: '600',
+                                                                    }}>
+                                                                        Quantité
+                                                                    </p>
+                                                                    <p style={{
+                                                                        fontSize: '14px',
+                                                                        color: '#333',
+                                                                        margin: 0,
+                                                                        fontWeight: '500',
+                                                                    }}>
+                                                                        {tender.quantity || 'Non spécifiée'}
+                                                                    </p>
+                                                                </div>
+                                                            )}
 
                                                             <div>
                                                                 <p style={{
@@ -1759,7 +1761,13 @@ const MultipurposeTenderSidebar = () => {
                                                                     textOverflow: 'ellipsis',
                                                                     whiteSpace: 'nowrap',
                                                                 }}>
-                                                                    {tender.location || tender.wilaya || 'Non spécifiée'}
+                                                                    {(() => {
+                                                                      const address = tender.address || '';
+                                                                      const location = tender.location || '';
+                                                                      const wilaya = tender.wilaya || '';
+                                                                      const parts = [address, location, wilaya].filter(Boolean);
+                                                                      return parts.length > 0 ? parts.join(', ') : 'Non spécifiée';
+                                                                    })()}
                                                                 </p>
                                                             </div>
                                                         </div>

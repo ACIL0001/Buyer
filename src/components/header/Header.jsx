@@ -500,21 +500,113 @@ export const Header = () => {
                       }
                     }}
                   >
-                    <div style={{
-                      width: isMobile ? '20px' : '24px',
-                      height: isMobile ? '20px' : '24px',
-                      borderRadius: '50%',
-                      background: 'rgba(255, 255, 255, 0.2)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <svg width={isMobile ? 14 : 16} height={isMobile ? 14 : 16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" fill="white" />
-                        <path d="M8 9C5.79086 9 4 10.7909 4 13C4 13.5523 4.44772 14 5 14H11C11.5523 14 12 13.5523 12 13C12 10.7909 10.2091 9 8 9Z" fill="white" />
-                      </svg>
-                    </div>
-                    {!isMobile ? t('common.myAccount') : ""}
+                    {(() => {
+                      // Helper to get avatar URL
+                      const getAvatarUrl = () => {
+                        if (!auth?.user) return '';
+
+                        // Priority 1: photoURL
+                        const photoURL = auth.user?.photoURL;
+                        if (photoURL && photoURL.trim() !== '') {
+                          let url = photoURL.trim();
+                          // Fix malformed query strings
+                          if (url.includes('&') && !url.includes('?')) {
+                            url = url.replace('&', '?');
+                          }
+                          // Normalize localhost URLs
+                          if (url.startsWith('http://localhost:3000')) {
+                            return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                          }
+                          if (url.startsWith('http://localhost/')) {
+                            return url.replace('http://localhost', app.baseURL.replace(/\/$/, ''));
+                          }
+                          if (url.startsWith('/static/')) {
+                            return `${app.baseURL.replace(/\/$/, '')}${url}`;
+                          }
+                          if (url.startsWith('/')) {
+                            return `${app.baseURL.replace(/\/$/, '')}/static${url}`;
+                          }
+                          if (!url.startsWith('http')) {
+                            return `${app.baseURL.replace(/\/$/, '')}/static/${url}`;
+                          }
+                          return url;
+                        }
+
+                        // Priority 2: avatar object
+                        const avatar = auth.user?.avatar;
+                        if (avatar) {
+                          // Try fullUrl first
+                          if (avatar.fullUrl) {
+                            let fullUrl = avatar.fullUrl;
+                            if (fullUrl.startsWith('http://localhost:3000')) {
+                              fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                            }
+                            return fullUrl;
+                          }
+                          
+                          // Try url
+                          if (avatar.url) {
+                            if (avatar.url.startsWith('http')) {
+                              return avatar.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                            }
+                            const path = avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`;
+                            const finalPath = path.startsWith('/static/') ? path : `/static${path}`;
+                            return `${app.baseURL.replace(/\/$/, '')}${finalPath}`;
+                          }
+                          
+                          // Try filename
+                          if (avatar.filename) {
+                            return `${app.baseURL.replace(/\/$/, '')}/static/${avatar.filename}`;
+                          }
+                        }
+
+                        return '';
+                      };
+
+                      const avatarUrl = getAvatarUrl();
+                      
+                      return (
+                        <div style={{
+                          width: isMobile ? '20px' : '24px',
+                          height: isMobile ? '20px' : '24px',
+                          borderRadius: '50%',
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          overflow: 'hidden',
+                          position: 'relative'
+                        }}>
+                          {/* SVG fallback - always rendered */}
+                          <svg width={isMobile ? 14 : 16} height={isMobile ? 14 : 16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', zIndex: 0 }}>
+                            <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" fill="white" />
+                            <path d="M8 9C5.79086 9 4 10.7909 4 13C4 13.5523 4.44772 14 5 14H11C11.5523 14 12 13.5523 12 13C12 10.7909 10.2091 9 8 9Z" fill="white" />
+                          </svg>
+                          {/* Profile picture - rendered on top if available */}
+                          {avatarUrl && (
+                            <img
+                              src={avatarUrl}
+                              alt={auth?.user?.firstName || 'User'}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                borderRadius: '50%',
+                                objectFit: 'cover',
+                                border: '2px solid rgba(255, 255, 255, 0.3)',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                zIndex: 1
+                              }}
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )}
+                        </div>
+                      );
+                    })()}
+                    {!isMobile ? "Mon compte" : ""}
                     <svg 
                       width={12} 
                       height={12} 

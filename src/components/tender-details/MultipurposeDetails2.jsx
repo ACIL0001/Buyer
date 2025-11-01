@@ -2022,12 +2022,14 @@ const MultipurposeDetails2 = () => {
                       <div className="auction-details-table mb-4">
                         <table className="table">
                           <tbody>
-                            <tr>
-                              <td className="fw-bold">Quantité</td>
-                              <td>
-                                {safeTenderData.quantity || "Non spécifiée"}
-                              </td>
-                            </tr>
+                            {safeTenderType !== 'SERVICE' && (
+                              <tr>
+                                <td className="fw-bold">Quantité</td>
+                                <td>
+                                  {safeTenderData.quantity || "Non spécifiée"}
+                                </td>
+                              </tr>
+                            )}
                             <tr>
                               <td className="fw-bold">Type d'appel d'offres</td>
                               <td>{safeTenderType}</td>
@@ -2345,7 +2347,9 @@ const MultipurposeDetails2 = () => {
                               color: '#666',
                               fontSize: '12px',
                             }}>
-                              Quantité: {safeTenderData.quantity || "Non spécifiée"}
+                              {safeTenderType !== 'SERVICE' && (
+                                <>Quantité: {safeTenderData.quantity || "Non spécifiée"}</>
+                              )}
                             </p>
                           </div>
 
@@ -2603,7 +2607,7 @@ const MultipurposeDetails2 = () => {
                           
                           {/* Additional Details */}
                           <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                            {safeQuantity && (
+                            {safeTenderType !== 'SERVICE' && safeQuantity && (
                               <div style={{ padding: '10px', background: '#f8f9fa', borderRadius: '8px' }}>
                                 <strong>Quantité:</strong> {safeQuantity}
                               </div>
@@ -3843,6 +3847,7 @@ const MultipurposeDetails2 = () => {
                                           }}
                                         >
                                           <div>
+                                            {safeTenderType !== 'SERVICE' && (
                                             <p
                                               style={{
                                                 fontSize: "12px",
@@ -3857,6 +3862,8 @@ const MultipurposeDetails2 = () => {
                                                 ? "Appel d'offres terminé"
                                                 : "Quantité"}
                                             </p>
+                                            )}
+                                            {safeTenderType !== 'SERVICE' && (
                                             <p
                                               style={{
                                                 fontSize: "14px",
@@ -3869,6 +3876,7 @@ const MultipurposeDetails2 = () => {
                                             >
                                               {tender.quantity || "Non spécifiée"}
                                             </p>
+                                            )}
                                           </div>
                                           <div
                                             style={{

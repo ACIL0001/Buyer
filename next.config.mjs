@@ -31,6 +31,34 @@ const nextConfig = {
       };
     }
 
+    // Exclude Node.js-specific modules from client bundle
+    if (!isServer) {
+      // These modules are Node.js-specific and shouldn't be bundled for browser
+      // Browser uses native FormData API instead
+      const webpack = require('webpack');
+      config.plugins = config.plugins || [];
+      
+      // Replace Node.js modules with empty shims for browser builds
+      config.plugins.push(
+        new webpack.NormalModuleReplacementPlugin(
+          /^form-data$/,
+          path.resolve(__dirname, 'webpack-form-data-shim.js')
+        ),
+        new webpack.NormalModuleReplacementPlugin(
+          /^combined-stream$/,
+          path.resolve(__dirname, 'webpack-form-data-shim.js')
+        ),
+        new webpack.NormalModuleReplacementPlugin(
+          /^asynckit$/,
+          path.resolve(__dirname, 'webpack-form-data-shim.js')
+        ),
+        new webpack.NormalModuleReplacementPlugin(
+          /^has-flag$/,
+          path.resolve(__dirname, 'webpack-form-data-shim.js')
+        )
+      );
+    }
+
     return config;
   },
   

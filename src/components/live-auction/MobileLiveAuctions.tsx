@@ -100,6 +100,10 @@ const getAuctionImageUrl = (auction: Auction) => {
     const imageUrl = auction.thumbs[0].url;
     
     if (imageUrl.startsWith('http')) {
+      // Replace api.mazad.click with the correct server URL
+      if (imageUrl.includes('api.mazad.click')) {
+        return imageUrl.replace(/https?:\/\/api\.mazad\.click/g, app.baseURL.replace(/\/$/, ''));
+      }
       return imageUrl;
     } else if (imageUrl.startsWith('/')) {
       if (imageUrl.startsWith('/static/')) {

@@ -167,8 +167,12 @@ function ProfilePage() {
         if (typeof avatar === 'string') {
             // Handle string avatar (direct URL or path)
             if (avatar.startsWith('http')) {
-                // Full URL - replace localhost with production API URL from config
-                return avatar.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
+                // Full URL - replace api.mazad.click and localhost with production API URL from config
+                let url = avatar;
+                if (url.includes('api.mazad.click')) {
+                    url = url.replace(/https?:\/\/api\.mazad\.click/g, API_BASE_URL.replace(/\/$/, ''));
+                }
+                return url.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
             } else {
                 // Relative path - ensure we use the correct base URL
                 const cleanPath = avatar.startsWith('/') ? avatar.substring(1) : avatar;
@@ -177,12 +181,20 @@ function ProfilePage() {
         }
 
         if (avatar?.fullUrl) {
-            return avatar.fullUrl.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
+            let fullUrl = avatar.fullUrl;
+            if (fullUrl.includes('api.mazad.click')) {
+                fullUrl = fullUrl.replace(/https?:\/\/api\.mazad\.click/g, API_BASE_URL.replace(/\/$/, ''));
+            }
+            return fullUrl.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
         }
 
         if (avatar?.url) {
             if (avatar.url.startsWith('http')) {
-                return avatar.url.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
+                let url = avatar.url;
+                if (url.includes('api.mazad.click')) {
+                    url = url.replace(/https?:\/\/api\.mazad\.click/g, API_BASE_URL.replace(/\/$/, ''));
+                }
+                return url.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
             } else {
                 // Ensure proper URL construction
                 const cleanPath = avatar.url.startsWith('/') ? avatar.url.substring(1) : avatar.url;
@@ -757,8 +769,11 @@ function ProfilePage() {
         
         // If already a full HTTP/HTTPS URL, normalize it
         if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+            // Replace api.mazad.click with the correct server URL
+            let normalized = cleanUrl.replace(/https?:\/\/api\.mazad\.click/g, API_BASE_URL.replace(/\/$/, ''));
+            
             // Replace localhost:3000 or localhost (without port) with API_BASE_URL
-            let normalized = cleanUrl
+            normalized = normalized
                 .replace(/http:\/\/localhost:3000/g, API_BASE_URL.replace(/\/$/, ''))
                 .replace(/http:\/\/localhost\//g, API_BASE_URL.replace(/\/$/, '') + '/')
                 .replace(/http:\/\/localhost$/g, API_BASE_URL.replace(/\/$/, ''));

@@ -513,7 +513,10 @@ export const Header = () => {
                           if (url.includes('&') && !url.includes('?')) {
                             url = url.replace('&', '?');
                           }
-                          // Normalize localhost URLs
+                          // Normalize localhost URLs and replace api.mazad.click
+                          if (url.includes('api.mazad.click')) {
+                            url = url.replace(/https?:\/\/api\.mazad\.click/g, app.baseURL.replace(/\/$/, ''));
+                          }
                           if (url.startsWith('http://localhost:3000')) {
                             return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
                           }
@@ -538,6 +541,9 @@ export const Header = () => {
                           // Try fullUrl first
                           if (avatar.fullUrl) {
                             let fullUrl = avatar.fullUrl;
+                            if (fullUrl.includes('api.mazad.click')) {
+                              fullUrl = fullUrl.replace(/https?:\/\/api\.mazad\.click/g, app.baseURL.replace(/\/$/, ''));
+                            }
                             if (fullUrl.startsWith('http://localhost:3000')) {
                               fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
                             }
@@ -547,7 +553,11 @@ export const Header = () => {
                           // Try url
                           if (avatar.url) {
                             if (avatar.url.startsWith('http')) {
-                              return avatar.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                              let avatarUrl = avatar.url;
+                              if (avatarUrl.includes('api.mazad.click')) {
+                                avatarUrl = avatarUrl.replace(/https?:\/\/api\.mazad\.click/g, app.baseURL.replace(/\/$/, ''));
+                              }
+                              return avatarUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
                             }
                             const path = avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`;
                             const finalPath = path.startsWith('/static/') ? path : `/static${path}`;

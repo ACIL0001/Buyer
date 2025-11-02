@@ -148,9 +148,15 @@ const getAuctionImageUrl = (auction: Auction) => {
     // Handle different URL formats
     if (imageUrl.startsWith('http')) {
       console.log('✅ CASE: Full URL detected');
-      console.log('🔗 Final URL:', imageUrl);
-      console.log('📝 Action: Using full URL as-is');
-      return imageUrl; // Already a full URL
+      // Replace api.mazad.click with the correct server URL
+      let finalUrl = imageUrl;
+      if (imageUrl.includes('api.mazad.click')) {
+        finalUrl = imageUrl.replace(/https?:\/\/api\.mazad\.click/g, app.baseURL.replace(/\/$/, ''));
+        console.log('🔧 Replaced api.mazad.click with:', app.baseURL);
+      }
+      console.log('🔗 Final URL:', finalUrl);
+      console.log('📝 Action: Using full URL (with api.mazad.click replaced if needed)');
+      return finalUrl; // Already a full URL
     } else if (imageUrl.startsWith('/')) {
       if (imageUrl.startsWith('/static/')) {
         console.log('✅ CASE: Static path detected');

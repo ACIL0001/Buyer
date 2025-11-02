@@ -495,9 +495,13 @@ export default function UserDetailsPage() {
         
         // Replace localhost:3000 with production API URL if needed (for production builds)
         if (process.env.NODE_ENV === 'production') {
-          normalized = normalized.replace(/http:\/\/localhost:3000/g, 'https://api.mazad.click');
-          normalized = normalized.replace(/https:\/\/localhost:3000/g, 'https://api.mazad.click');
+          // normalized = normalized.replace(/http:\/\/localhost:3000/g, 'https://api.mazad.click');
+          // normalized = normalized.replace(/https:\/\/localhost:3000/g, 'https://api.mazad.click');
+          normalized = normalized.replace(/http:\/\/localhost:3000/g, 'https://mazadclick-server.onrender.com');
+          normalized = normalized.replace(/https:\/\/localhost:3000/g, 'https://mazadclick-server.onrender.com');
         }
+        // Also replace api.mazad.click with the correct server URL
+        normalized = normalized.replace(/https:\/\/api\.mazad\.click/g, 'https://mazadclick-server.onrender.com');
         return normalized;
       }
       

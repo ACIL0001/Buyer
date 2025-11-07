@@ -1723,24 +1723,24 @@ const MultipurposeTenderSidebar = () => {
                                                             marginBottom: '16px',
                                                         }}>
                                                             {tender?.tenderType !== 'SERVICE' && (
-                                                                <div>
-                                                                    <p style={{
-                                                                        fontSize: '12px',
-                                                                        color: '#666',
-                                                                        margin: '0 0 4px 0',
-                                                                        fontWeight: '600',
-                                                                    }}>
-                                                                        Quantité
-                                                                    </p>
-                                                                    <p style={{
-                                                                        fontSize: '14px',
-                                                                        color: '#333',
-                                                                        margin: 0,
-                                                                        fontWeight: '500',
-                                                                    }}>
-                                                                        {tender.quantity || 'Non spécifiée'}
-                                                                    </p>
-                                                                </div>
+                                                            <div>
+                                                                <p style={{
+                                                                    fontSize: '12px',
+                                                                    color: '#666',
+                                                                    margin: '0 0 4px 0',
+                                                                    fontWeight: '600',
+                                                                }}>
+                                                                    Quantité
+                                                                </p>
+                                                                <p style={{
+                                                                    fontSize: '14px',
+                                                                    color: '#333',
+                                                                    margin: 0,
+                                                                    fontWeight: '500',
+                                                                }}>
+                                                                    {tender.quantity || 'Non spécifiée'}
+                                                                </p>
+                                                            </div>
                                                             )}
 
                                                             <div>

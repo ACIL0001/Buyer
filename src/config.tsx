@@ -1,3 +1,13 @@
+export const DEV_SERVER_URL = 'http://localhost:3000';
+// export const DEV_SERVER_URL = 'http://localhost:3000';
+export const PROD_SERVER_URL = 'https://mazadclick-server.onrender.com';
+
+export const isProductionEnvironment = process.env.NODE_ENV === 'production';
+export const resolvedServerUrl = isProductionEnvironment ? PROD_SERVER_URL : DEV_SERVER_URL;
+const resolvedServerUrlWithSlash = resolvedServerUrl.endsWith('/')
+  ? resolvedServerUrl
+  : `${resolvedServerUrl}/`;
+
 const app = {
   name: 'MazadClick',
   pole: 'NotEasy',
@@ -11,9 +21,12 @@ const app = {
   // route: "http://localhost:3000",
   // baseURL: "http://localhost:3000/",
 
-  socket: 'https://mazadclick-server.onrender.com/',
-  route: "https://mazadclick-server.onrender.com",
-  baseURL: "https://mazadclick-server.onrender.com/",
+  // socket: 'https://mazadclick-server.onrender.com/',
+  socket: `${resolvedServerUrlWithSlash}`,
+  // route: "https://mazadclick-server.onrender.com",
+  route: resolvedServerUrl,
+  // baseURL: "https://mazadclick-server.onrender.com/",
+  baseURL: resolvedServerUrlWithSlash,
 
   // Frontend URLs - Dynamic based on environment
   frontendUrl: process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://mazadclick.vercel.app/',

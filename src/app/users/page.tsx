@@ -8,7 +8,13 @@ import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
 import useAuth from '@/hooks/useAuth';
 import { UserAPI, USER_TYPE } from "@/app/api/users";
 import { extractErrorMessage, isRetryableError } from '@/types/Error';
-import app from "@/config";
+import app, { DEV_SERVER_URL } from "@/config";
+
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const DEV_SERVER_REGEX = new RegExp(escapeRegExp(DEV_SERVER_URL), "g");
+const DEV_SERVER_SECURE_REGEX = new RegExp(escapeRegExp(DEV_SERVER_URL.replace('http://', 'https://')), "g");
+const DEV_SERVER_WITH_SLASH = DEV_SERVER_URL.endsWith('/') ? DEV_SERVER_URL : `${DEV_SERVER_URL}/`;
+const DEV_SERVER_WITH_SLASH_SECURE = DEV_SERVER_WITH_SLASH.replace('http://', 'https://');
 
 // Define user type based on real data structure
 interface User {
@@ -1267,7 +1273,7 @@ export default function UsersPage() {
                               }}>
                                 {(() => {
                                   // Get API base URL from config - ensure it has proper format
-                                  let apiBaseUrl = app.baseURL || 'http://localhost:3000';
+                                  let apiBaseUrl = app.baseURL || DEV_SERVER_URL;
                                   // Remove trailing slash and ensure port is included
                                   apiBaseUrl = apiBaseUrl.replace(/\/$/, '');
                                   // If baseURL is just 'http://localhost' without port, add :3000
@@ -1284,18 +1290,18 @@ export default function UsersPage() {
                                     if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
                                       // Fix localhost URLs without port (http://localhost/... or https://localhost/...)
                                       // Match http://localhost or https://localhost followed by / but not :port
-                                      normalized = normalized.replace(/^http:\/\/localhost\//, 'http://localhost:3000/');
-                                      normalized = normalized.replace(/^https:\/\/localhost\//, 'https://localhost:3000/');
+                                      normalized = normalized.replace(/^http:\/\/localhost\//, DEV_SERVER_WITH_SLASH);
+                                      normalized = normalized.replace(/^https:\/\/localhost\//, DEV_SERVER_WITH_SLASH_SECURE);
                                       
                                       // Replace localhost:3000 with production API URL if needed (for production builds)
                                       if (process.env.NODE_ENV === 'production') {
+                                        const productionBase = app.baseURL.replace(/\/$/, '');
                                         // normalized = normalized.replace(/http:\/\/localhost:3000/g, 'https://api.mazad.click');
                                         // normalized = normalized.replace(/https:\/\/localhost:3000/g, 'https://api.mazad.click');
-                                        normalized = normalized.replace(/http:\/\/localhost:3000/g, 'https://mazadclick-server.onrender.com');
-                                        normalized = normalized.replace(/https:\/\/localhost:3000/g, 'https://mazadclick-server.onrender.com');
+                                        normalized = normalized
+                                          .replace(DEV_SERVER_REGEX, productionBase)
+                                          .replace(DEV_SERVER_SECURE_REGEX, productionBase);
                                       }
-                                      // Also replace api.mazad.click with the correct server URL
-                                      normalized = normalized.replace(/https:\/\/api\.mazad\.click/g, 'https://mazadclick-server.onrender.com');
                                       return normalized;
                                     }
                                     

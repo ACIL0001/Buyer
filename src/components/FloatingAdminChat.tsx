@@ -6,6 +6,7 @@ import { MessageAPI } from '../app/api/messages';
 import { UserAPI } from '../app/api/users';
 import useAuth from '../hooks/useAuth';
 import { useAdminMessageNotifications } from '../hooks/useAdminMessageNotifications';
+import app, { DEV_SERVER_URL } from '@/config';
 
 interface Message {
     _id: string;
@@ -37,6 +38,10 @@ interface AdminChat {
     }>;
     createdAt: string;
 }
+
+const RESOLVED_API_BASE_URL = (app.baseURL || DEV_SERVER_URL).replace(/\/$/, '');
+const DEV_SERVER_WITH_SLASH = DEV_SERVER_URL.endsWith('/') ? DEV_SERVER_URL : `${DEV_SERVER_URL}/`;
+const RESOLVED_API_STATIC_URL = `${RESOLVED_API_BASE_URL}/static`;
 
 const FloatingAdminChat: React.FC = () => {
     const { t } = useTranslation();
@@ -170,7 +175,7 @@ const FloatingAdminChat: React.FC = () => {
                 formData.append('guestPhone', guestInfo.phone);
             }
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/message/voice-message`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || RESOLVED_API_BASE_URL}/message/voice-message`, {
                 method: 'POST',
                 body: formData
             });
@@ -299,7 +304,7 @@ const FloatingAdminChat: React.FC = () => {
             uploadFormData.append('as', 'message-attachment');
             
             console.log('📤 Uploading file to attachments endpoint...');
-            const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/attachments/upload`, {
+            const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || RESOLVED_API_BASE_URL}/attachments/upload`, {
                 method: 'POST',
                 body: uploadFormData
             });
@@ -316,7 +321,7 @@ const FloatingAdminChat: React.FC = () => {
             // Extract attachment data - handle different response structures
             const attachmentInfo = {
                 _id: uploadData._id || uploadData.id,
-                url: uploadData.fullUrl || uploadData.url || `http://localhost:3000/static/${uploadData.filename}`,
+                url: uploadData.fullUrl || uploadData.url || `${RESOLVED_API_STATIC_URL}/${uploadData.filename}`,
                 name: uploadData.originalname || selectedFile.name,
                 type: uploadData.mimetype || selectedFile.type,
                 size: uploadData.size || selectedFile.size,
@@ -1019,7 +1024,7 @@ const FloatingAdminChat: React.FC = () => {
                             ...data.attachment,
                             // Ensure URL is absolute
                             url: data.attachment.url && data.attachment.url.startsWith('/static/') 
-                                ? `http://localhost:3000${data.attachment.url}`
+                                ? `${RESOLVED_API_BASE_URL}${data.attachment.url}`
                                 : data.attachment.url
                         } : undefined
                     };
@@ -2091,9 +2096,11 @@ const FloatingAdminChat: React.FC = () => {
                                                                 {console.log('📎 Attachment name:', (msg as any).attachment.name)}
                                                                 {(msg as any).attachment.type?.startsWith('audio/') || (msg as any).attachment.name?.includes('voice') ? (
                                                                     (() => {
-                                                                        const audioUrl = (msg as any).attachment.url && (msg as any).attachment.url.startsWith('/static/') 
-                                                                            ? `http://localhost:3000${(msg as any).attachment.url}`
-                                                                            : (msg as any).attachment.url;
+                                                                        const attachment = (msg as any).attachment;
+                                                                        const audioUrl = attachment?.url && attachment.url.startsWith('/static/')
+                                                                            // ? `http://localhost:3000${attachment.url}`
+                                                                            ? `${RESOLVED_API_BASE_URL}${attachment.url}`
+                                                                            : attachment?.url || '';
                                                                         console.log('🎤 Voice message URL:', (msg as any).attachment.url);
                                                                         console.log('🎤 Voice message processed URL:', audioUrl);
                                                                         return (
@@ -2158,7 +2165,7 @@ const FloatingAdminChat: React.FC = () => {
                                                                             // Ensure we have an absolute URL for the modal
                                                                             let imageUrl = (msg as any).attachment.url;
                                                                             if (imageUrl && imageUrl.startsWith('/static/')) {
-                                                                                imageUrl = `http://localhost:3000${imageUrl}`;
+                                                                                imageUrl = `${RESOLVED_API_BASE_URL}${imageUrl}`;
                                                                             }
                                                                             console.log('🖼️ Opening image modal with URL:', imageUrl);
                                                                             console.log('🖼️ Full attachment data:', (msg as any).attachment);
@@ -3795,11 +3802,11 @@ const FloatingAdminChat: React.FC = () => {
                 // Try to construct absolute URL if relative
                 const img = e.target as HTMLImageElement;
                 if (selectedImage.url.startsWith('/static/')) {
-                  const absoluteUrl = `http://localhost:3000${selectedImage.url}`;
+                  const absoluteUrl = `${RESOLVED_API_BASE_URL}${selectedImage.url.startsWith('/') ? selectedImage.url : `/${selectedImage.url}`}`;
                   console.log('🔄 Trying absolute URL:', absoluteUrl);
                   img.src = absoluteUrl;
                 } else if (selectedImage.url.startsWith('static/')) {
-                  const absoluteUrl = `http://localhost:3000/${selectedImage.url}`;
+                  const absoluteUrl = `${RESOLVED_API_BASE_URL}/${selectedImage.url}`;
                   console.log('🔄 Trying absolute URL (no leading slash):', absoluteUrl);
                   img.src = absoluteUrl;
                 } else {

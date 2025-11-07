@@ -343,10 +343,10 @@ const Home1LiveTenders = () => {
   // Swiper settings
   const settings = useMemo(() => ({
     slidesPerView: "auto" as const,
-    speed: 1200,
+    speed: 800,
     spaceBetween: 25,
     autoplay: {
-      delay: 4000,
+      delay: 2500,
       disableOnInteraction: false,
       pauseOnMouseEnter: true,
     },
@@ -380,7 +380,11 @@ const Home1LiveTenders = () => {
         spaceBetween: 25,
       },
       1400: {
-        slidesPerView: 4,
+        slidesPerView: 5,
+        spaceBetween: 25,
+      },
+      1600: {
+        slidesPerView: 5,
         spaceBetween: 30,
       },
     },

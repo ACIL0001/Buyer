@@ -347,6 +347,11 @@ const ProfessionalAuctions: React.FC = () => {
     );
   }
 
+  // Don't display the section if there are no professional auctions
+  if (professionalAuctions.length === 0) {
+    return null;
+  }
+
   return (
     <>
       <style jsx>{`

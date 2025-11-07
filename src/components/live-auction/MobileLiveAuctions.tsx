@@ -43,7 +43,6 @@ interface Auction {
   wilaya?: string;
   description?: string;
   biddersCount?: number;
-  bidType?: string; // PRODUCT or SERVICE
   // --- Image properties for enhanced image loading ---
   images?: string[];
   image?: string;
@@ -54,6 +53,7 @@ interface Auction {
   logo?: string;
   coverImage?: string;
   mainImage?: string;
+  bidType?: string;
 }
 
 // Timer interface
@@ -100,10 +100,6 @@ const getAuctionImageUrl = (auction: Auction) => {
     const imageUrl = auction.thumbs[0].url;
     
     if (imageUrl.startsWith('http')) {
-      // Replace api.mazad.click with the correct server URL
-      if (imageUrl.includes('api.mazad.click')) {
-        return imageUrl.replace(/https?:\/\/api\.mazad\.click/g, app.baseURL.replace(/\/$/, ''));
-      }
       return imageUrl;
     } else if (imageUrl.startsWith('/')) {
       if (imageUrl.startsWith('/static/')) {
@@ -935,3 +931,4 @@ const MobileLiveAuctions = () => {
 };
 
 export default MobileLiveAuctions;
+

@@ -47,7 +47,6 @@ interface Auction {
   wilaya?: string;
   description?: string;
   biddersCount?: number;
-  bidType?: string; // PRODUCT or SERVICE
   // --- Image properties for enhanced image loading ---
   images?: string[];
   image?: string;
@@ -58,6 +57,7 @@ interface Auction {
   logo?: string;
   coverImage?: string;
   mainImage?: string;
+  bidType?: string;
 }
 
 // Timer interface
@@ -148,15 +148,9 @@ const getAuctionImageUrl = (auction: Auction) => {
     // Handle different URL formats
     if (imageUrl.startsWith('http')) {
       console.log('✅ CASE: Full URL detected');
-      // Replace api.mazad.click with the correct server URL
-      let finalUrl = imageUrl;
-      if (imageUrl.includes('api.mazad.click')) {
-        finalUrl = imageUrl.replace(/https?:\/\/api\.mazad\.click/g, app.baseURL.replace(/\/$/, ''));
-        console.log('🔧 Replaced api.mazad.click with:', app.baseURL);
-      }
-      console.log('🔗 Final URL:', finalUrl);
-      console.log('📝 Action: Using full URL (with api.mazad.click replaced if needed)');
-      return finalUrl; // Already a full URL
+      console.log('🔗 Final URL:', imageUrl);
+      console.log('📝 Action: Using full URL as-is');
+      return imageUrl; // Already a full URL
     } else if (imageUrl.startsWith('/')) {
       if (imageUrl.startsWith('/static/')) {
         console.log('✅ CASE: Static path detected');
@@ -456,10 +450,10 @@ const Home1LiveAuction = () => {
   // Swiper settings
   const settings = useMemo(() => ({
     slidesPerView: "auto" as const,
-    speed: 1200,
+    speed: 800,
     spaceBetween: 25,
     autoplay: {
-      delay: 4000,
+      delay: 2500,
       disableOnInteraction: false,
       pauseOnMouseEnter: true,
     },
@@ -493,7 +487,11 @@ const Home1LiveAuction = () => {
         spaceBetween: 25,
       },
       1400: {
-        slidesPerView: 4,
+        slidesPerView: 5,
+        spaceBetween: 25,
+      },
+      1600: {
+        slidesPerView: 5,
         spaceBetween: 30,
       },
     },
@@ -967,41 +965,41 @@ const Home1LiveAuction = () => {
                             </div>
 
                             {auction?.bidType !== 'SERVICE' && (
+                            <div style={{
+                              background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                              borderRadius: '12px',
+                              padding: '12px',
+                              border: '1px solid #e9ecef',
+                              borderLeft: '4px solid #0063b1',
+                              position: 'relative',
+                              overflow: 'hidden',
+                            }}>
                               <div style={{
-                                background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                borderRadius: '12px',
-                                padding: '12px',
-                                border: '1px solid #e9ecef',
-                                borderLeft: '4px solid #0063b1',
-                                position: 'relative',
-                                overflow: 'hidden',
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                width: '30px',
+                                height: '30px',
+                                background: 'linear-gradient(45deg, rgba(0, 99, 177, 0.1), rgba(0, 163, 224, 0.1))',
+                                borderRadius: '0 12px 0 100%',
+                              }}></div>
+                              <p style={{
+                                fontSize: '12px',
+                                color: '#666',
+                                margin: '0 0 4px 0',
+                                fontWeight: '600',
                               }}>
-                                <div style={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  right: 0,
-                                  width: '30px',
-                                  height: '30px',
-                                  background: 'linear-gradient(45deg, rgba(0, 99, 177, 0.1), rgba(0, 163, 224, 0.1))',
-                                  borderRadius: '0 12px 0 100%',
-                                }}></div>
-                                <p style={{
-                                  fontSize: '12px',
-                                  color: '#666',
-                                  margin: '0 0 4px 0',
-                                  fontWeight: '600',
-                                }}>
-                                  📦 Quantité
-                                </p>
-                                <p style={{
-                                  fontSize: '14px',
-                                  color: '#333',
-                                  margin: 0,
-                                  fontWeight: '500',
-                                }}>
-                                  {auction.quantity || 'Non spécifiée'}
-                                </p>
-                              </div>
+                                📦 Quantité
+                              </p>
+                              <p style={{
+                                fontSize: '14px',
+                                color: '#333',
+                                margin: 0,
+                                fontWeight: '500',
+                              }}>
+                                {auction.quantity || 'Non spécifiée'}
+                              </p>
+                            </div>
                             )}
                           </div>
 

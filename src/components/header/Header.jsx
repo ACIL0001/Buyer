@@ -15,8 +15,9 @@ import ReviewModal from '@/components/ReviewModal';
 import { ReviewAPI } from '@/app/api/review';
 import { NotificationAPI } from '@/app/api/notification';
 import { useTranslation } from 'react-i18next';
-import { getSellerUrl } from '@/config';
-import app from '@/config';
+// import { getSellerUrl } from '@/config';
+// import app from '@/config';
+import app, { DEV_SERVER_URL, getSellerUrl } from '@/config';
 
 const initialState = {
   activeMenu: "",
@@ -513,15 +514,9 @@ export const Header = () => {
                           if (url.includes('&') && !url.includes('?')) {
                             url = url.replace('&', '?');
                           }
-                          // Normalize localhost URLs and replace api.mazad.click
-                          if (url.includes('api.mazad.click')) {
-                            url = url.replace(/https?:\/\/api\.mazad\.click/g, app.baseURL.replace(/\/$/, ''));
-                          }
-                          if (url.startsWith('http://localhost:3000')) {
-                            return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-                          }
-                          if (url.startsWith('http://localhost/')) {
-                            return url.replace('http://localhost', app.baseURL.replace(/\/$/, ''));
+                          // Normalize localhost URLs
+                          if (url.startsWith(DEV_SERVER_URL)) {
+                            return url.replace(DEV_SERVER_URL, app.baseURL.replace(/\/$/, ''));
                           }
                           if (url.startsWith('/static/')) {
                             return `${app.baseURL.replace(/\/$/, '')}${url}`;
@@ -541,27 +536,19 @@ export const Header = () => {
                           // Try fullUrl first
                           if (avatar.fullUrl) {
                             let fullUrl = avatar.fullUrl;
-                            if (fullUrl.includes('api.mazad.click')) {
-                              fullUrl = fullUrl.replace(/https?:\/\/api\.mazad\.click/g, app.baseURL.replace(/\/$/, ''));
-                            }
-                            if (fullUrl.startsWith('http://localhost:3000')) {
-                              fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                            // if (fullUrl.startsWith('http://localhost:3000')) {
+                            //   fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                            // }
+                            if (fullUrl.startsWith(DEV_SERVER_URL)) {
+                              fullUrl = fullUrl.replace(DEV_SERVER_URL, app.baseURL.replace(/\/$/, ''));
                             }
                             return fullUrl;
                           }
                           
                           // Try url
                           if (avatar.url) {
-                            if (avatar.url.startsWith('http')) {
-                              let avatarUrl = avatar.url;
-                              if (avatarUrl.includes('api.mazad.click')) {
-                                avatarUrl = avatarUrl.replace(/https?:\/\/api\.mazad\.click/g, app.baseURL.replace(/\/$/, ''));
-                              }
-                              return avatarUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-                            }
-                            const path = avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`;
-                            const finalPath = path.startsWith('/static/') ? path : `/static${path}`;
-                            return `${app.baseURL.replace(/\/$/, '')}${finalPath}`;
+                            // return avatar.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                            return avatar.url.replace(DEV_SERVER_URL, app.baseURL.replace(/\/$/, ''));
                           }
                           
                           // Try filename

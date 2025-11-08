@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { CategoryAPI } from '../api/category';
 import { AuctionsAPI } from '../api/auctions';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import app from '../../config';
 
 // Category interface for component usage (tree structure)
@@ -49,6 +49,7 @@ interface Auction {
 }
 
 export default function CategoryClient() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [categories, setCategories] = useState<Category[]>([]);
   const [auctions, setAuctions] = useState<Auction[]>([]);
@@ -65,6 +66,14 @@ export default function CategoryClient() {
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const DEFAULT_CATEGORY_IMAGE = "/assets/images/logo-white.png";
   const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
+
+  const navigateWithTop = useCallback((url: string) => {
+    router.push(url, { scroll: false });
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
+    });
+  }, [router]);
 
   useEffect(() => {
     const categoryId = searchParams.get('category');
@@ -623,7 +632,7 @@ export default function CategoryClient() {
           e.currentTarget.style.transform = 'translateY(0)';
           e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
         }}
-        onClick={() => window.location.href = `/auction-details/${auction._id}`}
+        onClick={() => navigateWithTop(`/auction-details/${auction._id}`)}
       >
         <div style={{
           height: '200px',

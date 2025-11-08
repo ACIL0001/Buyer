@@ -30,6 +30,38 @@ import BidChecker from "@/components/BidChecker";
 import WinnerAnnouncement from "@/components/WinnerAnnouncement";
 import TokenHandler from "@/app/components/TokenHandler";
 import MobileOptimizer from "@/components/common/MobileOptimizer";
+import { usePathname } from "next/navigation";
+
+function ScrollManager() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+      return () => {
+        window.history.scrollRestoration = "auto";
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: "auto" });
+        document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: "auto" });
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        }, 50);
+      });
+    }
+  }, [pathname]);
+
+  return null;
+}
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   // --- Hooks must be called inside the component function body ---
@@ -88,6 +120,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                       <GlobalLoader />
                       <BidChecker />
                       <WinnerAnnouncement />
+                      <ScrollManager />
                       {children}
                     </TokenHandler>
                     <ScrollTopBtn />

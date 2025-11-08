@@ -5,11 +5,10 @@ import Home1Banner from "@/components/banner/Home1Banner";
 import Home1LiveAuction from "@/components/live-auction/Home1LiveAuction";
 import Home1LiveTenders from "@/components/live-tenders/Home1LiveTenders";
 // import Home1Category from "@/components/category/Home1Category"; // Commented out - not needed
-import ProfessionalAuctions from "@/components/professional-auctions/ProfessionalAuctions";
 import Footer from "@/components/footer/FooterWithErrorBoundary";
 import RequestProvider from "@/contexts/RequestContext";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { SnackbarProvider, useSnackbar } from 'notistack';
 import useAuth from '@/hooks/useAuth';
 import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
@@ -17,15 +16,13 @@ import './style.css'
 import SocketProvider from "@/contexts/socket";
 import { useCreateSocket } from '@/contexts/socket';
 import { getSellerUrl } from '@/config';
-import app, { DEV_SERVER_URL } from '@/config';
+import app from '@/config';
 import { CategoryAPI } from '@/app/api/category';
 import { AuctionsAPI } from '@/app/api/auctions';
 import { TendersAPI } from '@/app/api/tenders';
 import { useRouter } from 'next/navigation';
 import ResponsiveTest from '@/components/common/ResponsiveTest';
 import { FaGavel } from 'react-icons/fa';
-
-const DEV_SERVER_WITH_SLASH = DEV_SERVER_URL.endsWith('/') ? DEV_SERVER_URL : `${DEV_SERVER_URL}/`;
 
 export default function Home() {
   const { initializeAuth, isLogged, auth } = useAuth();
@@ -129,9 +126,8 @@ export default function Home() {
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
       // Replace localhost:3000 with current baseURL if needed
       if (imageUrl.includes('localhost:3000')) {
-        const baseURL = app.baseURL || DEV_SERVER_WITH_SLASH;
-        // return imageUrl.replace('http://localhost:3000', baseURL.replace(/\/$/, ''));
-        return imageUrl.replace(DEV_SERVER_URL, baseURL.replace(/\/$/, ''));
+        const baseURL = app.baseURL || 'http://localhost:3000/';
+        return imageUrl.replace('http://localhost:3000', baseURL.replace(/\/$/, ''));
       }
       return imageUrl;
     }
@@ -140,7 +136,7 @@ export default function Home() {
     const cleanUrl = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
     
     // Construct full URL from baseURL
-    const baseURL = (app.baseURL || DEV_SERVER_WITH_SLASH).replace(/\/$/, ''); // Remove trailing slash
+    const baseURL = (app.baseURL || 'http://localhost:3000/').replace(/\/$/, ''); // Remove trailing slash
     
     // First try: direct path with baseURL
     // If the URL contains 'static', use it as-is
@@ -214,6 +210,14 @@ export default function Home() {
     }
   };
 
+  const navigateWithTop = useCallback((url: string) => {
+    router.push(url, { scroll: false });
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
+    });
+  }, [router]);
+
   const handleSearchSelect = (item: any) => {
     setSearchQuery(item.title || item.name || '');
     setShowSearchResults(false);
@@ -223,13 +227,13 @@ export default function Home() {
       const categoryId = item._id || item.id;
       const categoryName = item.name;
     const categoryUrl = `/category?category=${categoryId}&name=${encodeURIComponent(categoryName)}`;
-    router.push(categoryUrl);
+    navigateWithTop(categoryUrl);
     } else if (item.type === 'auction') {
       const auctionId = item._id || item.id;
-      router.push(`/auction-details/${auctionId}`);
+      navigateWithTop(`/auction-details/${auctionId}`);
     } else if (item.type === 'tender') {
       const tenderId = item._id || item.id;
-      router.push(`/tender-details/${tenderId}`);
+      navigateWithTop(`/tender-details/${tenderId}`);
     }
   };
 
@@ -904,19 +908,19 @@ export default function Home() {
           .hero-banner-section {
             padding: clamp(12px, 3vw, 20px) clamp(12px, 3vw, 16px) !important;
             paddingTop: clamp(12px, 3vw, 20px) !important;
-            paddingBottom: clamp(140px, 24vw, 220px) !important;
-            min-height: 600px !important;
+            paddingBottom: clamp(50px, 12vw, 110px) !important;
+            min-height: 520px !important;
             overflow: visible !important;
           }
 
           .hero-content {
-            padding-bottom: 120px !important;
+            padding-bottom: 50px !important;
           }
 
           .hero-content {
             max-width: 100% !important;
             padding: 0 clamp(8px, 2vw, 12px) !important;
-            padding-bottom: 120px !important;
+            padding-bottom: 50px !important;
           }
 
           .search-container {
@@ -925,34 +929,30 @@ export default function Home() {
           }
 
           .hero-cta-buttons {
-            flex-direction: column !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
             align-items: stretch !important;
-            gap: clamp(14px, 3vw, 18px) !important;
-            marginTop: clamp(24px, 5vw, 36px) !important;
+            justify-content: center !important;
+            gap: clamp(8px, 3vw, 12px) !important;
+            marginTop: clamp(16px, 4vw, 24px) !important;
           }
 
           .dropdown-container {
-            max-width: 100% !important;
+            flex: 1 1 calc(33.333% - clamp(8px, 3vw, 12px)) !important;
+            max-width: calc(33.333% - clamp(8px, 3vw, 12px)) !important;
+            min-width: 0 !important;
           }
 
           .dropdown-menu {
+            position: static !important;
             min-width: 100% !important;
-            width: 100% !important;
-            left: 0 !important;
-            right: auto !important;
-            transform: translateX(0) translateY(-10px) !important;
-          }
-
-          .dropdown-menu.open {
-            transform: translateX(0) translateY(0) !important;
-          }
-
-          .dropdown-menu::before {
-            left: 20% !important;
+            transform: none !important;
           }
 
           .dropdown-button {
-            padding: clamp(14px, 3vw, 18px) clamp(20px, 4vw, 28px) !important;
+            padding: clamp(12px, 3vw, 14px) clamp(12px, 4vw, 16px) !important;
+            font-size: clamp(0.75rem, 3vw, 0.85rem) !important;
+            border-radius: clamp(14px, 4vw, 18px) !important;
           }
 
           .dropdown-item {
@@ -978,22 +978,26 @@ export default function Home() {
           .hero-banner-section {
             padding: clamp(16px, 3vw, 24px) clamp(16px, 3vw, 20px) !important;
             paddingTop: clamp(16px, 3vw, 24px) !important;
-            paddingBottom: clamp(150px, 22vw, 240px) !important;
-            min-height: 650px !important;
+            paddingBottom: clamp(60px, 14vw, 120px) !important;
+            min-height: 560px !important;
             overflow: visible !important;
           }
 
           .hero-content {
-            padding-bottom: 130px !important;
+            padding-bottom: 60px !important;
           }
 
           .hero-cta-buttons {
             gap: clamp(16px, 3.5vw, 22px) !important;
             marginTop: clamp(32px, 5.5vw, 44px) !important;
+            flex-wrap: nowrap !important;
+            justify-content: center !important;
           }
 
           .dropdown-container {
-            max-width: 100% !important;
+            flex: 1 1 calc(33.333% - clamp(10px, 3vw, 14px)) !important;
+            max-width: calc(33.333% - clamp(10px, 3vw, 14px)) !important;
+            min-width: 0 !important;
           }
 
           .search-result-description {
@@ -1011,22 +1015,26 @@ export default function Home() {
           .hero-banner-section {
             padding: clamp(20px, 3.5vw, 32px) clamp(20px, 3.5vw, 28px) !important;
             paddingTop: clamp(20px, 3.5vw, 32px) !important;
-            paddingBottom: clamp(160px, 22vw, 260px) !important;
-            min-height: 680px !important;
+            paddingBottom: clamp(70px, 14vw, 130px) !important;
+            min-height: 600px !important;
             overflow: visible !important;
           }
 
           .hero-content {
-            padding-bottom: 140px !important;
+            padding-bottom: 70px !important;
           }
 
           .hero-cta-buttons {
             gap: clamp(18px, 3.5vw, 24px) !important;
             marginTop: clamp(36px, 5.5vw, 48px) !important;
+            flex-wrap: nowrap !important;
+            justify-content: center !important;
           }
 
           .dropdown-container {
-            max-width: 100% !important;
+            flex: 1 1 calc(33.333% - clamp(12px, 3vw, 16px)) !important;
+            max-width: calc(33.333% - clamp(12px, 3vw, 16px)) !important;
+            min-width: 0 !important;
           }
 
           .search-result-description {
@@ -1111,13 +1119,13 @@ export default function Home() {
           .hero-banner-section {
             padding: clamp(12px, 2vw, 20px) clamp(16px, 3vw, 24px) !important;
             paddingTop: clamp(12px, 2vw, 20px) !important;
-            paddingBottom: clamp(130px, 20vw, 200px) !important;
-            min-height: 550px !important;
+            paddingBottom: clamp(60px, 12vw, 120px) !important;
+            min-height: 500px !important;
             overflow: visible !important;
           }
 
           .hero-content {
-            padding-bottom: 110px !important;
+            padding-bottom: 50px !important;
           }
 
           .hero-cta-buttons {
@@ -1273,50 +1281,39 @@ export default function Home() {
         /* Dropdown Menu Styles */
         /* Enhanced Dropdown Menu Styles */
         .dropdown-container {
-          position: relative;
-          display: inline-block;
+          position: static;
+          display: inline-flex;
+          flex-direction: column;
+          align-items: center;
           flex: 1;
-          max-width: clamp(180px, 40vw, 260px);
+          max-width: clamp(220px, 42vw, 320px);
         }
 
         .dropdown-menu {
-          position: absolute;
-          top: calc(100% + 12px);
-          left: 50%;
-          transform: translateX(-50%) translateY(-10px);
-          background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(147, 197, 253, 0.3);
+          position: static;
+          margin-top: clamp(12px, 3vw, 18px);
+          transform: none;
+          background: linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(30, 41, 59, 0.96) 100%);
+          backdrop-filter: blur(18px);
+          border: 1px solid rgba(147, 197, 253, 0.25);
           border-radius: 20px;
-          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6),
-                      0 0 0 1px rgba(147, 197, 253, 0.1) inset;
-          z-index: 9999;
-          overflow: visible;
+          box-shadow: 0 18px 36px rgba(0, 0, 0, 0.35),
+                      0 0 0 1px rgba(147, 197, 253, 0.08) inset;
+          z-index: 10;
           opacity: 0;
-          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
           pointer-events: none;
           visibility: hidden;
-          min-width: 180px;
-          max-height: none;
+          min-width: 100%;
         }
 
         .dropdown-menu::before {
-          content: '';
-          position: absolute;
-          top: -8px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 0;
-          height: 0;
-          border-left: 8px solid transparent;
-          border-right: 8px solid transparent;
-          border-bottom: 8px solid rgba(15, 23, 42, 0.98);
-          filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.2));
+          content: none;
         }
 
         .dropdown-menu.open {
           opacity: 1;
-          transform: translateX(-50%) translateY(0);
+          transform: none;
           pointer-events: all;
           visibility: visible;
         }
@@ -1631,11 +1628,11 @@ export default function Home() {
                       overflow: 'visible',
                       padding: 'clamp(20px, 4vw, 40px) clamp(20px, 4vw, 40px)',
                       paddingTop: 'clamp(20px, 4vw, 40px)',
-                      paddingBottom: 'clamp(180px, 20vw, 280px)',
+                  paddingBottom: 'clamp(40px, 8vw, 120px)',
                       width: '100%',
                       maxWidth: '100vw',
                       background: 'white',
-                      minHeight: '700px',
+                      minHeight: '520px',
                     }}
                   >
                     {/* Main Content */}
@@ -1645,7 +1642,7 @@ export default function Home() {
                       maxWidth: '1400px',
                       margin: '0 auto',
                       padding: '0',
-                      paddingBottom: '150px',
+                      paddingBottom: '40px',
                       textAlign: 'center',
                       width: '100%',
                       overflowX: 'hidden',
@@ -1899,8 +1896,8 @@ export default function Home() {
                         style={{
                           display: 'flex',
                           gap: 'clamp(12px, 3vw, 20px)',
-                          marginTop: 'clamp(24px, 5vw, 48px)',
-                          marginBottom: 'clamp(40px, 8vw, 80px)',
+                          marginTop: 'clamp(20px, 4vw, 36px)',
+                          marginBottom: 'clamp(12px, 3vw, 24px)',
                           flexWrap: 'wrap',
                           justifyContent: 'center',
                           padding: '0 clamp(12px, 3vw, 20px)',
@@ -1918,54 +1915,73 @@ export default function Home() {
                             }}
                             className={`dropdown-button tender-cta ${tenderDropdownOpen ? 'open' : ''}`}
                             style={{
-                              display: 'inline-flex',
+                              display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              gap: 'clamp(8px, 2vw, 12px)',
-                              background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
-                              backgroundSize: '200% 200%',
-                              color: 'white',
-                              padding: 'clamp(16px, 3.5vw, 28px) clamp(24px, 5vw, 40px)',
-                              borderRadius: 'clamp(18px, 4vw, 24px)',
-                              border: '2px solid rgba(255,255,255,0.25)',
-                              fontSize: 'clamp(15px, 3.2vw, 19px)',
+                              gap: 'clamp(6px, 2vw, 10px)',
+                              background: '#ffffff',
+                              color: '#047857',
+                              padding: 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
+                              borderRadius: 'clamp(22px, 5vw, 30px)',
+                              border: '3px solid #10b981',
+                              fontSize: 'clamp(15px, 3.8vw, 19px)',
                               fontWeight: 800,
                               cursor: 'pointer',
-                              boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
-                              transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                              boxShadow: '0 14px 30px rgba(16, 185, 129, 0.26)',
+                              transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
                               position: 'relative',
                               overflow: 'hidden',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.5px',
-                              animation: 'gradient-shift 4s ease infinite',
+                              textTransform: 'none',
+                              letterSpacing: '0.3px',
+                              height: '100%',
+                              width: '100%',
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = 'translateY(-8px) scale(1.08)';
-                              e.currentTarget.style.boxShadow = '0 16px 40px rgba(16, 185, 129, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.15) inset';
-                              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+                              e.currentTarget.style.transform = 'translateY(-8px) scale(1.07)';
+                              e.currentTarget.style.boxShadow = '0 22px 42px rgba(16, 185, 129, 0.34)';
+                              e.currentTarget.style.borderColor = '#0f9f6b';
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                              e.currentTarget.style.boxShadow = '0 8px 24px rgba(16, 185, 129, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset';
-                              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                              e.currentTarget.style.boxShadow = '0 14px 30px rgba(16, 185, 129, 0.26)';
+                              e.currentTarget.style.borderColor = '#10b981';
                             }}
                           >
                             <div style={{
-                              background: 'rgba(255, 255, 255, 0.15)',
-                              padding: 'clamp(8px, 2vw, 12px)',
-                              borderRadius: '50%',
+                              background: 'rgba(16, 185, 129, 0.12)',
+                              padding: 'clamp(12px, 2.8vw, 16px)',
+                              borderRadius: '55%',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                             }}>
                               {/* Envelope Icon for Tenders */}
-                              <svg width="clamp(24px, 4.5vw, 32px)" height="clamp(24px, 4.5vw, 32px)" viewBox="0 0 24 24" fill="white">
+                              <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="#047857">
                                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
                               </svg>
                             </div>
-                            <span style={{color:'white', fontSize: 'inherit', fontWeight: 800}}>Tenders</span>
+                            <span style={{
+                              display: 'flex',
+                              flexWrap: 'wrap',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              color: '#047857',
+                              fontSize: 'clamp(11px, 2.8vw, 14px)',
+                              fontWeight: 800,
+                              textAlign: 'center',
+                              lineHeight: 1.25,
+                              textTransform: 'none',
+                              width: '100%',
+                            }}>
+                              <span style={{ whiteSpace: 'nowrap' }}>Tenders</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>Soumission</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>طلبية</span>
+                            </span>
                             <svg className="dropdown-arrow" width="clamp(14px, 3vw, 18px)" height="clamp(14px, 3vw, 18px)" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                               <path d="M6 9l6 6 6-6"/>
                             </svg>
@@ -2003,55 +2019,75 @@ export default function Home() {
                             disabled
                             className="dropdown-button vente-direct-cta disabled"
                             style={{
-                              display: 'inline-flex',
+                              display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              gap: 'clamp(8px, 2vw, 12px)',
-                              background: 'linear-gradient(135deg, #94a3b8 0%, #64748b 50%, #475569 100%)',
-                              backgroundSize: '200% 200%',
-                              color: 'white',
-                              padding: 'clamp(16px, 3.5vw, 28px) clamp(24px, 5vw, 40px)',
-                              borderRadius: 'clamp(18px, 4vw, 24px)',
-                              border: '2px solid rgba(255,255,255,0.15)',
-                              fontSize: 'clamp(15px, 3.2vw, 19px)',
+                              gap: 'clamp(6px, 2vw, 10px)',
+                              background: '#ffffff',
+                              color: '#475569',
+                              padding: 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
+                              borderRadius: 'clamp(22px, 5vw, 30px)',
+                              border: '3px solid #64748b',
+                              fontSize: 'clamp(15px, 3.8vw, 19px)',
                               fontWeight: 800,
                               cursor: 'not-allowed',
-                              boxShadow: '0 8px 24px rgba(71, 85, 105, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05) inset',
-                              transition: 'all 0.4s ease',
+                              boxShadow: '0 14px 30px rgba(71, 85, 105, 0.26)',
+                              transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
                               position: 'relative',
                               overflow: 'hidden',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.5px',
+                              textTransform: 'none',
+                              letterSpacing: '0.3px',
                               opacity: 0.85,
+                              height: '100%',
+                              width: '100%',
                             }}
                           >
                             <div style={{
-                              background: 'rgba(255, 255, 255, 0.12)',
-                              padding: 'clamp(8px, 2vw, 12px)',
-                              borderRadius: '50%',
+                              background: 'rgba(100, 116, 139, 0.2)',
+                              padding: 'clamp(12px, 2.8vw, 16px)',
+                              borderRadius: '55%',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                             }}>
                               {/* Store Icon for Vente Direct */}
-                              <svg width="clamp(24px, 4.5vw, 32px)" height="clamp(24px, 4.5vw, 32px)" viewBox="0 0 24 24" fill="white">
+                              <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="#475569">
                                 <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
                               </svg>
                             </div>
-                            <span style={{color:'white', fontSize: 'inherit', fontWeight: 800}}>Vente Direct</span>
+                            <span style={{
+                              display: 'flex',
+                              flexWrap: 'wrap',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              color: '#475569',
+                              fontSize: 'clamp(11px, 2.8vw, 14px)',
+                              fontWeight: 800,
+                              textAlign: 'center',
+                              lineHeight: 1.25,
+                              textTransform: 'none',
+                              width: '100%',
+                            }}>
+                              <span style={{ whiteSpace: 'nowrap' }}>Sell</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>Vente Direct</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>الشراء</span>
+                            </span>
                             <span style={{
                               fontSize: 'clamp(10px, 2.2vw, 13px)',
                               fontWeight: 700,
-                              color: 'rgba(255, 255, 255, 0.95)',
-                              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15))',
+                              color: '#475569',
+                              background: 'rgba(148, 163, 184, 0.18)',
                               padding: '5px 14px',
                               borderRadius: '16px',
                               textTransform: 'uppercase',
                               letterSpacing: '1px',
-                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                              border: '1px solid rgba(255, 255, 255, 0.2)',
+                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                              border: '1px solid rgba(148, 163, 184, 0.4)',
                             }}>
                               🔜 Coming Soon
                             </span>
@@ -2067,43 +2103,43 @@ export default function Home() {
                             }}
                             className={`dropdown-button auction-cta ${auctionDropdownOpen ? 'open' : ''}`}
                             style={{
-                              display: 'inline-flex',
+                              display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              gap: 'clamp(8px, 2vw, 12px)',
-                              background: 'linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%)',
-                              backgroundSize: '200% 200%',
-                              color: 'white',
-                              padding: 'clamp(16px, 3.5vw, 28px) clamp(24px, 5vw, 40px)',
-                              borderRadius: 'clamp(18px, 4vw, 24px)',
-                              border: '2px solid rgba(255,255,255,0.25)',
-                              fontSize: 'clamp(15px, 3.2vw, 19px)',
+                              gap: 'clamp(6px, 2vw, 10px)',
+                              background: '#ffffff',
+                              color: '#004c8c',
+                              padding: 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
+                              borderRadius: 'clamp(22px, 5vw, 30px)',
+                              border: '3px solid #0063b1',
+                              fontSize: 'clamp(15px, 3.8vw, 19px)',
                               fontWeight: 800,
                               cursor: 'pointer',
-                              boxShadow: '0 8px 24px rgba(0, 99, 177, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
-                              transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                              boxShadow: '0 14px 30px rgba(0, 99, 177, 0.28)',
+                              transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
                               position: 'relative',
                               overflow: 'hidden',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.5px',
-                              animation: 'gradient-shift 4s ease infinite',
+                              textTransform: 'none',
+                              letterSpacing: '0.3px',
+                              height: '100%',
+                              width: '100%',
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = 'translateY(-8px) scale(1.08)';
-                              e.currentTarget.style.boxShadow = '0 16px 40px rgba(0, 99, 177, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.15) inset';
-                              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+                              e.currentTarget.style.transform = 'translateY(-6px) scale(1.04)';
+                              e.currentTarget.style.boxShadow = '0 22px 42px rgba(0, 99, 177, 0.38)';
+                              e.currentTarget.style.borderColor = '#005299';
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                              e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 99, 177, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset';
-                              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+                              e.currentTarget.style.boxShadow = '0 14px 30px rgba(0, 99, 177, 0.28)';
+                              e.currentTarget.style.borderColor = '#0063b1';
                             }}
                           >
                             <div style={{
-                              background: 'rgba(255, 255, 255, 0.15)',
-                              padding: 'clamp(8px, 2vw, 12px)',
-                              borderRadius: '50%',
+                              background: 'rgba(0, 99, 177, 0.2)',
+                              padding: 'clamp(12px, 2.8vw, 16px)',
+                              borderRadius: '55%',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -2112,12 +2148,31 @@ export default function Home() {
                               {/* Gavel/Hammer Icon for Auctions */}
                               <FaGavel 
                                 style={{ 
-                                  fontSize: 'clamp(24px, 4.5vw, 32px)',
-                                  color: 'white'
+                                  fontSize: 'clamp(32px, 5.6vw, 42px)',
+                                  color: '#004c8c'
                                 }} 
                               />
                             </div>
-                            <span style={{color:'white', fontSize: 'inherit', fontWeight: 800}}>Auctions</span>
+                            <span style={{
+                              display: 'flex',
+                              flexWrap: 'wrap',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              color: '#004c8c',
+                              fontSize: 'clamp(11px, 2.8vw, 14px)',
+                              fontWeight: 800,
+                              textAlign: 'center',
+                              lineHeight: 1.25,
+                              textTransform: 'none',
+                              width: '100%',
+                            }}>
+                              <span style={{ whiteSpace: 'nowrap' }}>Auctions</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>Enchère</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>مزاد</span>
+                            </span>
                             <svg className="dropdown-arrow" width="clamp(14px, 3vw, 18px)" height="clamp(14px, 3vw, 18px)" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                               <path d="M6 9l6 6 6-6"/>
                             </svg>
@@ -2245,71 +2300,8 @@ export default function Home() {
                   </section>
                   
                   {/* Section Divider with Animation */}
-                  <div 
-                    className="section-divider"
-                    style={{
-                      opacity: animatedSections.banner ? 1 : 0,
-                      transform: animatedSections.banner ? 'scaleX(1)' : 'scaleX(0)',
-                      transition: 'all 0.6s ease-out 0.3s',
-                    }}
-                  ></div>
-                  
-                  {/* Categories Section */}
-                  <section 
-                    ref={categoryRef}
-                    data-section="category"
-                    className={`section-spacing section-bg-2 ${animatedSections.category ? 'animate-slide-left' : ''}`}
-                    style={{
-                      position: 'relative',
-                      zIndex: 2,
-                      opacity: isMobile ? 1 : (animatedSections.category ? 1 : 0),
-                      transform: isMobile ? 'none' : (animatedSections.category ? 'translateX(0)' : 'translateX(-50px)'),
-                      transition: isMobile ? 'none' : 'all 0.8s ease-out',
-                    }}
-                  >
-                    {/* <Home1Category /> */}
-                  </section>
-                  
                   {/* Section Divider with Animation */}
-                  <div 
-                    className="section-divider"
-                    style={{
-                      opacity: animatedSections.category ? 1 : 0,
-                      transform: animatedSections.category ? 'scaleX(1)' : 'scaleX(0)',
-                      transition: 'all 0.6s ease-out 0.3s',
-                    }}
-                  ></div>
-                  
-                  {/* Professional Auctions Section - Only for Professional Users */}
-                  {isLogged && auth?.user?.type === 'PROFESSIONAL' && (
-                    <section 
-                      data-section="professional"
-                      className="section-spacing section-bg-1"
-                      style={{
-                        position: 'relative',
-                        zIndex: 2,
-                        opacity: isMobile ? 1 : 1,
-                        transform: isMobile ? 'none' : 'none',
-                        transition: isMobile ? 'none' : 'none',
-                        display: isMobile ? 'block' : 'block',
-                        visibility: isMobile ? 'visible' : 'visible',
-                        minHeight: isMobile ? '300px' : 'auto',
-                      }}
-                    >
-                      <ProfessionalAuctions />
-                    </section>
-                  )}
-                  
                   {/* Section Divider with Animation */}
-                  <div 
-                    className="section-divider"
-                    style={{
-                      opacity: 1,
-                      transform: 'scaleX(1)',
-                      transition: 'all 0.6s ease-out 0.3s',
-                    }}
-                  ></div>
-                  
                   {/* Live Auctions Section - Always visible on mobile */}
                   <section 
                     ref={auctionRef}
@@ -2330,15 +2322,6 @@ export default function Home() {
                   </section>
                   
                   {/* Section Divider with Animation */}
-                  <div 
-                    className="section-divider"
-                    style={{
-                      opacity: animatedSections.auction ? 1 : 0,
-                      transform: animatedSections.auction ? 'scaleX(1)' : 'scaleX(0)',
-                      transition: 'all 0.6s ease-out 0.3s',
-                    }}
-                  ></div>
-                  
                   
                   {/* Live Tenders Section - Always visible on mobile */}
                   <section 

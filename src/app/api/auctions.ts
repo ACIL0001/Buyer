@@ -73,6 +73,7 @@ interface Auction {
   updatedAt: string;
   isPro?: boolean; // Professional auction flag
   hidden?: boolean; // Anonymous seller flag
+  bidType?: 'PRODUCT' | 'SERVICE';
 }
 
 interface ApiResponse<T> {

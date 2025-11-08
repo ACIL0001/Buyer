@@ -15,9 +15,8 @@ import ReviewModal from '@/components/ReviewModal';
 import { ReviewAPI } from '@/app/api/review';
 import { NotificationAPI } from '@/app/api/notification';
 import { useTranslation } from 'react-i18next';
-// import { getSellerUrl } from '@/config';
-// import app from '@/config';
-import app, { DEV_SERVER_URL, getSellerUrl } from '@/config';
+import { getSellerUrl } from '@/config';
+import app from '@/config';
 
 const initialState = {
   activeMenu: "",
@@ -332,13 +331,13 @@ export const Header = () => {
 
   return (
     <header 
-      className="safe-top"
       style={{
         width: '100%',
         position: 'sticky',
         top: 0,
         zIndex: 9999,
-        transition: 'all 0.3s ease'
+        transition: 'all 0.3s ease',
+        paddingTop: 'env(safe-area-inset-top, 0px)'
       }}
     >
       <div style={{
@@ -515,8 +514,11 @@ export const Header = () => {
                             url = url.replace('&', '?');
                           }
                           // Normalize localhost URLs
-                          if (url.startsWith(DEV_SERVER_URL)) {
-                            return url.replace(DEV_SERVER_URL, app.baseURL.replace(/\/$/, ''));
+                          if (url.startsWith('http://localhost:3000')) {
+                            return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                          }
+                          if (url.startsWith('http://localhost/')) {
+                            return url.replace('http://localhost', app.baseURL.replace(/\/$/, ''));
                           }
                           if (url.startsWith('/static/')) {
                             return `${app.baseURL.replace(/\/$/, '')}${url}`;
@@ -536,19 +538,20 @@ export const Header = () => {
                           // Try fullUrl first
                           if (avatar.fullUrl) {
                             let fullUrl = avatar.fullUrl;
-                            // if (fullUrl.startsWith('http://localhost:3000')) {
-                            //   fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-                            // }
-                            if (fullUrl.startsWith(DEV_SERVER_URL)) {
-                              fullUrl = fullUrl.replace(DEV_SERVER_URL, app.baseURL.replace(/\/$/, ''));
+                            if (fullUrl.startsWith('http://localhost:3000')) {
+                              fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
                             }
                             return fullUrl;
                           }
                           
                           // Try url
                           if (avatar.url) {
-                            // return avatar.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-                            return avatar.url.replace(DEV_SERVER_URL, app.baseURL.replace(/\/$/, ''));
+                            if (avatar.url.startsWith('http')) {
+                              return avatar.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                            }
+                            const path = avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`;
+                            const finalPath = path.startsWith('/static/') ? path : `/static${path}`;
+                            return `${app.baseURL.replace(/\/$/, '')}${finalPath}`;
                           }
                           
                           // Try filename

@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import useAuth from '@/hooks/useAuth';
 import "../auction-details/st.css";
 import "../auction-details/modern-details.css";
+import { useRouter } from "next/navigation";
 
 // Default image constants
 const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
@@ -47,6 +48,7 @@ interface Auction {
   wilaya?: string;
   description?: string;
   biddersCount?: number;
+  bidType?: 'PRODUCT' | 'SERVICE';
   // --- Image properties for enhanced image loading ---
   images?: string[];
   image?: string;
@@ -57,7 +59,6 @@ interface Auction {
   logo?: string;
   coverImage?: string;
   mainImage?: string;
-  bidType?: string;
 }
 
 // Timer interface
@@ -190,6 +191,7 @@ const getAuctionImageUrl = (auction: Auction) => {
 
 const Home1LiveAuction = () => {
   const { t } = useTranslation();
+  const router = useRouter();
   const { isLogged, auth } = useAuth();
   const [liveAuctions, setLiveAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -496,6 +498,13 @@ const Home1LiveAuction = () => {
       },
     },
   }), []);
+
+  const navigateWithScroll = useCallback((url: string) => {
+    router.push(url, { scroll: false });
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "auto" });
+    });
+  }, [router]);
 
   if (loading) {
     return (
@@ -1103,6 +1112,11 @@ const Home1LiveAuction = () => {
                          {/* Submit Bid Button */}
                           <Link
                             href={`/auction-details/${auction.id}`}
+                            scroll={false}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigateWithScroll(`/auction-details/${auction.id}`);
+                            }}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
@@ -1284,6 +1298,11 @@ const Home1LiveAuction = () => {
             }}>
             <Link
               href="/auction-sidebar"
+              scroll={false}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateWithScroll("/auction-sidebar");
+              }}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',

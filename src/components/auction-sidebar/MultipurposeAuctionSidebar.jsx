@@ -1,7 +1,7 @@
 "use client"
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import SelectComponent from '../common/SelectComponent'
 import { AuctionsAPI } from '@/app/api/auctions'
 import { CategoryAPI } from '@/app/api/category'
@@ -38,6 +38,14 @@ const MultipurposeAuctionSidebar = () => {
     const [sortOption, setSortOption] = useState(t('auctionSidebar.defaultSort'));
     const [categories, setCategories] = useState([]);
     const [filteredCategories, setFilteredCategories] = useState([]);
+
+    const navigateWithTop = useCallback((url) => {
+        router.push(url, { scroll: false });
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: "auto" });
+            document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
+        });
+    }, [router]);
     const [subCategories, setSubCategories] = useState([]);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
     const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
@@ -628,7 +636,7 @@ const MultipurposeAuctionSidebar = () => {
 
     // Handle auction card click
     const handleAuctionCardClick = (auctionId) => {
-        router.push(`/auction-details/${auctionId}`);
+        navigateWithTop(`/auction-details/${auctionId}`);
     };
 
     return (
@@ -1314,7 +1322,20 @@ const MultipurposeAuctionSidebar = () => {
                                                             overflow: 'hidden',
                                                         }}
                                                     >
-                                                        <Link href={hasAuctionEnded ? "#" : `/auction-details/${auction._id}`} style={{ display: 'block', height: '100%', cursor: hasAuctionEnded ? 'not-allowed' : 'pointer' }} onClick={(e) => e.stopPropagation()}>
+                                                    <Link
+                                                        href={hasAuctionEnded ? "#" : `/auction-details/${auction._id}`}
+                                                        scroll={false}
+                                                        style={{ display: 'block', height: '100%', cursor: hasAuctionEnded ? 'not-allowed' : 'pointer' }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (hasAuctionEnded) {
+                                                                e.preventDefault();
+                                                                return;
+                                                            }
+                                                            e.preventDefault();
+                                                            navigateWithTop(`/auction-details/${auction._id}`);
+                                                        }}
+                                                    >
                                                             <img
                                                                 src={(() => {
                                                                     if (auction.thumbs && auction.thumbs.length > 0) {
@@ -1481,8 +1502,17 @@ const MultipurposeAuctionSidebar = () => {
                                                         }}>
                                                             <Link
                                                                 href={hasAuctionEnded ? "#" : `/auction-details/${auction._id}`} // Prevent navigation if ended
+                                                                scroll={false}
                                                                 style={{ color: 'inherit', textDecoration: 'none', cursor: hasAuctionEnded ? 'not-allowed' : 'pointer' }}
-                                                                onClick={(e) => e.stopPropagation()}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (hasAuctionEnded) {
+                                                                        e.preventDefault();
+                                                                        return;
+                                                                    }
+                                                                    e.preventDefault();
+                                                                    navigateWithTop(`/auction-details/${auction._id}`);
+                                                                }}
                                                             >
                                                                 {auction.title || t('auctionSidebar.noTitle')}
                                                             </Link>
@@ -1791,6 +1821,7 @@ const MultipurposeAuctionSidebar = () => {
                                                         {/* View Auction Button */}
                                                         <Link
                                                             href={hasAuctionEnded ? "#" : `/auction-details/${auction._id}`}
+                                                            scroll={false}
                                                             style={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -1820,6 +1851,16 @@ const MultipurposeAuctionSidebar = () => {
                                                                     e.currentTarget.style.transform = 'translateY(0)';
                                                                     e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 99, 177, 0.3)';
                                                                 }
+                                                            }}
+                                                            onClick={(event) => {
+                                                                if (hasAuctionEnded) {
+                                                                    event.preventDefault();
+                                                                    event.stopPropagation();
+                                                                    return;
+                                                                }
+                                                                event.preventDefault();
+                                                                event.stopPropagation();
+                                                                navigateWithTop(`/auction-details/${auction._id}`);
                                                             }}
                                                         >
                                                             Voir les détails

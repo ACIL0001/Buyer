@@ -160,6 +160,22 @@ const MultipurposeDetails2 = () => {
   const DEFAULT_USER_AVATAR = "/assets/images/avatar.jpg";
   const DEFAULT_PROFILE_IMAGE = "/assets/images/avatar.jpg";
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: "auto" });
+        document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: "auto" });
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        }, 50);
+      });
+    }
+  }, []);
+
   // Add error boundary with better error information
   if (error && !loading) {
     return (
@@ -802,11 +818,12 @@ const MultipurposeDetails2 = () => {
       if (isMieuxDisant) {
         // For MIEUX_DISANT: Get proposal text
         const proposalTextarea = document.querySelector(".proposal-textarea");
-        if (!proposalTextarea || !proposalTextarea.value || proposalTextarea.value.trim().length < 10) {
-          toast.error("Veuillez rédiger une proposition détaillée (minimum 10 caractères)");
+        const proposalValue = proposalTextarea?.value?.trim() || "";
+        if (!proposalValue.length) {
+          toast.error("Veuillez rédiger une proposition.");
           return;
         }
-        proposal = proposalTextarea.value.trim();
+        proposal = proposalValue;
         console.log("[MultipurposeDetails2] Proposal text:", proposal);
         
         // For mieux disant, bid amount can be 0 or optional
@@ -2092,27 +2109,6 @@ const MultipurposeDetails2 = () => {
                         <div className="bid-section">
                           <p className="bid-label">Votre offre DA</p>
                           
-                          {/* Decimal Input Instruction */}
-                          <div style={{
-                            backgroundColor: "#e3f2fd",
-                            border: "1px solid #bbdefb",
-                            borderRadius: "8px",
-                            padding: "8px 12px",
-                            marginBottom: "12px",
-                            fontSize: "12px",
-                            color: "#1565c0",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                          }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                            </svg>
-                            <span>
-                              <strong>Note:</strong> Utilisez le point (.) pour les décimales, pas la virgule (,)
-                            </span>
-                          </div>
-                          
                           {isOwner && (
                           <div
                             style={{
@@ -2141,60 +2137,6 @@ const MultipurposeDetails2 = () => {
                             appel d'offres.
                           </div>
                         )}
-                        
-                        {/* Tender Bidding Instructions */}
-                        {!isOwner && (
-                          <div
-                            style={{
-                              backgroundColor: "#e3f2fd",
-                              border: "1px solid #bbdefb",
-                              borderRadius: "8px",
-                              padding: "12px",
-                              marginBottom: "16px",
-                              color: "#1565c0",
-                              fontSize: "13px",
-                              fontWeight: "500",
-                              display: "flex",
-                              alignItems: "flex-start",
-                              gap: "8px",
-                            }}
-                          >
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                              style={{ marginTop: "2px", flexShrink: 0 }}
-                            >
-                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
-                            </svg>
-                            <div>
-                              <strong>
-                                {tenderData?.evaluationType === 'MIEUX_DISANT' 
-                                  ? 'Instructions pour l\'appel d\'offres (Mieux disant) :' 
-                                  : 'Instructions pour l\'appel d\'offres (Moins disant) :'}
-                              </strong>
-                              <ul style={{ margin: "4px 0 0 0", paddingLeft: "16px" }}>
-                                {tenderData?.evaluationType === 'MIEUX_DISANT' ? (
-                                  <>
-                                    <li>Rédigez une proposition détaillée de votre offre</li>
-                                    <li>Incluez les détails techniques, avantages et garanties</li>
-                                    <li>Le gagnant sera sélectionné selon la meilleure proposition globale</li>
-                                    <li>Soyez précis et professionnel dans votre proposition</li>
-                                  </>
-                                ) : (
-                                  <>
-                                    <li>Entrez le prix que vous proposez pour ce projet</li>
-                                    <li>Le prix le plus bas remportera l'appel d'offres</li>
-                                    <li>Proposez un prix compétitif mais réaliste</li>
-                                    <li>Assurez-vous de pouvoir respecter le prix proposé</li>
-                                  </>
-                                )}
-                              </ul>
-                            </div>
-                          </div>
-                        )}
-                        
                         {/* Show textarea for MIEUX_DISANT, input for MOINS_DISANT */}
                         {(() => {
                           console.log('🔍 [MultipurposeDetails2] Tender Evaluation Type Check:', {
@@ -4599,6 +4541,10 @@ const MultipurposeDetails2 = () => {
 
       {/* Modal Animation Styles */}
       <style jsx>{`
+        :global(.auction-details-section) {
+          padding-top: 0 !important;
+        }
+
         @keyframes modalSlideIn {
           from {
             opacity: 0;

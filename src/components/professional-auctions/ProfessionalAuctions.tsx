@@ -10,6 +10,7 @@ import useAuth from '@/hooks/useAuth';
 import { CLIENT_TYPE } from '@/types/User';
 import "../auction-details/st.css";
 import "../auction-details/modern-details.css";
+import { useRouter } from "next/navigation";
 
 // Default image constants
 const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
@@ -150,6 +151,7 @@ const getProfessionalAuctionImageUrl = (auction: ProfessionalAuction) => {
 
 const ProfessionalAuctions: React.FC = () => {
   const { t } = useTranslation();
+  const router = useRouter();
   const { isLogged, auth } = useAuth();
   const [professionalAuctions, setProfessionalAuctions] = useState<ProfessionalAuction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -240,6 +242,14 @@ const ProfessionalAuctions: React.FC = () => {
 
     return () => observer.disconnect();
   }, [professionalAuctions]);
+
+  const navigateWithTop = useCallback((url: string) => {
+    router.push(url, { scroll: false });
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
+    });
+  }, [router]);
 
   // Format price function
   const formatPrice = useCallback((price: number) => {
@@ -999,6 +1009,11 @@ const ProfessionalAuctions: React.FC = () => {
                           {/* Submit Bid Button */}
                           <Link
                             href={`/auction-details/${auction._id}`}
+                            scroll={false}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigateWithTop(`/auction-details/${auction._id}`);
+                            }}
                             style={{
                               display: 'flex',
                               alignItems: 'center',

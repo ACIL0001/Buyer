@@ -11,6 +11,7 @@ import { Tender, TENDER_STATUS } from '@/types/tender';
 import useAuth from '@/hooks/useAuth';
 import "../auction-details/st.css";
 import "../auction-details/modern-details.css";
+import { useRouter } from "next/navigation";
 
 // Default image constants
 const DEFAULT_TENDER_IMAGE = "/assets/images/logo-white.png";
@@ -117,6 +118,7 @@ const getTenderImageUrl = (tender: Tender) => {
 
 const Home1LiveTenders = () => {
   const { t } = useTranslation();
+  const router = useRouter();
   const { isLogged, auth } = useAuth();
   const [liveTenders, setLiveTenders] = useState<Tender[]>([]);
   const [loading, setLoading] = useState(true);
@@ -389,6 +391,13 @@ const Home1LiveTenders = () => {
       },
     },
   }), []);
+
+  const navigateWithScroll = useCallback((url: string) => {
+    router.push(url, { scroll: false });
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "auto" });
+    });
+  }, [router]);
 
   if (loading) {
     return (
@@ -990,6 +999,11 @@ const Home1LiveTenders = () => {
                          {/* Submit Proposal Button */}
                           <Link
                             href={`/tender-details/${tender._id}`}
+                            scroll={false}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigateWithScroll(`/tender-details/${tender._id}`);
+                            }}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
@@ -1171,6 +1185,11 @@ const Home1LiveTenders = () => {
             }}>
             <Link
               href="/tender-sidebar"
+              scroll={false}
+              onClick={(e) => {
+                e.preventDefault();
+                navigateWithScroll("/tender-sidebar");
+              }}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',

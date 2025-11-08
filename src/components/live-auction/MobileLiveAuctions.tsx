@@ -9,6 +9,7 @@ import app from '@/config';
 import { useTranslation } from 'react-i18next';
 import "../auction-details/st.css";
 import "../auction-details/modern-details.css";
+import { useRouter } from "next/navigation";
 
 // Default image constants
 const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
@@ -43,6 +44,7 @@ interface Auction {
   wilaya?: string;
   description?: string;
   biddersCount?: number;
+  bidType?: 'PRODUCT' | 'SERVICE';
   // --- Image properties for enhanced image loading ---
   images?: string[];
   image?: string;
@@ -53,7 +55,6 @@ interface Auction {
   logo?: string;
   coverImage?: string;
   mainImage?: string;
-  bidType?: string;
 }
 
 // Timer interface
@@ -117,6 +118,7 @@ const getAuctionImageUrl = (auction: Auction) => {
 
 const MobileLiveAuctions = () => {
   const { t } = useTranslation();
+  const router = useRouter();
   const [liveAuctions, setLiveAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -218,6 +220,14 @@ const MobileLiveAuctions = () => {
   }, [liveAuctions]);
 
   // Format price function
+  const navigateWithTop = useCallback((url: string) => {
+    router.push(url, { scroll: false });
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
+    });
+  }, [router]);
+
   const formatPrice = useCallback((price: number) => {
     return `${Number(price).toLocaleString()} DA`;
   }, []);
@@ -722,6 +732,11 @@ const MobileLiveAuctions = () => {
                           {/* View Auction Button */}
                           <Link
                             href={`/auction-details/${auction._id}`}
+                            scroll={false}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigateWithTop(`/auction-details/${auction._id}`);
+                            }}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
@@ -931,4 +946,3 @@ const MobileLiveAuctions = () => {
 };
 
 export default MobileLiveAuctions;
-

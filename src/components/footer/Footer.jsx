@@ -56,10 +56,26 @@ const Footer = () => {
 
   // Social media links
   const socialLinks = [
-    { icon: 'bi-linkedin', url: 'https://www.linkedin.com/', name: 'LinkedIn' },
-    { icon: 'bi-facebook', url: 'https://www.facebook.com/', name: 'Facebook' },
-    { icon: 'bi-twitter-x', url: 'https://twitter.com/', name: 'Twitter' },
-    { icon: 'bi-instagram', url: 'https://www.instagram.com/', name: 'Instagram' },
+    { 
+      icon: 'bi-linkedin', 
+      url: 'https://www.linkedin.com/authwall?trk=bf&trkInfo=AQGBQ2x4eyHcNwAAAZpgs87gZ8577fAbXSERxY8Ljx0FVOffmm_X9JbM5b1f2qlUogJp1tYCzg1dOSGsqOhuByvdtA1wqWwb2VGVqMjNx0ppJviiXfWApntjyPyB2EOL_DgS_kk=&original_referer=&sessionRedirect=https%3A%2F%2Fwww.linkedin.com%2Fin%2Fmazad-click-515490389%3Futm_source%3Dshare%26utm_campaign%3Dshare_via%26utm_content%3Dprofile%26utm_medium%3Dandroid_app', 
+      name: 'LinkedIn' 
+    },
+    { 
+      icon: 'bi-facebook', 
+      url: 'https://www.facebook.com/people/MazadClick/61579383136812/?rdid=7lGCZjn9zCYARuST&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1A5WBhBcng%2F', 
+      name: 'Facebook' 
+    },
+    { 
+      icon: 'bi-instagram', 
+      url: 'https://www.instagram.com/mazad_click/?igsh=MXBibDRiOHl3aG0zNA%3D%3D#', 
+      name: 'Instagram' 
+    },
+    { 
+      icon: 'bi-twitter-x', 
+      url: 'https://twitter.com/', 
+      name: 'Twitter' 
+    },
   ];
 
   return (

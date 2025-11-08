@@ -14,7 +14,7 @@ export default function TenderDetailsLayout({
     <div style={{
       minHeight: '100vh',
       background: '#f8f9fa',
-      paddingTop: '100px', // Space for fixed header
+      paddingTop: '0px',
       paddingBottom: '50px',
     }}>
       {children}

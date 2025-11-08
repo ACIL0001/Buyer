@@ -817,8 +817,16 @@ const MultipurposeTenderSidebar = () => {
     };
 
     // Handle tender card click
+    const navigateWithTop = useCallback((url) => {
+        router.push(url, { scroll: false });
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: "auto" });
+            document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
+        });
+    }, [router]);
+
     const handleTenderCardClick = (tenderId) => {
-        router.push(`/tender-details/${tenderId}`);
+        navigateWithTop(`/tender-details/${tenderId}`);
     };
 
     // Swiper settings

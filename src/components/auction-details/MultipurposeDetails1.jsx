@@ -145,6 +145,22 @@ const MultipurposeDetails1 = () => {
   }
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: "auto" });
+        document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: "auto" });
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        }, 50);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
     if (!auctionData) return;
     let inter = setInterval(() => {
       try {
@@ -1046,6 +1062,10 @@ const MultipurposeDetails1 = () => {
   return (
     <>
       <style jsx>{`
+        :global(.auction-details-section) {
+          padding-top: 0 !important;
+        }
+
         @keyframes pulse {
           0% {
             transform: scale(1);
@@ -1642,28 +1662,6 @@ const MultipurposeDetails1 = () => {
 
                       <div className="bid-section">
                         <p className="bid-label">Votre enchère DA </p>
-                        
-                        {/* Decimal Input Instruction */}
-                        <div style={{
-                          backgroundColor: "#e3f2fd",
-                          border: "1px solid #bbdefb",
-                          borderRadius: "8px",
-                          padding: "8px 12px",
-                          marginBottom: "12px",
-                          fontSize: "12px",
-                          color: "#1565c0",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                        }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                          </svg>
-                          <span>
-                            <strong>Note:</strong> Utilisez le point (.) pour les décimales, pas la virgule (,)
-                          </span>
-                        </div>
-                        
                         {isOwner && (
                           <div
                             style={{

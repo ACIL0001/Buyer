@@ -5,13 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Mousewheel, Keyboard, FreeMode, Autoplay } from "swiper/modules";
 import { CategoryAPI } from '@/app/api/category';
-import app, { DEV_SERVER_URL } from '@/config';
+import app from '@/config';
 import { FaShoppingBag, FaHandshake } from 'react-icons/fa';
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-
-const DEV_SERVER_WITH_SLASH = DEV_SERVER_URL.endsWith('/') ? DEV_SERVER_URL : `${DEV_SERVER_URL}/`;
 
 type Home1BannerProps = object;
 
@@ -52,6 +50,56 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     });
   }, [allCategories, filterType]);
 
+  const categoryCount = categories?.length ?? 0;
+
+  const defaultSlidesPerView = useMemo(() => {
+    if (categoryCount === 0) {
+      return 1;
+    }
+    return Math.max(1, Math.min(categoryCount, 3));
+  }, [categoryCount]);
+
+  const swiperBreakpoints = useMemo(() => {
+    const mobileSlides = Math.max(1, Math.min(categoryCount || 1, 3));
+    const tabletSlides = Math.max(1, Math.min(categoryCount || 1, 4));
+    const desktopSlides = Math.max(1, Math.min(categoryCount || 1, 5));
+
+    return {
+      0: {
+        slidesPerView: mobileSlides,
+        spaceBetween: 8,
+      },
+      360: {
+        slidesPerView: mobileSlides,
+        spaceBetween: 10,
+      },
+      480: {
+        slidesPerView: mobileSlides,
+        spaceBetween: 12,
+      },
+      640: {
+        slidesPerView: tabletSlides,
+        spaceBetween: 16,
+      },
+      768: {
+        slidesPerView: tabletSlides,
+        spaceBetween: 18,
+      },
+      1024: {
+        slidesPerView: desktopSlides,
+        spaceBetween: 20,
+      },
+      1280: {
+        slidesPerView: desktopSlides,
+        spaceBetween: 22,
+      },
+      1440: {
+        slidesPerView: desktopSlides,
+        spaceBetween: 24,
+      },
+    };
+  }, [categoryCount]);
+
   const getCategoryImageUrl = (category: any): string => {
     // Try to get image from thumb.url, thumb.fullUrl, or other possible fields
     const imageUrl = category.thumb?.url || 
@@ -69,8 +117,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
       // Replace localhost:3000 with current baseURL if needed
       if (imageUrl.includes('localhost:3000')) {
-        // return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-        return imageUrl.replace(DEV_SERVER_URL, app.baseURL.replace(/\/$/, ''));
+        return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
       }
       return imageUrl;
     }
@@ -119,10 +166,10 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
       <style jsx>{`
         .categories-section {
           background: white;
-          padding: clamp(20px, 4vw, 40px) clamp(20px, 4vw, 40px);
-          paddingTop: clamp(0px, 2vw, 20px);
-          margin: 0 auto clamp(16px, 4vw, 32px) auto;
-          max-width: 1400px;
+          padding: clamp(12px, 3vw, 24px) clamp(12px, 3vw, 24px);
+          paddingTop: clamp(0px, 2vw, 10px);
+          margin: 0 auto clamp(12px, 3vw, 24px) auto;
+          max-width: 1280px;
           border-radius: clamp(16px, 4vw, 32px);
         }
 
@@ -131,8 +178,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           align-items: center;
           justify-content: center;
           margin-bottom: clamp(20px, 3vw, 32px);
-          gap: clamp(20px, 4vw, 32px);
-          flex-wrap: wrap;
+          gap: clamp(16px, 3vw, 24px);
+          flex-wrap: nowrap;
           position: relative;
           padding: 0 clamp(20px, 4vw, 40px);
         }
@@ -313,10 +360,10 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
         .categories-carousel {
           position: relative;
-          padding: clamp(20px, 3vw, 30px) 50px;
+          padding: clamp(16px, 2.5vw, 24px) clamp(24px, 4vw, 36px);
           border-radius: clamp(16px, 3vw, 24px);
           transition: background 0.3s ease;
-          margin: clamp(20px, 4vw, 30px) 0;
+          margin: clamp(12px, 3vw, 20px) 0;
         }
 
         .categories-carousel.filter-product-bg {
@@ -325,6 +372,22 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
         .categories-carousel.filter-service-bg {
           background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+        }
+
+        .category-card-wrapper {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          gap: clamp(8px, 2vw, 14px);
+          margin-bottom: clamp(10px, 3vw, 18px);
+          height: 100%;
+        }
+
+        .categories-swiper .swiper-slide {
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .category-card {
@@ -363,24 +426,23 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         }
 
         .category-name {
-          position: absolute;
-          top: 16px;
-          left: 50%;
-          transform: translateX(-50%);
-          color: white;
-          font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+          position: static;
+          transform: none;
+          color: #111827;
+          font-size: clamp(0.85rem, 1.5vw, 1.05rem);
           font-weight: 700;
-          text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7), 0 0 10px rgba(0, 0, 0, 0.5);
-          z-index: 10;
-          line-height: 1.3;
-          opacity: 0.85;
+          text-shadow: none;
+          z-index: auto;
+          line-height: 1.5;
+          opacity: 1;
           text-align: center;
-          max-width: 90%;
-          padding: 0 12px;
+          max-width: 95%;
+          padding: clamp(2px, 0.8vw, 6px) clamp(8px, 2vw, 12px) 0;
           word-wrap: break-word;
-          overflow-wrap: break-word;
-          hyphens: auto;
+          overflow-wrap: anywhere;
+          letter-spacing: 0.2px;
         }
+
 
         .category-badge {
           position: absolute;
@@ -430,24 +492,24 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         /* Pagination dots */
         .swiper-pagination {
           position: relative;
-          margin-top: 24px;
+          margin-top: clamp(56px, 7vw, 68px) !important;
           bottom: auto !important;
         }
 
         .swiper-pagination-bullet {
-          width: 10px;
-          height: 10px;
-          background: #cbd5e1;
-          opacity: 0.6;
+          width: 6px !important;
+          height: 6px !important;
+          background: #cbd5e1 !important;
+          opacity: 0.6 !important;
           transition: all 0.3s ease;
-          margin: 0 4px;
+          margin: 0 3px !important;
         }
 
         .swiper-pagination-bullet-active {
-          background: #0063b1;
-          opacity: 1;
-          width: 24px;
-          border-radius: 5px;
+          background: #0063b1 !important;
+          opacity: 1 !important;
+          width: 14px !important;
+          border-radius: 5px !important;
         }
 
         .swiper-pagination-bullet-active-main {
@@ -486,48 +548,46 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .section-header {
-            flex-direction: column;
-            gap: clamp(12px, 2vw, 16px);
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+            gap: clamp(8px, 3vw, 12px);
             margin-bottom: clamp(16px, 2.5vw, 24px);
-            padding: 0 clamp(12px, 3vw, 16px);
+            padding: 0 clamp(12px, 3vw, 18px);
           }
 
           .section-title {
-            font-size: clamp(1.25rem, 4vw, 1.5rem);
-            padding: 0 clamp(16px, 4vw, 24px);
-            order: 1;
-          width: 100%;
-            margin-bottom: clamp(8px, 1.5vw, 12px);
-        }
-
-          .filter-buttons {
-            order: 2;
-          width: 100%;
-          justify-content: center;
-            gap: clamp(8px, 2vw, 12px);
+            font-size: clamp(1.05rem, 3.8vw, 1.3rem);
+            padding: 0 clamp(12px, 3vw, 16px);
+            width: auto;
+            margin: 0;
           }
 
           .filter-button {
-            padding: clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px);
-            font-size: clamp(0.7rem, 2.5vw, 0.85rem);
+            padding: clamp(8px, 2vw, 10px) clamp(14px, 4vw, 18px);
+            font-size: clamp(0.75rem, 3vw, 0.85rem);
             min-width: auto;
-            flex: 1;
-            max-width: 120px;
+            flex: 0 0 auto;
           }
 
           .categories-carousel {
-            padding: clamp(16px, 2.5vw, 24px) clamp(30px, 8vw, 40px);
+            padding: clamp(14px, 3vw, 20px) clamp(14px, 4vw, 18px);
           }
 
           .category-card {
             border-radius: clamp(12px, 3vw, 16px);
           }
 
+          .category-card-wrapper {
+            gap: clamp(6px, 2vw, 10px);
+          }
+
           .category-name {
-            top: clamp(8px, 2vw, 12px);
-            font-size: clamp(0.75rem, 2.5vw, 0.9rem);
-            padding: 0 clamp(8px, 2vw, 12px);
-            max-width: 95%;
+            font-size: clamp(0.75rem, 2.5vw, 0.95rem);
+            padding: clamp(2px, 0.8vw, 6px) clamp(6px, 2vw, 10px) 0;
+            max-width: 100%;
+            letter-spacing: 0.15px;
           }
 
           .category-badge {
@@ -541,17 +601,18 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .swiper-pagination {
-            margin-top: clamp(16px, 3vw, 20px);
+            margin-top: clamp(70px, 16vw, 88px) !important;
+            margin-bottom: 0.7px !important;
           }
 
           .swiper-pagination-bullet {
-            width: clamp(8px, 2vw, 10px);
-            height: clamp(8px, 2vw, 10px);
-            margin: 0 clamp(3px, 1vw, 4px);
+            width: clamp(4px, 1.6vw, 6px) !important;
+            height: clamp(4px, 1.6vw, 6px) !important;
+            margin: 0 clamp(1px, 0.5vw, 2px) !important;
           }
 
           .swiper-pagination-bullet-active {
-            width: clamp(16px, 4vw, 20px);
+            width: clamp(8px, 2.6vw, 12px) !important;
           }
         }
 
@@ -800,7 +861,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                 disableOnInteraction: false,
                 pauseOnMouseEnter: true,
               }}
-              loop={categories.length > 5}
+              loop={categoryCount > defaultSlidesPerView}
               speed={500}
               mousewheel={{
                 forceToAxis: true,
@@ -819,41 +880,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
               }}
               grabCursor={true}
               spaceBetween={16}
-              slidesPerView={1.5}
-              breakpoints={{
-                320: {
-                  slidesPerView: 1.5,
-                  spaceBetween: 12,
-                },
-                375: {
-                  slidesPerView: 2,
-                  spaceBetween: 14,
-                },
-                480: {
-                  slidesPerView: 2.2,
-                  spaceBetween: 16,
-                },
-                640: {
-                  slidesPerView: 3,
-                  spaceBetween: 18,
-                },
-                768: {
-                  slidesPerView: 4,
-                  spaceBetween: 20,
-                },
-                1024: {
-                  slidesPerView: 5,
-                  spaceBetween: 22,
-                },
-                1280: {
-                  slidesPerView: 5,
-                  spaceBetween: 24,
-                },
-                1440: {
-                  slidesPerView: 5,
-                  spaceBetween: 24,
-                },
-              }}
+              slidesPerView={defaultSlidesPerView}
+              breakpoints={swiperBreakpoints}
               onSwiper={setSwiperInstance}
               onTouchStart={() => setIsDragging(false)}
               onTouchMove={() => setIsDragging(true)}
@@ -874,35 +902,37 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                 
                 return (
                   <SwiperSlide key={category._id || category.id}>
-                    <div 
-                      className={`category-card ${isProduct ? 'product' : isService ? 'service' : ''}`}
-                      onClick={(e) => navigateToCategory(category, e)}
-                    >
-                    <img
-                      src={getCategoryImageUrl(category)}
-                      alt={category.name}
-                      className="category-image"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/assets/images/cat.avif';
-                      }}
-                    />
-                    <div className="category-overlay"></div>
-                    {isProduct && (
-                      <div className="category-badge product">
-                        <FaShoppingBag />
-                </div>
-                    )}
-                    {isService && (
-                      <div className="category-badge service">
-                        <FaHandshake />
-                </div>
-                    )}
-                    <div className="category-name">{category.name}</div>
+                    <div className="category-card-wrapper">
+                      <div 
+                        className={`category-card ${isProduct ? 'product' : isService ? 'service' : ''}`}
+                        onClick={(e) => navigateToCategory(category, e)}
+                      >
+                      <img
+                        src={getCategoryImageUrl(category)}
+                        alt={category.name}
+                        className="category-image"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/assets/images/cat.avif';
+                        }}
+                      />
+                      <div className="category-overlay"></div>
+                      {isProduct && (
+                        <div className="category-badge product">
+                          <FaShoppingBag />
+                  </div>
+                      )}
+                      {isService && (
+                        <div className="category-badge service">
+                          <FaHandshake />
+                  </div>
+                      )}
+                      </div>
+                      <div className="category-name">{category.name}</div>
                     </div>
-                </SwiperSlide>
-              );
-            })}
+                  </SwiperSlide>
+                );
+              })}
             </Swiper>
                     </div>
         )}

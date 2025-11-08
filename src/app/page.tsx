@@ -1573,6 +1573,24 @@ export default function Home() {
           }
         }
         
+        .categories-section .category-card-wrapper {
+          justify-content: center;
+        }
+
+        .categories-section .category-name {
+          background: rgba(255, 255, 255, 0.95);
+          padding: clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 18px);
+          border-radius: 14px;
+          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+          margin-top: clamp(6px, 1.8vw, 12px);
+          display: inline-block;
+        }
+
+        .categories-swiper .swiper-button-next,
+        .categories-swiper .swiper-button-prev {
+          top: 50% !important;
+        }
+
         /* Search input placeholder styles */
         input[placeholder="Rechercher par catégorie..."]::placeholder {
           color: white !important;

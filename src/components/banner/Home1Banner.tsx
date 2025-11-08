@@ -360,7 +360,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
         .categories-carousel {
           position: relative;
-          padding: clamp(16px, 2.5vw, 24px) clamp(24px, 4vw, 36px);
+          padding: clamp(16px, 2.5vw, 24px) clamp(24px, 4vw, 36px) clamp(10px, 2vw, 18px);
           border-radius: clamp(16px, 3vw, 24px);
           transition: background 0.3s ease;
           margin: clamp(12px, 3vw, 20px) 0;
@@ -378,7 +378,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: flex-start;
+          justify-content: center;
           gap: clamp(8px, 2vw, 14px);
           margin-bottom: clamp(10px, 3vw, 18px);
           height: 100%;
@@ -433,14 +433,19 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           font-weight: 700;
           text-shadow: none;
           z-index: auto;
-          line-height: 1.5;
+          line-height: 1.45;
           opacity: 1;
           text-align: center;
           max-width: 95%;
-          padding: clamp(2px, 0.8vw, 6px) clamp(8px, 2vw, 12px) 0;
+          padding: clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 18px);
           word-wrap: break-word;
           overflow-wrap: anywhere;
           letter-spacing: 0.2px;
+          background: rgba(255, 255, 255, 0.94);
+          border-radius: clamp(10px, 2.4vw, 16px);
+          display: inline-block;
+          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+          margin-top: clamp(6px, 1.8vw, 12px);
         }
 
 
@@ -750,7 +755,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           transition: all 0.3s ease !important;
           border: none !important;
           margin-top: 0 !important;
-          top: 55% !important;
+          top: 50% !important;
           transform: translateY(-50%) !important;
         }
 

@@ -83,24 +83,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       // Prop to prevent hydration errors from browser extensions
       suppressHydrationWarning={true}
     >
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-        <meta name="theme-color" content="#0063b1" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="MazadClick" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="format-detection" content="telephone=no" />
-        <link
-          rel="icon"
-          href="/assets/img/logo.png"
-          type="image/jpeg"
-          sizes="16x16 32x32"
-        />
-        <meta name="description" content="MazadClick - La première plateforme B2B d'enchères et de soumissions pour les entreprises algériennes" />
-        <meta name="keywords" content="enchères, soumissions, B2B, entreprise, Algérie, MazadClick" />
-        <title>MazadClick</title>
-      </head>
       <body>
         <MobileOptimizer>
           <I18nProvider>

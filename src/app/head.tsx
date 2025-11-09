@@ -12,7 +12,9 @@ export default function Head() {
       <meta name="apple-mobile-web-app-title" content="MazadClick" />
       <meta name="mobile-web-app-capable" content="yes" />
       <meta name="format-detection" content="telephone=no" />
-      <link rel="icon" href="/assets/img/logo.png" type="image/jpeg" sizes="16x16 32x32" />
+      <link rel="icon" href="/assets/icon.png" type="image/png" sizes="any" />
+      <link rel="alternate icon" href="/assets/icon.png" type="image/png" sizes="32x32" />
+      <link rel="apple-touch-icon" href="/assets/icon.png" />
       <meta name="description" content={SITE_DESCRIPTION} />
       <meta
         name="keywords"

@@ -31,6 +31,7 @@ import WinnerAnnouncement from "@/components/WinnerAnnouncement";
 import TokenHandler from "@/app/components/TokenHandler";
 import MobileOptimizer from "@/components/common/MobileOptimizer";
 import { usePathname } from "next/navigation";
+import Head from "./head";
 
 function ScrollManager() {
   const pathname = usePathname();
@@ -83,6 +84,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       // Prop to prevent hydration errors from browser extensions
       suppressHydrationWarning={true}
     >
+      <Head />
       <body>
         <MobileOptimizer>
           <I18nProvider>

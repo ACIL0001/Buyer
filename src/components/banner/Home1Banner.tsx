@@ -366,14 +366,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           margin: clamp(12px, 3vw, 20px) 0;
         }
 
-        .categories-carousel.filter-product-bg {
-          background: linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%);
-        }
-
-        .categories-carousel.filter-service-bg {
-          background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
-        }
-
         .category-card-wrapper {
           display: flex;
           flex-direction: column;
@@ -400,6 +392,15 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           transition: transform 0.3s ease, box-shadow 0.3s ease;
           background: #f3f4f6;
           border: 3px solid transparent;
+          border-right-width: 6px;
+        }
+
+        .category-card.product {
+          border-right-color: #0063b1;
+        }
+
+        .category-card.service {
+          border-right-color: #10b981;
         }
 
         .category-card:hover {
@@ -446,51 +447,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           display: inline-block;
           box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
           margin-top: clamp(6px, 1.8vw, 12px);
-        }
-
-
-        .category-badge {
-          position: absolute;
-          top: -1px;
-          right: -1px;
-          z-index: 15;
-          width: 24px;
-          height: 24px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 0 20px 0 12px;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-          transition: all 0.3s ease;
-          border: 2px solid white;
-        }
-
-        .category-badge.product {
-          background: #0063b1;
-          border-color: #0063b1;
-        }
-
-        .category-badge.service {
-          background: #10b981;
-          border-color: #10b981;
-        }
-
-        .category-card:hover .category-badge {
-          transform: scale(1.2);
-          box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
-        }
-
-        .category-badge svg {
-          width: 12px;
-          height: 12px;
-          color: white !important;
-          fill: white !important;
-          stroke: white !important;
-        }
-
-        .category-badge svg path {
-          fill: white !important;
-          stroke: white !important;
         }
 
 
@@ -593,16 +549,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: clamp(2px, 0.8vw, 6px) clamp(6px, 2vw, 10px) 0;
             max-width: 100%;
             letter-spacing: 0.15px;
-          }
-
-          .category-badge {
-            width: clamp(18px, 4vw, 22px);
-            height: clamp(18px, 4vw, 22px);
-          }
-
-          .category-badge svg {
-            width: clamp(10px, 2.5vw, 11px);
-            height: clamp(10px, 2.5vw, 11px);
           }
 
           .swiper-pagination {
@@ -853,7 +799,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         ) : categories.length === 0 ? (
           <div className="empty-state">No categories available at the moment</div>
         ) : (
-          <div className={`categories-carousel ${filterType === 'PRODUCT' ? 'filter-product-bg' : filterType === 'SERVICE' ? 'filter-service-bg' : ''}`}>
+          <div className="categories-carousel">
             <Swiper
               modules={[Navigation, Pagination, Mousewheel, Keyboard, FreeMode, Autoplay]}
               navigation={true}
@@ -922,16 +868,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                         }}
                       />
                       <div className="category-overlay"></div>
-                      {isProduct && (
-                        <div className="category-badge product">
-                          <FaShoppingBag />
-                  </div>
-                      )}
-                      {isService && (
-                        <div className="category-badge service">
-                          <FaHandshake />
-                  </div>
-                      )}
                       </div>
                       <div className="category-name">{category.name}</div>
                     </div>

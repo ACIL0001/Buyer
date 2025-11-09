@@ -1577,6 +1577,20 @@ export default function Home() {
           justify-content: center;
         }
 
+        .categories-section .category-card {
+          border-right-width: 6px;
+          border-right-style: solid;
+          border-right-color: transparent;
+        }
+
+        .categories-section .category-card.product {
+          border-right-color: #0063b1;
+        }
+
+        .categories-section .category-card.service {
+          border-right-color: #10b981;
+        }
+
         .categories-section .category-name {
           background: rgba(255, 255, 255, 0.95);
           padding: clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 18px);

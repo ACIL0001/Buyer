@@ -1184,11 +1184,11 @@ const Home1LiveTenders = () => {
               animation: 'fadeInUp 0.8s ease-out 0.4s forwards',
             }}>
             <Link
-              href="/tender-sidebar"
+              href="/tenders"
               scroll={false}
               onClick={(e) => {
                 e.preventDefault();
-                navigateWithScroll("/tender-sidebar");
+                navigateWithScroll("/tenders");
               }}
               style={{
                 display: 'inline-flex',

@@ -116,14 +116,38 @@ function ProfilePage() {
 
     const optionalDocuments = [
         {
+            key: 'commercialRegister',
+            label: 'Ancien Registre de commerce',
+            description: 'Ancienne version du registre de commerce (si disponible)',
+            required: false
+        },
+        {
+            key: 'carteAutoEntrepreneur',
+            label: 'Carte auto-entrepreneur',
+            description: 'Carte d\'auto-entrepreneur pour activités spécifiques',
+            required: false
+        },
+        {
+            key: 'nif',
+            label: 'Ancien NIF',
+            description: 'Version précédente du NIF (si disponible)',
+            required: false
+        },
+        {
             key: 'nis',
             label: 'NIS',
             description: 'Numéro d\'identification sociale',
             required: false
         },
         {
+            key: 'numeroArticle',
+            label: 'Numéro d\'article',
+            description: 'Numéro d\'article fiscal',
+            required: false
+        },
+        {
             key: 'c20',
-            label: 'C20',
+            label: 'Certificat C20',
             description: 'Document C20',
             required: false
         },
@@ -135,14 +159,14 @@ function ProfilePage() {
         },
         {
             key: 'last3YearsBalanceSheet',
-            label: 'Bilan des 3 dernières années',
-            description: 'Bilan financier des 3 dernières années',
+            label: 'Bilans des 3 dernières années',
+            description: 'Bilans financiers des trois dernières années',
             required: false
         },
         {
             key: 'certificates',
             label: 'Certificats',
-            description: 'Certificats professionnels ou autres',
+            description: 'Certificats professionnels ou autres documents complémentaires',
             required: false
         },
         {

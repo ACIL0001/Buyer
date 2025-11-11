@@ -59,12 +59,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     return Math.max(1, Math.min(categoryCount, 4));
   }, [categoryCount]);
 
-  const ribbonClass = useMemo(() => {
-    if (filterType === 'PRODUCT') return 'ribbon-product';
-    if (filterType === 'SERVICE') return 'ribbon-service';
-    return 'ribbon-all';
-  }, [filterType]);
-
   const swiperBreakpoints = useMemo(() => {
     const mobileSlides = Math.max(1, Math.min(categoryCount || 1, 2));
     const tabletSlides = Math.max(1, Math.min(categoryCount || 1, 3));
@@ -366,63 +360,11 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
         .categories-carousel {
           position: relative;
-          --ribbon-primary: rgba(59, 130, 246, 0.8);
-          --ribbon-secondary: rgba(148, 163, 184, 0.6);
-          --ribbon-highlight: rgba(224, 231, 255, 0.9);
           padding: clamp(16px, 2.5vw, 24px) clamp(24px, 4vw, 36px) clamp(10px, 2vw, 18px);
           border-radius: clamp(16px, 3vw, 24px);
           transition: background 0.3s ease;
           margin: clamp(12px, 3vw, 20px) 0;
           overflow: visible;
-        }
-
-        .categories-carousel.ribbon-product {
-          --ribbon-primary: rgba(37, 99, 235, 0.85);
-          --ribbon-secondary: rgba(59, 130, 246, 0.8);
-          --ribbon-highlight: rgba(219, 234, 254, 0.95);
-        }
-
-        .categories-carousel.ribbon-service {
-          --ribbon-primary: rgba(5, 150, 105, 0.85);
-          --ribbon-secondary: rgba(16, 185, 129, 0.8);
-          --ribbon-highlight: rgba(209, 250, 229, 0.95);
-        }
-
-        .categories-carousel.ribbon-all {
-          --ribbon-primary: rgba(99, 102, 241, 0.7);
-          --ribbon-secondary: rgba(129, 140, 248, 0.7);
-          --ribbon-highlight: rgba(224, 231, 255, 0.9);
-        }
-
-        .categories-carousel::before {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: clamp(12px, 3vw, 36px);
-          right: clamp(12px, 3vw, 36px);
-          transform: translateY(-50%);
-          height: clamp(44px, 11vw, 88px);
-          background: var(--ribbon-secondary);
-          border-radius: clamp(22px, 5.5vw, 44px);
-          opacity: 0.95;
-          box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        .categories-carousel::after {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: clamp(22px, 4.5vw, 46px);
-          right: clamp(22px, 4.5vw, 46px);
-          transform: translateY(-50%);
-          height: clamp(48px, 12vw, 92px);
-          background: var(--ribbon-primary);
-          border-radius: clamp(20px, 5vw, 42px);
-          opacity: 0.92;
-          pointer-events: none;
-          z-index: 0;
         }
 
         .categories-carousel :global(.categories-swiper) {
@@ -447,7 +389,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           margin-bottom: clamp(10px, 3vw, 18px);
           height: 100%;
           position: relative;
-          z-index: 2;
+          z-index: 1;
         }
 
 
@@ -574,14 +516,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             border-radius: clamp(12px, 3vw, 20px);
           }
           
-          .categories-carousel::before {
-            left: clamp(8px, 4vw, 18px);
-            right: clamp(8px, 4vw, 18px);
-            height: clamp(32px, 18vw, 56px);
-            border-radius: clamp(18px, 8vw, 36px);
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
-          }
-          
           .section-header {
             flex-direction: row;
             flex-wrap: nowrap;
@@ -618,11 +552,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             gap: clamp(6px, 2vw, 10px);
           }
 
-          .category-card-wrapper::after {
-            width: clamp(18px, 10vw, 28px);
-            height: clamp(26px, 14vw, 48px);
-          }
-
 
           .category-name {
             font-size: clamp(0.75rem, 2.5vw, 0.95rem);
@@ -654,12 +583,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             paddingTop: clamp(8px, 1.5vw, 16px);
           }
 
-          .categories-carousel::before {
-            left: clamp(10px, 4vw, 24px);
-            right: clamp(10px, 4vw, 24px);
-            height: clamp(36px, 14vw, 64px);
-          }
-
           .section-header {
             gap: clamp(16px, 3vw, 24px);
             margin-bottom: clamp(20px, 3.5vw, 28px);
@@ -681,11 +604,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: clamp(18px, 2.8vw, 28px) clamp(35px, 7vw, 45px);
           }
 
-          .category-card-wrapper::after {
-            width: clamp(20px, 8vw, 32px);
-            height: clamp(28px, 12vw, 52px);
-          }
-
 
           .category-name {
             font-size: clamp(0.85rem, 2.5vw, 1rem);
@@ -697,10 +615,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         @media (min-width: 640px) and (max-width: 767px) {
           .categories-section {
             padding: clamp(20px, 3.5vw, 32px) clamp(20px, 3.5vw, 32px);
-          }
-
-          .categories-carousel::before {
-            height: clamp(38px, 11vw, 70px);
           }
 
           .section-header {
@@ -718,11 +632,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
           .categories-carousel {
             padding: clamp(20px, 3vw, 30px) clamp(40px, 6vw, 50px);
-          }
-
-          .category-card-wrapper::after {
-            width: clamp(24px, 6vw, 44px);
-            height: clamp(32px, 10vw, 60px);
           }
 
         }
@@ -745,11 +654,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: clamp(22px, 3vw, 32px) 45px;
           }
 
-          .category-card-wrapper::after {
-            width: clamp(26px, 5vw, 52px);
-            height: clamp(34px, 9vw, 64px);
-          }
-
         }
 
         /* Extra Large Devices (desktops, 1024px-1279px) */
@@ -760,11 +664,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
           .categories-carousel {
             padding: clamp(24px, 3.5vw, 36px) 48px;
-          }
-
-          .category-card-wrapper::after {
-            width: clamp(28px, 4.5vw, 56px);
-            height: clamp(36px, 8vw, 68px);
           }
 
         }
@@ -913,7 +812,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         ) : categories.length === 0 ? (
           <div className="empty-state">No categories available at the moment</div>
         ) : (
-          <div className={`categories-carousel ${ribbonClass}`}>
+          <div className="categories-carousel">
             <Swiper
               modules={[Navigation, Pagination, Mousewheel, Keyboard, FreeMode, Autoplay]}
               navigation={true}

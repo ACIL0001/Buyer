@@ -1578,58 +1578,6 @@ export default function Home() {
         .categories-section .categories-carousel {
           position: relative;
           overflow: visible !important;
-          --ribbon-primary: rgba(59, 130, 246, 0.8);
-          --ribbon-secondary: rgba(148, 163, 184, 0.6);
-          --ribbon-highlight: rgba(224, 231, 255, 0.9);
-        }
-
-        .categories-section .categories-carousel.ribbon-product {
-          --ribbon-primary: rgba(37, 99, 235, 0.85);
-          --ribbon-secondary: rgba(59, 130, 246, 0.8);
-          --ribbon-highlight: rgba(219, 234, 254, 0.95);
-        }
-
-        .categories-section .categories-carousel.ribbon-service {
-          --ribbon-primary: rgba(5, 150, 105, 0.85);
-          --ribbon-secondary: rgba(16, 185, 129, 0.8);
-          --ribbon-highlight: rgba(209, 250, 229, 0.95);
-        }
-
-        .categories-section .categories-carousel.ribbon-all {
-          --ribbon-primary: rgba(99, 102, 241, 0.7);
-          --ribbon-secondary: rgba(129, 140, 248, 0.7);
-          --ribbon-highlight: rgba(224, 231, 255, 0.9);
-        }
-
-        .categories-section .categories-carousel::before {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: clamp(12px, 3vw, 40px);
-          right: clamp(12px, 3vw, 40px);
-          transform: translateY(-50%);
-          height: clamp(44px, 11vw, 88px);
-          background: var(--ribbon-secondary);
-          border-radius: clamp(22px, 5.5vw, 44px);
-          opacity: 0.95;
-          box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        .categories-section .categories-carousel::after {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: clamp(22px, 4.5vw, 46px);
-          right: clamp(22px, 4.5vw, 46px);
-          transform: translateY(-50%);
-          height: clamp(48px, 12vw, 92px);
-          background: var(--ribbon-primary);
-          border-radius: clamp(20px, 5vw, 42px);
-          opacity: 0.92;
-          pointer-events: none;
-          z-index: 0;
         }
 
         .categories-section .categories-carousel .categories-swiper {
@@ -1650,50 +1598,6 @@ export default function Home() {
           justify-content: center;
           position: relative;
           z-index: 2;
-        }
-        
-        .categories-section .category-card-wrapper::after {
-          display: none;
-        }
-
-        @media (max-width: 479px) {
-          .categories-section .categories-carousel::before {
-            left: clamp(8px, 4vw, 18px);
-            right: clamp(8px, 4vw, 18px);
-            height: clamp(32px, 18vw, 56px);
-            border-radius: clamp(18px, 8vw, 36px);
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
-          }
-
-          .categories-section .categories-carousel::after {
-            left: clamp(12px, 5vw, 22px);
-            right: clamp(12px, 5vw, 22px);
-            height: clamp(34px, 18vw, 58px);
-          }
-        }
-
-        @media (min-width: 480px) and (max-width: 639px) {
-          .categories-section .categories-carousel::before {
-            left: clamp(10px, 4vw, 24px);
-            right: clamp(10px, 4vw, 24px);
-            height: clamp(36px, 14vw, 64px);
-          }
-
-          .categories-section .categories-carousel::after {
-            left: clamp(16px, 4.5vw, 26px);
-            right: clamp(16px, 4.5vw, 26px);
-            height: clamp(38px, 16vw, 68px);
-          }
-        }
-
-        @media (min-width: 640px) and (max-width: 767px) {
-          .categories-section .categories-carousel::before {
-            height: clamp(38px, 11vw, 70px);
-          }
-
-          .categories-section .categories-carousel::after {
-            height: clamp(42px, 12vw, 76px);
-          }
         }
 
         .categories-section .category-name {

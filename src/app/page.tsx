@@ -1585,9 +1585,67 @@ export default function Home() {
           }
         }
         
+        .categories-section .categories-carousel {
+          position: relative;
+          overflow: visible !important;
+        }
+
+        .categories-section .categories-carousel::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: clamp(12px, 3vw, 40px);
+          right: clamp(12px, 3vw, 40px);
+          transform: translateY(-50%);
+          height: clamp(42px, 10vw, 82px);
+          background:
+            linear-gradient(135deg, rgba(148, 163, 184, 0.25) 0%, rgba(148, 163, 184, 0.05) 100%),
+            repeating-linear-gradient(135deg, rgba(59, 130, 246, 0.16) 0 16px, rgba(59, 130, 246, 0.08) 16px 32px);
+          border-radius: clamp(24px, 6vw, 48px);
+          opacity: 0.82;
+          box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .categories-section .categories-carousel .categories-swiper {
+          position: relative;
+          z-index: 1;
+        }
+
+        .categories-section .categories-carousel .categories-swiper .swiper-wrapper,
+        .categories-section .categories-carousel .categories-swiper .swiper-slide {
+          overflow: visible;
+        }
+
         .categories-section .category-card-wrapper {
           justify-content: center;
           position: relative;
+          z-index: 2;
+        }
+
+        @media (max-width: 479px) {
+          .categories-section .categories-carousel::before {
+            left: clamp(8px, 4vw, 18px);
+            right: clamp(8px, 4vw, 18px);
+            height: clamp(32px, 18vw, 56px);
+            border-radius: clamp(18px, 8vw, 36px);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+          }
+        }
+
+        @media (min-width: 480px) and (max-width: 639px) {
+          .categories-section .categories-carousel::before {
+            left: clamp(10px, 4vw, 24px);
+            right: clamp(10px, 4vw, 24px);
+            height: clamp(36px, 14vw, 64px);
+          }
+        }
+
+        @media (min-width: 640px) and (max-width: 767px) {
+          .categories-section .categories-carousel::before {
+            height: clamp(38px, 11vw, 70px);
+          }
         }
 
         .categories-section .category-ribbon {

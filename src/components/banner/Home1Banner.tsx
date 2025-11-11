@@ -59,6 +59,12 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     return Math.max(1, Math.min(categoryCount, 4));
   }, [categoryCount]);
 
+  const ribbonClass = useMemo(() => {
+    if (filterType === 'PRODUCT') return 'ribbon-product';
+    if (filterType === 'SERVICE') return 'ribbon-service';
+    return 'ribbon-all';
+  }, [filterType]);
+
   const swiperBreakpoints = useMemo(() => {
     const mobileSlides = Math.max(1, Math.min(categoryCount || 1, 2));
     const tabletSlides = Math.max(1, Math.min(categoryCount || 1, 3));
@@ -360,11 +366,32 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
         .categories-carousel {
           position: relative;
+          --ribbon-primary: rgba(59, 130, 246, 0.55);
+          --ribbon-secondary: rgba(96, 165, 250, 0.35);
+          --ribbon-highlight: rgba(191, 219, 254, 0.28);
           padding: clamp(16px, 2.5vw, 24px) clamp(24px, 4vw, 36px) clamp(10px, 2vw, 18px);
           border-radius: clamp(16px, 3vw, 24px);
           transition: background 0.3s ease;
           margin: clamp(12px, 3vw, 20px) 0;
           overflow: visible;
+        }
+
+        .categories-carousel.ribbon-product {
+          --ribbon-primary: rgba(37, 99, 235, 0.65);
+          --ribbon-secondary: rgba(96, 165, 250, 0.42);
+          --ribbon-highlight: rgba(191, 219, 254, 0.32);
+        }
+
+        .categories-carousel.ribbon-service {
+          --ribbon-primary: rgba(16, 185, 129, 0.6);
+          --ribbon-secondary: rgba(52, 211, 153, 0.36);
+          --ribbon-highlight: rgba(167, 243, 208, 0.26);
+        }
+
+        .categories-carousel.ribbon-all {
+          --ribbon-primary: rgba(148, 163, 184, 0.55);
+          --ribbon-secondary: rgba(203, 213, 225, 0.32);
+          --ribbon-highlight: rgba(226, 232, 240, 0.24);
         }
 
         .categories-carousel::before {
@@ -374,13 +401,29 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           left: clamp(12px, 3vw, 36px);
           right: clamp(12px, 3vw, 36px);
           transform: translateY(-50%);
-          height: clamp(42px, 10vw, 82px);
+          height: clamp(46px, 12vw, 96px);
           background:
-            linear-gradient(180deg, rgba(148, 163, 184, 0.15), rgba(148, 163, 184, 0.15)),
-            repeating-linear-gradient(180deg, rgba(59, 130, 246, 0.18) 0 14px, rgba(59, 130, 246, 0.05) 14px 28px);
+            linear-gradient(180deg, var(--ribbon-primary) 0%, var(--ribbon-secondary) 100%);
           border-radius: clamp(24px, 6vw, 48px);
-          opacity: 0.9;
+          opacity: 0.95;
           box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .categories-carousel::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: clamp(18px, 4vw, 42px);
+          right: clamp(18px, 4vw, 42px);
+          transform: translateY(-50%);
+          height: clamp(52px, 13vw, 108px);
+          background:
+            linear-gradient(180deg, transparent 0%, var(--ribbon-highlight) 45%, var(--ribbon-highlight) 55%, transparent 100%);
+          border-radius: clamp(28px, 7vw, 52px);
+          opacity: 0.9;
+          filter: blur(0.2px);
           pointer-events: none;
           z-index: 0;
         }
@@ -408,6 +451,31 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           height: 100%;
           position: relative;
           z-index: 2;
+        }
+
+        .category-card-wrapper::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 100%;
+          transform: translateY(-50%);
+          width: clamp(24px, 6vw, 48px);
+          height: clamp(36px, 10vw, 68px);
+          background:
+            radial-gradient(ellipse at left center, var(--ribbon-primary) 0%, var(--ribbon-primary) 55%, transparent 80%);
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .categories-swiper .swiper-slide:last-child .category-card-wrapper::after {
+          display: none;
+        }
+
+        [dir="rtl"] .category-card-wrapper::after {
+          left: auto;
+          right: 100%;
+          background:
+            radial-gradient(ellipse at right center, var(--ribbon-primary) 0%, var(--ribbon-primary) 55%, transparent 80%);
         }
 
 
@@ -578,6 +646,11 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             gap: clamp(6px, 2vw, 10px);
           }
 
+          .category-card-wrapper::after {
+            width: clamp(18px, 10vw, 28px);
+            height: clamp(26px, 14vw, 48px);
+          }
+
 
           .category-name {
             font-size: clamp(0.75rem, 2.5vw, 0.95rem);
@@ -636,6 +709,11 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: clamp(18px, 2.8vw, 28px) clamp(35px, 7vw, 45px);
           }
 
+          .category-card-wrapper::after {
+            width: clamp(20px, 8vw, 32px);
+            height: clamp(28px, 12vw, 52px);
+          }
+
 
           .category-name {
             font-size: clamp(0.85rem, 2.5vw, 1rem);
@@ -670,6 +748,11 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: clamp(20px, 3vw, 30px) clamp(40px, 6vw, 50px);
           }
 
+          .category-card-wrapper::after {
+            width: clamp(24px, 6vw, 44px);
+            height: clamp(32px, 10vw, 60px);
+          }
+
         }
 
         /* Large Devices (tablets, 768px-1023px) */
@@ -690,6 +773,11 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: clamp(22px, 3vw, 32px) 45px;
           }
 
+          .category-card-wrapper::after {
+            width: clamp(26px, 5vw, 52px);
+            height: clamp(34px, 9vw, 64px);
+          }
+
         }
 
         /* Extra Large Devices (desktops, 1024px-1279px) */
@@ -700,6 +788,11 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
           .categories-carousel {
             padding: clamp(24px, 3.5vw, 36px) 48px;
+          }
+
+          .category-card-wrapper::after {
+            width: clamp(28px, 4.5vw, 56px);
+            height: clamp(36px, 8vw, 68px);
           }
 
         }
@@ -848,7 +941,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         ) : categories.length === 0 ? (
           <div className="empty-state">No categories available at the moment</div>
         ) : (
-          <div className="categories-carousel">
+          <div className={`categories-carousel ${ribbonClass}`}>
             <Swiper
               modules={[Navigation, Pagination, Mousewheel, Keyboard, FreeMode, Autoplay]}
               navigation={true}

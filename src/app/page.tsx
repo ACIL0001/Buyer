@@ -1578,6 +1578,27 @@ export default function Home() {
         .categories-section .categories-carousel {
           position: relative;
           overflow: visible !important;
+          --ribbon-primary: rgba(59, 130, 246, 0.55);
+          --ribbon-secondary: rgba(96, 165, 250, 0.35);
+          --ribbon-highlight: rgba(191, 219, 254, 0.28);
+        }
+
+        .categories-section .categories-carousel.ribbon-product {
+          --ribbon-primary: rgba(37, 99, 235, 0.65);
+          --ribbon-secondary: rgba(96, 165, 250, 0.42);
+          --ribbon-highlight: rgba(191, 219, 254, 0.32);
+        }
+
+        .categories-section .categories-carousel.ribbon-service {
+          --ribbon-primary: rgba(16, 185, 129, 0.6);
+          --ribbon-secondary: rgba(52, 211, 153, 0.36);
+          --ribbon-highlight: rgba(167, 243, 208, 0.26);
+        }
+
+        .categories-section .categories-carousel.ribbon-all {
+          --ribbon-primary: rgba(148, 163, 184, 0.55);
+          --ribbon-secondary: rgba(203, 213, 225, 0.32);
+          --ribbon-highlight: rgba(226, 232, 240, 0.24);
         }
 
         .categories-section .categories-carousel::before {
@@ -1587,13 +1608,29 @@ export default function Home() {
           left: clamp(12px, 3vw, 40px);
           right: clamp(12px, 3vw, 40px);
           transform: translateY(-50%);
-          height: clamp(42px, 10vw, 82px);
+          height: clamp(46px, 12vw, 96px);
           background:
-            linear-gradient(180deg, rgba(148, 163, 184, 0.15), rgba(148, 163, 184, 0.15)),
-            repeating-linear-gradient(180deg, rgba(59, 130, 246, 0.18) 0 14px, rgba(59, 130, 246, 0.05) 14px 28px);
+            linear-gradient(180deg, var(--ribbon-primary) 0%, var(--ribbon-secondary) 100%);
           border-radius: clamp(24px, 6vw, 48px);
-          opacity: 0.9;
+          opacity: 0.95;
           box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .categories-section .categories-carousel::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: clamp(18px, 4vw, 44px);
+          right: clamp(18px, 4vw, 44px);
+          transform: translateY(-50%);
+          height: clamp(52px, 13vw, 108px);
+          background:
+            linear-gradient(180deg, transparent 0%, var(--ribbon-highlight) 45%, var(--ribbon-highlight) 55%, transparent 100%);
+          border-radius: clamp(28px, 7vw, 52px);
+          opacity: 0.9;
+          filter: blur(0.2px);
           pointer-events: none;
           z-index: 0;
         }
@@ -1617,7 +1654,31 @@ export default function Home() {
           position: relative;
           z-index: 2;
         }
+        
+        .categories-section .category-card-wrapper::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 100%;
+          transform: translateY(-50%);
+          width: clamp(24px, 6vw, 48px);
+          height: clamp(36px, 10vw, 68px);
+          background:
+            radial-gradient(ellipse at left center, var(--ribbon-primary) 0%, var(--ribbon-primary) 55%, transparent 80%);
+          pointer-events: none;
+          z-index: 1;
+        }
 
+        .categories-section .categories-swiper .swiper-slide:last-child .category-card-wrapper::after {
+          display: none;
+        }
+
+        [dir="rtl"] .categories-section .category-card-wrapper::after {
+          left: auto;
+          right: 100%;
+          background:
+            radial-gradient(ellipse at right center, var(--ribbon-primary) 0%, var(--ribbon-primary) 55%, transparent 80%);
+        }
 
         @media (max-width: 479px) {
           .categories-section .categories-carousel::before {
@@ -1627,6 +1688,17 @@ export default function Home() {
             border-radius: clamp(18px, 8vw, 36px);
             box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
           }
+
+          .categories-section .categories-carousel::after {
+            left: clamp(10px, 5vw, 20px);
+            right: clamp(10px, 5vw, 20px);
+            height: clamp(36px, 18vw, 62px);
+          }
+
+          .categories-section .category-card-wrapper::after {
+            width: clamp(18px, 10vw, 28px);
+            height: clamp(26px, 14vw, 48px);
+          }
         }
 
         @media (min-width: 480px) and (max-width: 639px) {
@@ -1635,11 +1707,31 @@ export default function Home() {
             right: clamp(10px, 4vw, 24px);
             height: clamp(36px, 14vw, 64px);
           }
+
+          .categories-section .categories-carousel::after {
+            left: clamp(14px, 5vw, 28px);
+            right: clamp(14px, 5vw, 28px);
+            height: clamp(40px, 16vw, 72px);
+          }
+
+          .categories-section .category-card-wrapper::after {
+            width: clamp(20px, 8vw, 32px);
+            height: clamp(28px, 12vw, 52px);
+          }
         }
 
         @media (min-width: 640px) and (max-width: 767px) {
           .categories-section .categories-carousel::before {
             height: clamp(38px, 11vw, 70px);
+          }
+
+          .categories-section .categories-carousel::after {
+            height: clamp(44px, 12vw, 80px);
+          }
+
+          .categories-section .category-card-wrapper::after {
+            width: clamp(24px, 6vw, 44px);
+            height: clamp(32px, 10vw, 60px);
           }
         }
 

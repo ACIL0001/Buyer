@@ -1578,27 +1578,27 @@ export default function Home() {
         .categories-section .categories-carousel {
           position: relative;
           overflow: visible !important;
-          --ribbon-primary: rgba(59, 130, 246, 0.55);
-          --ribbon-secondary: rgba(96, 165, 250, 0.35);
-          --ribbon-highlight: rgba(191, 219, 254, 0.28);
+          --ribbon-primary: rgba(59, 130, 246, 0.8);
+          --ribbon-secondary: rgba(148, 163, 184, 0.6);
+          --ribbon-highlight: rgba(224, 231, 255, 0.9);
         }
 
         .categories-section .categories-carousel.ribbon-product {
-          --ribbon-primary: rgba(37, 99, 235, 0.65);
-          --ribbon-secondary: rgba(96, 165, 250, 0.42);
-          --ribbon-highlight: rgba(191, 219, 254, 0.32);
+          --ribbon-primary: rgba(37, 99, 235, 0.85);
+          --ribbon-secondary: rgba(59, 130, 246, 0.8);
+          --ribbon-highlight: rgba(219, 234, 254, 0.95);
         }
 
         .categories-section .categories-carousel.ribbon-service {
-          --ribbon-primary: rgba(16, 185, 129, 0.6);
-          --ribbon-secondary: rgba(52, 211, 153, 0.36);
-          --ribbon-highlight: rgba(167, 243, 208, 0.26);
+          --ribbon-primary: rgba(5, 150, 105, 0.85);
+          --ribbon-secondary: rgba(16, 185, 129, 0.8);
+          --ribbon-highlight: rgba(209, 250, 229, 0.95);
         }
 
         .categories-section .categories-carousel.ribbon-all {
-          --ribbon-primary: rgba(148, 163, 184, 0.55);
-          --ribbon-secondary: rgba(203, 213, 225, 0.32);
-          --ribbon-highlight: rgba(226, 232, 240, 0.24);
+          --ribbon-primary: rgba(99, 102, 241, 0.7);
+          --ribbon-secondary: rgba(129, 140, 248, 0.7);
+          --ribbon-highlight: rgba(224, 231, 255, 0.9);
         }
 
         .categories-section .categories-carousel::before {
@@ -1608,10 +1608,9 @@ export default function Home() {
           left: clamp(12px, 3vw, 40px);
           right: clamp(12px, 3vw, 40px);
           transform: translateY(-50%);
-          height: clamp(46px, 12vw, 96px);
-          background:
-            linear-gradient(180deg, var(--ribbon-primary) 0%, var(--ribbon-secondary) 100%);
-          border-radius: clamp(24px, 6vw, 48px);
+          height: clamp(44px, 11vw, 88px);
+          background: var(--ribbon-secondary);
+          border-radius: clamp(22px, 5.5vw, 44px);
           opacity: 0.95;
           box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
           pointer-events: none;
@@ -1622,15 +1621,13 @@ export default function Home() {
           content: '';
           position: absolute;
           top: 50%;
-          left: clamp(18px, 4vw, 44px);
-          right: clamp(18px, 4vw, 44px);
+          left: clamp(22px, 4.5vw, 46px);
+          right: clamp(22px, 4.5vw, 46px);
           transform: translateY(-50%);
-          height: clamp(52px, 13vw, 108px);
-          background:
-            linear-gradient(180deg, transparent 0%, var(--ribbon-highlight) 45%, var(--ribbon-highlight) 55%, transparent 100%);
-          border-radius: clamp(28px, 7vw, 52px);
-          opacity: 0.9;
-          filter: blur(0.2px);
+          height: clamp(48px, 12vw, 92px);
+          background: var(--ribbon-primary);
+          border-radius: clamp(20px, 5vw, 42px);
+          opacity: 0.92;
           pointer-events: none;
           z-index: 0;
         }
@@ -1656,28 +1653,7 @@ export default function Home() {
         }
         
         .categories-section .category-card-wrapper::after {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 100%;
-          transform: translateY(-50%);
-          width: clamp(24px, 6vw, 48px);
-          height: clamp(36px, 10vw, 68px);
-          background:
-            radial-gradient(ellipse at left center, var(--ribbon-primary) 0%, var(--ribbon-primary) 55%, transparent 80%);
-          pointer-events: none;
-          z-index: 1;
-        }
-
-        .categories-section .categories-swiper .swiper-slide:last-child .category-card-wrapper::after {
           display: none;
-        }
-
-        [dir="rtl"] .categories-section .category-card-wrapper::after {
-          left: auto;
-          right: 100%;
-          background:
-            radial-gradient(ellipse at right center, var(--ribbon-primary) 0%, var(--ribbon-primary) 55%, transparent 80%);
         }
 
         @media (max-width: 479px) {
@@ -1690,14 +1666,9 @@ export default function Home() {
           }
 
           .categories-section .categories-carousel::after {
-            left: clamp(10px, 5vw, 20px);
-            right: clamp(10px, 5vw, 20px);
-            height: clamp(36px, 18vw, 62px);
-          }
-
-          .categories-section .category-card-wrapper::after {
-            width: clamp(18px, 10vw, 28px);
-            height: clamp(26px, 14vw, 48px);
+            left: clamp(12px, 5vw, 22px);
+            right: clamp(12px, 5vw, 22px);
+            height: clamp(34px, 18vw, 58px);
           }
         }
 
@@ -1709,14 +1680,9 @@ export default function Home() {
           }
 
           .categories-section .categories-carousel::after {
-            left: clamp(14px, 5vw, 28px);
-            right: clamp(14px, 5vw, 28px);
-            height: clamp(40px, 16vw, 72px);
-          }
-
-          .categories-section .category-card-wrapper::after {
-            width: clamp(20px, 8vw, 32px);
-            height: clamp(28px, 12vw, 52px);
+            left: clamp(16px, 4.5vw, 26px);
+            right: clamp(16px, 4.5vw, 26px);
+            height: clamp(38px, 16vw, 68px);
           }
         }
 
@@ -1726,12 +1692,7 @@ export default function Home() {
           }
 
           .categories-section .categories-carousel::after {
-            height: clamp(44px, 12vw, 80px);
-          }
-
-          .categories-section .category-card-wrapper::after {
-            width: clamp(24px, 6vw, 44px);
-            height: clamp(32px, 10vw, 60px);
+            height: clamp(42px, 12vw, 76px);
           }
         }
 

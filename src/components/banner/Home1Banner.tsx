@@ -56,46 +56,46 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     if (categoryCount === 0) {
       return 1;
     }
-    return Math.max(1, Math.min(categoryCount, 3));
+    return Math.max(1, Math.min(categoryCount, 4));
   }, [categoryCount]);
 
   const swiperBreakpoints = useMemo(() => {
-    const mobileSlides = Math.max(1, Math.min(categoryCount || 1, 3));
-    const tabletSlides = Math.max(1, Math.min(categoryCount || 1, 4));
-    const desktopSlides = Math.max(1, Math.min(categoryCount || 1, 5));
+    const mobileSlides = Math.max(1, Math.min(categoryCount || 1, 2));
+    const tabletSlides = Math.max(1, Math.min(categoryCount || 1, 3));
+    const desktopSlides = Math.max(1, Math.min(categoryCount || 1, 4));
 
     return {
       0: {
         slidesPerView: mobileSlides,
-        spaceBetween: 8,
+        spaceBetween: 12,
       },
       360: {
         slidesPerView: mobileSlides,
-        spaceBetween: 10,
+        spaceBetween: 14,
       },
       480: {
         slidesPerView: mobileSlides,
-        spaceBetween: 12,
+        spaceBetween: 16,
       },
       640: {
         slidesPerView: tabletSlides,
-        spaceBetween: 16,
+        spaceBetween: 20,
       },
       768: {
         slidesPerView: tabletSlides,
-        spaceBetween: 18,
+        spaceBetween: 22,
       },
       1024: {
         slidesPerView: desktopSlides,
-        spaceBetween: 20,
+        spaceBetween: 24,
       },
       1280: {
         slidesPerView: desktopSlides,
-        spaceBetween: 22,
+        spaceBetween: 26,
       },
       1440: {
         slidesPerView: desktopSlides,
-        spaceBetween: 24,
+        spaceBetween: 28,
       },
     };
   }, [categoryCount]);
@@ -440,6 +440,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           display: flex;
           align-items: center;
           justify-content: center;
+          padding: 0 clamp(6px, 1.8vw, 14px);
         }
 
         .category-card {
@@ -964,7 +965,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                 momentumVelocityRatio: 0.5,
               }}
               grabCursor={true}
-              spaceBetween={16}
+              spaceBetween={24}
               slidesPerView={defaultSlidesPerView}
               breakpoints={swiperBreakpoints}
               onSwiper={setSwiperInstance}

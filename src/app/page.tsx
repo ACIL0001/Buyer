@@ -1618,6 +1618,10 @@ export default function Home() {
           overflow: visible;
         }
 
+        .categories-section .categories-carousel .categories-swiper .swiper-slide {
+          padding: 0 clamp(6px, 1.8vw, 14px);
+        }
+
         .categories-section .category-card-wrapper {
           justify-content: center;
           position: relative;

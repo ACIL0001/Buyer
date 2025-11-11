@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React, { useState, useEffect, useMemo, CSSProperties } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from 'react-i18next';
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Mousewheel, Keyboard, FreeMode, Autoplay } from "swiper/modules";
@@ -56,56 +56,46 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     if (categoryCount === 0) {
       return 1;
     }
-    return Math.max(1, Math.min(categoryCount, 4));
+    return Math.max(1, Math.min(categoryCount, 3));
   }, [categoryCount]);
 
-  const ribbonColor = useMemo(() => {
-    if (filterType === 'PRODUCT') {
-      return '#0063b1';
-    }
-    if (filterType === 'SERVICE') {
-      return '#10b981';
-    }
-    return '#94a3b8';
-  }, [filterType]);
-
   const swiperBreakpoints = useMemo(() => {
-    const mobileSlides = Math.max(1, Math.min(categoryCount || 1, 2));
-    const tabletSlides = Math.max(1, Math.min(categoryCount || 1, 3));
-    const desktopSlides = Math.max(1, Math.min(categoryCount || 1, 4));
+    const mobileSlides = Math.max(1, Math.min(categoryCount || 1, 3));
+    const tabletSlides = Math.max(1, Math.min(categoryCount || 1, 4));
+    const desktopSlides = Math.max(1, Math.min(categoryCount || 1, 5));
 
     return {
       0: {
         slidesPerView: mobileSlides,
-        spaceBetween: 12,
+        spaceBetween: 8,
       },
       360: {
         slidesPerView: mobileSlides,
-        spaceBetween: 14,
+        spaceBetween: 10,
       },
       480: {
         slidesPerView: mobileSlides,
-        spaceBetween: 16,
+        spaceBetween: 12,
       },
       640: {
         slidesPerView: tabletSlides,
-        spaceBetween: 20,
+        spaceBetween: 16,
       },
       768: {
         slidesPerView: tabletSlides,
-        spaceBetween: 22,
+        spaceBetween: 18,
       },
       1024: {
         slidesPerView: desktopSlides,
-        spaceBetween: 24,
+        spaceBetween: 20,
       },
       1280: {
         slidesPerView: desktopSlides,
-        spaceBetween: 26,
+        spaceBetween: 22,
       },
       1440: {
         slidesPerView: desktopSlides,
-        spaceBetween: 28,
+        spaceBetween: 24,
       },
     };
   }, [categoryCount]);
@@ -374,20 +364,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           border-radius: clamp(16px, 3vw, 24px);
           transition: background 0.3s ease;
           margin: clamp(12px, 3vw, 20px) 0;
-          overflow: visible;
-        }
-
-        .categories-carousel :global(.categories-swiper) {
-          position: relative;
-          z-index: 1;
-        }
-
-        .categories-carousel :global(.categories-swiper .swiper-wrapper) {
-          overflow: visible;
-        }
-
-        .categories-carousel :global(.categories-swiper .swiper-slide) {
-          overflow: visible;
         }
 
         .category-card-wrapper {
@@ -399,56 +375,12 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           margin-bottom: clamp(10px, 3vw, 18px);
           height: 100%;
           position: relative;
-          z-index: 1;
         }
-
-        .category-ribbon {
-          position: absolute;
-          top: 50%;
-          left: calc(100% + clamp(2px, 0.8vw, 6px));
-          transform: translateY(-50%);
-          width: clamp(20px, 4vw, 48px);
-          height: clamp(6px, 0.9vw, 10px);
-          background: var(--ribbon-color, #94a3b8);
-          border-radius: 999px;
-          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
-          pointer-events: none;
-          z-index: 0;
-          transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
-        }
-
-        .category-ribbon::before,
-        .category-ribbon::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          background: linear-gradient(90deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
-          opacity: 0.6;
-          pointer-events: none;
-        }
-
-        .category-ribbon::after {
-          inset: 0;
-          background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.65));
-          opacity: 0.55;
-        }
-
-        .category-card-wrapper:hover .category-ribbon {
-          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
-          transform: translateY(-50%) scaleX(1.04);
-        }
-
-        .categories-swiper :global(.swiper-slide-duplicate .category-ribbon) {
-          display: none;
-        }
-
 
         .categories-swiper .swiper-slide {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 0 clamp(6px, 1.8vw, 14px);
         }
 
         .category-card {
@@ -460,9 +392,30 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           cursor: pointer;
           transition: transform 0.3s ease, box-shadow 0.3s ease;
           background: #f3f4f6;
-          z-index: 2;
         }
         
+        .category-ribbon {
+          position: absolute;
+          top: 50%;
+          right: clamp(-18px, -2.8vw, -12px);
+          transform: translateY(-50%);
+          width: clamp(6px, 1.2vw, 10px);
+          height: clamp(56px, 14vw, 92px);
+          border-radius: 9999px;
+          background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+          pointer-events: none;
+          opacity: 0.95;
+        }
+
+        .category-ribbon.product {
+          background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 50%, #60a5fa 100%);
+        }
+
+        .category-ribbon.service {
+          background: linear-gradient(180deg, #047857 0%, #10b981 45%, #34d399 100%);
+        }
+
         .category-card:hover {
           transform: translateY(-8px) scale(1.02);
           box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
@@ -508,6 +461,12 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
           margin-top: clamp(6px, 1.8vw, 12px);
         }
+
+        [dir="rtl"] .categories-section .category-ribbon {
+          right: auto;
+          left: clamp(-18px, -2.8vw, -12px);
+        }
+
 
         /* Pagination dots */
         .swiper-pagination {
@@ -567,6 +526,12 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             border-radius: clamp(12px, 3vw, 20px);
           }
           
+          .category-ribbon {
+            right: clamp(-12px, -4vw, -8px);
+            height: clamp(44px, 24vw, 64px);
+            width: clamp(4px, 1.8vw, 6px);
+          }
+
           .section-header {
             flex-direction: row;
             flex-wrap: nowrap;
@@ -602,7 +567,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           .category-card-wrapper {
             gap: clamp(6px, 2vw, 10px);
           }
-
 
           .category-name {
             font-size: clamp(0.75rem, 2.5vw, 0.95rem);
@@ -655,6 +619,11 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: clamp(18px, 2.8vw, 28px) clamp(35px, 7vw, 45px);
           }
 
+          .category-ribbon {
+            right: clamp(-16px, -3.8vw, -10px);
+            height: clamp(52px, 18vw, 78px);
+            width: clamp(5px, 1.4vw, 8px);
+          }
 
           .category-name {
             font-size: clamp(0.85rem, 2.5vw, 1rem);
@@ -684,7 +653,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           .categories-carousel {
             padding: clamp(20px, 3vw, 30px) clamp(40px, 6vw, 50px);
           }
-
         }
 
         /* Large Devices (tablets, 768px-1023px) */
@@ -704,7 +672,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           .categories-carousel {
             padding: clamp(22px, 3vw, 32px) 45px;
           }
-
         }
 
         /* Extra Large Devices (desktops, 1024px-1279px) */
@@ -716,7 +683,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           .categories-carousel {
             padding: clamp(24px, 3.5vw, 36px) 48px;
           }
-
         }
 
         /* XXL Devices (large desktops, 1280px+) */
@@ -857,16 +823,13 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           >
             Service
           </button>
-        </div>
+                </div>
         {loading ? (
           <div className="loading-state">Loading categories...</div>
         ) : categories.length === 0 ? (
           <div className="empty-state">No categories available at the moment</div>
         ) : (
-          <div
-            className="categories-carousel"
-            style={{ "--ribbon-color": ribbonColor } as CSSProperties}
-          >
+          <div className="categories-carousel">
             <Swiper
               modules={[Navigation, Pagination, Mousewheel, Keyboard, FreeMode, Autoplay]}
               navigation={true}
@@ -897,7 +860,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                 momentumVelocityRatio: 0.5,
               }}
               grabCursor={true}
-              spaceBetween={24}
+              spaceBetween={16}
               slidesPerView={defaultSlidesPerView}
               breakpoints={swiperBreakpoints}
               onSwiper={setSwiperInstance}
@@ -913,8 +876,11 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
               }}
               className="categories-swiper"
             >
-              {categories.map((category, index) => {
-                const isLast = index === categories.length - 1;
+              {categories.map((category) => {
+                const categoryType = category.type?.toUpperCase() || 'PRODUCT';
+                const isProduct = categoryType === 'PRODUCT';
+                const isService = categoryType === 'SERVICE';
+                
                 return (
                   <SwiperSlide key={category._id || category.id}>
                     <div className="category-card-wrapper">
@@ -922,25 +888,28 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                         className="category-card"
                         onClick={(e) => navigateToCategory(category, e)}
                       >
-                        <img
-                          src={getCategoryImageUrl(category)}
-                          alt={category.name}
-                          className="category-image"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/assets/images/cat.avif';
-                          }}
-                        />
-                        <div className="category-overlay"></div>
+                      <img
+                        src={getCategoryImageUrl(category)}
+                        alt={category.name}
+                        className="category-image"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/assets/images/cat.avif';
+                        }}
+                      />
+                      <div className="category-overlay"></div>
                       </div>
+                      <div
+                        className={`category-ribbon ${isProduct ? 'product' : isService ? 'service' : ''}`}
+                        aria-hidden="true"
+                      />
                       <div className="category-name">{category.name}</div>
-                      {!isLast && <div className="category-ribbon" aria-hidden="true" />}
                     </div>
                   </SwiperSlide>
                 );
               })}
             </Swiper>
-          </div>
+                    </div>
         )}
       </div>
     </>

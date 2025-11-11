@@ -968,6 +968,11 @@ export default function Home() {
             display: none !important;
           }
 
+          .categories-section .category-ribbon {
+            right: clamp(-12px, -4vw, -8px);
+            height: clamp(44px, 24vw, 64px);
+            width: clamp(4px, 1.8vw, 6px);
+          }
         }
 
         /* Small Devices (480px-639px) */
@@ -1006,6 +1011,11 @@ export default function Home() {
             max-width: clamp(80px, 20vw, 150px) !important;
           }
 
+          .categories-section .category-ribbon {
+            right: clamp(-16px, -3.8vw, -10px);
+            height: clamp(52px, 18vw, 78px);
+            width: clamp(5px, 1.4vw, 8px);
+          }
         }
 
         /* Medium Devices (640px-767px) */
@@ -1575,29 +1585,36 @@ export default function Home() {
           }
         }
         
-        .categories-section .categories-carousel {
-          position: relative;
-          overflow: visible !important;
-        }
-
-        .categories-section .categories-carousel .categories-swiper {
-          position: relative;
-          z-index: 1;
-        }
-
-        .categories-section .categories-carousel .categories-swiper .swiper-wrapper,
-        .categories-section .categories-carousel .categories-swiper .swiper-slide {
-          overflow: visible;
-        }
-
-        .categories-section .categories-carousel .categories-swiper .swiper-slide {
-          padding: 0 clamp(6px, 1.8vw, 14px);
-        }
-
         .categories-section .category-card-wrapper {
           justify-content: center;
           position: relative;
-          z-index: 2;
+        }
+
+        .categories-section .category-ribbon {
+          position: absolute;
+          top: 50%;
+          right: clamp(-18px, -2.8vw, -12px);
+          transform: translateY(-50%);
+          width: clamp(6px, 1.2vw, 10px);
+          height: clamp(56px, 14vw, 92px);
+          border-radius: 9999px;
+          background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+          pointer-events: none;
+          opacity: 0.95;
+        }
+
+        .categories-section .category-ribbon.product {
+          background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 50%, #60a5fa 100%);
+        }
+
+        .categories-section .category-ribbon.service {
+          background: linear-gradient(180deg, #047857 0%, #10b981 45%, #34d399 100%);
+        }
+
+        [dir="rtl"] .categories-section .category-ribbon {
+          right: auto;
+          left: clamp(-18px, -2.8vw, -12px);
         }
 
         .categories-section .category-name {

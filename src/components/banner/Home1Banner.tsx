@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, CSSProperties } from "react";
 import { useTranslation } from 'react-i18next';
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Mousewheel, Keyboard, FreeMode, Autoplay } from "swiper/modules";
@@ -58,6 +58,16 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     }
     return Math.max(1, Math.min(categoryCount, 4));
   }, [categoryCount]);
+
+  const ribbonColor = useMemo(() => {
+    if (filterType === 'PRODUCT') {
+      return '#0063b1';
+    }
+    if (filterType === 'SERVICE') {
+      return '#10b981';
+    }
+    return '#94a3b8';
+  }, [filterType]);
 
   const swiperBreakpoints = useMemo(() => {
     const mobileSlides = Math.max(1, Math.min(categoryCount || 1, 2));
@@ -390,6 +400,38 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           height: 100%;
           position: relative;
           z-index: 1;
+        }
+
+        .category-ribbon {
+          position: absolute;
+          top: 50%;
+          right: clamp(-12px, -1.5vw, -8px);
+          transform: translateY(-50%);
+          width: clamp(10px, 1.8vw, 14px);
+          height: clamp(60px, 10vw, 90px);
+          background: var(--ribbon-color, #94a3b8);
+          border-radius: clamp(12px, 3vw, 18px);
+          overflow: hidden;
+          box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+          pointer-events: none;
+          transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .category-ribbon::before {
+          content: '';
+          position: absolute;
+          inset: clamp(2px, 0.4vw, 4px);
+          border-radius: inherit;
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0));
+          opacity: 0.9;
+        }
+
+        .category-card-wrapper:hover .category-ribbon {
+          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+        }
+
+        .categories-swiper :global(.swiper-slide-duplicate .category-ribbon) {
+          display: none;
         }
 
 
@@ -806,13 +848,16 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           >
             Service
           </button>
-                </div>
+        </div>
         {loading ? (
           <div className="loading-state">Loading categories...</div>
         ) : categories.length === 0 ? (
           <div className="empty-state">No categories available at the moment</div>
         ) : (
-          <div className="categories-carousel">
+          <div
+            className="categories-carousel"
+            style={{ "--ribbon-color": ribbonColor } as CSSProperties}
+          >
             <Swiper
               modules={[Navigation, Pagination, Mousewheel, Keyboard, FreeMode, Autoplay]}
               navigation={true}
@@ -859,30 +904,34 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
               }}
               className="categories-swiper"
             >
-              {categories.map((category) => (
+              {categories.map((category, index) => {
+                const isLast = index === categories.length - 1;
+                return (
                   <SwiperSlide key={category._id || category.id}>
                     <div className="category-card-wrapper">
                       <div 
                         className="category-card"
                         onClick={(e) => navigateToCategory(category, e)}
                       >
-                      <img
-                        src={getCategoryImageUrl(category)}
-                        alt={category.name}
-                        className="category-image"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/assets/images/cat.avif';
-                        }}
-                      />
-                      <div className="category-overlay"></div>
+                        <img
+                          src={getCategoryImageUrl(category)}
+                          alt={category.name}
+                          className="category-image"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/assets/images/cat.avif';
+                          }}
+                        />
+                        <div className="category-overlay"></div>
                       </div>
                       <div className="category-name">{category.name}</div>
+                      {!isLast && <div className="category-ribbon" aria-hidden="true" />}
                     </div>
                   </SwiperSlide>
-              ))}
+                );
+              })}
             </Swiper>
-                    </div>
+          </div>
         )}
       </div>
     </>

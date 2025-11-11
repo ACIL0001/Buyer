@@ -374,6 +374,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           gap: clamp(8px, 2vw, 14px);
           margin-bottom: clamp(10px, 3vw, 18px);
           height: 100%;
+          position: relative;
         }
 
         .categories-swiper .swiper-slide {
@@ -391,16 +392,28 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           cursor: pointer;
           transition: transform 0.3s ease, box-shadow 0.3s ease;
           background: #f3f4f6;
-          border: 3px solid transparent;
-          border-right-width: 6px;
+        }
+        
+        .category-ribbon {
+          position: absolute;
+          top: 50%;
+          right: clamp(-18px, -2.8vw, -12px);
+          transform: translateY(-50%);
+          width: clamp(6px, 1.2vw, 10px);
+          height: clamp(56px, 14vw, 92px);
+          border-radius: 9999px;
+          background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+          pointer-events: none;
+          opacity: 0.95;
         }
 
-        .category-card.product {
-          border-right-color: #0063b1;
+        .category-ribbon.product {
+          background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 50%, #60a5fa 100%);
         }
 
-        .category-card.service {
-          border-right-color: #10b981;
+        .category-ribbon.service {
+          background: linear-gradient(180deg, #047857 0%, #10b981 45%, #34d399 100%);
         }
 
         .category-card:hover {
@@ -447,6 +460,11 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           display: inline-block;
           box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
           margin-top: clamp(6px, 1.8vw, 12px);
+        }
+
+        [dir="rtl"] .categories-section .category-ribbon {
+          right: auto;
+          left: clamp(-18px, -2.8vw, -12px);
         }
 
 
@@ -506,6 +524,12 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             paddingTop: clamp(0px, 1vw, 12px);
             margin-bottom: clamp(12px, 3vw, 20px);
             border-radius: clamp(12px, 3vw, 20px);
+          }
+          
+          .category-ribbon {
+            right: clamp(-12px, -4vw, -8px);
+            height: clamp(44px, 24vw, 64px);
+            width: clamp(4px, 1.8vw, 6px);
           }
 
           .section-header {
@@ -593,6 +617,12 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
           .categories-carousel {
             padding: clamp(18px, 2.8vw, 28px) clamp(35px, 7vw, 45px);
+          }
+
+          .category-ribbon {
+            right: clamp(-16px, -3.8vw, -10px);
+            height: clamp(52px, 18vw, 78px);
+            width: clamp(5px, 1.4vw, 8px);
           }
 
           .category-name {
@@ -855,7 +885,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                   <SwiperSlide key={category._id || category.id}>
                     <div className="category-card-wrapper">
                       <div 
-                        className={`category-card ${isProduct ? 'product' : isService ? 'service' : ''}`}
+                        className="category-card"
                         onClick={(e) => navigateToCategory(category, e)}
                       >
                       <img
@@ -869,6 +899,10 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                       />
                       <div className="category-overlay"></div>
                       </div>
+                      <div
+                        className={`category-ribbon ${isProduct ? 'product' : isService ? 'service' : ''}`}
+                        aria-hidden="true"
+                      />
                       <div className="category-name">{category.name}</div>
                     </div>
                   </SwiperSlide>

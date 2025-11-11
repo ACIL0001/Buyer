@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { CategoryAPI } from '../api/category';
 import { AuctionsAPI } from '../api/auctions';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import app from '../../config';
 
@@ -61,9 +60,8 @@ export default function CategoryClient() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
   const [expandedCategories, setExpandedCategories] = useState<{[key: string]: boolean}>({});
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'categories' | 'auctions'>('categories');
-  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<'all' | 'product' | 'service'>('all');
   const DEFAULT_CATEGORY_IMAGE = "/assets/images/logo-white.png";
   const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
 
@@ -74,6 +72,53 @@ export default function CategoryClient() {
       document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
     });
   }, [router]);
+
+  const normalizeCategoryType = (value?: string | null): 'PRODUCT' | 'SERVICE' | string | undefined => {
+    if (!value) return undefined;
+    const normalized = value.toString().trim().toUpperCase();
+    if (['PRODUIT', 'PRODUCT', 'PRODUCTS'].includes(normalized)) {
+      return 'PRODUCT';
+    }
+    if (['SERVICE', 'SERVICES'].includes(normalized)) {
+      return 'SERVICE';
+    }
+    return normalized || undefined;
+  };
+
+  const getCategoryImageUrl = (category: Category): string => {
+    const imageUrl =
+      (category.thumb && (category.thumb as any).fullUrl) ||
+      category.thumb?.url ||
+      (category as any)?.image ||
+      (category as any)?.thumbnail ||
+      (category as any)?.photo ||
+      '';
+
+    if (!imageUrl) {
+      return DEFAULT_CATEGORY_IMAGE;
+    }
+
+    const baseURL = (app.baseURL || '').replace(/\/$/, '');
+
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      if (imageUrl.includes('localhost:3000') && baseURL) {
+        return imageUrl.replace('http://localhost:3000', baseURL);
+      }
+      return imageUrl;
+    }
+
+    const cleanUrl = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+
+    if (!baseURL) {
+      return `/${cleanUrl}`;
+    }
+
+    if (cleanUrl.includes('static/')) {
+      return `${baseURL}/${cleanUrl}`;
+    }
+
+    return `${baseURL}/static/${cleanUrl}`;
+  };
 
   useEffect(() => {
     const categoryId = searchParams.get('category');
@@ -249,8 +294,21 @@ export default function CategoryClient() {
 
   const filteredCategories = categories.filter((category: Category) => {
     const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase());
-    if (activeFilter === 'all') return matchesSearch;
-    return matchesSearch;
+    if (!matchesSearch) {
+      return false;
+    }
+
+    const normalizedType = normalizeCategoryType(category.type);
+
+    if (categoryFilter === 'product') {
+      return normalizedType === 'PRODUCT';
+    }
+
+    if (categoryFilter === 'service') {
+      return normalizedType === 'SERVICE';
+    }
+
+    return true;
   });
 
   useEffect(() => {
@@ -265,292 +323,61 @@ export default function CategoryClient() {
     }
   }, [auctions, searchTerm]);
 
-  const renderCategoryCard = (category: Category, index: number = 0): JSX.Element => {
+  const renderCategoryCard = (category: Category): JSX.Element => {
       const categoryId = category._id || '';
     const name = category.name;
-      const isHovered = hoveredCategory === categoryId;
     const isExpanded = expandedCategories[categoryId];
     const hasSubcategories = hasChildren(category);
+    const categoryType = normalizeCategoryType(category.type) || '';
+    const isProduct = categoryType === 'PRODUCT';
+    const isService = categoryType === 'SERVICE';
 
-    // Dynamic gradient based on category index
-    const gradients = [
-      'linear-gradient(135deg, #0063b1 0%, #00a3e0 100%)',
-      'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
-      'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)',
-      'linear-gradient(135deg, #059669 0%, #10b981 100%)',
-      'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
-      'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
-      'linear-gradient(135deg, #ea580c 0%, #f97316 100%)',
-      'linear-gradient(135deg, #0891b2 0%, #0d9488 100%)',
-    ];
-    const categoryGradient = gradients[index % gradients.length];
+    const handleSelect = () => {
+      selectCategory(category);
+    };
 
       return (
-          <div
-        key={categoryId}
-        className="category-card-professional"
-            style={{
-              position: 'relative',
-          background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
-          borderRadius: '20px',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-              boxShadow: isHovered 
-            ? '0 20px 60px rgba(0, 99, 177, 0.25), 0 0 0 1px rgba(0, 99, 177, 0.1)' 
-            : '0 8px 32px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(255, 255, 255, 0.5)',
-          transform: isHovered ? 'translateY(-12px) scale(1.02)' : 'translateY(0) scale(1)',
-          overflow: isExpanded ? 'visible' : 'hidden',
-          zIndex: isExpanded ? 20 : 1,
-            }}
-            onMouseEnter={() => setHoveredCategory(categoryId)}
-            onMouseLeave={() => setHoveredCategory(null)}
-          >
-        {/* Gradient Accent */}
-              <div style={{
-                position: 'absolute',
-          top: '0',
-          left: '0',
-          right: '0',
-          height: '4px',
-          background: categoryGradient,
-          borderRadius: '20px 20px 0 0',
-        }} />
-
-        {/* Floating Decorative Elements */}
-              <div style={{
-          position: 'absolute',
-          top: '16px',
-          right: '16px',
-          width: '32px',
-          height: '32px',
-          background: `${categoryGradient}`,
-                borderRadius: '50%',
-          opacity: isHovered ? 0.8 : 0.3,
-          transition: 'all 0.4s ease',
-          transform: isHovered ? 'scale(1.2) rotate(45deg)' : 'scale(1) rotate(0deg)',
-        }} />
-
-        {/* Category Content */}
-        <div 
-          onClick={() => selectCategory(category)}
-          style={{
-            padding: '24px',
-            cursor: 'pointer',
-            textAlign: 'center',
-            position: 'relative',
+      <div key={categoryId} className="category-card-wrapper modern">
+        <div
+          className={`category-card ${isProduct ? 'product' : isService ? 'service' : ''}`}
+          onClick={handleSelect}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              handleSelect();
+            }
           }}
         >
-          {/* Category Image with Creative Frame */}
-          <div style={{
-            position: 'relative',
-            display: 'inline-block',
-            marginBottom: '16px',
-          }}>
-            <div style={{
-              width: '80px',
-              height: '80px',
-              borderRadius: '20px',
-              background: categoryGradient,
-              padding: '3px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              transition: 'all 0.4s ease',
-              transform: isHovered ? 'rotate(6deg) scale(1.1)' : 'rotate(0deg) scale(1)',
-              boxShadow: isHovered 
-                ? '0 12px 40px rgba(0, 99, 177, 0.3)' 
-                : '0 4px 20px rgba(0, 0, 0, 0.1)',
-            }}>
-              <div style={{
-                width: '100%',
-                height: '100%',
-                borderRadius: '17px',
-                overflow: 'hidden',
-                background: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-            <img
-              src={(() => {
-                if (category.thumb && category.thumb.url) {
-                  const imageUrl = category.thumb.url;
-                  if (imageUrl.startsWith('http')) {
-                    return imageUrl;
-                  } else if (imageUrl.startsWith('/static/')) {
-                    const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                    console.log('🎯 CATEGORY PAGE CATEGORY IMAGE:', {
-                      originalUrl: imageUrl,
-                      finalUrl: finalUrl,
-                      categoryId: category._id,
-                      categoryName: name
-                    });
-                    return finalUrl;
-                  } else if (imageUrl.startsWith('/')) {
-                    const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                    console.log('🎯 CATEGORY PAGE CATEGORY IMAGE:', {
-                      originalUrl: imageUrl,
-                      finalUrl: finalUrl,
-                      categoryId: category._id,
-                      categoryName: name
-                    });
-                    return finalUrl;
-                  } else {
-                    const finalUrl = `${app.baseURL}${imageUrl}`;
-                    console.log('🎯 CATEGORY PAGE CATEGORY IMAGE:', {
-                      originalUrl: imageUrl,
-                      finalUrl: finalUrl,
-                      categoryId: category._id,
-                      categoryName: name
-                    });
-                    return finalUrl;
-                  }
-                }
-                return DEFAULT_CATEGORY_IMAGE;
-              })()}
+          <img
+            src={getCategoryImageUrl(category)}
                   alt={name}
-              style={{
-                    width: '90%',
-                    height: '90%',
-                objectFit: 'cover',
-                    borderRadius: '14px',
-                    transition: 'all 0.4s ease',
-                    transform: isHovered ? 'scale(1.1)' : 'scale(1)',
-              }}
+            className="category-image"
+            loading="lazy"
               onError={(e) => {
-                console.log('❌ Category image failed to load:', category.name, e.currentTarget.src);
                 e.currentTarget.src = DEFAULT_CATEGORY_IMAGE;
               }}
-                  loading="lazy"
                 />
+          <div className="category-overlay" />
               </div>
-            </div>
-            
-            {/* Badge for subcategories */}
-            {hasSubcategories && (
-              <div style={{
-                position: 'absolute',
-                top: '-8px',
-                right: '-8px',
-                width: '24px',
-                height: '24px',
-                background: categoryGradient,
-                borderRadius: '50%',
-                border: '3px solid white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '10px',
-                fontWeight: 'bold',
-                color: 'white',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                animation: isHovered ? 'pulse 2s infinite' : 'none',
-              }}>
-                {category.children?.length || 0}
-              </div>
-            )}
-          </div>
-          
-          {/* Category Name with Modern Typography */}
-          <h3 style={{
-            fontSize: '18px',
-            fontWeight: '700',
-                  color: '#1e293b',
-            margin: '0 0 8px 0',
-                  lineHeight: '1.3',
-            transition: 'all 0.4s ease',
-            transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
-          }}>
-            {name}
-          </h3>
-          
-          {/* Category Description */}
-          {category.description && (
-            <p style={{
-              fontSize: '13px',
-              color: '#64748b',
-              lineHeight: '1.5',
-              margin: '0 0 12px 0',
-              textAlign: 'center',
-              maxHeight: isHovered ? '40px' : '32px',
-              overflow: 'hidden',
-              transition: 'all 0.4s ease',
-              opacity: isHovered ? 1 : 0.8,
-            }}>
-              {category.description}
-            </p>
-          )}
-          
-          {/* Subcategory Info with Icon */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '6px',
-            fontSize: '13px',
-            color: '#64748b',
-            fontWeight: '500',
-          }}>
-            {hasSubcategories && (
-              <>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                </svg>
-                <span>{category.children?.length || 0} categories</span>
-              </>
-            )}
-          </div>
+        <div
+          className={`category-ribbon ${isProduct ? 'product' : isService ? 'service' : ''}`}
+          aria-hidden="true"
+        />
+        <div className="category-name">{name}</div>
 
-          {/* Animated Underline */}
-          <div style={{
-            width: isHovered ? '60px' : '30px',
-            height: '3px',
-            background: categoryGradient,
-            borderRadius: '3px',
-            margin: '12px auto 0',
-            transition: 'all 0.4s ease',
-            opacity: isHovered ? 1 : 0.6,
-          }} />
-        </div>
-        
-        {/* Modern Expand Button */}
-        {hasSubcategories && (
-          <div style={{
-            borderTop: '1px solid rgba(0, 99, 177, 0.08)',
-            padding: '12px 20px',
-            background: 'linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%)',
-            borderRadius: '0 0 20px 20px',
-          }}>
+            {hasSubcategories && (
+          <div className="category-subsection">
             <button
-                onClick={(e) => {
-                  e.stopPropagation();
+              type="button"
+              className="category-subtoggle"
+              onClick={(event) => {
+                event.stopPropagation();
                 toggleCategory(categoryId);
               }}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                background: 'transparent',
-                border: 'none',
-                color: '#0063b1',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                padding: '8px 12px',
-                borderRadius: '12px',
-                transition: 'all 0.3s ease',
-                }}
-                onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 99, 177, 0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-              }}
             >
+              <span>{isExpanded ? 'Hide subcategories' : 'View subcategories'}</span>
               <svg 
                 width="16" 
                 height="16" 
@@ -563,42 +390,30 @@ export default function CategoryClient() {
                   transition: 'transform 0.3s ease',
                 }}
               >
-                <path d="M6 9l6 6 6-6"/>
+                <path d="M6 9l6 6 6-6" />
               </svg>
-              <span>{isExpanded ? 'Hide' : 'Explore'} subcategories</span>
             </button>
-            </div>
-        )}
-        
-        {/* Enhanced Subcategories Dropdown */}
-        {hasSubcategories && isExpanded && (
-          <div 
-            className="subcategory-dropdown-modern"
-            style={{
-              position: 'absolute',
-              top: 'calc(100% - 1px)',
-              left: '0',
-              right: '0',
-              background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)',
-              border: '1px solid rgba(0, 99, 177, 0.15)',
-              borderTop: `3px solid`,
-              borderImage: `${categoryGradient} 1`,
-              borderRadius: '0 0 20px 20px',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5)',
-              zIndex: 100,
-              maxHeight: '350px',
-              overflowY: 'auto',
-              animation: 'slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{
-              padding: '16px 0',
-            }}>
-              {category.children?.map((subcategory, subIndex) => renderCategoryCard(subcategory, subIndex))}
-            </div>
+
+            {isExpanded && (
+              <ul className="subcategory-list" role="list">
+                {category.children?.map((subcategory) => {
+                  const subId = subcategory._id || subcategory.name;
+                  return (
+                    <li key={subId}>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          selectCategory(subcategory);
+                        }}
+                      >
+                        {subcategory.name}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
             </div>
           )}
         </div>
@@ -606,7 +421,7 @@ export default function CategoryClient() {
   };
 
   const renderCategoryGrid = (categories: Category[]): JSX.Element[] => {
-    return categories.map((category, index) => renderCategoryCard(category, index));
+    return categories.map((category) => renderCategoryCard(category));
   };
 
   const renderAuctionCard = (auction: Auction) => {
@@ -956,6 +771,231 @@ export default function CategoryClient() {
             transform: scale(1.1);
           }
         }
+        
+        .category-filter-toggle {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: clamp(12px, 3vw, 20px);
+          margin-bottom: clamp(20px, 4vw, 36px);
+          flex-wrap: wrap;
+        }
+
+        .category-filter-toggle .filter-button {
+          padding: clamp(10px, 2.8vw, 14px) clamp(22px, 6vw, 32px);
+          border-radius: 35px;
+          font-size: clamp(0.85rem, 1.4vw, 1rem);
+          font-weight: 700;
+          cursor: pointer;
+          border: 3px solid transparent;
+          transition: all 0.35s ease;
+          background: linear-gradient(135deg, #f8fafc 0%, #e9ecef 100%);
+          color: #475569;
+          box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+          position: relative;
+          overflow: hidden;
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+        }
+
+        .category-filter-toggle .filter-button::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+          transition: left 0.5s ease;
+        }
+
+        .category-filter-toggle .filter-button:hover::before {
+          left: 100%;
+        }
+
+        .category-filter-toggle .filter-button.product {
+          background: linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%);
+          color: white;
+          border-color: #0056a1;
+          box-shadow: 0 8px 24px rgba(0, 99, 177, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          background-size: 200% 200%;
+        }
+
+        .category-filter-toggle .filter-button.service {
+          background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+          color: white;
+          border-color: #089e6b;
+          box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          background-size: 200% 200%;
+        }
+
+        .category-filter-toggle .filter-button.active {
+          transform: translateY(-4px) scale(1.02);
+          box-shadow: 0 14px 32px rgba(15, 23, 42, 0.18);
+        }
+
+        .category-filter-toggle .filter-button:not(.active):hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
+        }
+
+        .category-card-wrapper {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: clamp(10px, 2vw, 16px);
+          padding: clamp(18px, 3vw, 26px);
+          border-radius: clamp(18px, 4vw, 26px);
+          background: rgba(255, 255, 255, 0.92);
+          box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .category-card-wrapper:hover {
+          transform: translateY(-6px);
+          box-shadow: 0 18px 44px rgba(15, 23, 42, 0.18);
+        }
+
+        .category-card {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 1;
+          border-radius: clamp(16px, 3vw, 24px);
+          overflow: hidden;
+          background: #f3f4f6;
+          cursor: pointer;
+          transition: transform 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        .category-card:hover {
+          transform: scale(1.03);
+          box-shadow: 0 16px 36px rgba(15, 23, 42, 0.18);
+        }
+
+        .category-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        .category-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, rgba(15, 23, 42, 0.35) 0%, rgba(15, 23, 42, 0.1) 55%, rgba(15, 23, 42, 0.15) 100%);
+          pointer-events: none;
+        }
+
+        .category-name {
+          background: rgba(255, 255, 255, 0.95);
+          padding: clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 18px);
+          border-radius: clamp(12px, 3vw, 18px);
+          box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+          font-weight: 700;
+          color: #1f2937;
+          text-align: center;
+          letter-spacing: 0.2px;
+          max-width: 90%;
+        }
+
+        .category-ribbon {
+          position: absolute;
+          top: 50%;
+          right: clamp(-18px, -3vw, -12px);
+          transform: translateY(-50%);
+          width: clamp(6px, 1.2vw, 10px);
+          height: clamp(56px, 14vw, 92px);
+          border-radius: 9999px;
+          background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+          opacity: 0.95;
+          pointer-events: none;
+        }
+
+        .category-ribbon.product {
+          background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 50%, #60a5fa 100%);
+        }
+
+        .category-ribbon.service {
+          background: linear-gradient(180deg, #047857 0%, #10b981 45%, #34d399 100%);
+        }
+
+        .category-subsection {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin-top: 8px;
+        }
+
+        .category-subtoggle {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          width: 100%;
+          padding: 10px 16px;
+          border-radius: 16px;
+          border: 1px solid rgba(0, 99, 177, 0.18);
+          background: rgba(248, 250, 252, 0.85);
+          color: #0063b1;
+          font-weight: 600;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .category-subtoggle:hover {
+          background: rgba(0, 99, 177, 0.1);
+          transform: translateY(-2px);
+          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+        }
+
+        .subcategory-list {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .subcategory-list li button {
+          width: 100%;
+          border: 1px solid rgba(226, 232, 240, 0.9);
+          background: white;
+          border-radius: 12px;
+          padding: 10px 14px;
+          text-align: left;
+          font-size: 13px;
+          color: #334155;
+          cursor: pointer;
+          transition: all 0.25s ease;
+        }
+
+        .subcategory-list li button:hover {
+          background: rgba(59, 130, 246, 0.12);
+          color: #1d4ed8;
+          border-color: rgba(59, 130, 246, 0.24);
+          transform: translateX(4px);
+        }
+
+        @media (max-width: 767px) {
+          .category-card-wrapper {
+            padding: clamp(14px, 4vw, 20px);
+          }
+
+          .category-ribbon {
+            right: clamp(-12px, -4vw, -8px);
+            height: clamp(44px, 24vw, 64px);
+            width: clamp(4px, 1.8vw, 6px);
+          }
+
+          .category-filter-toggle {
+            gap: clamp(10px, 4vw, 14px);
+          }
+        }
       `}</style>
     <div style={{ 
         padding: '80px 0', 
@@ -1039,6 +1079,27 @@ export default function CategoryClient() {
             </svg>
           </div>
         </div>
+
+        {viewMode === 'categories' && (
+          <div className="category-filter-toggle">
+            <button
+              type="button"
+              className={`filter-button product ${categoryFilter === 'product' ? 'active' : ''}`}
+              onClick={() => setCategoryFilter(categoryFilter === 'product' ? 'all' : 'product')}
+              aria-pressed={categoryFilter === 'product'}
+            >
+              Produit
+            </button>
+            <button
+              type="button"
+              className={`filter-button service ${categoryFilter === 'service' ? 'active' : ''}`}
+              onClick={() => setCategoryFilter(categoryFilter === 'service' ? 'all' : 'service')}
+              aria-pressed={categoryFilter === 'service'}
+            >
+              Service
+            </button>
+          </div>
+        )}
 
         {/* Back Button for Auctions View */}
         {viewMode === 'auctions' && (

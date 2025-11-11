@@ -4,14 +4,15 @@ const PAGE_DESCRIPTION =
 export default function Head() {
   return (
     <>
-      <title>Discover Our Auctions</title>
+      <title>MazadClick - Enchères</title>
       <meta name="description" content={PAGE_DESCRIPTION} />
-      <meta property="og:title" content="Discover Our Auctions" />
+      <meta property="og:title" content="MazadClick - Enchères" />
       <meta property="og:description" content={PAGE_DESCRIPTION} />
-      <meta property="twitter:title" content="Discover Our Auctions" />
+      <meta property="twitter:title" content="MazadClick - Enchères" />
       <meta property="twitter:description" content={PAGE_DESCRIPTION} />
     </>
   );
 }
+
 
 

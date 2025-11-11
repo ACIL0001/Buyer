@@ -1297,11 +1297,11 @@ const Home1LiveAuction = () => {
               animation: 'fadeInUp 0.8s ease-out 0.4s forwards',
             }}>
             <Link
-              href="/auctions"
+              href="/auction-sidebar"
               scroll={false}
               onClick={(e) => {
                 e.preventDefault();
-                navigateWithScroll("/auctions");
+                navigateWithScroll("/auction-sidebar");
               }}
               style={{
                 display: 'inline-flex',

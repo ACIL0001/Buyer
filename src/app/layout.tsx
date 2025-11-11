@@ -76,6 +76,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     authStore.getState().initializeAuth();
   }, []);
 
+  // Set document title
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      document.title = 'MazadClick';
+    }
+  }, []);
+
   // --- The return statement provides the component's UI ---
   return (
     <html

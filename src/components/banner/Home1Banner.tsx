@@ -376,10 +376,10 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           transform: translateY(-50%);
           height: clamp(42px, 10vw, 82px);
           background:
-            linear-gradient(135deg, rgba(148, 163, 184, 0.25) 0%, rgba(148, 163, 184, 0.05) 100%),
-            repeating-linear-gradient(135deg, rgba(59, 130, 246, 0.16) 0 16px, rgba(59, 130, 246, 0.08) 16px 32px);
+            linear-gradient(180deg, rgba(148, 163, 184, 0.15), rgba(148, 163, 184, 0.15)),
+            repeating-linear-gradient(180deg, rgba(59, 130, 246, 0.18) 0 14px, rgba(59, 130, 246, 0.05) 14px 28px);
           border-radius: clamp(24px, 6vw, 48px);
-          opacity: 0.8;
+          opacity: 0.9;
           box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
           pointer-events: none;
           z-index: 0;
@@ -419,8 +419,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           width: clamp(14px, 4vw, 36px);
           height: clamp(20px, 6vw, 44px);
           background:
-            linear-gradient(135deg, rgba(148, 163, 184, 0.35) 0%, rgba(148, 163, 184, 0.08) 100%),
-            repeating-linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0 14px, rgba(59, 130, 246, 0.08) 14px 28px);
+            linear-gradient(180deg, rgba(148, 163, 184, 0.25), rgba(148, 163, 184, 0.25)),
+            repeating-linear-gradient(180deg, rgba(59, 130, 246, 0.25) 0 12px, rgba(59, 130, 246, 0.08) 12px 24px);
           border-radius: clamp(10px, 3vw, 22px);
           box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
           z-index: 1;

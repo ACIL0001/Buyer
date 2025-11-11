@@ -410,31 +410,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           z-index: 2;
         }
 
-        .category-card-wrapper::after {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 100%;
-          transform: translateY(-50%);
-          width: clamp(14px, 4vw, 36px);
-          height: clamp(20px, 6vw, 44px);
-          background:
-            linear-gradient(180deg, rgba(148, 163, 184, 0.25), rgba(148, 163, 184, 0.25)),
-            repeating-linear-gradient(180deg, rgba(59, 130, 246, 0.25) 0 12px, rgba(59, 130, 246, 0.08) 12px 24px);
-          border-radius: clamp(10px, 3vw, 22px);
-          box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
-          z-index: 1;
-          pointer-events: none;
-        }
-
-        .categories-swiper .swiper-slide:last-child .category-card-wrapper::after {
-          display: none;
-        }
-
-        [dir="rtl"] .category-card-wrapper::after {
-          left: auto;
-          right: 100%;
-        }
 
         .categories-swiper .swiper-slide {
           display: flex;
@@ -637,11 +612,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             gap: clamp(6px, 2vw, 10px);
           }
 
-          .category-card-wrapper::after {
-            width: clamp(10px, 5vw, 18px);
-            height: clamp(16px, 10vw, 30px);
-            border-radius: clamp(8px, 4vw, 14px);
-          }
 
           .category-name {
             font-size: clamp(0.75rem, 2.5vw, 0.95rem);
@@ -700,10 +670,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: clamp(18px, 2.8vw, 28px) clamp(35px, 7vw, 45px);
           }
 
-          .category-card-wrapper::after {
-            width: clamp(12px, 4vw, 24px);
-            height: clamp(18px, 8vw, 34px);
-          }
 
           .category-ribbon {
             right: clamp(-16px, -3.8vw, -10px);
@@ -744,10 +710,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: clamp(20px, 3vw, 30px) clamp(40px, 6vw, 50px);
           }
 
-          .category-card-wrapper::after {
-            width: clamp(18px, 3vw, 32px);
-            height: clamp(22px, 7vw, 38px);
-          }
         }
 
         /* Large Devices (tablets, 768px-1023px) */
@@ -768,10 +730,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: clamp(22px, 3vw, 32px) 45px;
           }
 
-          .category-card-wrapper::after {
-            width: clamp(20px, 3vw, 36px);
-            height: clamp(24px, 6vw, 42px);
-          }
         }
 
         /* Extra Large Devices (desktops, 1024px-1279px) */
@@ -784,10 +742,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: clamp(24px, 3.5vw, 36px) 48px;
           }
 
-          .category-card-wrapper::after {
-            width: clamp(20px, 2.8vw, 40px);
-            height: clamp(26px, 5vw, 44px);
-          }
         }
 
         /* XXL Devices (large desktops, 1280px+) */

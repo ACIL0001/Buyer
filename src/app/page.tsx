@@ -1628,31 +1628,6 @@ export default function Home() {
           z-index: 2;
         }
 
-        .categories-section .category-card-wrapper::after {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 100%;
-          transform: translateY(-50%);
-          width: clamp(14px, 4vw, 36px);
-          height: clamp(20px, 6vw, 44px);
-          background:
-            linear-gradient(180deg, rgba(148, 163, 184, 0.25), rgba(148, 163, 184, 0.25)),
-            repeating-linear-gradient(180deg, rgba(59, 130, 246, 0.25) 0 12px, rgba(59, 130, 246, 0.08) 12px 24px);
-          border-radius: clamp(10px, 3vw, 22px);
-          box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
-          z-index: 1;
-          pointer-events: none;
-        }
-
-        .categories-section .categories-swiper .swiper-slide:last-child .category-card-wrapper::after {
-          display: none;
-        }
-
-        [dir="rtl"] .categories-section .category-card-wrapper::after {
-          left: auto;
-          right: 100%;
-        }
 
         @media (max-width: 479px) {
           .categories-section .categories-carousel::before {
@@ -1662,12 +1637,6 @@ export default function Home() {
             border-radius: clamp(18px, 8vw, 36px);
             box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
           }
-
-          .categories-section .category-card-wrapper::after {
-            width: clamp(10px, 5vw, 18px);
-            height: clamp(16px, 10vw, 30px);
-            border-radius: clamp(8px, 4vw, 14px);
-          }
         }
 
         @media (min-width: 480px) and (max-width: 639px) {
@@ -1676,21 +1645,11 @@ export default function Home() {
             right: clamp(10px, 4vw, 24px);
             height: clamp(36px, 14vw, 64px);
           }
-
-          .categories-section .category-card-wrapper::after {
-            width: clamp(12px, 4vw, 24px);
-            height: clamp(18px, 8vw, 34px);
-          }
         }
 
         @media (min-width: 640px) and (max-width: 767px) {
           .categories-section .categories-carousel::before {
             height: clamp(38px, 11vw, 70px);
-          }
-
-          .categories-section .category-card-wrapper::after {
-            width: clamp(18px, 3vw, 32px);
-            height: clamp(22px, 7vw, 38px);
           }
         }
 

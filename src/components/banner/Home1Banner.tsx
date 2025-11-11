@@ -405,29 +405,38 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         .category-ribbon {
           position: absolute;
           top: 50%;
-          right: clamp(-12px, -1.5vw, -8px);
+          left: calc(100% + clamp(2px, 0.8vw, 6px));
           transform: translateY(-50%);
-          width: clamp(10px, 1.8vw, 14px);
-          height: clamp(60px, 10vw, 90px);
+          width: clamp(20px, 4vw, 48px);
+          height: clamp(6px, 0.9vw, 10px);
           background: var(--ribbon-color, #94a3b8);
-          border-radius: clamp(12px, 3vw, 18px);
-          overflow: hidden;
-          box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+          border-radius: 999px;
+          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
           pointer-events: none;
-          transition: background 0.3s ease, box-shadow 0.3s ease;
+          z-index: 0;
+          transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
         }
 
-        .category-ribbon::before {
+        .category-ribbon::before,
+        .category-ribbon::after {
           content: '';
           position: absolute;
-          inset: clamp(2px, 0.4vw, 4px);
+          inset: 0;
           border-radius: inherit;
-          background: linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0));
-          opacity: 0.9;
+          background: linear-gradient(90deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
+          opacity: 0.6;
+          pointer-events: none;
+        }
+
+        .category-ribbon::after {
+          inset: 0;
+          background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.65));
+          opacity: 0.55;
         }
 
         .category-card-wrapper:hover .category-ribbon {
-          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+          transform: translateY(-50%) scaleX(1.04);
         }
 
         .categories-swiper :global(.swiper-slide-duplicate .category-ribbon) {

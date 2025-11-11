@@ -430,28 +430,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           z-index: 2;
         }
         
-        .category-ribbon {
-          position: absolute;
-          top: 50%;
-          right: clamp(-18px, -2.8vw, -12px);
-          transform: translateY(-50%);
-          width: clamp(6px, 1.2vw, 10px);
-          height: clamp(56px, 14vw, 92px);
-          border-radius: 9999px;
-          background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
-          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
-          pointer-events: none;
-          opacity: 0.95;
-        }
-
-        .category-ribbon.product {
-          background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 50%, #60a5fa 100%);
-        }
-
-        .category-ribbon.service {
-          background: linear-gradient(180deg, #047857 0%, #10b981 45%, #34d399 100%);
-        }
-
         .category-card:hover {
           transform: translateY(-8px) scale(1.02);
           box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
@@ -497,12 +475,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
           margin-top: clamp(6px, 1.8vw, 12px);
         }
-
-        [dir="rtl"] .categories-section .category-ribbon {
-          right: auto;
-          left: clamp(-18px, -2.8vw, -12px);
-        }
-
 
         /* Pagination dots */
         .swiper-pagination {
@@ -570,12 +542,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
           }
           
-          .category-ribbon {
-            right: clamp(-12px, -4vw, -8px);
-            height: clamp(44px, 24vw, 64px);
-            width: clamp(4px, 1.8vw, 6px);
-          }
-
           .section-header {
             flex-direction: row;
             flex-wrap: nowrap;
@@ -670,12 +636,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: clamp(18px, 2.8vw, 28px) clamp(35px, 7vw, 45px);
           }
 
-
-          .category-ribbon {
-            right: clamp(-16px, -3.8vw, -10px);
-            height: clamp(52px, 18vw, 78px);
-            width: clamp(5px, 1.4vw, 8px);
-          }
 
           .category-name {
             font-size: clamp(0.85rem, 2.5vw, 1rem);
@@ -935,12 +895,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
               }}
               className="categories-swiper"
             >
-              {categories.map((category) => {
-                const categoryType = category.type?.toUpperCase() || 'PRODUCT';
-                const isProduct = categoryType === 'PRODUCT';
-                const isService = categoryType === 'SERVICE';
-                
-                return (
+              {categories.map((category) => (
                   <SwiperSlide key={category._id || category.id}>
                     <div className="category-card-wrapper">
                       <div 
@@ -958,15 +913,10 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                       />
                       <div className="category-overlay"></div>
                       </div>
-                      <div
-                        className={`category-ribbon ${isProduct ? 'product' : isService ? 'service' : ''}`}
-                        aria-hidden="true"
-                      />
                       <div className="category-name">{category.name}</div>
                     </div>
                   </SwiperSlide>
-                );
-              })}
+              ))}
             </Swiper>
                     </div>
         )}

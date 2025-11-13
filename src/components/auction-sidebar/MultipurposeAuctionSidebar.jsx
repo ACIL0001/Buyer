@@ -571,13 +571,7 @@ const MultipurposeAuctionSidebar = () => {
                 
                 if (isSuccess && categoryData && categoryData.length > 0) {
                     setCategories(categoryData);
-                    // Filter categories by selected bid type
-                    if (selectedBidType) {
-                        const filtered = categoryData.filter(category => category.type === selectedBidType);
-                        setFilteredCategories(filtered);
-                    } else {
-                        setFilteredCategories(categoryData);
-                    }
+                    setFilteredCategories(categoryData);
                 }
                 setCategoriesLoading(false);
             } catch (err) {
@@ -587,7 +581,22 @@ const MultipurposeAuctionSidebar = () => {
         };
 
         fetchCategories();
-    }, [selectedBidType]);
+    }, []);
+
+    // Update filtered categories when selectedBidType changes
+    useEffect(() => {
+        if (categories && categories.length > 0) {
+            if (selectedBidType) {
+                const filtered = categories.filter(category => {
+                    const categoryType = category.type?.toUpperCase();
+                    return categoryType === selectedBidType;
+                });
+                setFilteredCategories(filtered);
+            } else {
+                setFilteredCategories(categories);
+            }
+        }
+    }, [selectedBidType, categories]);
 
     // Fetch subcategories when a category is selected
     useEffect(() => {
@@ -786,281 +795,6 @@ const MultipurposeAuctionSidebar = () => {
                 }
             `}</style>
             <div className="container">
-                {/* Hero Bid Type Selection */}
-                <div className="hero-section" style={{
-                    background: 'white',
-                    borderRadius: '30px',
-                    padding: '80px 40px',
-                    marginBottom: '50px',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    boxShadow: '0 15px 40px rgba(0, 0, 0, 0.1)',
-                    border: '2px solid rgba(0, 99, 177, 0.1)',
-                }}>
-                    {/* Background Pattern */}
-                    <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-                        opacity: 0.3,
-                    }}></div>
-                    
-                    <div className="row">
-                        <div className="col-12 text-center">
-                            <h1 style={{
-                                fontSize: '48px',
-                                fontWeight: '800',
-                                color: '#0063b1',
-                                marginBottom: '20px',
-                                textShadow: 'none',
-                                lineHeight: '1.2'
-                            }}>
-                                {t('auctionSidebar.discoverAuctions')}
-                            </h1>
-                            <p style={{
-                                fontSize: '20px',
-                                color: '#666',
-                                marginBottom: '60px',
-                                fontWeight: '400',
-                                maxWidth: '600px',
-                                margin: '0 auto 60px auto'
-                            }}>
-                                {t('auctionSidebar.chooseDescription')}
-                            </p>
-                            
-                            {/* Large Bid Type Cards */}
-                            <div className="row justify-content-center">
-                                <div className="col-lg-10">
-                                    <div style={{
-                                        display: 'flex',
-                                        gap: '40px',
-                                        justifyContent: 'center',
-                                        flexWrap: 'wrap'
-                                    }}>
-                                        {/* Products Card */}
-                                        <div
-                                            onClick={() => handleBidTypeChange(BID_TYPE.PRODUCT)}
-                                            style={{
-                                                background: selectedBidType === BID_TYPE.PRODUCT 
-                                                    ? 'linear-gradient(135deg, #0063b1, #00a3e0)' 
-                                                    : 'rgba(248, 249, 250, 0.9)',
-                                                backdropFilter: 'blur(20px)',
-                                                borderRadius: '25px',
-                                                padding: '50px 40px',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
-                                                border: selectedBidType === BID_TYPE.PRODUCT 
-                                                    ? '3px solid rgba(0, 99, 177, 0.3)' 
-                                                    : '2px solid rgba(0, 99, 177, 0.1)',
-                                                minWidth: '280px',
-                                                maxWidth: '320px',
-                                                position: 'relative',
-                                                overflow: 'hidden',
-                                                boxShadow: selectedBidType === BID_TYPE.PRODUCT 
-                                                    ? '0 30px 60px rgba(0, 99, 177, 0.3)' 
-                                                    : '0 15px 35px rgba(0, 0, 0, 0.1)',
-                                                transform: selectedBidType === BID_TYPE.PRODUCT ? 'scale(1.05)' : 'scale(1)',
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                if (selectedBidType !== BID_TYPE.PRODUCT) {
-                                                    e.currentTarget.style.transform = 'scale(1.02) translateY(-10px)';
-                                                    e.currentTarget.style.background = 'rgba(0, 99, 177, 0.1)';
-                                                    e.currentTarget.style.boxShadow = '0 25px 50px rgba(0, 99, 177, 0.2)';
-                                                }
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                if (selectedBidType !== BID_TYPE.PRODUCT) {
-                                                    e.currentTarget.style.transform = 'scale(1) translateY(0)';
-                                                    e.currentTarget.style.background = 'rgba(248, 249, 250, 0.9)';
-                                                    e.currentTarget.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.1)';
-                                                }
-                                            }}
-                                        >
-                                            {/* Glow effect for selected */}
-                                            {selectedBidType === BID_TYPE.PRODUCT && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    top: '-50%',
-                                                    left: '-50%',
-                                                    width: '200%',
-                                                    height: '200%',
-                                                    background: 'linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent)',
-                                                    animation: 'pulse 2s ease-in-out infinite',
-                                                    pointerEvents: 'none'
-                                                }} />
-                                            )}
-                                            
-                                            <div style={{
-                                                width: '100px',
-                                                height: '100px',
-                                                borderRadius: '50%',
-                                                background: selectedBidType === BID_TYPE.PRODUCT 
-                                                    ? 'linear-gradient(135deg, #0063b1, #00a3e0)' 
-                                                    : 'rgba(255, 255, 255, 0.2)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                margin: '0 auto 30px auto',
-                                                boxShadow: selectedBidType === BID_TYPE.PRODUCT 
-                                                    ? '0 15px 30px rgba(0, 99, 177, 0.4)' 
-                                                    : '0 10px 20px rgba(255, 255, 255, 0.2)',
-                                                transition: 'all 0.4s ease',
-                                            }}>
-                                                <i className="bx bx-package" style={{ 
-                                                    fontSize: '50px',
-                                                    color: selectedBidType === BID_TYPE.PRODUCT ? 'white' : '#0063b1'
-                                                }}></i>
-                                            </div>
-                                            
-                                            <h3 style={{
-                                                fontSize: '28px',
-                                                fontWeight: '700',
-                                                color: selectedBidType === BID_TYPE.PRODUCT ? 'white' : '#0063b1',
-                                                marginBottom: '15px',
-                                                transition: 'color 0.3s ease'
-                                            }}>
-                                                Produits
-                                            </h3>
-                                            
-                                            <p style={{
-                                                fontSize: '16px',
-                                                color: selectedBidType === BID_TYPE.PRODUCT ? 'rgba(255, 255, 255, 0.9)' : '#666',
-                                                lineHeight: '1.5',
-                                                margin: 0,
-                                                transition: 'color 0.3s ease'
-                                            }}>
-                                                Découvrez une large gamme de produits uniques aux enchères
-                                            </p>
-                                            
-                                            {selectedBidType === BID_TYPE.PRODUCT && (
-                                                <div style={{
-                                                    width: '60px',
-                                                    height: '4px',
-                                                    background: 'linear-gradient(90deg, #0063b1, #00a3e0)',
-                                                    borderRadius: '2px',
-                                                    margin: '20px auto 0 auto',
-                                                    transition: 'all 0.3s ease',
-                                                }} />
-                                            )}
-                                        </div>
-
-                                        {/* Services Card */}
-                                        <div
-                                            onClick={() => handleBidTypeChange(BID_TYPE.SERVICE)}
-                                            style={{
-                                                background: selectedBidType === BID_TYPE.SERVICE 
-                                                    ? 'linear-gradient(135deg, #0063b1, #00a3e0)' 
-                                                    : 'rgba(248, 249, 250, 0.9)',
-                                                backdropFilter: 'blur(20px)',
-                                                borderRadius: '25px',
-                                                padding: '50px 40px',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
-                                                border: selectedBidType === BID_TYPE.SERVICE 
-                                                    ? '3px solid rgba(0, 99, 177, 0.3)' 
-                                                    : '2px solid rgba(0, 99, 177, 0.1)',
-                                                minWidth: '280px',
-                                                maxWidth: '320px',
-                                                position: 'relative',
-                                                overflow: 'hidden',
-                                                boxShadow: selectedBidType === BID_TYPE.SERVICE 
-                                                    ? '0 30px 60px rgba(0, 99, 177, 0.3)' 
-                                                    : '0 15px 35px rgba(0, 0, 0, 0.1)',
-                                                transform: selectedBidType === BID_TYPE.SERVICE ? 'scale(1.05)' : 'scale(1)',
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                if (selectedBidType !== BID_TYPE.SERVICE) {
-                                                    e.currentTarget.style.transform = 'scale(1.02) translateY(-10px)';
-                                                    e.currentTarget.style.background = 'rgba(0, 99, 177, 0.1)';
-                                                    e.currentTarget.style.boxShadow = '0 25px 50px rgba(0, 99, 177, 0.2)';
-                                                }
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                if (selectedBidType !== BID_TYPE.SERVICE) {
-                                                    e.currentTarget.style.transform = 'scale(1) translateY(0)';
-                                                    e.currentTarget.style.background = 'rgba(248, 249, 250, 0.9)';
-                                                    e.currentTarget.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.1)';
-                                                }
-                                            }}
-                                        >
-                                            {/* Glow effect for selected */}
-                                            {selectedBidType === BID_TYPE.SERVICE && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    top: '-50%',
-                                                    left: '-50%',
-                                                    width: '200%',
-                                                    height: '200%',
-                                                    background: 'linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent)',
-                                                    animation: 'pulse 2s ease-in-out infinite',
-                                                    pointerEvents: 'none'
-                                                }} />
-                                            )}
-                                            
-                                            <div style={{
-                                                width: '100px',
-                                                height: '100px',
-                                                borderRadius: '50%',
-                                                background: selectedBidType === BID_TYPE.SERVICE 
-                                                    ? 'linear-gradient(135deg, #0063b1, #00a3e0)' 
-                                                    : 'rgba(255, 255, 255, 0.2)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                margin: '0 auto 30px auto',
-                                                boxShadow: selectedBidType === BID_TYPE.SERVICE 
-                                                    ? '0 15px 30px rgba(0, 99, 177, 0.4)' 
-                                                    : '0 10px 20px rgba(255, 255, 255, 0.2)',
-                                                transition: 'all 0.4s ease',
-                                            }}>
-                                                <i className="bx bx-cog" style={{ 
-                                                    fontSize: '50px',
-                                                    color: selectedBidType === BID_TYPE.SERVICE ? 'white' : '#0063b1'
-                                                }}></i>
-                                            </div>
-                                            
-                                            <h3 style={{
-                                                fontSize: '28px',
-                                                fontWeight: '700',
-                                                color: selectedBidType === BID_TYPE.SERVICE ? 'white' : '#0063b1',
-                                                marginBottom: '15px',
-                                                transition: 'color 0.3s ease'
-                                            }}>
-                                                Services
-                                            </h3>
-                                            
-                                            <p style={{
-                                                fontSize: '16px',
-                                                color: selectedBidType === BID_TYPE.SERVICE ? 'rgba(255, 255, 255, 0.9)' : '#666',
-                                                lineHeight: '1.5',
-                                                margin: 0,
-                                                transition: 'color 0.3s ease'
-                                            }}>
-                                                Accédez à des services professionnels de qualité
-                                            </p>
-                                            
-                                            {selectedBidType === BID_TYPE.SERVICE && (
-                                                <div style={{
-                                                    width: '60px',
-                                                    height: '4px',
-                                                    background: 'linear-gradient(90deg, #0063b1, #00a3e0)',
-                                                    borderRadius: '2px',
-                                                    margin: '20px auto 0 auto',
-                                                    transition: 'all 0.3s ease',
-                                                }} />
-                                            )}
-                                        </div>
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 {/* Enhanced Filter Section */}
                 <div className="filter-card">
                     <div className="row mb-40">

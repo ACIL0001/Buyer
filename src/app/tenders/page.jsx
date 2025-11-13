@@ -1591,7 +1591,7 @@ const MultipurposeTenderSidebar = () => {
                                                             position: 'relative',
                                                         height: 'clamp(160px, 25vw, 200px)',
                                                             overflow: 'hidden',
-                                                        background: 'linear-gradient(135deg, #8b5cf6, #a855f7)',
+                                                        background: 'linear-gradient(135deg, #27F5CC, #00D4AA)',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
@@ -1669,7 +1669,7 @@ const MultipurposeTenderSidebar = () => {
                                                             right: '10px',
                                                             background: timer.hasEnded
                                                                 ? 'rgba(0,0,0,0.55)'
-                                                                : (isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'linear-gradient(45deg, #8b5cf6, #a855f7)'),
+                                                                : (isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'linear-gradient(45deg, #27F5CC, #00D4AA)'),
                                                                     color: 'white',
                                                             padding: '8px 12px',
                                                                     borderRadius: '20px',
@@ -1845,13 +1845,13 @@ const MultipurposeTenderSidebar = () => {
                                                                     width: '8px',
                                                                     height: '8px',
                                                                     borderRadius: '50%',
-                                                                    background: '#8b5cf6',
+                                                                    background: '#27F5CC',
                                                                     animation: 'pulse 2s infinite',
                                                                 }}></div>
                                                                 <span style={{
                                                                     fontSize: '14px',
                                                                     fontWeight: '600',
-                                                                    color: '#8b5cf6',
+                                                                    color: '#27F5CC',
                                                                 }}>
                                                                     {tender.participantsCount || 0} participant{(tender.participantsCount || 0) !== 1 ? 's' : ''}
                                                                 </span>
@@ -1912,26 +1912,26 @@ const MultipurposeTenderSidebar = () => {
                                                                 gap: '8px',
                                                                 width: '100%',
                                                                 padding: '12px 20px',
-                                                                background: timer.hasEnded ? '#c7c7c7' : 'linear-gradient(90deg, #8b5cf6, #a855f7)',
+                                                                background: timer.hasEnded ? '#c7c7c7' : 'linear-gradient(90deg, #27F5CC, #00D4AA)',
                                                                 color: 'white',
                                                                 textDecoration: 'none',
                                                                 borderRadius: '25px',
                                                                 fontWeight: '600',
                                                                 fontSize: '14px',
                                                                 transition: 'all 0.3s ease',
-                                                                boxShadow: timer.hasEnded ? 'none' : '0 4px 12px rgba(139, 92, 246, 0.3)',
+                                                                boxShadow: timer.hasEnded ? 'none' : '0 4px 12px rgba(39, 245, 204, 0.3)',
                                                                 pointerEvents: timer.hasEnded ? 'none' : 'auto'
                                                             }}
                                                             onMouseEnter={(e) => {
                                                                 if (!timer.hasEnded) {
-                                                                    e.currentTarget.style.background = 'linear-gradient(90deg, #a855f7, #8b5cf6)';
+                                                                    e.currentTarget.style.background = 'linear-gradient(90deg, #00D4AA, #27F5CC)';
                                                                     e.currentTarget.style.transform = 'translateY(-2px)';
-                                                                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(139, 92, 246, 0.4)';
+                                                                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(39, 245, 204, 0.4)';
                                                                 }
                                                             }}
                                                             onMouseLeave={(e) => {
                                                                 if (!timer.hasEnded) {
-                                                                    e.currentTarget.style.background = 'linear-gradient(90deg, #8b5cf6, #a855f7)';
+                                                                    e.currentTarget.style.background = 'linear-gradient(90deg, #27F5CC, #00D4AA)';
                                                                     e.currentTarget.style.transform = 'translateY(0)';
                                                                     e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.3)';
                                                                 }

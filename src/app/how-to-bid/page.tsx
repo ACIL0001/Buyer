@@ -91,45 +91,6 @@ export default function HowToBid() {
           <AxiosInterceptor>
             <Header />
             <main className="how-to-bid-page">
-              {/* Hero Section */}
-              <section className="bid-hero-section">
-                <div className="container">
-                  <div className="row align-items-center">
-                    <div className="col-lg-6 fade-in-section">
-                      <h1 className="hero-title">{t('howToBid.title')}</h1>
-                      <p className="hero-description">
-                        {t('howToBid.subtitle')}
-                      </p>
-                      <div className="hero-buttons">
-                        <button 
-                          className="btn btn-primary"
-                          onClick={() => {
-                            const element = document.getElementById('steps-section');
-                            element?.scrollIntoView({ behavior: 'smooth' });
-                          }}
-                        >
-                          {t('howToBid.learnNow')} <i className="bi bi-arrow-right"></i>
-                        </button>
-                        <button className="btn btn-light ms-3">
-                          {t('howToBid.viewLiveAuctions')} <i className="bi bi-box-arrow-right"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div className="col-lg-6 fade-in-section">
-                      <div className="hero-image">
-                        <div className="image-container">
-                          <img 
-                            src="/assets/img/logo.svg" 
-                            alt="Bidding Illustration" 
-                            className="img-fluid bid-illustration"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
               {/* Steps Section */}
               <section id="steps-section" className="bid-steps-section">
                 <div className="container">

@@ -18,7 +18,13 @@ const BID_TYPE = {
 // Default image constants
 const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
 const DEFAULT_PROFILE_IMAGE = "/assets/images/avatar.jpg";
-const DEFAULT_CATEGORY_IMAGE = "/assets/images/default-category.png";
+// Use server baseURL for default category image with multiple fallback options
+const getDefaultCategoryImage = () => {
+    const baseURL = app.baseURL.replace(/\/$/, '');
+    // Try common default category image paths on the server
+    // If server image doesn't exist, use a data URI placeholder
+    return `${baseURL}/static/default-category.png`;
+};
 
 const MultipurposeAuctionSidebar = () => {
     const { t } = useTranslation();
@@ -123,7 +129,7 @@ const MultipurposeAuctionSidebar = () => {
                          '';
         
         if (!imageUrl) {
-            return DEFAULT_CATEGORY_IMAGE;
+            return getDefaultCategoryImage();
         }
 
         if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
@@ -209,8 +215,16 @@ const MultipurposeAuctionSidebar = () => {
                                         objectFit: 'cover',
                                     }}
                                     onError={(e) => {
-                                        e.currentTarget.onerror = null;
-                                        e.currentTarget.src = DEFAULT_CATEGORY_IMAGE;
+                                        const target = e.currentTarget;
+                                        // Try server fallback first
+                                        if (target.src !== getDefaultCategoryImage()) {
+                                            target.onerror = null;
+                                            target.src = getDefaultCategoryImage();
+                                        } else {
+                                            // If server image also fails, use data URI placeholder
+                                            target.onerror = null;
+                                            target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
+                                        }
                                     }}
                                 />
                             </div>
@@ -349,7 +363,7 @@ const MultipurposeAuctionSidebar = () => {
                                   return finalUrl;
                                 }
                               }
-                              return DEFAULT_CATEGORY_IMAGE;
+                              return getDefaultCategoryImage();
                             })()}
                             alt={category.name}
                             style={{
@@ -364,8 +378,16 @@ const MultipurposeAuctionSidebar = () => {
                                 transition: 'all 0.3s ease',
                             }}
                             onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "/assets/images/logo-white.png";
+                                const target = e.target;
+                                // Try server fallback first
+                                if (target.src !== getDefaultCategoryImage()) {
+                                    target.onerror = null;
+                                    target.src = getDefaultCategoryImage();
+                                } else {
+                                    // If server image also fails, use data URI placeholder
+                                    target.onerror = null;
+                                    target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
+                                }
                             }}
                             crossOrigin="use-credentials"
                             onClick={(e) => {
@@ -583,20 +605,31 @@ const MultipurposeAuctionSidebar = () => {
         fetchCategories();
     }, []);
 
-    // Update filtered categories when selectedBidType changes
+    // Update filtered categories when selectedBidType or searchTerm changes
     useEffect(() => {
         if (categories && categories.length > 0) {
+            let filtered = [...categories];
+            
+            // 1. Filter by bidType (Produit/Service)
             if (selectedBidType) {
-                const filtered = categories.filter(category => {
+                filtered = filtered.filter(category => {
                     const categoryType = category.type?.toUpperCase();
                     return categoryType === selectedBidType;
                 });
-                setFilteredCategories(filtered);
-            } else {
-                setFilteredCategories(categories);
             }
+            
+            // 2. Filter by searchTerm (search in category names)
+            if (searchTerm.trim() !== "") {
+                const searchLower = searchTerm.toLowerCase().trim();
+                filtered = filtered.filter(category => {
+                    const categoryName = category.name?.toLowerCase() || '';
+                    return categoryName.includes(searchLower);
+                });
+            }
+            
+            setFilteredCategories(filtered);
         }
-    }, [selectedBidType, categories]);
+    }, [selectedBidType, categories, searchTerm]);
 
     // Fetch subcategories when a category is selected
     useEffect(() => {

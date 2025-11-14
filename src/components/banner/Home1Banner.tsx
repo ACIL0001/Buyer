@@ -381,6 +381,108 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           display: flex;
           align-items: center;
           justify-content: center;
+          position: relative;
+        }
+
+        /* Connecting Ribbon Between Adjacent Cards */
+        .categories-swiper .swiper-slide::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          right: calc(-8px - (var(--swiper-space-between, 16px) / 2));
+          width: calc(var(--swiper-space-between, 16px) + 16px);
+          height: 6px;
+          transform: translateY(-50%);
+          opacity: 0;
+          transition: opacity 0.5s ease, background 0.3s ease;
+          z-index: 1;
+          pointer-events: none;
+          border-radius: 3px;
+        }
+
+        .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after {
+          opacity: 1;
+          background: linear-gradient(90deg, 
+            #0063b1 0%, 
+            #0078d7 30%, 
+            #00a3e0 50%, 
+            #0078d7 70%, 
+            #0063b1 100%);
+          background-size: 300% 100%;
+          animation: ribbon-flow 2.5s linear infinite;
+          box-shadow: 0 3px 10px rgba(0, 99, 177, 0.5),
+                      0 0 20px rgba(0, 99, 177, 0.3);
+        }
+
+        .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+          opacity: 1;
+          background: linear-gradient(90deg, 
+            #10b981 0%, 
+            #34d399 30%, 
+            #6ee7b7 50%, 
+            #34d399 70%, 
+            #10b981 100%);
+          background-size: 300% 100%;
+          animation: ribbon-flow 2.5s linear infinite;
+          box-shadow: 0 3px 10px rgba(16, 185, 129, 0.5),
+                      0 0 20px rgba(16, 185, 129, 0.3);
+        }
+
+        @keyframes ribbon-flow {
+          0% {
+            background-position: 0% 50%;
+          }
+          100% {
+            background-position: 300% 50%;
+          }
+        }
+
+        /* Ribbon decorative dots at connection points */
+        .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          right: calc(-8px - (var(--swiper-space-between, 16px) / 2));
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          transform: translate(50%, -50%);
+          z-index: 2;
+          background: radial-gradient(circle, #00a3e0 0%, #0063b1 100%);
+          box-shadow: 0 0 16px rgba(0, 99, 177, 0.8),
+                      0 0 8px rgba(0, 163, 224, 0.6),
+                      inset 0 1px 2px rgba(255, 255, 255, 0.3);
+          animation: pulse-dot 2s ease-in-out infinite;
+          border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          right: calc(-8px - (var(--swiper-space-between, 16px) / 2));
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          transform: translate(50%, -50%);
+          z-index: 2;
+          background: radial-gradient(circle, #6ee7b7 0%, #10b981 100%);
+          box-shadow: 0 0 16px rgba(16, 185, 129, 0.8),
+                      0 0 8px rgba(110, 231, 183, 0.6),
+                      inset 0 1px 2px rgba(255, 255, 255, 0.3);
+          animation: pulse-dot 2s ease-in-out infinite;
+          border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes pulse-dot {
+          0%, 100% {
+            transform: translate(50%, -50%) scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: translate(50%, -50%) scale(1.4);
+            opacity: 0.7;
+          }
         }
 
         .category-card {
@@ -392,6 +494,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           cursor: pointer;
           transition: transform 0.3s ease, box-shadow 0.3s ease;
           background: #f3f4f6;
+          z-index: 3;
         }
         
         .category-ribbon {
@@ -854,7 +957,10 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
               onSlideChangeTransitionEnd={() => {
                 setTimeout(() => setIsDragging(false), 100);
               }}
-              className="categories-swiper"
+              className={`categories-swiper ${
+                filterType === 'PRODUCT' ? 'show-product-ribbon' : 
+                filterType === 'SERVICE' ? 'show-service-ribbon' : ''
+              }`}
             >
               {categories.map((category) => {
                 const categoryType = category.type?.toUpperCase() || 'PRODUCT';

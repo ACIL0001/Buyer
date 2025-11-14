@@ -365,7 +365,37 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           transition: background 0.3s ease;
           margin: clamp(12px, 3vw, 20px) 0;
           overflow: visible;
+          /* Add z-index for stacking context */
+          z-index: 0;
         }
+
+        /* --- ADDED STYLES FOR CONNECTING LINE --- */
+        .categories-carousel::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          right: 0;
+          /* Aligns with the vertical center of the swiper/nav buttons */
+          top: 50%;
+          transform: translateY(-50%);
+          height: 6px; /* User requested "thick" line */
+          /* Default 'ALL' filter color */
+          background-color: #cbd5e1;
+          /* Sits BEHIND the swiper slides */
+          z-index: -1; 
+          transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .categories-carousel.filter-product::before {
+          /* Blue color from the 'Produit' button */
+          background-color: #0063b1;
+        }
+
+        .categories-carousel.filter-service::before {
+          /* Green color from the 'Service' button */
+          background-color: #10b981;
+        }
+        /* --- END OF ADDED STYLES --- */
 
         .category-card-wrapper {
           display: flex;
@@ -540,6 +570,13 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           .categories-carousel {
             padding: clamp(14px, 3vw, 20px) clamp(14px, 4vw, 18px);
           }
+          
+          /* --- MODIFICATION FOR MOBILE LINE THICKNESS --- */
+          .categories-carousel::before {
+            height: 4px; /* Make line slightly thinner on mobile */
+          }
+          /* --- END OF MODIFICATION --- */
+
 
           .category-card {
             border-radius: clamp(12px, 3vw, 16px);
@@ -599,6 +636,12 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           .categories-carousel {
             padding: clamp(18px, 2.8vw, 28px) clamp(35px, 7vw, 45px);
           }
+          
+          /* --- MODIFICATION FOR MOBILE LINE THICKNESS --- */
+          .categories-carousel::before {
+            height: 5px; 
+          }
+          /* --- END OF MODIFICATION --- */
 
 
           .category-name {
@@ -691,6 +734,10 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
           .categories-carousel {
             padding: clamp(16px, 2.5vw, 24px) clamp(30px, 5vw, 40px);
+          }
+          
+          .categories-carousel::before {
+            height: 4px;
           }
         }
       `}</style>
@@ -817,7 +864,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         ) : categories.length === 0 ? (
           <div className="empty-state">No categories available at the moment</div>
         ) : (
-          <div className="categories-carousel">
+          /* --- MODIFIED THIS LINE --- */
+          <div className={`categories-carousel filter-${filterType.toLowerCase()}`}>
             <Swiper
               modules={[Navigation, Pagination, Mousewheel, Keyboard, FreeMode, Autoplay]}
               navigation={true}

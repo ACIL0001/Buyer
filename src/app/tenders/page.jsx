@@ -1999,6 +1999,8 @@ const MultipurposeTenderSidebar = () => {
                                         </div>
                                     </div>
                                 )}
+                            </div>
+                        </div>
                     </div>
                 </div>
 

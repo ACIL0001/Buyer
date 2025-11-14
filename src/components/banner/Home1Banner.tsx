@@ -442,6 +442,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
         .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after {
           opacity: 1;
+          width: clamp(60px, 12vw, 120px) !important;
           background: linear-gradient(90deg, 
             #004080 0%, 
             #0063b1 25%, 
@@ -458,6 +459,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
         .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
           opacity: 1;
+          width: clamp(60px, 12vw, 120px) !important;
           background: linear-gradient(90deg, 
             #047857 0%, 
             #10b981 25%, 
@@ -470,6 +472,41 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                       0 0 24px rgba(16, 185, 129, 0.4),
                       inset 0 1px 0 rgba(255, 255, 255, 0.3);
           border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @media (min-width: 640px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+            width: 90px !important;
+          }
+        }
+
+        @media (min-width: 768px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+            width: 100px !important;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+            width: 110px !important;
+          }
+        }
+
+        @media (min-width: 1280px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+            width: 120px !important;
+          }
+        }
+
+        @media (min-width: 1440px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+            width: 130px !important;
+          }
         }
 
         @keyframes ribbon-flow {
@@ -910,6 +947,46 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         
         @media (min-width: 1440px) {
           .categories-swiper .swiper-slide::after {
+            width: 130px !important;
+          }
+        }
+        
+        .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+        .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+          width: clamp(60px, 12vw, 120px) !important;
+        }
+        
+        @media (min-width: 640px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+            width: 90px !important;
+          }
+        }
+        
+        @media (min-width: 768px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+            width: 100px !important;
+          }
+        }
+        
+        @media (min-width: 1024px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+            width: 110px !important;
+          }
+        }
+        
+        @media (min-width: 1280px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+            width: 120px !important;
+          }
+        }
+        
+        @media (min-width: 1440px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
             width: 130px !important;
           }
         }

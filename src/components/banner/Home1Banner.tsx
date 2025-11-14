@@ -868,6 +868,52 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
       `}</style>
       {/* Global styles for Swiper navigation buttons - must be outside styled-jsx */}
       <style dangerouslySetInnerHTML={{__html: `
+        .categories-swiper {
+          overflow: visible !important;
+        }
+        
+        .categories-swiper .swiper-wrapper {
+          overflow: visible !important;
+        }
+        
+        .categories-swiper .swiper-slide {
+          overflow: visible !important;
+        }
+        
+        .categories-swiper .swiper-slide::after {
+          width: clamp(60px, 12vw, 120px) !important;
+        }
+        
+        @media (min-width: 640px) {
+          .categories-swiper .swiper-slide::after {
+            width: 90px !important;
+          }
+        }
+        
+        @media (min-width: 768px) {
+          .categories-swiper .swiper-slide::after {
+            width: 100px !important;
+          }
+        }
+        
+        @media (min-width: 1024px) {
+          .categories-swiper .swiper-slide::after {
+            width: 110px !important;
+          }
+        }
+        
+        @media (min-width: 1280px) {
+          .categories-swiper .swiper-slide::after {
+            width: 120px !important;
+          }
+        }
+        
+        @media (min-width: 1440px) {
+          .categories-swiper .swiper-slide::after {
+            width: 130px !important;
+          }
+        }
+        
         .categories-swiper .swiper-button-next,
         .categories-swiper .swiper-button-prev {
           width: clamp(28px, 5vw, 38px) !important;

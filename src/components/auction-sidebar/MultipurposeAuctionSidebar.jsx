@@ -935,8 +935,13 @@ const MultipurposeAuctionSidebar = () => {
                                             marginBottom: '30px',
                                         }}>
                                             <button
+                                                type="button"
                                                 className={`filter-button product ${selectedBidType === BID_TYPE.PRODUCT ? 'active' : ''}`}
-                                                onClick={() => handleBidTypeChange(selectedBidType === BID_TYPE.PRODUCT ? '' : BID_TYPE.PRODUCT)}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleBidTypeChange(BID_TYPE.PRODUCT);
+                                                }}
                                                 style={{
                                                     padding: '12px 28px',
                                                     borderRadius: '35px',
@@ -955,6 +960,8 @@ const MultipurposeAuctionSidebar = () => {
                                                     textTransform: 'uppercase',
                                                     letterSpacing: '0.6px',
                                                     minWidth: '110px',
+                                                    position: 'relative',
+                                                    zIndex: 10,
                                                 }}
                                             >
                                                 Produit
@@ -977,8 +984,13 @@ const MultipurposeAuctionSidebar = () => {
                                             </h2>
                                             
                                             <button
+                                                type="button"
                                                 className={`filter-button service ${selectedBidType === BID_TYPE.SERVICE ? 'active' : ''}`}
-                                                onClick={() => handleBidTypeChange(selectedBidType === BID_TYPE.SERVICE ? '' : BID_TYPE.SERVICE)}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleBidTypeChange(BID_TYPE.SERVICE);
+                                                }}
                                                 style={{
                                                     padding: '12px 28px',
                                                     borderRadius: '35px',
@@ -997,6 +1009,8 @@ const MultipurposeAuctionSidebar = () => {
                                                     textTransform: 'uppercase',
                                                     letterSpacing: '0.6px',
                                                     minWidth: '110px',
+                                                    position: 'relative',
+                                                    zIndex: 10,
                                                 }}
                                             >
                                                 Service

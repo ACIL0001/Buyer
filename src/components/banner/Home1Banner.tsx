@@ -364,6 +364,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           border-radius: clamp(16px, 3vw, 24px);
           transition: background 0.3s ease;
           margin: clamp(12px, 3vw, 20px) 0;
+          overflow: visible;
         }
 
         .category-card-wrapper {
@@ -377,11 +378,20 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           position: relative;
         }
 
+        .categories-swiper {
+          overflow: visible !important;
+        }
+
+        .categories-swiper .swiper-wrapper {
+          overflow: visible !important;
+        }
+
         .categories-swiper .swiper-slide {
           display: flex;
           align-items: center;
           justify-content: center;
           position: relative;
+          overflow: visible !important;
         }
 
         /* Connecting Ribbon Between Adjacent Cards - Bold Horizontal Design */
@@ -390,43 +400,43 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           position: absolute;
           top: 50%;
           right: 0;
-          width: clamp(36px, 9vw, 90px);
-          height: 14px;
+          width: clamp(60px, 12vw, 120px);
+          height: 16px;
           transform: translate(50%, -50%);
           opacity: 0;
           transition: opacity 0.5s ease, background 0.3s ease;
-          z-index: 1;
+          z-index: 10;
           pointer-events: none;
-          border-radius: 7px;
+          border-radius: 8px;
         }
 
         @media (min-width: 640px) {
           .categories-swiper .swiper-slide::after {
-            width: 60px;
+            width: 90px;
           }
         }
 
         @media (min-width: 768px) {
           .categories-swiper .swiper-slide::after {
-            width: 66px;
+            width: 100px;
           }
         }
 
         @media (min-width: 1024px) {
           .categories-swiper .swiper-slide::after {
-            width: 72px;
+            width: 110px;
           }
         }
 
         @media (min-width: 1280px) {
           .categories-swiper .swiper-slide::after {
-            width: 78px;
+            width: 120px;
           }
         }
 
         @media (min-width: 1440px) {
           .categories-swiper .swiper-slide::after {
-            width: 84px;
+            width: 130px;
           }
         }
 

@@ -390,7 +390,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           position: absolute;
           top: 50%;
           right: 0;
-          width: clamp(24px, 6vw, 60px);
+          width: clamp(36px, 9vw, 90px);
           height: 14px;
           transform: translate(50%, -50%);
           opacity: 0;
@@ -402,31 +402,31 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
         @media (min-width: 640px) {
           .categories-swiper .swiper-slide::after {
-            width: 40px;
+            width: 60px;
           }
         }
 
         @media (min-width: 768px) {
           .categories-swiper .swiper-slide::after {
-            width: 44px;
+            width: 66px;
           }
         }
 
         @media (min-width: 1024px) {
           .categories-swiper .swiper-slide::after {
-            width: 48px;
+            width: 72px;
           }
         }
 
         @media (min-width: 1280px) {
           .categories-swiper .swiper-slide::after {
-            width: 52px;
+            width: 78px;
           }
         }
 
         @media (min-width: 1440px) {
           .categories-swiper .swiper-slide::after {
-            width: 56px;
+            width: 84px;
           }
         }
 

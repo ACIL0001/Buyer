@@ -400,112 +400,110 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           position: absolute;
           top: 50%;
           right: 0;
-          width: clamp(60px, 12vw, 120px);
-          height: 16px;
+          width: 80px !important;
+          height: 18px !important;
           transform: translate(50%, -50%);
           opacity: 0;
-          transition: opacity 0.5s ease, background 0.3s ease;
+          transition: opacity 0.5s ease, background 0.3s ease, width 0.3s ease;
           z-index: 10;
           pointer-events: none;
-          border-radius: 8px;
+          border-radius: 9px;
         }
 
         @media (min-width: 640px) {
           .categories-swiper .swiper-slide::after {
-            width: 90px;
+            width: 100px !important;
           }
         }
 
         @media (min-width: 768px) {
           .categories-swiper .swiper-slide::after {
-            width: 100px;
+            width: 120px !important;
           }
         }
 
         @media (min-width: 1024px) {
           .categories-swiper .swiper-slide::after {
-            width: 110px;
+            width: 140px !important;
           }
         }
 
         @media (min-width: 1280px) {
           .categories-swiper .swiper-slide::after {
-            width: 120px;
+            width: 160px !important;
           }
         }
 
         @media (min-width: 1440px) {
           .categories-swiper .swiper-slide::after {
-            width: 130px;
+            width: 180px !important;
           }
         }
 
         .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after {
-          opacity: 1;
-          width: clamp(60px, 12vw, 120px) !important;
+          opacity: 1 !important;
           background: linear-gradient(90deg, 
             #004080 0%, 
             #0063b1 25%, 
             #0078d7 50%, 
             #00a3e0 75%, 
-            #0063b1 100%);
-          background-size: 300% 100%;
-          animation: ribbon-flow 2.5s linear infinite;
+            #0063b1 100%) !important;
+          background-size: 300% 100% !important;
+          animation: ribbon-flow 2.5s linear infinite !important;
           box-shadow: 0 4px 16px rgba(0, 99, 177, 0.6),
                       0 0 24px rgba(0, 99, 177, 0.4),
-                      inset 0 1px 0 rgba(255, 255, 255, 0.3);
-          border: 2px solid rgba(255, 255, 255, 0.2);
+                      inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+          border: 2px solid rgba(255, 255, 255, 0.2) !important;
         }
 
         .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
-          opacity: 1;
-          width: clamp(60px, 12vw, 120px) !important;
+          opacity: 1 !important;
           background: linear-gradient(90deg, 
             #047857 0%, 
             #10b981 25%, 
             #34d399 50%, 
             #6ee7b7 75%, 
-            #10b981 100%);
-          background-size: 300% 100%;
-          animation: ribbon-flow 2.5s linear infinite;
+            #10b981 100%) !important;
+          background-size: 300% 100% !important;
+          animation: ribbon-flow 2.5s linear infinite !important;
           box-shadow: 0 4px 16px rgba(16, 185, 129, 0.6),
                       0 0 24px rgba(16, 185, 129, 0.4),
-                      inset 0 1px 0 rgba(255, 255, 255, 0.3);
-          border: 2px solid rgba(255, 255, 255, 0.2);
+                      inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+          border: 2px solid rgba(255, 255, 255, 0.2) !important;
         }
 
         @media (min-width: 640px) {
-          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
-          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
-            width: 90px !important;
-          }
-        }
-
-        @media (min-width: 768px) {
           .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
           .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
             width: 100px !important;
           }
         }
 
-        @media (min-width: 1024px) {
-          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
-          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
-            width: 110px !important;
-          }
-        }
-
-        @media (min-width: 1280px) {
+        @media (min-width: 768px) {
           .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
           .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
             width: 120px !important;
           }
         }
 
+        @media (min-width: 1024px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+            width: 140px !important;
+          }
+        }
+
+        @media (min-width: 1280px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+            width: 160px !important;
+          }
+        }
+
         @media (min-width: 1440px) {
           .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
           .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
-            width: 130px !important;
+            width: 180px !important;
           }
         }
 
@@ -918,76 +916,78 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         }
         
         .categories-swiper .swiper-slide::after {
-          width: clamp(60px, 12vw, 120px) !important;
+          width: 80px !important;
+          height: 18px !important;
         }
         
         @media (min-width: 640px) {
-          .categories-swiper .swiper-slide::after {
-            width: 90px !important;
-          }
-        }
-        
-        @media (min-width: 768px) {
           .categories-swiper .swiper-slide::after {
             width: 100px !important;
           }
         }
         
-        @media (min-width: 1024px) {
-          .categories-swiper .swiper-slide::after {
-            width: 110px !important;
-          }
-        }
-        
-        @media (min-width: 1280px) {
+        @media (min-width: 768px) {
           .categories-swiper .swiper-slide::after {
             width: 120px !important;
           }
         }
         
+        @media (min-width: 1024px) {
+          .categories-swiper .swiper-slide::after {
+            width: 140px !important;
+          }
+        }
+        
+        @media (min-width: 1280px) {
+          .categories-swiper .swiper-slide::after {
+            width: 160px !important;
+          }
+        }
+        
         @media (min-width: 1440px) {
           .categories-swiper .swiper-slide::after {
-            width: 130px !important;
+            width: 180px !important;
           }
         }
         
         .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
         .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
-          width: clamp(60px, 12vw, 120px) !important;
+          width: 80px !important;
+          height: 18px !important;
         }
         
         @media (min-width: 640px) {
-          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
-          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
-            width: 90px !important;
-          }
-        }
-        
-        @media (min-width: 768px) {
           .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
           .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
             width: 100px !important;
           }
         }
         
-        @media (min-width: 1024px) {
-          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
-          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
-            width: 110px !important;
-          }
-        }
-        
-        @media (min-width: 1280px) {
+        @media (min-width: 768px) {
           .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
           .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
             width: 120px !important;
           }
         }
         
+        @media (min-width: 1024px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+            width: 140px !important;
+          }
+        }
+        
+        @media (min-width: 1280px) {
+          .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
+          .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
+            width: 160px !important;
+          }
+        }
+        
         @media (min-width: 1440px) {
           .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after,
           .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
-            width: 130px !important;
+            width: 180px !important;
           }
         }
         

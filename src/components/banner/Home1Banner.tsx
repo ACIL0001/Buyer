@@ -375,16 +375,16 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           position: absolute;
           left: 0;
           right: 0;
-          /* Aligns with the vertical center of the swiper/nav buttons */
-          top: 50%;
-          transform: translateY(-50%);
           /* --- MODIFIED LINE --- */
-          height: 96px; /* Was 24px, now 24px * 4 */
+          /* Positioned higher to align with card centers */
+          top: 40%;
+          transform: translateY(-50%);
+          height: 96px; 
           /* Default 'ALL' filter color */
           background-color: #cbd5e1;
           /* Sits BEHIND the swiper slides */
           z-index: -1; 
-          transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), top 0.3s ease;
         }
 
         .categories-carousel.filter-product::before {
@@ -574,8 +574,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           
           /* --- MODIFICATION FOR MOBILE LINE THICKNESS --- */
           .categories-carousel::before {
-            /* --- MODIFIED LINE --- */
-            height: 64px; /* Was 16px, now 16px * 4 */
+            height: 64px; 
           }
           /* --- END OF MODIFICATION --- */
 
@@ -641,8 +640,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           
           /* --- MODIFICATION FOR MOBILE LINE THICKNESS --- */
           .categories-carousel::before {
-            /* --- MODIFIED LINE --- */
-            height: 80px; /* Was 20px, now 20px * 4 */
+            height: 80px; 
           }
           /* --- END OF MODIFICATION --- */
 
@@ -740,8 +738,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
           
           .categories-carousel::before {
-             /* --- MODIFIED LINE --- */
-            height: 64px; /* Was 16px, now 16px * 4 */
+            height: 64px; 
           }
         }
       `}</style>
@@ -770,7 +767,9 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           transition: all 0.3s ease !important;
           border: none !important;
           margin-top: 0 !important;
-          top: 50% !important;
+          /* --- MODIFIED LINE --- */
+          /* Positioned higher to align with card centers */
+          top: 40% !important;
           transform: translateY(-50%) !important;
         }
 
@@ -778,6 +777,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         .categories-swiper .swiper-button-prev:hover {
           background: white !important;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+          /* --- MODIFIED LINE --- */
           transform: translateY(-50%) scale(1.1) !important;
         }
 

@@ -431,10 +431,6 @@ function ProfilePage() {
                         whileHover={{ scale: 1.1 }}
                         transition={{ duration: 0.3 }}
                       />
-                      <div className="avatar-ring"></div>
-                      <div className="status-indicator online">
-                        <div className="pulse-ring"></div>
-                      </div>
                     </div>
                     
                     <input

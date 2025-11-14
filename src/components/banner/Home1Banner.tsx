@@ -384,48 +384,52 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           position: relative;
         }
 
-        /* Connecting Ribbon Between Adjacent Cards */
+        /* Connecting Ribbon Between Adjacent Cards - Bold Design */
         .categories-swiper .swiper-slide::after {
           content: '';
           position: absolute;
           top: 50%;
-          right: calc(-8px - (var(--swiper-space-between, 16px) / 2));
-          width: calc(var(--swiper-space-between, 16px) + 16px);
-          height: 6px;
+          right: -8px;
+          width: 24px;
+          height: 12px;
           transform: translateY(-50%);
           opacity: 0;
           transition: opacity 0.5s ease, background 0.3s ease;
           z-index: 1;
           pointer-events: none;
-          border-radius: 3px;
+          border-radius: 6px;
         }
 
         .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after {
           opacity: 1;
           background: linear-gradient(90deg, 
-            #0063b1 0%, 
-            #0078d7 30%, 
-            #00a3e0 50%, 
-            #0078d7 70%, 
+            #004080 0%, 
+            #0063b1 25%, 
+            #0078d7 50%, 
+            #00a3e0 75%, 
             #0063b1 100%);
           background-size: 300% 100%;
           animation: ribbon-flow 2.5s linear infinite;
-          box-shadow: 0 3px 10px rgba(0, 99, 177, 0.5),
-                      0 0 20px rgba(0, 99, 177, 0.3);
+          box-shadow: 0 4px 16px rgba(0, 99, 177, 0.6),
+                      0 0 24px rgba(0, 99, 177, 0.4),
+                      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+          border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::after {
           opacity: 1;
           background: linear-gradient(90deg, 
-            #10b981 0%, 
-            #34d399 30%, 
-            #6ee7b7 50%, 
-            #34d399 70%, 
+            #047857 0%, 
+            #10b981 25%, 
+            #34d399 50%, 
+            #6ee7b7 75%, 
             #10b981 100%);
           background-size: 300% 100%;
           animation: ribbon-flow 2.5s linear infinite;
-          box-shadow: 0 3px 10px rgba(16, 185, 129, 0.5),
-                      0 0 20px rgba(16, 185, 129, 0.3);
+          box-shadow: 0 4px 16px rgba(16, 185, 129, 0.6),
+                      0 0 24px rgba(16, 185, 129, 0.4),
+                      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+          border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         @keyframes ribbon-flow {
@@ -437,41 +441,43 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
         }
 
-        /* Ribbon decorative dots at connection points */
+        /* Ribbon decorative dots at connection points - Enhanced */
         .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::before {
           content: '';
           position: absolute;
           top: 50%;
-          right: calc(-8px - (var(--swiper-space-between, 16px) / 2));
-          width: 14px;
-          height: 14px;
+          right: -8px;
+          width: 20px;
+          height: 20px;
           border-radius: 50%;
           transform: translate(50%, -50%);
           z-index: 2;
-          background: radial-gradient(circle, #00a3e0 0%, #0063b1 100%);
-          box-shadow: 0 0 16px rgba(0, 99, 177, 0.8),
-                      0 0 8px rgba(0, 163, 224, 0.6),
-                      inset 0 1px 2px rgba(255, 255, 255, 0.3);
+          background: radial-gradient(circle, #00a3e0 0%, #0063b1 70%, #004080 100%);
+          box-shadow: 0 0 20px rgba(0, 99, 177, 0.9),
+                      0 0 12px rgba(0, 163, 224, 0.7),
+                      0 2px 8px rgba(0, 0, 0, 0.3),
+                      inset 0 1px 2px rgba(255, 255, 255, 0.4);
           animation: pulse-dot 2s ease-in-out infinite;
-          border: 2px solid rgba(255, 255, 255, 0.5);
+          border: 3px solid rgba(255, 255, 255, 0.6);
         }
 
         .categories-swiper.show-service-ribbon .swiper-slide:not(:last-child)::before {
           content: '';
           position: absolute;
           top: 50%;
-          right: calc(-8px - (var(--swiper-space-between, 16px) / 2));
-          width: 14px;
-          height: 14px;
+          right: -8px;
+          width: 20px;
+          height: 20px;
           border-radius: 50%;
           transform: translate(50%, -50%);
           z-index: 2;
-          background: radial-gradient(circle, #6ee7b7 0%, #10b981 100%);
-          box-shadow: 0 0 16px rgba(16, 185, 129, 0.8),
-                      0 0 8px rgba(110, 231, 183, 0.6),
-                      inset 0 1px 2px rgba(255, 255, 255, 0.3);
+          background: radial-gradient(circle, #6ee7b7 0%, #10b981 70%, #047857 100%);
+          box-shadow: 0 0 20px rgba(16, 185, 129, 0.9),
+                      0 0 12px rgba(110, 231, 183, 0.7),
+                      0 2px 8px rgba(0, 0, 0, 0.3),
+                      inset 0 1px 2px rgba(255, 255, 255, 0.4);
           animation: pulse-dot 2s ease-in-out infinite;
-          border: 2px solid rgba(255, 255, 255, 0.5);
+          border: 3px solid rgba(255, 255, 255, 0.6);
         }
 
         @keyframes pulse-dot {
@@ -494,14 +500,29 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           cursor: pointer;
           transition: transform 0.3s ease, box-shadow 0.3s ease;
           background: #f3f4f6;
-          z-index: 3;
         }
         
         .category-ribbon {
-          display: none;
+          position: absolute;
+          top: 50%;
+          right: clamp(-18px, -2.8vw, -12px);
+          transform: translateY(-50%);
+          width: clamp(6px, 1.2vw, 10px);
+          height: clamp(56px, 14vw, 92px);
+          border-radius: 9999px;
+          background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
+          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+          pointer-events: none;
+          opacity: 0.95;
         }
 
+        .category-ribbon.product {
+          background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 50%, #60a5fa 100%);
+        }
 
+        .category-ribbon.service {
+          background: linear-gradient(180deg, #047857 0%, #10b981 45%, #34d399 100%);
+        }
 
         .category-card:hover {
           transform: translateY(-8px) scale(1.02);
@@ -614,7 +635,9 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
           
           .category-ribbon {
-            display: none;
+            right: clamp(-12px, -4vw, -8px);
+            height: clamp(44px, 24vw, 64px);
+            width: clamp(4px, 1.8vw, 6px);
           }
 
           .section-header {
@@ -705,7 +728,9 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .category-ribbon {
-            display: none;
+            right: clamp(-16px, -3.8vw, -10px);
+            height: clamp(52px, 18vw, 78px);
+            width: clamp(5px, 1.4vw, 8px);
           }
 
           .category-name {
@@ -1003,7 +1028,3 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 };
 
 export default Home1Banner;
-
-
-
-

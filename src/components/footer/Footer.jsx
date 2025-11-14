@@ -1,33 +1,9 @@
 import Link from 'next/link'
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next';
-import { CategoryAPI } from '../../app/api/category.ts';
 
 const Footer = () => {
   const { t } = useTranslation();
-  const [dynamicCategories, setDynamicCategories] = useState([]);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await CategoryAPI.getCategories();
-        
-        // The API returns an object with a 'data' property containing the array
-        if (response && response.data && Array.isArray(response.data)) {
-          setDynamicCategories(response.data);
-        } else if (Array.isArray(response)) {
-          // Fallback: if the response is directly an array
-          setDynamicCategories(response);
-        } else {
-          console.error("API response format is unexpected:", response);
-        }
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
-      }
-    };
-
-    fetchCategories();
-  }, []);
   
   // Navigation items from header
   const navItems = [
@@ -36,15 +12,6 @@ const Footer = () => {
     { name: t('footer.navItems.category'), path: "/category" },
     { name: t('footer.navItems.howToBid'), path: "/how-to-bid" },
     { name: t('footer.navItems.members'), path: "/users" },
-  ];
-
-  // Quick links
-  const quickLinks = [
-    { title: t('footer.quickLinks.howToBid'), link: '/how-to-bid' },
-    { title: t('footer.quickLinks.howToSell'), link: '/how-to-sell' },
-    { title: t('footer.quickLinks.about'), link: '/about' },
-    { title: t('footer.quickLinks.faq'), link: '/faq' },
-    { title: t('footer.quickLinks.contact'), link: '/contact' },
   ];
 
   // Legal links
@@ -83,7 +50,7 @@ const Footer = () => {
       <style jsx>{`
         .footer-main-grid {
           display: grid;
-          grid-template-columns: 2fr 1fr 1fr 1fr;
+          grid-template-columns: 2fr 1fr;
           gap: 40px;
         }
         
@@ -296,124 +263,6 @@ const Footer = () => {
                       opacity: 0
                     }}></span>
                     {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Quick Links Column */}
-          <div>
-            <h4 style={{
-              fontSize: '18px',
-              fontWeight: '700',
-              color: 'var(--text-primary, #333)',
-              marginBottom: '20px',
-              position: 'relative'
-            }}>
-              {t('footer.quickLinksTitle', 'Quick Links')}
-              <span style={{
-                position: 'absolute',
-                bottom: '-8px',
-                left: '0',
-                width: '30px',
-                height: '3px',
-                background: 'var(--primary-color, #0063b1)',
-                borderRadius: '2px'
-              }}></span>
-            </h4>
-            <ul style={{
-              listStyle: 'none',
-              padding: 0,
-              margin: 0
-            }}>
-              {quickLinks.map((item, index) => (
-                <li key={index} style={{ marginBottom: '12px' }}>
-                  <Link href={item.link} style={{
-                    color: 'var(--text-secondary, #666)',
-                    textDecoration: 'none',
-                    fontSize: '15px',
-                    fontWeight: '500',
-                    transition: 'all 0.3s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                  onMouseOver={e => {
-                    e.currentTarget.style.color = 'var(--primary-color, #0063b1)';
-                    e.currentTarget.style.transform = 'translateX(5px)';
-                  }}
-                  onMouseOut={e => {
-                    e.currentTarget.style.color = 'var(--text-secondary, #666)';
-                    e.currentTarget.style.transform = 'translateX(0)';
-                  }}>
-                    <span style={{
-                      width: '4px',
-                      height: '4px',
-                      borderRadius: '50%',
-                      background: 'var(--primary-color, #0063b1)',
-                      opacity: 0
-                    }}></span>
-                    {item.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Categories Column */}
-          <div>
-            <h4 style={{
-              fontSize: '18px',
-              fontWeight: '700',
-              color: 'var(--text-primary, #333)',
-              marginBottom: '20px',
-              position: 'relative'
-            }}>
-              {t('footer.categoriesTitle')}
-              <span style={{
-                position: 'absolute',
-                bottom: '-8px',
-                left: '0',
-                width: '30px',
-                height: '3px',
-                background: 'var(--primary-color, #0063b1)',
-                borderRadius: '2px'
-              }}></span>
-            </h4>
-            <ul style={{
-              listStyle: 'none',
-              padding: 0,
-              margin: 0
-            }}>
-              {dynamicCategories.slice(0, 6).map((category, index) => (
-                <li key={category._id || index} style={{ marginBottom: '12px' }}>
-                  <Link href={`/auction-sidebar?category=${category._id}`} style={{
-                    color: 'var(--text-secondary, #666)',
-                    textDecoration: 'none',
-                    fontSize: '15px',
-                    fontWeight: '500',
-                    transition: 'all 0.3s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                  onMouseOver={e => {
-                    e.currentTarget.style.color = 'var(--primary-color, #0063b1)';
-                    e.currentTarget.style.transform = 'translateX(5px)';
-                  }}
-                  onMouseOut={e => {
-                    e.currentTarget.style.color = 'var(--text-secondary, #666)';
-                    e.currentTarget.style.transform = 'translateX(0)';
-                  }}>
-                    <span style={{
-                      width: '4px',
-                      height: '4px',
-                      borderRadius: '50%',
-                      background: 'var(--primary-color, #0063b1)',
-                      opacity: 0
-                    }}></span>
-                    {category.name}
                   </Link>
                 </li>
               ))}

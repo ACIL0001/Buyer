@@ -379,7 +379,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           top: 50%;
           transform: translateY(-50%);
           /* --- MODIFIED LINE --- */
-          height: 24px; /* Was 6px, now 6px * 4 */
+          height: 96px; /* Was 24px, now 24px * 4 */
           /* Default 'ALL' filter color */
           background-color: #cbd5e1;
           /* Sits BEHIND the swiper slides */
@@ -575,7 +575,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           /* --- MODIFICATION FOR MOBILE LINE THICKNESS --- */
           .categories-carousel::before {
             /* --- MODIFIED LINE --- */
-            height: 16px; /* Was 4px, now 4px * 4 */
+            height: 64px; /* Was 16px, now 16px * 4 */
           }
           /* --- END OF MODIFICATION --- */
 
@@ -631,7 +631,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
           .filter-button {
             padding: clamp(10px, 2.5vw, 12px) clamp(20px, 4vw, 24px);
-            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            font-size: clamp(0.8rem, 2vw, 0.95rem);
             min-width: 100px;
           }
 
@@ -642,7 +642,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           /* --- MODIFICATION FOR MOBILE LINE THICKNESS --- */
           .categories-carousel::before {
             /* --- MODIFIED LINE --- */
-            height: 20px; /* Was 5px, now 5px * 4 */
+            height: 80px; /* Was 20px, now 20px * 4 */
           }
           /* --- END OF MODIFICATION --- */
 
@@ -741,7 +741,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           
           .categories-carousel::before {
              /* --- MODIFIED LINE --- */
-            height: 16px; /* Was 4px, now 4px * 4 */
+            height: 64px; /* Was 16px, now 16px * 4 */
           }
         }
       `}</style>

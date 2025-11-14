@@ -109,6 +109,11 @@ const MultipurposeTenderSidebar = () => {
     const [hoveredCategory, setHoveredCategory] = useState(null);
     const [hoveredSubCategory, setHoveredSubCategory] = useState(null);
     const [expandedCategories, setExpandedCategories] = useState({});
+    
+    // Pagination constants
+    const ITEMS_PER_PAGE = 9;
+    const totalPages = Math.ceil(filteredTenders.length / ITEMS_PER_PAGE);
+    const paginatedTenders = filteredTenders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
     const [timers, setTimers] = useState({});
     const [animatedCards, setAnimatedCards] = useState([]);
 
@@ -1388,109 +1393,6 @@ const MultipurposeTenderSidebar = () => {
                                     </div>
                                 )}
 
-                                {/* Grid View Controls */}
-                                <div className="row">
-                                    <div className="col-12 d-flex justify-content-center">
-                                        <div className="grid-controls" style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '15px',
-                                            padding: '15px 25px',
-                                            background: 'rgba(255, 255, 255, 0.8)',
-                                            borderRadius: '50px',
-                                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
-                                            backdropFilter: 'blur(10px)'
-                                        }}>
-                                            <span style={{
-                                                fontSize: '14px',
-                                                fontWeight: '600',
-                                                color: '#666',
-                                                marginRight: '10px'
-                                            }}>
-                                                {t('display')}
-                                            </span>
-                                            <ul className="grid-view" style={{
-                                                display: 'flex',
-                                                gap: '8px',
-                                                margin: 0,
-                                                padding: 0,
-                                                listStyle: 'none'
-                                            }}>
-                                                <li
-                                                    className={`column-2 ${activeColumn === 2 ? "active" : ""}`}
-                                                    onClick={() => handleColumnClick(2)}
-                                                    style={{
-                                                        cursor: 'pointer',
-                                                        padding: '8px',
-                                                        background: activeColumn === 2 ? 'linear-gradient(135deg, #0063b1, #00a3e0)' : 'rgba(245, 245, 245, 0.8)',
-                                                        borderRadius: '8px',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        width: '35px',
-                                                        height: '35px',
-                                                        transition: 'all 0.3s ease',
-                                                        boxShadow: activeColumn === 2 ? '0 4px 12px rgba(0, 99, 177, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)'
-                                                    }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width={14}
-                                                        height={22}
-                                                        viewBox="0 0 12 20"
-                                                        fill={activeColumn === 2 ? "white" : "#666"}
-                                                    >
-                                                        <g>
-                                                            <rect width="4.88136" height="5.10638" rx="2.44068" />
-                                                            <rect y="7.44678" width="4.88136" height="5.10638" rx="2.44068" />
-                                                            <rect y="14.8937" width="4.88136" height="5.10638" rx="2.44068" />
-                                                            <rect x="7.11865" width="4.88136" height="5.10638" rx="2.44068" />
-                                                            <rect x="7.11865" y="7.44678" width="4.88136" height="5.10638" rx="2.44068" />
-                                                            <rect x="7.11865" y="14.8937" width="4.88136" height="5.10638" rx="2.44068" />
-                                                        </g>
-                                                    </svg>
-                                                </li>
-                                                <li
-                                                    className={`column-3 ${activeColumn === 3 ? "active" : ""}`}
-                                                    onClick={() => handleColumnClick(3)}
-                                                    style={{
-                                                        cursor: 'pointer',
-                                                        padding: '8px',
-                                                        background: activeColumn === 3 ? 'linear-gradient(135deg, #0063b1, #00a3e0)' : 'rgba(245, 245, 245, 0.8)',
-                                                        borderRadius: '8px',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        width: '35px',
-                                                        height: '35px',
-                                                        transition: 'all 0.3s ease',
-                                                        boxShadow: activeColumn === 3 ? '0 4px 12px rgba(0, 99, 177, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)'
-                                                    }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width={22}
-                                                        height={22}
-                                                        viewBox="0 0 20 20"
-                                                        fill={activeColumn === 3 ? "white" : "#666"}
-                                                    >
-                                                        <g clipPath="url(#clip0_1610_1442)">
-                                                            <rect width="5.10638" height="5.10638" rx="2.55319" />
-                                                            <rect y="7.44678" width="5.10638" height="5.10638" rx="2.55319" />
-                                                            <rect y="14.8937" width="5.10638" height="5.10638" rx="2.55319" />
-                                                            <rect x="7.44678" width="5.10638" height="5.10638" rx="2.55319" />
-                                                            <rect x="7.44678" y="7.44678" width="5.10638" height="5.10638" rx="2.55319" />
-                                                            <rect x="7.44678" y="14.8937" width="5.10638" height="5.10638" rx="2.55319" />
-                                                            <rect x="14.8936" width="5.10638" height="5.10638" rx="2.55319" />
-                                                            <rect x="14.8936" y="7.44678" width="5.10638" height="5.10638" rx="2.55319" />
-                                                            <rect x="14.8936" y="14.8937" width="5.10638" height="5.10638" rx="2.55319" />
-                                                        </g>
-                                                    </svg>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -1499,8 +1401,12 @@ const MultipurposeTenderSidebar = () => {
                 {/* Tender Cards Section */}
                 <div className="row">
                     <div className="col-12">
+                        <div
+                            className={`list-grid-product-wrap column-${activeColumn === 2 ? "2" : activeColumn === 3 ? "3" : "3"}-wrapper`}
+                        >
+                            <div className="row g-4 mb-60">
                                 {loading ? (
-                            <div className="text-center py-5">
+                                    <div className="col-12 text-center py-5">
                                         <div className="spinner" style={{
                                             width: '40px',
                                             height: '40px',
@@ -1513,23 +1419,13 @@ const MultipurposeTenderSidebar = () => {
                                         <p style={{ marginTop: '15px', color: '#666' }}>{t('loadingTenders')}</p>
                                     </div>
                                 ) : error ? (
-                            <div className="text-center py-5">
+                                    <div className="col-12 text-center py-5">
                                         <p style={{ color: '#ff5555' }}>{error}</p>
                                     </div>
-                                ) : filteredTenders && filteredTenders.length > 0 ? (
-                            <div className="tender-carousel-container" style={{ position: 'relative' }}>
-                                <Swiper
-                                    {...swiperSettings}
-                                    className="swiper tender-slider"
-                                    style={{
-                                        padding: '20px 0 50px',
-                                        overflow: 'visible',
-                                    }}
-                                >
-                                    {filteredTenders.map((tender, idx) => {
+                                ) : paginatedTenders && paginatedTenders.length > 0 ? (
+                                    paginatedTenders.map((tender, index) => {
                                         const timer = timers[tender._id] || { days: "00", hours: "00", minutes: "00", seconds: "00", hasEnded: false };
-                                        const isAnimated = animatedCards.includes(idx);
-                                        const isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30;
+                                        const hasTenderEnded = timer.hasEnded || false;
 
                                         // Determine the display name for the tender owner
                                         const ownerName = tender.owner?.firstName && tender.owner?.lastName
@@ -1538,34 +1434,68 @@ const MultipurposeTenderSidebar = () => {
                                         const displayName = ownerName || 'Acheteur';
 
                                         return (
-                                            <SwiperSlide key={tender._id} style={{ height: 'auto', display: 'flex', justifyContent: 'center' }}>
-                                        <div
-                                                    className={`tender-card-animate tender-card-hover ${isAnimated ? 'animated' : ''}`}
+                                            <div
+                                                key={tender._id}
+                                                className={`col-lg-${activeColumn === 2 ? '6' : '4'} col-md-6 item`}
+                                            >
+                                                <div
+                                                    className="modern-tender-card tender-card"
                                                     style={{
-                                                        background: 'white',
-                                                        borderRadius: 'clamp(16px, 3vw, 20px)',
+                                                        background: hasTenderEnded ? '#f0f0f0' : 'white',
+                                                        borderRadius: '20px',
                                                         overflow: 'hidden',
-                                                        boxShadow: '0 8px 25px rgba(0, 0, 0, 0.08)',
-                                                        border: '1px solid rgba(0, 0, 0, 0.05)',
-                                                        width: '100%',
-                                                        maxWidth: '320px',
+                                                        boxShadow: hasTenderEnded ? 'none' : '0 8px 25px rgba(0, 0, 0, 0.08)',
+                                                        height: '100%',
+                                                        maxWidth: '350px',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
                                                         position: 'relative',
-                                                        minHeight: '380px',
-                                                opacity: timer.hasEnded ? 0.6 : 1,
-                                                filter: timer.hasEnded ? 'grayscale(60%)' : 'none',
-                                                cursor: timer.hasEnded ? 'not-allowed' : 'default'
+                                                        transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
+                                                        border: hasTenderEnded ? '1px solid #d0d0d0' : '1px solid rgba(0, 0, 0, 0.05)',
+                                                        cursor: hasTenderEnded ? 'not-allowed' : 'pointer',
+                                                        opacity: hasTenderEnded ? 0.6 : 1,
+                                                        pointerEvents: hasTenderEnded ? 'none' : 'auto',
+                                                        margin: '0 auto',
+                                                    }}
+                                                    onClick={() => !hasTenderEnded && handleTenderCardClick(tender._id)}
+                                                    onMouseEnter={(e) => {
+                                                        if (!hasTenderEnded) {
+                                                            e.currentTarget.style.transform = 'translateY(-10px)';
+                                                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(39, 245, 204, 0.15)';
+                                                            e.currentTarget.style.borderColor = 'rgba(39, 245, 204, 0.2)';
+                                                        }
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        if (!hasTenderEnded) {
+                                                            e.currentTarget.style.transform = 'translateY(0)';
+                                                            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.08)';
+                                                            e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.05)';
+                                                        }
                                                     }}
                                                 >
                                                     {/* Tender Image */}
-                                                    <div style={{
+                                                    <div
+                                                        className="tender-image"
+                                                        style={{
+                                                            height: '240px',
                                                             position: 'relative',
-                                                        height: 'clamp(160px, 25vw, 200px)',
                                                             overflow: 'hidden',
-                                                        background: 'linear-gradient(135deg, #8b5cf6, #a855f7)',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                    }}>
+                                                        }}
+                                                    >
+                                                        <Link
+                                                            href={hasTenderEnded ? "#" : `/tender-details/${tender._id}`}
+                                                            scroll={false}
+                                                            style={{ display: 'block', height: '100%', cursor: hasTenderEnded ? 'not-allowed' : 'pointer' }}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (hasTenderEnded) {
+                                                                    e.preventDefault();
+                                                                    return;
+                                                                }
+                                                                e.preventDefault();
+                                                                navigateWithTop(`/tender-details/${tender._id}`);
+                                                            }}
+                                                        >
                                                             <img
                                                                 src={(() => {
                                                                     let imageUrl = null;
@@ -1588,30 +1518,12 @@ const MultipurposeTenderSidebar = () => {
                                                                             return imageUrl;
                                                                         } else if (imageUrl.startsWith('/static/')) {
                                                                             const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                                                            console.log('🎯 TENDERS PAGE TENDER IMAGE:', {
-                                                                                originalUrl: imageUrl,
-                                                                                finalUrl: finalUrl,
-                                                                                tenderId: tender._id,
-                                                                                tenderTitle: tender.title
-                                                                            });
                                                                             return finalUrl;
                                                                         } else if (imageUrl.startsWith('/')) {
                                                                             const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                                                            console.log('🎯 TENDERS PAGE TENDER IMAGE:', {
-                                                                                originalUrl: imageUrl,
-                                                                                finalUrl: finalUrl,
-                                                                                tenderId: tender._id,
-                                                                                tenderTitle: tender.title
-                                                                            });
                                                                             return finalUrl;
                                                                         } else {
                                                                             const finalUrl = `${app.baseURL}${imageUrl}`;
-                                                                            console.log('🎯 TENDERS PAGE TENDER IMAGE:', {
-                                                                                originalUrl: imageUrl,
-                                                                                finalUrl: finalUrl,
-                                                                                tenderId: tender._id,
-                                                                                tenderTitle: tender.title
-                                                                            });
                                                                             return finalUrl;
                                                                         }
                                                                     }
@@ -1623,7 +1535,8 @@ const MultipurposeTenderSidebar = () => {
                                                                     width: '100%',
                                                                     height: '100%',
                                                                     objectFit: 'cover',
-                                                                transition: 'transform 0.4s ease',
+                                                                    transition: 'transform 0.5s ease',
+                                                                    filter: hasTenderEnded ? 'grayscale(100%)' : 'none',
                                                                 }}
                                                                 onError={(e) => {
                                                                     e.currentTarget.onerror = null;
@@ -1631,66 +1544,135 @@ const MultipurposeTenderSidebar = () => {
                                                                 }}
                                                                 crossOrigin="use-credentials"
                                                             />
+                                                        </Link>
 
-                                                        {/* Timer Overlay */}
-                                                        <div style={{
-                                                                    position: 'absolute',
-                                                            top: '10px',
-                                                            right: '10px',
-                                                            background: timer.hasEnded
-                                                                ? 'rgba(0,0,0,0.55)'
-                                                                : (isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'linear-gradient(45deg, #8b5cf6, #a855f7)'),
-                                                                    color: 'white',
-                                                            padding: '8px 12px',
-                                                                    borderRadius: '20px',
-                                                                    fontSize: '12px',
-                                                                    fontWeight: '600',
-                                                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-                                                        }}>
-                                                            {timer.hasEnded ? (
-                                                                <span style={{ fontWeight: 800 }}>Terminé</span>
-                                                            ) : (
-                                                                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                                                                    <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.hours}</span>
-                                                                    <span>:</span>
-                                                                    <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.minutes}</span>
-                                                                    <span>:</span>
-                                                                    <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.seconds}</span>
-                                                                </div>
-                                                            )}
+                                                        {/* Tender Type Badge */}
+                                                        <div
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: '15px',
+                                                                left: '15px',
+                                                                background: 'rgba(255, 255, 255, 0.95)',
+                                                                backdropFilter: 'blur(10px)',
+                                                                color: '#333',
+                                                                padding: '8px 12px',
+                                                                borderRadius: '20px',
+                                                                fontSize: '12px',
+                                                                fontWeight: '600',
+                                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                                zIndex: 2,
+                                                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                                            }}
+                                                        >
+                                                            {tender.tenderType === 'PRODUCT' ? 'Produit' : 'Service'}
                                                         </div>
 
-                                                        {/* Type Badge */}
+                                                        {/* Countdown Timer */}
+                                                        <div
+                                                            className="countdown-overlay"
+                                                            style={{
+                                                                position: 'absolute',
+                                                                bottom: '0',
+                                                                left: '0',
+                                                                right: '0',
+                                                                background: hasTenderEnded ? 'rgba(0, 0, 0, 0.6)' : 'linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4), transparent)',
+                                                                padding: '20px 15px 15px',
+                                                                color: 'white',
+                                                            }}
+                                                        >
                                                             <div style={{
-                                                            position: 'absolute',
-                                                            top: '10px',
-                                                            left: '10px',
-                                                            background: 'rgba(255, 255, 255, 0.9)',
-                                                            color: '#333',
-                                                            padding: '6px 12px',
-                                                            borderRadius: '15px',
-                                                            fontSize: '12px',
+                                                                display: 'flex',
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                                gap: '8px',
+                                                                fontSize: '14px',
                                                                 fontWeight: '600',
                                                             }}>
-                                                            {tender.tenderType === 'PRODUCT' ? 'Produit' : 'Service'}
+                                                                <div style={{
+                                                                    background: hasTenderEnded ? 'rgba(100, 100, 100, 0.7)' : 'rgba(255, 255, 255, 0.2)',
+                                                                    backdropFilter: 'blur(10px)',
+                                                                    borderRadius: '8px',
+                                                                    padding: '4px 8px',
+                                                                    minWidth: '35px',
+                                                                    textAlign: 'center',
+                                                                }}>
+                                                                    {timer.days || "00"}
+                                                                    <div style={{ fontSize: '10px', opacity: 0.8 }}>j</div>
+                                                                </div>
+                                                                <span style={{ opacity: 0.8 }}>:</span>
+                                                                <div style={{
+                                                                    background: hasTenderEnded ? 'rgba(100, 100, 100, 0.7)' : 'rgba(255, 255, 255, 0.2)',
+                                                                    backdropFilter: 'blur(10px)',
+                                                                    borderRadius: '8px',
+                                                                    padding: '4px 8px',
+                                                                    minWidth: '35px',
+                                                                    textAlign: 'center',
+                                                                }}>
+                                                                    {timer.hours || "00"}
+                                                                    <div style={{ fontSize: '10px', opacity: 0.8 }}>h</div>
+                                                                </div>
+                                                                <span style={{ opacity: 0.8 }}>:</span>
+                                                                <div style={{
+                                                                    background: hasTenderEnded ? 'rgba(100, 100, 100, 0.7)' : 'rgba(255, 255, 255, 0.2)',
+                                                                    backdropFilter: 'blur(10px)',
+                                                                    borderRadius: '8px',
+                                                                    padding: '4px 8px',
+                                                                    minWidth: '35px',
+                                                                    textAlign: 'center',
+                                                                }}>
+                                                                    {timer.minutes || "00"}
+                                                                    <div style={{ fontSize: '10px', opacity: 0.8 }}>m</div>
+                                                                </div>
+                                                                <span style={{ opacity: 0.8 }}>:</span>
+                                                                <div style={{
+                                                                    background: hasTenderEnded ? 'rgba(100, 100, 100, 0.7)' : 'rgba(255, 255, 255, 0.2)',
+                                                                    backdropFilter: 'blur(10px)',
+                                                                    borderRadius: '8px',
+                                                                    padding: '4px 8px',
+                                                                    minWidth: '35px',
+                                                                    textAlign: 'center',
+                                                                }}>
+                                                                    {timer.seconds || "00"}
+                                                                    <div style={{ fontSize: '10px', opacity: 0.8 }}>s</div>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
 
-                                                    {/* Tender Details */}
-                                                    <div style={{ padding: 'clamp(16px, 3vw, 20px)' }}>
+                                                    {/* Tender Content */}
+                                                    <div style={{
+                                                        padding: '25px',
+                                                        flexGrow: 1,
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                    }}>
+                                                        {/* Title */}
                                                         <h3 style={{
                                                             fontSize: '18px',
                                                             fontWeight: '600',
-                                                            color: '#222',
+                                                            color: hasTenderEnded ? '#666' : '#333',
                                                             marginBottom: '12px',
                                                             lineHeight: '1.3',
                                                             overflow: 'hidden',
                                                             textOverflow: 'ellipsis',
-                                                            display: '-webkit-box',
-                                                            WebkitLineClamp: 2,
-                                                            WebkitBoxOrient: 'vertical',
+                                                            whiteSpace: 'nowrap',
                                                         }}>
-                                                            {tender.title || 'Tender Title'}
+                                                            <Link
+                                                                href={hasTenderEnded ? "#" : `/tender-details/${tender._id}`}
+                                                                scroll={false}
+                                                                style={{ color: 'inherit', textDecoration: 'none', cursor: hasTenderEnded ? 'not-allowed' : 'pointer' }}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (hasTenderEnded) {
+                                                                        e.preventDefault();
+                                                                        return;
+                                                                    }
+                                                                    e.preventDefault();
+                                                                    navigateWithTop(`/tender-details/${tender._id}`);
+                                                                }}
+                                                            >
+                                                                {tender.title || 'Tender Title'}
+                                                            </Link>
                                                         </h3>
 
                                                         {/* Quantity and Location Info */}
@@ -1701,30 +1683,30 @@ const MultipurposeTenderSidebar = () => {
                                                             marginBottom: '16px',
                                                         }}>
                                                             {tender?.tenderType !== 'SERVICE' && (
-                                                            <div>
-                                                                <p style={{
-                                                                    fontSize: '12px',
-                                                                    color: '#666',
-                                                                    margin: '0 0 4px 0',
-                                                                    fontWeight: '600',
-                                                                }}>
-                                                                    Quantité
-                                                                </p>
-                                                                <p style={{
-                                                                    fontSize: '14px',
-                                                                    color: '#333',
-                                                                    margin: 0,
-                                                                    fontWeight: '500',
-                                                                }}>
-                                                                    {tender.quantity || 'Non spécifiée'}
-                                                                </p>
-                                                            </div>
+                                                                <div>
+                                                                    <p style={{
+                                                                        fontSize: '12px',
+                                                                        color: hasTenderEnded ? '#888' : '#666',
+                                                                        margin: '0 0 4px 0',
+                                                                        fontWeight: '600',
+                                                                    }}>
+                                                                        Quantité
+                                                                    </p>
+                                                                    <p style={{
+                                                                        fontSize: '14px',
+                                                                        color: hasTenderEnded ? '#888' : '#333',
+                                                                        margin: 0,
+                                                                        fontWeight: '500',
+                                                                    }}>
+                                                                        {tender.quantity || 'Non spécifiée'}
+                                                                    </p>
+                                                                </div>
                                                             )}
 
                                                             <div>
                                                                 <p style={{
                                                                     fontSize: '12px',
-                                                                    color: '#666',
+                                                                    color: hasTenderEnded ? '#888' : '#666',
                                                                     margin: '0 0 4px 0',
                                                                     fontWeight: '600',
                                                                 }}>
@@ -1732,7 +1714,7 @@ const MultipurposeTenderSidebar = () => {
                                                                 </p>
                                                                 <p style={{
                                                                     fontSize: '14px',
-                                                                    color: '#333',
+                                                                    color: hasTenderEnded ? '#888' : '#333',
                                                                     margin: 0,
                                                                     fontWeight: '500',
                                                                     overflow: 'hidden',
@@ -1754,7 +1736,7 @@ const MultipurposeTenderSidebar = () => {
                                                         <div style={{
                                                             width: '100%',
                                                             height: '1px',
-                                                            background: 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
+                                                            background: hasTenderEnded ? '#e0e0e0' : 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
                                                             margin: '0 0 16px 0',
                                                         }}></div>
 
@@ -1765,7 +1747,7 @@ const MultipurposeTenderSidebar = () => {
                                                             }}>
                                                                 <p style={{
                                                                     fontSize: '12px',
-                                                                    color: '#666',
+                                                                    color: hasTenderEnded ? '#888' : '#666',
                                                                     margin: '0 0 4px 0',
                                                                     fontWeight: '600',
                                                                 }}>
@@ -1773,7 +1755,7 @@ const MultipurposeTenderSidebar = () => {
                                                                 </p>
                                                                 <p style={{
                                                                     fontSize: '13px',
-                                                                    color: '#555',
+                                                                    color: hasTenderEnded ? '#888' : '#555',
                                                                     margin: 0,
                                                                     lineHeight: '1.4',
                                                                     display: '-webkit-box',
@@ -1792,10 +1774,66 @@ const MultipurposeTenderSidebar = () => {
                                                             <div style={{
                                                                 width: '100%',
                                                                 height: '1px',
-                                                                background: 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
+                                                                background: hasTenderEnded ? '#e0e0e0' : 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
                                                                 margin: '0 0 16px 0',
                                                             }}></div>
                                                         )}
+
+                                                        {/* Budget Info */}
+                                                        <div style={{
+                                                            background: hasTenderEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                                            borderRadius: '12px',
+                                                            padding: '12px',
+                                                            marginBottom: '16px',
+                                                            border: hasTenderEnded ? '1px solid #e0e0e0' : '1px solid #e9ecef',
+                                                        }}>
+                                                            <div style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                gap: '8px',
+                                                            }}>
+                                                                <div style={{
+                                                                    width: '8px',
+                                                                    height: '8px',
+                                                                    borderRadius: '50%',
+                                                                    background: hasTenderEnded ? '#ccc' : '#27F5CC',
+                                                                    animation: hasTenderEnded ? 'none' : 'pulse 2s infinite',
+                                                                }}></div>
+                                                                <span style={{
+                                                                    fontSize: '14px',
+                                                                    fontWeight: '600',
+                                                                    color: hasTenderEnded ? '#888' : '#27F5CC',
+                                                                }}>
+                                                                    {hasTenderEnded ? 'Appel d\'offre terminé' : 'Budget'}
+                                                                </span>
+                                                            </div>
+                                                            <div style={{
+                                                                textAlign: 'center',
+                                                                marginTop: '8px',
+                                                            }}>
+                                                                <p style={{
+                                                                    fontSize: '22px',
+                                                                    fontWeight: '800',
+                                                                    margin: 0,
+                                                                    color: hasTenderEnded ? '#888' : '#27F5CC',
+                                                                    background: hasTenderEnded ? 'none' : 'linear-gradient(90deg, #27F5CC, #00D4AA)',
+                                                                    WebkitBackgroundClip: hasTenderEnded ? undefined : 'text',
+                                                                    backgroundClip: hasTenderEnded ? undefined : 'text',
+                                                                    WebkitTextFillColor: hasTenderEnded ? '#888' : 'transparent',
+                                                                }}>
+                                                                    {Number(tender.maxBudget || tender.budget || 0).toLocaleString()} DA
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Separator Line after Budget */}
+                                                        <div style={{
+                                                            width: '100%',
+                                                            height: '1px',
+                                                            background: hasTenderEnded ? '#e0e0e0' : 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
+                                                            margin: '0 0 16px 0',
+                                                        }}></div>
 
                                                         {/* Participants Count */}
                                                         <div style={{
@@ -1815,19 +1853,19 @@ const MultipurposeTenderSidebar = () => {
                                                                     width: '8px',
                                                                     height: '8px',
                                                                     borderRadius: '50%',
-                                                                    background: '#8b5cf6',
-                                                                    animation: 'pulse 2s infinite',
+                                                                    background: hasTenderEnded ? '#ccc' : '#27F5CC',
+                                                                    animation: hasTenderEnded ? 'none' : 'pulse 2s infinite',
                                                                 }}></div>
                                                                 <span style={{
                                                                     fontSize: '14px',
                                                                     fontWeight: '600',
-                                                                    color: '#8b5cf6',
+                                                                    color: hasTenderEnded ? '#888' : '#27F5CC',
                                                                 }}>
                                                                     {tender.participantsCount || 0} participant{(tender.participantsCount || 0) !== 1 ? 's' : ''}
                                                                 </span>
                                                                 <span style={{
                                                                     fontSize: '12px',
-                                                                    color: '#666',
+                                                                    color: hasTenderEnded ? '#888' : '#666',
                                                                 }}>
                                                                     ont soumis des offres
                                                                 </span>
@@ -1838,43 +1876,45 @@ const MultipurposeTenderSidebar = () => {
                                                         <div style={{
                                                             width: '100%',
                                                             height: '1px',
-                                                            background: 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
+                                                            background: hasTenderEnded ? '#e0e0e0' : 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
                                                             margin: '0 0 16px 0',
                                                         }}></div>
 
                                                         {/* Owner Info */}
                                                         <div style={{
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
                                                             gap: '10px',
                                                             marginBottom: '16px',
-                                                                }}>
-                                                                    <img
+                                                        }}>
+                                                            <img
                                                                 src={tender.owner?.photoURL || DEFAULT_PROFILE_IMAGE}
                                                                 alt={displayName}
-                                                                        style={{
+                                                                style={{
                                                                     width: '32px',
                                                                     height: '32px',
                                                                     borderRadius: '50%',
-                                                                            objectFit: 'cover',
-                                                                        }}
-                                                                        onError={(e) => {
+                                                                    objectFit: 'cover',
+                                                                    filter: hasTenderEnded ? 'grayscale(100%)' : 'none',
+                                                                }}
+                                                                onError={(e) => {
                                                                     const target = e.target;
                                                                     target.src = DEFAULT_PROFILE_IMAGE;
                                                                 }}
                                                             />
                                                             <span style={{
                                                                 fontSize: '14px',
-                                                                color: '#666',
-                                                                        fontWeight: '500',
-                                                                    }}>
+                                                                color: hasTenderEnded ? '#888' : '#666',
+                                                                fontWeight: '500',
+                                                            }}>
                                                                 {displayName}
                                                             </span>
                                                         </div>
 
                                                         {/* View Tender Button */}
                                                         <Link
-                                                            href={`/tender-details/${tender._id}`}
+                                                            href={hasTenderEnded ? "#" : `/tender-details/${tender._id}`}
+                                                            scroll={false}
                                                             style={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
@@ -1882,128 +1922,51 @@ const MultipurposeTenderSidebar = () => {
                                                                 gap: '8px',
                                                                 width: '100%',
                                                                 padding: '12px 20px',
-                                                                background: timer.hasEnded ? '#c7c7c7' : 'linear-gradient(90deg, #8b5cf6, #a855f7)',
-                                                                color: 'white',
+                                                                background: hasTenderEnded ? '#cccccc' : 'linear-gradient(90deg, #27F5CC, #00D4AA)',
+                                                                color: hasTenderEnded ? '#888' : 'white',
                                                                 textDecoration: 'none',
                                                                 borderRadius: '25px',
                                                                 fontWeight: '600',
                                                                 fontSize: '14px',
                                                                 transition: 'all 0.3s ease',
-                                                                boxShadow: timer.hasEnded ? 'none' : '0 4px 12px rgba(139, 92, 246, 0.3)',
-                                                                pointerEvents: timer.hasEnded ? 'none' : 'auto'
+                                                                boxShadow: hasTenderEnded ? 'none' : '0 4px 12px rgba(39, 245, 204, 0.3)',
                                                             }}
                                                             onMouseEnter={(e) => {
-                                                                if (!timer.hasEnded) {
-                                                                    e.currentTarget.style.background = 'linear-gradient(90deg, #a855f7, #8b5cf6)';
+                                                                if (!hasTenderEnded) {
+                                                                    e.currentTarget.style.background = 'linear-gradient(90deg, #00D4AA, #27F5CC)';
                                                                     e.currentTarget.style.transform = 'translateY(-2px)';
-                                                                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(139, 92, 246, 0.4)';
+                                                                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(39, 245, 204, 0.4)';
                                                                 }
                                                             }}
                                                             onMouseLeave={(e) => {
-                                                                if (!timer.hasEnded) {
-                                                                    e.currentTarget.style.background = 'linear-gradient(90deg, #8b5cf6, #a855f7)';
+                                                                if (!hasTenderEnded) {
+                                                                    e.currentTarget.style.background = 'linear-gradient(90deg, #27F5CC, #00D4AA)';
                                                                     e.currentTarget.style.transform = 'translateY(0)';
-                                                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.3)';
+                                                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(39, 245, 204, 0.3)';
                                                                 }
                                                             }}
+                                                            onClick={(event) => {
+                                                                if (hasTenderEnded) {
+                                                                    event.preventDefault();
+                                                                    event.stopPropagation();
+                                                                    return;
+                                                                }
+                                                                event.preventDefault();
+                                                                event.stopPropagation();
+                                                                navigateWithTop(`/tender-details/${tender._id}`);
+                                                            }}
                                                         >
-                                                            {timer.hasEnded ? 'Terminé' : 'Voir les détails'}
+                                                            {hasTenderEnded ? 'Terminé' : 'Voir les détails'}
                                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                                                 <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
                                                             </svg>
                                                         </Link>
                                                     </div>
                                                 </div>
-                                            </SwiperSlide>
+                                            </div>
                                         );
-                                    })}
-                                </Swiper>
-
-                                {/* Navigation Buttons */}
-                                <div className="slider-navigation" style={{
-                                    position: 'absolute',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    width: '100%',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    pointerEvents: 'none',
-                                    zIndex: 10,
-                                }}>
-                                    <button
-                                        className="tender-slider-prev"
-                                        style={{
-                                            background: 'white',
-                                            border: 'none',
-                                            width: '50px',
-                                            height: '50px',
-                                            borderRadius: '50%',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.3s ease',
-                                            pointerEvents: 'auto',
-                                            marginLeft: '-25px',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = 'linear-gradient(90deg, #8b5cf6, #a855f7)';
-                                            e.currentTarget.style.color = 'white';
-                                            e.currentTarget.style.transform = 'scale(1.1)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = 'white';
-                                            e.currentTarget.style.color = '#333';
-                                            e.currentTarget.style.transform = 'scale(1)';
-                                        }}
-                                    >
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M15.41 7.41L14 6L8 12L14 18L15.41 16.59L10.83 12Z"/>
-                                        </svg>
-                                    </button>
-
-                                    <button
-                                        className="tender-slider-next"
-                                        style={{
-                                            background: 'white',
-                                            border: 'none',
-                                            width: '50px',
-                                            height: '50px',
-                                            borderRadius: '50%',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.3s ease',
-                                            pointerEvents: 'auto',
-                                            marginRight: '-25px',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = 'linear-gradient(90deg, #8b5cf6, #a855f7)';
-                                            e.currentTarget.style.color = 'white';
-                                            e.currentTarget.style.transform = 'scale(1.1)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = 'white';
-                                            e.currentTarget.style.color = '#333';
-                                            e.currentTarget.style.transform = 'scale(1)';
-                                        }}
-                                    >
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
-                                        </svg>
-                                    </button>
-                                </div>
-
-                                {/* Pagination */}
-                                <div className="swiper-pagination" style={{
-                                    position: 'relative',
-                                    marginTop: '30px',
-                                }}></div>
-                            </div>
-                        ) : (
+                                    })
+                                ) : (
                             <div className="text-center py-5">
                                         <div style={{
                                             padding: '60px 20px',

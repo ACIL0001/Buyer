@@ -369,7 +369,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           z-index: 0;
         }
 
-        /* --- ADDED STYLES FOR CONNECTING LINE --- */
+        /* --- UPDATED STYLES FOR CONNECTING LINE --- */
         .categories-carousel::before {
           content: '';
           position: absolute;
@@ -378,7 +378,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           /* Aligns with the vertical center of the swiper/nav buttons */
           top: 50%;
           transform: translateY(-50%);
-          height: 6px; /* User requested "thick" line */
+          /* --- MODIFIED LINE --- */
+          height: 24px; /* Was 6px, now 6px * 4 */
           /* Default 'ALL' filter color */
           background-color: #cbd5e1;
           /* Sits BEHIND the swiper slides */
@@ -395,7 +396,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           /* Green color from the 'Service' button */
           background-color: #10b981;
         }
-        /* --- END OF ADDED STYLES --- */
+        /* --- END OF UPDATED STYLES --- */
 
         .category-card-wrapper {
           display: flex;
@@ -573,7 +574,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           
           /* --- MODIFICATION FOR MOBILE LINE THICKNESS --- */
           .categories-carousel::before {
-            height: 4px; /* Make line slightly thinner on mobile */
+            /* --- MODIFIED LINE --- */
+            height: 16px; /* Was 4px, now 4px * 4 */
           }
           /* --- END OF MODIFICATION --- */
 
@@ -639,7 +641,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           
           /* --- MODIFICATION FOR MOBILE LINE THICKNESS --- */
           .categories-carousel::before {
-            height: 5px; 
+            /* --- MODIFIED LINE --- */
+            height: 20px; /* Was 5px, now 5px * 4 */
           }
           /* --- END OF MODIFICATION --- */
 
@@ -737,7 +740,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
           
           .categories-carousel::before {
-            height: 4px;
+             /* --- MODIFIED LINE --- */
+            height: 16px; /* Was 4px, now 4px * 4 */
           }
         }
       `}</style>
@@ -864,7 +868,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         ) : categories.length === 0 ? (
           <div className="empty-state">No categories available at the moment</div>
         ) : (
-          /* --- MODIFIED THIS LINE --- */
           <div className={`categories-carousel filter-${filterType.toLowerCase()}`}>
             <Swiper
               modules={[Navigation, Pagination, Mousewheel, Keyboard, FreeMode, Autoplay]}

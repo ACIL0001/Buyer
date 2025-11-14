@@ -62,7 +62,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
   const swiperBreakpoints = useMemo(() => {
     const mobileSlides = Math.max(1, Math.min(categoryCount || 1, 3));
     const tabletSlides = Math.max(1, Math.min(categoryCount || 1, 4));
-    const desktopSlides = Math.max(1, Math.min(categoryCount || 1, 5));
+    const desktopSlides = Math.max(1, Math.min(categoryCount || 1, 4));
 
     return {
       0: {
@@ -384,20 +384,50 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           position: relative;
         }
 
-        /* Connecting Ribbon Between Adjacent Cards - Bold Design */
+        /* Connecting Ribbon Between Adjacent Cards - Bold Horizontal Design */
         .categories-swiper .swiper-slide::after {
           content: '';
           position: absolute;
           top: 50%;
-          right: -8px;
-          width: 24px;
-          height: 12px;
-          transform: translateY(-50%);
+          right: 0;
+          width: clamp(12px, 3vw, 30px);
+          height: 14px;
+          transform: translate(50%, -50%);
           opacity: 0;
           transition: opacity 0.5s ease, background 0.3s ease;
           z-index: 1;
           pointer-events: none;
-          border-radius: 6px;
+          border-radius: 7px;
+        }
+
+        @media (min-width: 640px) {
+          .categories-swiper .swiper-slide::after {
+            width: 20px;
+          }
+        }
+
+        @media (min-width: 768px) {
+          .categories-swiper .swiper-slide::after {
+            width: 22px;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .categories-swiper .swiper-slide::after {
+            width: 24px;
+          }
+        }
+
+        @media (min-width: 1280px) {
+          .categories-swiper .swiper-slide::after {
+            width: 26px;
+          }
+        }
+
+        @media (min-width: 1440px) {
+          .categories-swiper .swiper-slide::after {
+            width: 28px;
+          }
         }
 
         .categories-swiper.show-product-ribbon .swiper-slide:not(:last-child)::after {
@@ -446,9 +476,9 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           content: '';
           position: absolute;
           top: 50%;
-          right: -8px;
-          width: 20px;
-          height: 20px;
+          right: 0;
+          width: 22px;
+          height: 22px;
           border-radius: 50%;
           transform: translate(50%, -50%);
           z-index: 2;
@@ -465,9 +495,9 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           content: '';
           position: absolute;
           top: 50%;
-          right: -8px;
-          width: 20px;
-          height: 20px;
+          right: 0;
+          width: 22px;
+          height: 22px;
           border-radius: 50%;
           transform: translate(50%, -50%);
           z-index: 2;

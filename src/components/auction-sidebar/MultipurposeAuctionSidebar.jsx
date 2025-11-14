@@ -129,7 +129,8 @@ const MultipurposeAuctionSidebar = () => {
                          '';
         
         if (!imageUrl) {
-            return getDefaultCategoryImage();
+            // Return data URI placeholder directly if no image URL
+            return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
         }
 
         if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
@@ -216,14 +217,11 @@ const MultipurposeAuctionSidebar = () => {
                                     }}
                                     onError={(e) => {
                                         const target = e.currentTarget;
-                                        // Try server fallback first
-                                        if (target.src !== getDefaultCategoryImage()) {
-                                            target.onerror = null;
-                                            target.src = getDefaultCategoryImage();
-                                        } else {
-                                            // If server image also fails, use data URI placeholder
-                                            target.onerror = null;
-                                            target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
+                                        // Immediately use data URI placeholder to avoid multiple failed requests
+                                        const placeholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
+                                        if (target.src !== placeholder) {
+                                            target.onerror = null; // Prevent infinite loop
+                                            target.src = placeholder;
                                         }
                                     }}
                                 />
@@ -363,7 +361,7 @@ const MultipurposeAuctionSidebar = () => {
                                   return finalUrl;
                                 }
                               }
-                              return getDefaultCategoryImage();
+                              return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
                             })()}
                             alt={category.name}
                             style={{
@@ -379,14 +377,11 @@ const MultipurposeAuctionSidebar = () => {
                             }}
                             onError={(e) => {
                                 const target = e.target;
-                                // Try server fallback first
-                                if (target.src !== getDefaultCategoryImage()) {
-                                    target.onerror = null;
-                                    target.src = getDefaultCategoryImage();
-                                } else {
-                                    // If server image also fails, use data URI placeholder
-                                    target.onerror = null;
-                                    target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
+                                // Immediately use data URI placeholder to avoid multiple failed requests
+                                const placeholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
+                                if (target.src !== placeholder) {
+                                    target.onerror = null; // Prevent infinite loop
+                                    target.src = placeholder;
                                 }
                             }}
                             crossOrigin="use-credentials"

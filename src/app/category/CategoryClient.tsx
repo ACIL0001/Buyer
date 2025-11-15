@@ -1132,123 +1132,7 @@ export default function CategoryClient() {
       
       {/* Header Section */}
       <div className="container-responsive" style={{ marginBottom: '40px' }}>
-        {viewMode === 'categories' && (
-          <>
-            {/* Filter Buttons Section - styled like Home1Banner */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 'clamp(20px, 3vw, 32px)',
-              gap: 'clamp(16px, 3vw, 24px)',
-              flexWrap: 'nowrap',
-              position: 'relative',
-              padding: '0 clamp(20px, 4vw, 40px)',
-            }}>
-              <button
-                className={`filter-button product ${filterType === 'PRODUCT' ? 'active' : ''}`}
-                onClick={() => setFilterType(filterType === 'PRODUCT' ? 'ALL' : 'PRODUCT')}
-                style={{
-                  padding: '12px 28px',
-                  borderRadius: '35px',
-                  fontSize: 'clamp(0.85rem, 1.4vw, 1rem)',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                  border: '3px solid transparent',
-                  background: 'linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%)',
-                  backgroundSize: '200% 200%',
-                  color: 'white',
-                  boxShadow: filterType === 'PRODUCT'
-                    ? '0 6px 24px rgba(0, 99, 177, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
-                    : '0 4px 16px rgba(0, 99, 177, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.6px',
-                  minWidth: '110px',
-                  opacity: filterType === 'PRODUCT' ? 1 : 0.8,
-                }}
-              >
-                Produit
-              </button>
-              <h2 style={{
-                fontSize: 'clamp(1.5rem, 3vw, 2.2rem)',
-                fontWeight: 900,
-                background: 'linear-gradient(135deg, #1e293b 0%, #475569 30%, #64748b 50%, #475569 70%, #1e293b 100%)',
-                backgroundSize: '300% auto',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                textAlign: 'center',
-                margin: 0,
-                letterSpacing: '-0.5px',
-                position: 'relative',
-                padding: '0 clamp(24px, 5vw, 40px)',
-                animation: 'shimmer-text 4s ease-in-out infinite',
-                textShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-                lineHeight: '1.2',
-              }}>
-                Categories
-              </h2>
-              <button
-                className={`filter-button service ${filterType === 'SERVICE' ? 'active' : ''}`}
-                onClick={() => setFilterType(filterType === 'SERVICE' ? 'ALL' : 'SERVICE')}
-                style={{
-                  padding: '12px 28px',
-                  borderRadius: '35px',
-                  fontSize: 'clamp(0.85rem, 1.4vw, 1rem)',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                  border: '3px solid transparent',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
-                  backgroundSize: '200% 200%',
-                  color: 'white',
-                  boxShadow: filterType === 'SERVICE'
-                    ? '0 6px 24px rgba(16, 185, 129, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
-                    : '0 4px 16px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.6px',
-                  minWidth: '110px',
-                  opacity: filterType === 'SERVICE' ? 1 : 0.8,
-                }}
-              >
-                Service
-              </button>
-            </div>
-          </>
-        )}
-
-        {viewMode === 'auctions' && (
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <h1 style={{
-              fontSize: 'clamp(2rem, 4vw, 3rem)',
-              fontWeight: '800',
-              background: 'linear-gradient(135deg, #0063b1 0%, #00a3e0 50%, #3b82f6 100%)',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              marginBottom: '16px',
-              lineHeight: '1.2',
-            }}>
-              {selectedCategoryName}
-            </h1>
-            <p style={{
-              fontSize: '18px',
-              color: '#64748b',
-              maxWidth: '600px',
-              margin: '0 auto',
-              lineHeight: '1.6',
-            }}>
-              {`Discover amazing auctions in the ${selectedCategoryName} category`}
-            </p>
-          </div>
-        )}
-
-        {/* Search Bar */}
+        {/* Search Bar - At Top */}
         <div style={{
           maxWidth: '600px',
           margin: '0 auto 40px',
@@ -1398,6 +1282,122 @@ export default function CategoryClient() {
             </div>
           )}
         </div>
+
+        {viewMode === 'categories' && (
+          <>
+            {/* Filter Buttons Section - styled like Home1Banner */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 'clamp(20px, 3vw, 32px)',
+              gap: 'clamp(16px, 3vw, 24px)',
+              flexWrap: 'nowrap',
+              position: 'relative',
+              padding: '0 clamp(20px, 4vw, 40px)',
+            }}>
+              <button
+                className={`filter-button product ${filterType === 'PRODUCT' ? 'active' : ''}`}
+                onClick={() => setFilterType(filterType === 'PRODUCT' ? 'ALL' : 'PRODUCT')}
+                style={{
+                  padding: '12px 28px',
+                  borderRadius: '35px',
+                  fontSize: 'clamp(0.85rem, 1.4vw, 1rem)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  border: '3px solid transparent',
+                  background: 'linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%)',
+                  backgroundSize: '200% 200%',
+                  color: 'white',
+                  boxShadow: filterType === 'PRODUCT'
+                    ? '0 6px 24px rgba(0, 99, 177, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
+                    : '0 4px 16px rgba(0, 99, 177, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.6px',
+                  minWidth: '110px',
+                  opacity: filterType === 'PRODUCT' ? 1 : 0.8,
+                }}
+              >
+                Produit
+              </button>
+              <h2 style={{
+                fontSize: 'clamp(1.5rem, 3vw, 2.2rem)',
+                fontWeight: 900,
+                background: 'linear-gradient(135deg, #1e293b 0%, #475569 30%, #64748b 50%, #475569 70%, #1e293b 100%)',
+                backgroundSize: '300% auto',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textAlign: 'center',
+                margin: 0,
+                letterSpacing: '-0.5px',
+                position: 'relative',
+                padding: '0 clamp(24px, 5vw, 40px)',
+                animation: 'shimmer-text 4s ease-in-out infinite',
+                textShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                lineHeight: '1.2',
+              }}>
+                Categories
+              </h2>
+              <button
+                className={`filter-button service ${filterType === 'SERVICE' ? 'active' : ''}`}
+                onClick={() => setFilterType(filterType === 'SERVICE' ? 'ALL' : 'SERVICE')}
+                style={{
+                  padding: '12px 28px',
+                  borderRadius: '35px',
+                  fontSize: 'clamp(0.85rem, 1.4vw, 1rem)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  border: '3px solid transparent',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
+                  backgroundSize: '200% 200%',
+                  color: 'white',
+                  boxShadow: filterType === 'SERVICE'
+                    ? '0 6px 24px rgba(16, 185, 129, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
+                    : '0 4px 16px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.6px',
+                  minWidth: '110px',
+                  opacity: filterType === 'SERVICE' ? 1 : 0.8,
+                }}
+              >
+                Service
+              </button>
+            </div>
+          </>
+        )}
+
+        {viewMode === 'auctions' && (
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <h1 style={{
+              fontSize: 'clamp(2rem, 4vw, 3rem)',
+              fontWeight: '800',
+              background: 'linear-gradient(135deg, #0063b1 0%, #00a3e0 50%, #3b82f6 100%)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              marginBottom: '16px',
+              lineHeight: '1.2',
+            }}>
+              {selectedCategoryName}
+            </h1>
+            <p style={{
+              fontSize: '18px',
+              color: '#64748b',
+              maxWidth: '600px',
+              margin: '0 auto',
+              lineHeight: '1.6',
+            }}>
+              {`Discover amazing auctions in the ${selectedCategoryName} category`}
+            </p>
+          </div>
+        )}
 
         {/* Back Button for Auctions View */}
         {viewMode === 'auctions' && (

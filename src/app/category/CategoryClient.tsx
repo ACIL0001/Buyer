@@ -1262,7 +1262,9 @@ export default function CategoryClient() {
             placeholder="Search categories, auctions, and tenders..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onFocus={() => {
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#0063b1';
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 99, 177, 0.15)';
               if (searchTerm.trim()) {
                 setShowSearchResults(true);
               }
@@ -1278,10 +1280,6 @@ export default function CategoryClient() {
               outline: 'none',
               transition: 'all 0.3s ease',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = '#0063b1';
-              e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 99, 177, 0.15)';
             }}
             onBlur={(e) => {
               e.currentTarget.style.borderColor = '#e2e8f0';

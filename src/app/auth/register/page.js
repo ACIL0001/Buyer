@@ -327,7 +327,7 @@ export default function Register() {
           <div className="auth-card-content">
             <div className="auth-header">
               <div className="auth-logo">
-                <Image src="/assets/images/logo-dark.png" alt="MazadClick Logo" width={150} height={50} />
+                <Image src="/assets/images/logo-dark.png" alt="MazadClick" width={150} height={50} />
               </div>
               <h1>Créer un Compte</h1>
               <p>Inscrivez-vous pour commencer avec MazadClick</p>

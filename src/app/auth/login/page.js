@@ -187,7 +187,7 @@ function LoginComponent() {
           <div className="auth-card-content">
             <div className="auth-header">
               <div className="auth-logo">
-                <Image src="/assets/images/logo-dark.png" alt="MazadClick Logo" width={150} height={50} />
+                <Image src="/assets/images/logo-dark.png" alt="MazadClick" width={150} height={50} />
               </div>
               <h1>Bon Retour</h1>
               <p>Connectez-vous pour accéder à votre compte</p>

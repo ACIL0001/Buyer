@@ -373,7 +373,7 @@ export const Header = () => {
               }}>
                 <img
                   src="/assets/img/logo.png"
-                  alt="Mazad.Click Logo"
+                  alt="MazadClick"
                   className="header-logo"
                   style={{ 
 

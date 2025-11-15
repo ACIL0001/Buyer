@@ -666,7 +666,7 @@ export default function UsersPage() {
                     marginBottom: '15px',
                     fontSize: '2rem'
                   }}>
-                    Authentication Required
+                    Connexion Requise
                   </h2>
 
                   {/* Description */}

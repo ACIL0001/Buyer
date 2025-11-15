@@ -142,7 +142,7 @@ const Footer = () => {
             >
               <img 
                 src="/assets/img/logo.png" 
-                alt="Mazad.Click Logo" 
+                alt="MazadClick" 
                 style={{ 
                   height: '80px', 
                   width: '190px',

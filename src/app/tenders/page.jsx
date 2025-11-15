@@ -1137,68 +1137,40 @@ const MultipurposeTenderSidebar = () => {
                                 {/* Search Bar - At Top */}
                                 <div className="row mb-4">
                                     <div className="col-12">
-                                        <div className="enhanced-search-box" style={{
+                                        <div style={{
+                                            maxWidth: '600px',
+                                            margin: '0 auto 30px',
                                             position: 'relative',
-                                            marginBottom: '30px'
                                         }}>
+                                            <input
+                                                type="text"
+                                                placeholder={t('searchTenderPlaceholder')}
+                                                value={searchTerm}
+                                                onChange={handleSearchChange}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '16px 20px',
+                                                    paddingRight: '50px',
+                                                    fontSize: '16px',
+                                                    border: '2px solid #e2e8f0',
+                                                    borderRadius: '16px',
+                                                    background: 'white',
+                                                    outline: 'none',
+                                                    transition: 'all 0.3s ease',
+                                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                                                }}
+                                            />
                                             <div style={{
-                                                position: 'relative',
-                                                background: 'white',
-                                                borderRadius: '60px',
-                                                padding: '5px',
-                                                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-                                                border: '2px solid rgba(0, 99, 177, 0.1)',
+                                                position: 'absolute',
+                                                right: '16px',
+                                                top: '50%',
+                                                transform: 'translateY(-50%)',
+                                                color: '#64748b',
                                             }}>
-                                                <input
-                                                    type="text"
-                                                    placeholder={t('searchTenderPlaceholder')}
-                                                    value={searchTerm}
-                                                    onChange={handleSearchChange}
-                                                    style={{
-                                                        width: '100%',
-                                                        padding: '20px 30px',
-                                                        paddingRight: '70px',
-                                                        borderRadius: '60px',
-                                                        border: 'none',
-                                                        outline: 'none',
-                                                        fontSize: '18px',
-                                                        background: 'transparent',
-                                                        color: '#333',
-                                                        fontWeight: '500'
-                                                    }}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    style={{
-                                                        position: 'absolute',
-                                                        right: '8px',
-                                                        top: '50%',
-                                                        transform: 'translateY(-50%)',
-                                                        width: '50px',
-                                                        height: '50px',
-                                                        borderRadius: '50%',
-                                                        background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
-                                                        border: 'none',
-                                                        cursor: 'pointer',
-                                                        color: 'white',
-                                                        fontSize: '22px',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        boxShadow: '0 6px 20px rgba(0, 99, 177, 0.3)',
-                                                        transition: 'all 0.3s ease'
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
-                                                        e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 99, 177, 0.4)';
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
-                                                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 99, 177, 0.3)';
-                                                    }}
-                                                >
-                                                    <i className="bx bx-search" />
-                                                </button>
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <circle cx="11" cy="11" r="8"/>
+                                                    <path d="M21 21l-4.35-4.35"/>
+                                                </svg>
                                             </div>
                                         </div>
                                     </div>

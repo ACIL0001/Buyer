@@ -946,6 +946,7 @@ const MultipurposeAuctionSidebar = () => {
                                                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                                                     border: '3px solid transparent',
                                                     background: 'linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%)',
+                                                    backgroundSize: '200% 200%',
                                                     color: 'white',
                                                     boxShadow: selectedBidType === BID_TYPE.PRODUCT
                                                         ? '0 6px 24px rgba(0, 99, 177, 0.35)'
@@ -994,6 +995,7 @@ const MultipurposeAuctionSidebar = () => {
                                                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                                                     border: '3px solid transparent',
                                                     background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
+                                                    backgroundSize: '200% 200%',
                                                     color: 'white',
                                                     boxShadow: selectedBidType === BID_TYPE.SERVICE
                                                         ? '0 6px 24px rgba(16, 185, 129, 0.35)'

@@ -1224,32 +1224,31 @@ export default function CategoryClient() {
           </>
         )}
 
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h1 style={{
-            fontSize: 'clamp(2rem, 4vw, 3rem)',
-            fontWeight: '800',
-            background: 'linear-gradient(135deg, #0063b1 0%, #00a3e0 50%, #3b82f6 100%)',
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            marginBottom: '16px',
-            lineHeight: '1.2',
-          }}>
-            {viewMode === 'categories' ? 'Browse Categories' : selectedCategoryName}
-          </h1>
-          <p style={{
-            fontSize: '18px',
-            color: '#64748b',
-            maxWidth: '600px',
-            margin: '0 auto',
-            lineHeight: '1.6',
-          }}>
-            {viewMode === 'categories' 
-              ? 'Explore our wide range of auction categories and find exactly what you\'re looking for'
-              : `Discover amazing auctions in the ${selectedCategoryName} category`
-            }
-          </p>
-        </div>
+        {viewMode === 'auctions' && (
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <h1 style={{
+              fontSize: 'clamp(2rem, 4vw, 3rem)',
+              fontWeight: '800',
+              background: 'linear-gradient(135deg, #0063b1 0%, #00a3e0 50%, #3b82f6 100%)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              marginBottom: '16px',
+              lineHeight: '1.2',
+            }}>
+              {selectedCategoryName}
+            </h1>
+            <p style={{
+              fontSize: '18px',
+              color: '#64748b',
+              maxWidth: '600px',
+              margin: '0 auto',
+              lineHeight: '1.6',
+            }}>
+              {`Discover amazing auctions in the ${selectedCategoryName} category`}
+            </p>
+          </div>
+        )}
 
         {/* Search Bar */}
         <div style={{

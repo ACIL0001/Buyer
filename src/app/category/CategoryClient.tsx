@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { CategoryAPI } from '../api/category';
 import { AuctionsAPI } from '../api/auctions';
+import { TendersAPI } from '../api/tenders';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import app from '../../config';
@@ -48,11 +49,31 @@ interface Auction {
   };
 }
 
+interface Tender {
+  _id: string;
+  title: string;
+  description?: string;
+  startingPrice?: number;
+  endingAt?: string;
+  thumbs?: Array<{ url: string }>;
+  owner?: {
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    avatar?: { url: string };
+  };
+  productCategory?: {
+    _id: string;
+    name: string;
+  };
+}
+
 export default function CategoryClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [categories, setCategories] = useState<Category[]>([]);
   const [auctions, setAuctions] = useState<Auction[]>([]);
+  const [tenders, setTenders] = useState<Tender[]>([]);
   const [filteredAuctions, setFilteredAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
   const [auctionsLoading, setAuctionsLoading] = useState(false);
@@ -63,7 +84,9 @@ export default function CategoryClient() {
   const [expandedCategories, setExpandedCategories] = useState<{[key: string]: boolean}>({});
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'categories' | 'auctions'>('categories');
-  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [filterType, setFilterType] = useState<'ALL' | 'PRODUCT' | 'SERVICE'>('ALL');
+  const [searchResults, setSearchResults] = useState<{ categories: Category[], auctions: Auction[], tenders: Tender[] }>({ categories: [], auctions: [], tenders: [] });
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const DEFAULT_CATEGORY_IMAGE = "/assets/images/logo-white.png";
   const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
 
@@ -247,23 +270,103 @@ export default function CategoryClient() {
     setFilteredAuctions([]);
   };
 
-  const filteredCategories = categories.filter((category: Category) => {
-    const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase());
-    if (activeFilter === 'all') return matchesSearch;
-    return matchesSearch;
-  });
+  // Filter categories by type
+  const filteredCategories = useMemo(() => {
+    let filtered = categories;
+    
+    // Filter by type
+    if (filterType !== 'ALL') {
+      filtered = categories.filter((category: Category) => {
+        const categoryType = (category.type || '').toString().toUpperCase();
+        return categoryType === filterType;
+      });
+    }
+    
+    // Filter by search term
+    if (searchTerm.trim() && !showSearchResults) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter((category: Category) => {
+        const name = (category.name || '').toLowerCase();
+        const description = (category.description || '').toLowerCase();
+        return name.includes(searchLower) || description.includes(searchLower);
+      });
+    }
+    
+    return filtered;
+  }, [categories, filterType, searchTerm, showSearchResults]);
 
+  // Fetch tenders
+  useEffect(() => {
+    const fetchTenders = async () => {
+      try {
+        const response = await TendersAPI.getActiveTenders();
+        const tendersData = response?.data || response || [];
+        setTenders(Array.isArray(tendersData) ? tendersData : []);
+      } catch (error) {
+        console.error('Error fetching tenders:', error);
+      }
+    };
+    fetchTenders();
+  }, []);
+
+  // Search functionality for categories, auctions, and tenders
   useEffect(() => {
     if (!searchTerm.trim()) {
+      setSearchResults({ categories: [], auctions: [], tenders: [] });
+      setShowSearchResults(false);
       setFilteredAuctions(auctions);
-    } else {
-      const filtered = auctions.filter(auction =>
-        auction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (auction.description && auction.description.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-      setFilteredAuctions(filtered);
+      return;
     }
-  }, [auctions, searchTerm]);
+
+    const searchLower = searchTerm.toLowerCase().trim();
+    
+    // Search categories
+    const filteredCategories = categories.filter((category: Category) => {
+      const name = (category.name || '').toLowerCase();
+      const description = (category.description || '').toLowerCase();
+      return name.includes(searchLower) || description.includes(searchLower);
+    });
+
+    // Search auctions
+    const filteredAuctions = auctions.filter((auction: Auction) => {
+      const title = (auction.title || '').toLowerCase();
+      const description = (auction.description || '').toLowerCase();
+      return title.includes(searchLower) || description.includes(searchLower);
+    });
+
+    // Search tenders
+    const filteredTenders = tenders.filter((tender: Tender) => {
+      const title = (tender.title || '').toLowerCase();
+      const description = (tender.description || '').toLowerCase();
+      return title.includes(searchLower) || description.includes(searchLower);
+    });
+
+    setSearchResults({
+      categories: filteredCategories,
+      auctions: filteredAuctions,
+      tenders: filteredTenders
+    });
+    setShowSearchResults(true);
+    setFilteredAuctions(filteredAuctions);
+  }, [searchTerm, categories, auctions, tenders]);
+
+  const handleSearchSelect = (item: Category | Auction | Tender, type: 'category' | 'auction' | 'tender') => {
+    setSearchTerm('');
+    setShowSearchResults(false);
+    
+    if (type === 'category') {
+      const category = item as Category;
+      const categoryId = category._id;
+      const categoryName = category.name;
+      navigateWithTop(`/category?category=${categoryId}&name=${encodeURIComponent(categoryName)}`);
+    } else if (type === 'auction') {
+      const auction = item as Auction;
+      navigateWithTop(`/auction-details/${auction._id}`);
+    } else if (type === 'tender') {
+      const tender = item as Tender;
+      navigateWithTop(`/tender-details/${tender._id}`);
+    }
+  };
 
   const renderCategoryCard = (category: Category, index: number = 0): JSX.Element => {
       const categoryId = category._id || '';
@@ -956,6 +1059,68 @@ export default function CategoryClient() {
             transform: scale(1.1);
           }
         }
+
+        @keyframes shimmer-text {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+
+        @keyframes gradient-shift {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+
+        .filter-button.product:hover {
+          background: linear-gradient(135deg, #005299 0%, #004080 50%, #003366 100%) !important;
+          transform: translateY(-4px) scale(1.08);
+          box-shadow: 0 10px 32px rgba(0, 99, 177, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15) inset, inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .filter-button.service:hover {
+          background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%) !important;
+          transform: translateY(-4px) scale(1.08);
+          box-shadow: 0 10px 32px rgba(16, 185, 129, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15) inset, inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .filter-button:not(.product):not(.service):hover {
+          background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%) !important;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .filter-button.product.active {
+          animation: pulse-blue 2s ease-in-out infinite, gradient-shift 3s ease infinite;
+        }
+
+        .filter-button.service.active {
+          animation: pulse-green 2s ease-in-out infinite, gradient-shift 3s ease infinite;
+        }
+
+        @keyframes pulse-blue {
+          0%, 100% {
+            box-shadow: 0 6px 20px rgba(0, 99, 177, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          }
+          50% {
+            box-shadow: 0 8px 28px rgba(0, 99, 177, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          }
+        }
+
+        @keyframes pulse-green {
+          0%, 100% {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          }
+          50% {
+            box-shadow: 0 8px 28px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          }
+        }
       `}</style>
     <div style={{ 
         padding: '80px 0', 
@@ -967,6 +1132,98 @@ export default function CategoryClient() {
       
       {/* Header Section */}
       <div className="container-responsive" style={{ marginBottom: '40px' }}>
+        {viewMode === 'categories' && (
+          <>
+            {/* Filter Buttons Section - styled like Home1Banner */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 'clamp(20px, 3vw, 32px)',
+              gap: 'clamp(16px, 3vw, 24px)',
+              flexWrap: 'nowrap',
+              position: 'relative',
+              padding: '0 clamp(20px, 4vw, 40px)',
+            }}>
+              <button
+                className={`filter-button product ${filterType === 'PRODUCT' ? 'active' : ''}`}
+                onClick={() => setFilterType(filterType === 'PRODUCT' ? 'ALL' : 'PRODUCT')}
+                style={{
+                  padding: '12px 28px',
+                  borderRadius: '35px',
+                  fontSize: 'clamp(0.85rem, 1.4vw, 1rem)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  border: '3px solid transparent',
+                  background: filterType === 'PRODUCT' 
+                    ? 'linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%)'
+                    : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                  backgroundSize: filterType === 'PRODUCT' ? '200% 200%' : '100% 100%',
+                  color: filterType === 'PRODUCT' ? 'white' : '#495057',
+                  boxShadow: filterType === 'PRODUCT'
+                    ? '0 6px 24px rgba(0, 99, 177, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
+                    : '0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.6px',
+                  minWidth: '110px',
+                }}
+              >
+                Produit
+              </button>
+              <h2 style={{
+                fontSize: 'clamp(1.5rem, 3vw, 2.2rem)',
+                fontWeight: 900,
+                background: 'linear-gradient(135deg, #1e293b 0%, #475569 30%, #64748b 50%, #475569 70%, #1e293b 100%)',
+                backgroundSize: '300% auto',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textAlign: 'center',
+                margin: 0,
+                letterSpacing: '-0.5px',
+                position: 'relative',
+                padding: '0 clamp(24px, 5vw, 40px)',
+                animation: 'shimmer-text 4s ease-in-out infinite',
+                textShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                lineHeight: '1.2',
+              }}>
+                Categories
+              </h2>
+              <button
+                className={`filter-button service ${filterType === 'SERVICE' ? 'active' : ''}`}
+                onClick={() => setFilterType(filterType === 'SERVICE' ? 'ALL' : 'SERVICE')}
+                style={{
+                  padding: '12px 28px',
+                  borderRadius: '35px',
+                  fontSize: 'clamp(0.85rem, 1.4vw, 1rem)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  border: '3px solid transparent',
+                  background: filterType === 'SERVICE'
+                    ? 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)'
+                    : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                  backgroundSize: filterType === 'SERVICE' ? '200% 200%' : '100% 100%',
+                  color: filterType === 'SERVICE' ? 'white' : '#495057',
+                  boxShadow: filterType === 'SERVICE'
+                    ? '0 6px 24px rgba(16, 185, 129, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
+                    : '0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.6px',
+                  minWidth: '110px',
+                }}
+              >
+                Service
+              </button>
+            </div>
+          </>
+        )}
+
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h1 style={{
             fontSize: 'clamp(2rem, 4vw, 3rem)',
@@ -1002,9 +1259,14 @@ export default function CategoryClient() {
         }}>
           <input
             type="text"
-            placeholder={viewMode === 'categories' ? 'Search categories...' : 'Search auctions...'}
+            placeholder="Search categories, auctions, and tenders..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onFocus={() => {
+              if (searchTerm.trim()) {
+                setShowSearchResults(true);
+              }
+            }}
             style={{
               width: '100%',
               padding: '16px 20px',
@@ -1024,6 +1286,8 @@ export default function CategoryClient() {
             onBlur={(e) => {
               e.currentTarget.style.borderColor = '#e2e8f0';
               e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+              // Delay hiding search results to allow clicks
+              setTimeout(() => setShowSearchResults(false), 200);
             }}
           />
           <div style={{
@@ -1038,6 +1302,106 @@ export default function CategoryClient() {
               <path d="M21 21l-4.35-4.35"/>
             </svg>
           </div>
+
+          {/* Search Results Dropdown */}
+          {showSearchResults && (searchResults.categories.length > 0 || searchResults.auctions.length > 0 || searchResults.tenders.length > 0) && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              background: 'white',
+              borderRadius: '16px',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+              marginTop: '8px',
+              maxHeight: '400px',
+              overflowY: 'auto',
+              zIndex: 1000,
+              border: '1px solid #e2e8f0',
+            }}>
+              {searchResults.categories.length > 0 && (
+                <div style={{ padding: '12px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Categories
+                  </div>
+                  {searchResults.categories.slice(0, 5).map((category) => (
+                    <div
+                      key={category._id}
+                      onClick={() => handleSearchSelect(category, 'category')}
+                      style={{
+                        padding: '12px',
+                        cursor: 'pointer',
+                        borderRadius: '8px',
+                        transition: 'all 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#f1f5f9';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                    >
+                      <div style={{ fontWeight: 600, color: '#1e293b' }}>{category.name}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {searchResults.auctions.length > 0 && (
+                <div style={{ padding: '12px', borderTop: searchResults.categories.length > 0 ? '1px solid #e2e8f0' : 'none' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Auctions
+                  </div>
+                  {searchResults.auctions.slice(0, 5).map((auction) => (
+                    <div
+                      key={auction._id}
+                      onClick={() => handleSearchSelect(auction, 'auction')}
+                      style={{
+                        padding: '12px',
+                        cursor: 'pointer',
+                        borderRadius: '8px',
+                        transition: 'all 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#f1f5f9';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                    >
+                      <div style={{ fontWeight: 600, color: '#1e293b' }}>{auction.title}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {searchResults.tenders.length > 0 && (
+                <div style={{ padding: '12px', borderTop: (searchResults.categories.length > 0 || searchResults.auctions.length > 0) ? '1px solid #e2e8f0' : 'none' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Tenders
+                  </div>
+                  {searchResults.tenders.slice(0, 5).map((tender) => (
+                    <div
+                      key={tender._id}
+                      onClick={() => handleSearchSelect(tender, 'tender')}
+                      style={{
+                        padding: '12px',
+                        cursor: 'pointer',
+                        borderRadius: '8px',
+                        transition: 'all 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#f1f5f9';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                    >
+                      <div style={{ fontWeight: 600, color: '#1e293b' }}>{tender.title}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Back Button for Auctions View */}

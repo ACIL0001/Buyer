@@ -1156,19 +1156,18 @@ export default function CategoryClient() {
                   cursor: 'pointer',
                   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   border: '3px solid transparent',
-                  background: filterType === 'PRODUCT' 
-                    ? 'linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%)'
-                    : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                  backgroundSize: filterType === 'PRODUCT' ? '200% 200%' : '100% 100%',
-                  color: filterType === 'PRODUCT' ? 'white' : '#495057',
+                  background: 'linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%)',
+                  backgroundSize: '200% 200%',
+                  color: 'white',
                   boxShadow: filterType === 'PRODUCT'
                     ? '0 6px 24px rgba(0, 99, 177, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
-                    : '0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+                    : '0 4px 16px rgba(0, 99, 177, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                   position: 'relative',
                   overflow: 'hidden',
                   textTransform: 'uppercase',
                   letterSpacing: '0.6px',
                   minWidth: '110px',
+                  opacity: filterType === 'PRODUCT' ? 1 : 0.8,
                 }}
               >
                 Produit
@@ -1203,19 +1202,18 @@ export default function CategoryClient() {
                   cursor: 'pointer',
                   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   border: '3px solid transparent',
-                  background: filterType === 'SERVICE'
-                    ? 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)'
-                    : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                  backgroundSize: filterType === 'SERVICE' ? '200% 200%' : '100% 100%',
-                  color: filterType === 'SERVICE' ? 'white' : '#495057',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
+                  backgroundSize: '200% 200%',
+                  color: 'white',
                   boxShadow: filterType === 'SERVICE'
                     ? '0 6px 24px rgba(16, 185, 129, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
-                    : '0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+                    : '0 4px 16px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                   position: 'relative',
                   overflow: 'hidden',
                   textTransform: 'uppercase',
                   letterSpacing: '0.6px',
                   minWidth: '110px',
+                  opacity: filterType === 'SERVICE' ? 1 : 0.8,
                 }}
               >
                 Service

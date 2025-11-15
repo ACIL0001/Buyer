@@ -1231,18 +1231,17 @@ const MultipurposeTenderSidebar = () => {
                                                     cursor: 'pointer',
                                                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                                                     border: '3px solid transparent',
-                                                    background: selectedBidType === BID_TYPE.PRODUCT
-                                                        ? 'linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%)'
-                                                        : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                                                    color: selectedBidType === BID_TYPE.PRODUCT ? 'white' : '#495057',
+                                                    background: 'linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%)',
+                                                    color: 'white',
                                                     boxShadow: selectedBidType === BID_TYPE.PRODUCT
                                                         ? '0 6px 24px rgba(0, 99, 177, 0.35)'
-                                                        : '0 4px 16px rgba(0, 0, 0, 0.1)',
+                                                        : '0 4px 16px rgba(0, 99, 177, 0.25)',
                                                     textTransform: 'uppercase',
                                                     letterSpacing: '0.6px',
                                                     minWidth: '110px',
                                                     position: 'relative',
                                                     zIndex: 10,
+                                                    opacity: selectedBidType === BID_TYPE.PRODUCT ? 1 : 0.8,
                                                 }}
                                             >
                                                 Produit
@@ -1280,18 +1279,17 @@ const MultipurposeTenderSidebar = () => {
                                                     cursor: 'pointer',
                                                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                                                     border: '3px solid transparent',
-                                                    background: selectedBidType === BID_TYPE.SERVICE
-                                                        ? 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)'
-                                                        : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                                                    color: selectedBidType === BID_TYPE.SERVICE ? 'white' : '#495057',
+                                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
+                                                    color: 'white',
                                                     boxShadow: selectedBidType === BID_TYPE.SERVICE
                                                         ? '0 6px 24px rgba(16, 185, 129, 0.35)'
-                                                        : '0 4px 16px rgba(0, 0, 0, 0.1)',
+                                                        : '0 4px 16px rgba(16, 185, 129, 0.25)',
                                                     textTransform: 'uppercase',
                                                     letterSpacing: '0.6px',
                                                     minWidth: '110px',
                                                     position: 'relative',
                                                     zIndex: 10,
+                                                    opacity: selectedBidType === BID_TYPE.SERVICE ? 1 : 0.8,
                                                 }}
                                             >
                                                 Service

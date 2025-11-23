@@ -159,13 +159,19 @@ export const Header = () => {
 
   // Navigation Items
   const navItems = [
-    { name: t('navigation.home'), path: "/" },
-    { name: t('navigation.auctions'), path: "/auction-sidebar" },
-    { name: t('navigation.tenders'), path: "/tenders" },
-    { name: t('navigation.categories'), path: "/category" },
-    { name: t('navigation.howToBid'), path: "/how-to-bid" },
-    { name: t('navigation.members'), path: "/users" },
+    { name: t('navigation.home'), path: "/", matchPaths: ["/"] },
+    { name: t('navigation.auctions'), path: "/auction-sidebar", matchPaths: ["/auction-sidebar", "/auction-details"] },
+    { name: t('navigation.tenders'), path: "/tenders", matchPaths: ["/tenders", "/tender-details"] },
+    { name: 'Ventes Directes', path: "/direct-sale", matchPaths: ["/direct-sale"] },
+    { name: t('navigation.categories'), path: "/category", matchPaths: ["/category"] },
+    { name: t('navigation.howToBid'), path: "/how-to-bid", matchPaths: ["/how-to-bid"] },
+    { name: t('navigation.members'), path: "/users", matchPaths: ["/users"] },
   ];
+
+  // Helper function to check if a nav item is active
+  const isNavItemActive = (item) => {
+    return item.matchPaths.some(matchPath => pathName === matchPath || pathName.startsWith(matchPath + '/'));
+  };
 
 
   async function swithAcc() {
@@ -406,35 +412,38 @@ export const Header = () => {
                 margin: 0,
                 padding: 0
               }}>
-                {navItems.map((item, index) => (
-                  <li key={index}>
-                    <Link 
-                      href={item.path} 
-                      style={{
-                        color: pathName === item.path ? '#0063b1' : '#333',
-                        fontWeight: pathName === item.path ? '600' : '500',
-                        textDecoration: 'none',
-                        fontSize: '16px',
-                        position: 'relative',
-                        padding: '8px 0',
-                        transition: 'all 0.3s ease'
-                      }}
-                    >
-                      {item.name}
-                      {pathName === item.path && (
-                        <span style={{
-                          position: 'absolute',
-                          bottom: '0',
-                          left: '0',
-                          width: '100%',
-                          height: '2px',
-                          background: '#0063b1',
-                          borderRadius: '2px'
-                        }}></span>
-                      )}
-                    </Link>
-                  </li>
-                ))}
+                {navItems.map((item, index) => {
+                  const isActive = isNavItemActive(item);
+                  return (
+                    <li key={index}>
+                      <Link 
+                        href={item.path} 
+                        style={{
+                          color: isActive ? '#0063b1' : '#333',
+                          fontWeight: isActive ? '600' : '500',
+                          textDecoration: 'none',
+                          fontSize: '16px',
+                          position: 'relative',
+                          padding: '8px 0',
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        {item.name}
+                        {isActive && (
+                          <span style={{
+                            position: 'absolute',
+                            bottom: '0',
+                            left: '0',
+                            width: '100%',
+                            height: '2px',
+                            background: '#0063b1',
+                            borderRadius: '2px'
+                          }}></span>
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </nav>
           )}
@@ -952,30 +961,33 @@ export const Header = () => {
                 padding: 0,
                 margin: 0
               }}>
-                {navItems.map((item, index) => (
-                  <li key={index} style={{ marginBottom: '8px' }}>
-                    <Link
-                      href={item.path}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: isMobile ? '16px 20px' : '15px',
-                        background: pathName === item.path ? '#f8f9fa' : 'transparent',
-                        borderRadius: '12px',
-                        color: pathName === item.path ? '#0063b1' : '#333',
-                        fontWeight: pathName === item.path ? '600' : '500',
-                        fontSize: isMobile ? '16px' : '16px',
-                        textDecoration: 'none',
-                        transition: 'all 0.3s ease',
-                        borderLeft: pathName === item.path ? '4px solid #0063b1' : '4px solid transparent',
-                        minHeight: '44px' // Better touch target
-                      }}
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      {item.name}
-                    </Link>
-                  </li>
-                ))}
+                {navItems.map((item, index) => {
+                  const isActive = isNavItemActive(item);
+                  return (
+                    <li key={index} style={{ marginBottom: '8px' }}>
+                      <Link
+                        href={item.path}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: isMobile ? '16px 20px' : '15px',
+                          background: isActive ? '#f8f9fa' : 'transparent',
+                          borderRadius: '12px',
+                          color: isActive ? '#0063b1' : '#333',
+                          fontWeight: isActive ? '600' : '500',
+                          fontSize: isMobile ? '16px' : '16px',
+                          textDecoration: 'none',
+                          transition: 'all 0.3s ease',
+                          borderLeft: isActive ? '4px solid #0063b1' : '4px solid transparent',
+                          minHeight: '44px' // Better touch target
+                        }}
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        {item.name}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </nav>
           </div>

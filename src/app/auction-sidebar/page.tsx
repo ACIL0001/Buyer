@@ -9,7 +9,6 @@ import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
 import { useEffect, useState } from "react";
 import useAuth from "@/hooks/useAuth";
 import Chat from "@/chat/Chat";
-import InteractiveBackground from "@/components/common/InteractiveBackground";
 
 const AuctionSidebarPage = () => {
   const { initializeAuth } = useAuth();
@@ -22,14 +21,6 @@ const AuctionSidebarPage = () => {
 
   return (
     <>
-      <InteractiveBackground 
-        theme="light" 
-        enableDots={true}
-        enableGeometry={true}
-        enableWaves={true}
-        enableMouseTrail={true}
-        particleCount={50}
-      />
       <style jsx global>{`
         /* Global styles */
         * {

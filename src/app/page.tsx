@@ -4,6 +4,7 @@ import Header from "@/components/header/Header"
 import Home1Banner from "@/components/banner/Home1Banner";
 import Home1LiveAuction from "@/components/live-auction/Home1LiveAuction";
 import Home1LiveTenders from "@/components/live-tenders/Home1LiveTenders";
+import Home1LiveDirectSales from "@/components/live-direct-sales/Home1LiveDirectSales";
 // import Home1Category from "@/components/category/Home1Category"; // Commented out - not needed
 import Footer from "@/components/footer/FooterWithErrorBoundary";
 import RequestProvider from "@/contexts/RequestContext";
@@ -98,6 +99,11 @@ export default function Home() {
     scrollToSection('tenders');
   };
 
+  const handleVenteDirectViewAll = () => {
+    setVenteDirectDropdownOpen(false);
+    scrollToSection('direct-sales');
+  };
+
   const handleCreateAuction = () => {
     setAuctionDropdownOpen(false);
     window.location.href = `${getSellerUrl()}dashboard/auctions/create`;
@@ -106,6 +112,11 @@ export default function Home() {
   const handleCreateTender = () => {
     setTenderDropdownOpen(false);
     window.location.href = `${getSellerUrl()}dashboard/tenders/create`;
+  };
+
+  const handleCreateVenteDirect = () => {
+    setVenteDirectDropdownOpen(false);
+    window.location.href = `${getSellerUrl()}dashboard/direct-sales/create`;
   };
 
   // Helper function to get category image URL
@@ -607,8 +618,6 @@ export default function Home() {
           100% { transform: rotate(360deg); }
         }
         
-
-        
         @keyframes shimmer {
           0% {
             background-position: -468px 0;
@@ -730,8 +739,6 @@ export default function Home() {
         .animate-float {
           animation: float 3s ease-in-out infinite;
         }
-        
-
         
         .animate-bounce-in {
           animation: bounceIn 0.8s ease-out;
@@ -1857,7 +1864,7 @@ export default function Home() {
                                   )}
                                   {isAuction && (
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                      <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 13H13V17H11V13H7V11H11V7H13V11H17V13Z"/>
+                                      <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 13H13V17H11V13H7V11H13V7H13V11H17V13Z"/>
                                     </svg>
                                   )}
                                   {isTender && (
@@ -1948,7 +1955,7 @@ export default function Home() {
                       {/* Category Carousel Banner */}
                       <Home1Banner />
 
-                      {/* CTA Buttons - Order: Tenders, Vente Direct, Auctions */}
+                      {/* CTA Buttons - Order: Auctions, Vente Direct, Tenders */}
                       <div 
                         className="hero-cta-buttons"
                         style={{
@@ -1964,195 +1971,7 @@ export default function Home() {
                           zIndex: 10,
                         }}
                       >
-                        {/* 1. TENDERS - Green with Envelope Icon */}
-                        <div className="dropdown-container">
-                          <button
-                            onClick={() => {
-                              console.log('Tender button clicked, current state:', tenderDropdownOpen);
-                              setTenderDropdownOpen(!tenderDropdownOpen);
-                            }}
-                            className={`dropdown-button tender-cta ${tenderDropdownOpen ? 'open' : ''}`}
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: 'clamp(6px, 2vw, 10px)',
-                              background: '#ffffff',
-                              color: '#047857',
-                              padding: 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
-                              borderRadius: 'clamp(22px, 5vw, 30px)',
-                              border: '3px solid #10b981',
-                              fontSize: 'clamp(15px, 3.8vw, 19px)',
-                              fontWeight: 800,
-                              cursor: 'pointer',
-                              boxShadow: '0 14px 30px rgba(16, 185, 129, 0.26)',
-                              transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
-                              position: 'relative',
-                              overflow: 'hidden',
-                              textTransform: 'none',
-                              letterSpacing: '0.3px',
-                              height: '100%',
-                              width: '100%',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = 'translateY(-8px) scale(1.07)';
-                              e.currentTarget.style.boxShadow = '0 22px 42px rgba(16, 185, 129, 0.34)';
-                              e.currentTarget.style.borderColor = '#0f9f6b';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                              e.currentTarget.style.boxShadow = '0 14px 30px rgba(16, 185, 129, 0.26)';
-                              e.currentTarget.style.borderColor = '#10b981';
-                            }}
-                          >
-                            <div style={{
-                              background: 'rgba(16, 185, 129, 0.12)',
-                              padding: 'clamp(12px, 2.8vw, 16px)',
-                              borderRadius: '55%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                            }}>
-                              {/* Envelope Icon for Tenders */}
-                              <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="#047857">
-                                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-                              </svg>
-                            </div>
-                            <span style={{
-                              display: 'flex',
-                              flexWrap: 'wrap',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '4px',
-                              color: '#047857',
-                              fontSize: 'clamp(11px, 2.8vw, 14px)',
-                              fontWeight: 800,
-                              textAlign: 'center',
-                              lineHeight: 1.25,
-                              textTransform: 'none',
-                              width: '100%',
-                            }}>
-                              <span style={{ whiteSpace: 'nowrap' }}>Tenders</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>Soumission</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>طلبية</span>
-                            </span>
-                            <svg className="dropdown-arrow" width="clamp(14px, 3vw, 18px)" height="clamp(14px, 3vw, 18px)" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <path d="M6 9l6 6 6-6"/>
-                            </svg>
-                          </button>
-                          
-                          <div 
-                            className={`dropdown-menu ${tenderDropdownOpen ? 'open' : ''}`}
-                            style={{
-                              zIndex: 9999,
-                              display: tenderDropdownOpen ? 'block' : 'none',
-                            }}
-                          >
-                            <button className="dropdown-item" onClick={handleTenderViewAll}>
-                              {/* Eye Icon for View */}
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                              </svg>
-                              Voir
-                            </button>
-                            <button className="dropdown-item" onClick={handleCreateTender}>
-                              {/* Plus Icon for Create */}
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
-                                <line x1="12" y1="5" x2="12" y2="19"/>
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                              </svg>
-                              Créer
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* 2. VENTE DIRECT - Grey/Inactive with Store Icon and "Coming Soon" */}
-                        <div className="dropdown-container">
-                          <button
-                            disabled
-                            className="dropdown-button vente-direct-cta disabled"
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: 'clamp(6px, 2vw, 10px)',
-                              background: '#ffffff',
-                              color: '#475569',
-                              padding: 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
-                              borderRadius: 'clamp(22px, 5vw, 30px)',
-                              border: '3px solid #64748b',
-                              fontSize: 'clamp(15px, 3.8vw, 19px)',
-                              fontWeight: 800,
-                              cursor: 'not-allowed',
-                              boxShadow: '0 14px 30px rgba(71, 85, 105, 0.26)',
-                              transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
-                              position: 'relative',
-                              overflow: 'hidden',
-                              textTransform: 'none',
-                              letterSpacing: '0.3px',
-                              opacity: 0.85,
-                              height: '100%',
-                              width: '100%',
-                            }}
-                          >
-                            <div style={{
-                              background: 'rgba(100, 116, 139, 0.2)',
-                              padding: 'clamp(12px, 2.8vw, 16px)',
-                              borderRadius: '55%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                            }}>
-                              {/* Store Icon for Vente Direct */}
-                              <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="#475569">
-                                <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
-                              </svg>
-                            </div>
-                            <span style={{
-                              display: 'flex',
-                              flexWrap: 'wrap',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '4px',
-                              color: '#475569',
-                              fontSize: 'clamp(11px, 2.8vw, 14px)',
-                              fontWeight: 800,
-                              textAlign: 'center',
-                              lineHeight: 1.25,
-                              textTransform: 'none',
-                              width: '100%',
-                            }}>
-                              <span style={{ whiteSpace: 'nowrap' }}>Sell</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>Vente Direct</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>الشراء</span>
-                            </span>
-                            <span style={{
-                              fontSize: 'clamp(10px, 2.2vw, 13px)',
-                              fontWeight: 700,
-                              color: '#475569',
-                              background: 'rgba(148, 163, 184, 0.18)',
-                              padding: '5px 14px',
-                              borderRadius: '16px',
-                              textTransform: 'uppercase',
-                              letterSpacing: '1px',
-                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                              border: '1px solid rgba(148, 163, 184, 0.4)',
-                            }}>
-                              🔜 Coming Soon
-                            </span>
-                          </button>
-                        </div>
-
-                        {/* 3. AUCTIONS - Blue with Hammer Icon */}
+                        {/* 1. AUCTIONS - Blue with Hammer Icon */}
                         <div className="dropdown-container">
                           <button
                             onClick={() => {
@@ -2261,6 +2080,220 @@ export default function Home() {
                             </button>
                           </div>
                         </div>
+
+                        {/* 2. VENTE DIRECT - Orange/Amber with Store Icon */}
+                        <div className="dropdown-container">
+                          <button
+                            onClick={() => {
+                              console.log('Vente Direct button clicked, current state:', venteDirectDropdownOpen);
+                              setVenteDirectDropdownOpen(!venteDirectDropdownOpen);
+                            }}
+                            className={`dropdown-button vente-direct-cta ${venteDirectDropdownOpen ? 'open' : ''}`}
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 'clamp(6px, 2vw, 10px)',
+                              background: '#ffffff',
+                              color: '#d97706',
+                              padding: 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
+                              borderRadius: 'clamp(22px, 5vw, 30px)',
+                              border: '3px solid #f59e0b',
+                              fontSize: 'clamp(15px, 3.8vw, 19px)',
+                              fontWeight: 800,
+                              cursor: 'pointer',
+                              boxShadow: '0 14px 30px rgba(245, 158, 11, 0.26)',
+                              transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
+                              position: 'relative',
+                              overflow: 'hidden',
+                              textTransform: 'none',
+                              letterSpacing: '0.3px',
+                              height: '100%',
+                              width: '100%',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-8px) scale(1.07)';
+                              e.currentTarget.style.boxShadow = '0 22px 42px rgba(245, 158, 11, 0.34)';
+                              e.currentTarget.style.borderColor = '#d97706';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                              e.currentTarget.style.boxShadow = '0 14px 30px rgba(245, 158, 11, 0.26)';
+                              e.currentTarget.style.borderColor = '#f59e0b';
+                            }}
+                          >
+                            <div style={{
+                              background: 'rgba(245, 158, 11, 0.12)',
+                              padding: 'clamp(12px, 2.8vw, 16px)',
+                              borderRadius: '55%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                            }}>
+                              {/* Store Icon for Vente Direct */}
+                              <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="#d97706">
+                                <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
+                              </svg>
+                            </div>
+                            <span style={{
+                              display: 'flex',
+                              flexWrap: 'wrap',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              color: '#d97706',
+                              fontSize: 'clamp(11px, 2.8vw, 14px)',
+                              fontWeight: 800,
+                              textAlign: 'center',
+                              lineHeight: 1.25,
+                              textTransform: 'none',
+                              width: '100%',
+                            }}>
+                              <span style={{ whiteSpace: 'nowrap' }}>Sell</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>Vente Direct</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>الشراء</span>
+                            </span>
+                            <svg className="dropdown-arrow" width="clamp(14px, 3vw, 18px)" height="clamp(14px, 3vw, 18px)" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                          </button>
+                          
+                          <div 
+                            className={`dropdown-menu ${venteDirectDropdownOpen ? 'open' : ''}`}
+                            style={{
+                              zIndex: 9999,
+                              display: venteDirectDropdownOpen ? 'block' : 'none',
+                            }}
+                          >
+                            <button className="dropdown-item" onClick={handleVenteDirectViewAll}>
+                              {/* Eye Icon for View */}
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                              </svg>
+                              Voir
+                            </button>
+                            <button className="dropdown-item" onClick={handleCreateVenteDirect}>
+                              {/* Plus Icon for Create */}
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                              </svg>
+                              Créer
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 3. TENDERS - Green with Envelope Icon */}
+                        <div className="dropdown-container">
+                          <button
+                            onClick={() => {
+                              console.log('Tender button clicked, current state:', tenderDropdownOpen);
+                              setTenderDropdownOpen(!tenderDropdownOpen);
+                            }}
+                            className={`dropdown-button tender-cta ${tenderDropdownOpen ? 'open' : ''}`}
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 'clamp(6px, 2vw, 10px)',
+                              background: '#ffffff',
+                              color: '#047857',
+                              padding: 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
+                              borderRadius: 'clamp(22px, 5vw, 30px)',
+                              border: '3px solid #10b981',
+                              fontSize: 'clamp(15px, 3.8vw, 19px)',
+                              fontWeight: 800,
+                              cursor: 'pointer',
+                              boxShadow: '0 14px 30px rgba(16, 185, 129, 0.26)',
+                              transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
+                              position: 'relative',
+                              overflow: 'hidden',
+                              textTransform: 'none',
+                              letterSpacing: '0.3px',
+                              height: '100%',
+                              width: '100%',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-8px) scale(1.07)';
+                              e.currentTarget.style.boxShadow = '0 22px 42px rgba(16, 185, 129, 0.34)';
+                              e.currentTarget.style.borderColor = '#0f9f6b';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                              e.currentTarget.style.boxShadow = '0 14px 30px rgba(16, 185, 129, 0.26)';
+                              e.currentTarget.style.borderColor = '#10b981';
+                            }}
+                          >
+                            <div style={{
+                              background: 'rgba(16, 185, 129, 0.12)',
+                              padding: 'clamp(12px, 2.8vw, 16px)',
+                              borderRadius: '55%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                            }}>
+                              {/* Envelope Icon for Tenders */}
+                              <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="#047857">
+                                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                              </svg>
+                            </div>
+                            <span style={{
+                              display: 'flex',
+                              flexWrap: 'wrap',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              color: '#047857',
+                              fontSize: 'clamp(11px, 2.8vw, 14px)',
+                              fontWeight: 800,
+                              textAlign: 'center',
+                              lineHeight: 1.25,
+                              textTransform: 'none',
+                              width: '100%',
+                            }}>
+                              <span style={{ whiteSpace: 'nowrap' }}>Tenders</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>Soumission</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>طلبية</span>
+                            </span>
+                            <svg className="dropdown-arrow" width="clamp(14px, 3vw, 18px)" height="clamp(14px, 3vw, 18px)" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                          </button>
+                          
+                          <div 
+                            className={`dropdown-menu ${tenderDropdownOpen ? 'open' : ''}`}
+                            style={{
+                              zIndex: 9999,
+                              display: tenderDropdownOpen ? 'block' : 'none',
+                            }}
+                          >
+                            <button className="dropdown-item" onClick={handleTenderViewAll}>
+                              {/* Eye Icon for View */}
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                              </svg>
+                              Voir
+                            </button>
+                            <button className="dropdown-item" onClick={handleCreateTender}>
+                              {/* Plus Icon for Create */}
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                              </svg>
+                              Créer
+                            </button>
+                          </div>
+                        </div>
                       </div>
 
                       {/* Trust Indicators */}
@@ -2357,9 +2390,6 @@ export default function Home() {
                     </div>
                   </section>
                   
-                  {/* Section Divider with Animation */}
-                  {/* Section Divider with Animation */}
-                  {/* Section Divider with Animation */}
                   {/* Live Auctions Section - Always visible on mobile */}
                   <section 
                     ref={auctionRef}
@@ -2379,7 +2409,23 @@ export default function Home() {
                     <Home1LiveAuction />
                   </section>
                   
-                  {/* Section Divider with Animation */}
+                  {/* Live Direct Sales Section - Always visible on mobile */}
+                  <section 
+                    data-section="direct-sales"
+                    className="section-spacing section-bg-1"
+                    style={{
+                      position: 'relative',
+                      zIndex: 2,
+                      opacity: isMobile ? 1 : 1,
+                      transform: isMobile ? 'none' : 'none',
+                      transition: isMobile ? 'none' : 'none',
+                      display: isMobile ? 'block' : 'block',
+                      visibility: isMobile ? 'visible' : 'visible',
+                      minHeight: isMobile ? '300px' : 'auto',
+                    }}
+                  >
+                    <Home1LiveDirectSales />
+                  </section>
                   
                   {/* Live Tenders Section - Always visible on mobile */}
                   <section 

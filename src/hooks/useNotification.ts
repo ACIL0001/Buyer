@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { authStore } from '@/contexts/authStore';
 import { useCreateSocket } from '@/contexts/socket';
 import { getUnreadNotificationCount, getNotifications } from '@/utils/api';
+import { NotificationAPI } from '@/app/api/notification';
 
 interface Notification {
   _id: string;
@@ -173,16 +174,10 @@ export default function useNotification() {
       setUnreadCount(prev => Math.max(0, prev - 1));
 
       try {
-        const response = await fetch(`/api/notifications/${notificationId}/read`, {
-          method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${auth.tokens.accessToken}`
-          }
-        });
+        const result = await NotificationAPI.markAsRead(notificationId);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (result.success === false) {
+          throw new Error('Failed to mark notification as read');
         }
 
         console.log('✅ Notification marked as read successfully');
@@ -225,16 +220,10 @@ export default function useNotification() {
       setUnreadCount(0);
 
       try {
-        const response = await fetch('/api/notifications/read-all', {
-          method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${auth.tokens.accessToken}`
-          }
-        });
+        const result = await NotificationAPI.markAllAsRead();
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (result.success === false) {
+          throw new Error('Failed to mark all notifications as read');
         }
 
         console.log('✅ All notifications marked as read successfully');

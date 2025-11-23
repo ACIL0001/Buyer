@@ -20,7 +20,6 @@ import { AuthAPI } from "@/app/api/auth";
 import { TermsAPI } from "@/app/api/terms";
 import useAuth from "@/hooks/useAuth";
 import { CLIENT_TYPE } from "@/types/User";
-import InteractiveBackground from "@/components/common/InteractiveBackground";
 import { getFrontendBaseUrl } from "@/config";
 
 export default function Register() {
@@ -312,14 +311,6 @@ export default function Register() {
 
   return (
     <>
-      <InteractiveBackground 
-        theme="light" 
-        enableDots={true}
-        enableGeometry={true}
-        enableWaves={true}
-        enableMouseTrail={true}
-        particleCount={50}
-      />
       <div className="auth-page">
       <Header/>
       <div className="auth-container">

@@ -17,9 +17,10 @@ interface ApiResponse<T> {
 }
 
 export const SubCategoryAPI = {
-  getSubCategories: async (): Promise<ApiResponse<SubCategory[]>> => {
+  getSubCategories: async (categoryId?: string): Promise<ApiResponse<SubCategory[]>> => {
     try {
-      const res = await requests.get('subcategory');
+      const url = categoryId ? `subcategory?category=${categoryId}` : 'subcategory';
+      const res = await requests.get(url);
       if ('success' in res) {
         return res as ApiResponse<SubCategory[]>;
       }
@@ -32,4 +33,4 @@ export const SubCategoryAPI = {
       throw error;
     }
   },
-}; 
+};

@@ -812,37 +812,28 @@ const Home1LiveTenders = () => {
                           <div style={{
                             display: 'grid',
                             gridTemplateColumns: tender?.tenderType === 'SERVICE' ? '1fr' : '1fr 1fr',
-                            gap: '12px',
-                            marginBottom: '16px',
+                            gap: '6px',
+                            marginBottom: '8px',
                           }}>
                             <div style={{
                               background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                              borderRadius: '12px',
-                              padding: '12px',
+                              borderRadius: '8px',
+                              padding: '4px 8px',
                               border: '1px solid #e9ecef',
-                              borderLeft: '4px solid #27F5CC',
+                              borderLeft: '3px solid #27F5CC',
                               position: 'relative',
                               overflow: 'hidden',
                             }}>
-                              <div style={{
-                                position: 'absolute',
-                                top: 0,
-                                right: 0,
-                                width: '30px',
-                                height: '30px',
-                                background: 'linear-gradient(45deg, rgba(39, 245, 204, 0.1), rgba(0, 212, 170, 0.1))',
-                                borderRadius: '0 12px 0 100%',
-                              }}></div>
                               <p style={{
-                                fontSize: '12px',
+                                fontSize: '10px',
                                 color: '#666',
-                                margin: '0 0 4px 0',
+                                margin: '0 0 2px 0',
                                 fontWeight: '600',
                               }}>
                                 📍 Localisation
                               </p>
                               <p style={{
-                                fontSize: '14px',
+                                fontSize: '12px',
                                 color: '#333',
                                 margin: 0,
                                 fontWeight: '500',
@@ -863,32 +854,23 @@ const Home1LiveTenders = () => {
                             {tender?.tenderType !== 'SERVICE' && (
                               <div style={{
                                 background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                borderRadius: '12px',
-                                padding: '12px',
+                                borderRadius: '8px',
+                                padding: '4px 8px',
                                 border: '1px solid #e9ecef',
-                                borderLeft: '4px solid #27F5CC',
+                                borderLeft: '3px solid #27F5CC',
                                 position: 'relative',
                                 overflow: 'hidden',
                               }}>
-                                <div style={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  right: 0,
-                                  width: '30px',
-                                  height: '30px',
-                                  background: 'linear-gradient(45deg, rgba(39, 245, 204, 0.1), rgba(0, 212, 170, 0.1))',
-                                  borderRadius: '0 12px 0 100%',
-                                }}></div>
                                 <p style={{
-                                  fontSize: '12px',
+                                  fontSize: '10px',
                                   color: '#666',
-                                  margin: '0 0 4px 0',
+                                  margin: '0 0 2px 0',
                                   fontWeight: '600',
                                 }}>
                                   📦 Quantité
                                 </p>
                                 <p style={{
-                                  fontSize: '14px',
+                                  fontSize: '12px',
                                   color: '#333',
                                   margin: 0,
                                   fontWeight: '500',
@@ -899,65 +881,36 @@ const Home1LiveTenders = () => {
                             )}
                           </div>
 
-                          {/* Description */}
-                          {tender.description && (
-                            <div style={{
-                              marginBottom: '16px',
-                            }}>
-                                <p style={{
-                                  fontSize: '12px',
-                                  color: '#666',
-                                  margin: '0 0 4px 0',
-                                fontWeight: '600',
-                                }}>
-                                Description
-                                </p>
-                                <p style={{
-                                fontSize: '13px',
-                                color: '#555',
-                                  margin: 0,
-                                lineHeight: '1.4',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}>
-                                {tender.description}
-                                </p>
-                              </div>
-                            )}
-
                           {/* Participants Count */}
                           <div style={{
                             background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                            borderRadius: '12px',
-                            padding: '12px',
-                            marginBottom: '16px',
+                            borderRadius: '8px',
+                            padding: '6px 8px',
+                            marginBottom: '8px',
                             border: '1px solid #e9ecef',
                           }}>
                             <div style={{
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              gap: '8px',
+                              gap: '4px',
                             }}>
                               <div style={{
-                                width: '8px',
-                                height: '8px',
+                                width: '6px',
+                                height: '6px',
                                 borderRadius: '50%',
                                 background: '#27F5CC',
                                 animation: 'pulse 2s infinite',
                               }}></div>
                               <span style={{
-                                fontSize: '14px',
+                                fontSize: '11px',
                                 fontWeight: '600',
                                 color: '#27F5CC',
                               }}>
                                 {((tender as any).participantsCount || 0)} participant{(((tender as any).participantsCount || 0) !== 1) ? 's' : ''}
                               </span>
                               <span style={{
-                                fontSize: '12px',
+                                fontSize: '10px',
                                 color: '#666',
                               }}>
                                 ont soumis des offres

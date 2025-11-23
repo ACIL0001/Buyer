@@ -12,21 +12,12 @@ import Header from "@/components/header/Header";
 import SocketProvider from "@/contexts/socket";
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
-import InteractiveBackground from "@/components/common/InteractiveBackground";
 import { getFrontendBaseUrl } from "@/config";
 
 // Create a wrapper component with SocketProvider
 function LoginWrapper() {
   return (
     <>
-      <InteractiveBackground 
-        theme="light" 
-        enableDots={true}
-        enableGeometry={true}
-        enableWaves={true}
-        enableMouseTrail={true}
-        particleCount={50}
-      />
       <SocketProvider>
         <LoginComponent />
       </SocketProvider>

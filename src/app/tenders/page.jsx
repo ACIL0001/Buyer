@@ -1144,7 +1144,7 @@ const MultipurposeTenderSidebar = () => {
                                         }}>
                                             <input
                                                 type="text"
-                                                placeholder={t('search for a Tender')}
+                                                placeholder={t('Rechercher une soummision')}
                                                 value={searchTerm}
                                                 onChange={handleSearchChange}
                                                 style={{

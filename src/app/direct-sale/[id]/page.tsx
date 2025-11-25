@@ -589,7 +589,7 @@ function DirectSaleDetailContent() {
 
           {/* Similar Direct Sales Section */}
           {similarDirectSales.length > 0 && (
-            <div className="related-auction-section mb-110">
+            <div className="related-auction-section mb-110" style={{ paddingTop: 'clamp(120px, 15vw, 140px)' }}>
               <div className="row mb-50">
                 <div className="col-lg-12 d-flex align-items-center justify-content-between flex-wrap gap-3">
                   <div className="section-title">
@@ -623,13 +623,109 @@ function DirectSaleDetailContent() {
                             style={{ width: "100%", height: "100%", objectFit: "cover" }}
                             onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_DIRECT_SALE_IMAGE; }}
                           />
-                          <div style={{ position: "absolute", top: "10px", right: "10px", background: "#0063b1", color: "white", padding: "5px 10px", borderRadius: "15px", fontSize: "12px", fontWeight: "600" }}>
-                            {formatPrice(sale.price)}
-                          </div>
                         </div>
-                        <div style={{ padding: "20px" }}>
-                          <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "10px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sale.title}</h3>
-                          <p style={{ color: "#666", fontSize: "14px", marginBottom: "15px" }}>{sale.wilaya}</p>
+                        <div style={{ padding: "clamp(16px, 3vw, 20px)" }}>
+                          <h3 style={{ 
+                            fontSize: "18px", 
+                            fontWeight: "600", 
+                            marginBottom: "12px", 
+                            lineHeight: "1.3",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                          }}>
+                            {sale.title}
+                          </h3>
+
+                          {/* Location and Quantity Info */}
+                          <div style={{
+                            display: "grid",
+                            gridTemplateColumns: sale.saleType === 'SERVICE' ? '1fr' : '1fr 1fr',
+                            gap: "6px",
+                            marginBottom: "8px",
+                          }}>
+                            {sale.saleType !== 'SERVICE' && (
+                              <div style={{
+                                background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                borderRadius: '8px',
+                                padding: '4px 8px',
+                                borderLeft: '3px solid #f7ef8a',
+                              }}>
+                                <p style={{
+                                  fontSize: "10px",
+                                  color: "#666",
+                                  margin: "0 0 2px 0",
+                                  fontWeight: "600",
+                                }}>
+                                  📦 Quantité
+                                </p>
+                                <p style={{
+                                  fontSize: "12px",
+                                  color: "#333",
+                                  margin: 0,
+                                  fontWeight: "500",
+                                }}>
+                                  {sale.quantity || "Non spécifiée"}
+                                </p>
+                              </div>
+                            )}
+                            <div style={{
+                              background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                              borderRadius: '8px',
+                              padding: '4px 8px',
+                              borderLeft: '3px solid #f7ef8a',
+                            }}>
+                              <p style={{
+                                fontSize: "10px",
+                                color: "#666",
+                                margin: "0 0 2px 0",
+                                fontWeight: "600",
+                              }}>
+                                📍 Localisation
+                              </p>
+                              <p style={{
+                                fontSize: "12px",
+                                color: "#333",
+                                margin: 0,
+                                fontWeight: "500",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}>
+                                {sale.wilaya || sale.place || "Non spécifiée"}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Price Info */}
+                          <div style={{
+                            background: "linear-gradient(135deg, #f8f9fa, #e9ecef)",
+                            borderRadius: "8px",
+                            padding: "4px 8px",
+                            marginBottom: "12px",
+                            border: "1px solid #e9ecef",
+                            borderLeft: '3px solid #f7ef8a',
+                          }}>
+                            <p style={{
+                              fontSize: "10px",
+                              color: "#666",
+                              margin: "0 0 2px 0",
+                              fontWeight: "600",
+                            }}>
+                              💰 Prix
+                            </p>
+                            <p style={{
+                              fontSize: "12px",
+                              color: "#0063b1",
+                              margin: 0,
+                              fontWeight: "600",
+                            }}>
+                              {formatPrice(sale.price)}
+                            </p>
+                          </div>
+
                           <button className="btn btn-primary w-100" style={{ borderRadius: "20px" }}>Voir les détails</button>
                         </div>
                       </div>

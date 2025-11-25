@@ -3633,7 +3633,7 @@ const MultipurposeDetails2 = () => {
           </div>
 
           {/* Similar Tenders Section */}
-          <div className="related-auction-section mb-110">
+          <div className="related-auction-section mb-110" style={{ paddingTop: 'clamp(120px, 15vw, 140px)' }}>
             <div className="container">
               <div className="row mb-50">
                 <div className="col-lg-12 d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -4012,80 +4012,97 @@ const MultipurposeDetails2 = () => {
                                         </Link>
                                       </h3>
 
-                                      {/* Price Info */}
-                                      <div
-                                        style={{
-                                          marginBottom: "16px",
-                                          padding: "12px",
-                                          background: hasTenderEnded
-                                            ? "#e8e8e8"
-                                            : "linear-gradient(135deg, #f8f9fa, #e9ecef)",
-                                          borderRadius: "12px",
-                                          border: hasTenderEnded
-                                            ? "1px solid #d8d8d8"
-                                            : "1px solid rgba(0, 99, 177, 0.1)",
-                                        }}
-                                      >
-                                        <div
-                                          style={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            alignItems: "center",
-                                          }}
-                                        >
-                                          <div>
-                                            {safeTenderType !== 'SERVICE' && (
-                                            <p
-                                              style={{
-                                                fontSize: "12px",
-                                                color: hasTenderEnded
-                                                  ? "#888"
-                                                  : "#666",
-                                                margin: "0 0 4px 0",
-                                                fontWeight: "500",
-                                              }}
-                                            >
-                                              {hasTenderEnded
-                                                ? "Appel d'offres terminé"
-                                                : "Quantité"}
+                                      {/* Quantity and Location Info */}
+                                      {safeTenderType !== 'SERVICE' && (
+                                        <div style={{
+                                          display: "grid",
+                                          gridTemplateColumns: "1fr 1fr",
+                                          gap: "6px",
+                                          marginBottom: "8px",
+                                        }}>
+                                          <div style={{
+                                            background: hasTenderEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                            borderRadius: '8px',
+                                            padding: '4px 8px',
+                                            borderLeft: hasTenderEnded ? '3px solid #d0d0d0' : '3px solid #27F5CC',
+                                          }}>
+                                            <p style={{
+                                              fontSize: "10px",
+                                              color: hasTenderEnded ? "#888" : "#666",
+                                              margin: "0 0 2px 0",
+                                              fontWeight: "600",
+                                            }}>
+                                              📦 Quantité
                                             </p>
-                                            )}
-                                            {safeTenderType !== 'SERVICE' && (
-                                            <p
-                                              style={{
-                                                fontSize: "14px",
-                                                fontWeight: "500",
-                                                margin: 0,
-                                                color: hasTenderEnded
-                                                  ? "#888"
-                                                  : "#333",
-                                              }}
-                                            >
+                                            <p style={{
+                                              fontSize: "12px",
+                                              color: hasTenderEnded ? "#888" : "#333",
+                                              margin: 0,
+                                              fontWeight: "500",
+                                            }}>
                                               {tender.quantity || "Non spécifiée"}
                                             </p>
-                                            )}
                                           </div>
-                                          <div
-                                            style={{
-                                              width: "40px",
-                                              height: "40px",
-                                              borderRadius: "50%",
-                                              background: hasTenderEnded
-                                                ? "#cccccc"
-                                                : "linear-gradient(90deg, #0063b1, #00a3e0)",
-                                              display: "flex",
-                                              alignItems: "center",
-                                              justifyContent: "center",
-                                              color: "white",
-                                              fontSize: "18px",
-                                              boxShadow: hasTenderEnded
-                                                ? "none"
-                                                : "0 4px 12px rgba(0, 99, 177, 0.3)",
-                                            }}
-                                          >
-                                            🔥
+                                          <div style={{
+                                            background: hasTenderEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                            borderRadius: '8px',
+                                            padding: '4px 8px',
+                                            borderLeft: hasTenderEnded ? '3px solid #d0d0d0' : '3px solid #27F5CC',
+                                          }}>
+                                            <p style={{
+                                              fontSize: "10px",
+                                              color: hasTenderEnded ? "#888" : "#666",
+                                              margin: "0 0 2px 0",
+                                              fontWeight: "600",
+                                            }}>
+                                              📍 Localisation
+                                            </p>
+                                            <p style={{
+                                              fontSize: "12px",
+                                              color: hasTenderEnded ? "#888" : "#333",
+                                              margin: 0,
+                                              fontWeight: "500",
+                                              overflow: "hidden",
+                                              textOverflow: "ellipsis",
+                                              whiteSpace: "nowrap",
+                                            }}>
+                                              {(() => {
+                                                const wilaya = tender.wilaya || '';
+                                                const location = tender.location || '';
+                                                const place = tender.place || '';
+                                                const parts = [wilaya, location, place].filter(Boolean);
+                                                return parts.length > 0 ? parts.join(', ') : 'Non spécifiée';
+                                              })()}
+                                            </p>
                                           </div>
                                         </div>
+                                      )}
+
+                                      {/* Budget Info */}
+                                      <div style={{
+                                        background: hasTenderEnded ? "#f0f0f0" : "linear-gradient(135deg, #f8f9fa, #e9ecef)",
+                                        borderRadius: "8px",
+                                        padding: "4px 8px",
+                                        marginBottom: "8px",
+                                        border: hasTenderEnded ? "1px solid #e0e0e0" : "1px solid #e9ecef",
+                                        borderLeft: hasTenderEnded ? '3px solid #d0d0d0' : '3px solid #27F5CC',
+                                      }}>
+                                        <p style={{
+                                          fontSize: "10px",
+                                          color: hasTenderEnded ? "#888" : "#666",
+                                          margin: "0 0 2px 0",
+                                          fontWeight: "600",
+                                        }}>
+                                          💰 Budget
+                                        </p>
+                                        <p style={{
+                                          fontSize: "12px",
+                                          color: hasTenderEnded ? "#888" : "#0063b1",
+                                          margin: 0,
+                                          fontWeight: "600",
+                                        }}>
+                                          {tender.maxBudget ? `${Number(tender.maxBudget).toLocaleString()} DA` : "Non spécifié"}
+                                        </p>
                                       </div>
 
                                       {/* Seller Info */}

@@ -2915,7 +2915,7 @@ const MultipurposeDetails1 = () => {
           </div>
 
           {/* Similar Auctions Section */}
-          <div className="related-auction-section mb-110">
+          <div className="related-auction-section mb-110" style={{ paddingTop: 'clamp(120px, 15vw, 140px)' }}>
             <div className="container">
               <div className="row mb-50">
                 <div className="col-lg-12 d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -3165,20 +3165,25 @@ const MultipurposeDetails1 = () => {
                                       <div style={{
                                         display: "grid",
                                         gridTemplateColumns: "1fr 1fr",
-                                        gap: "12px",
-                                        marginBottom: "16px",
+                                        gap: "6px",
+                                        marginBottom: "8px",
                                       }}>
-                                        <div>
+                                        <div style={{
+                                          background: hasAuctionEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                          borderRadius: '8px',
+                                          padding: '4px 8px',
+                                          borderLeft: hasAuctionEnded ? '3px solid #d0d0d0' : '3px solid #0063b1',
+                                        }}>
                                           <p style={{
-                                            fontSize: "12px",
+                                            fontSize: "10px",
                                             color: hasAuctionEnded ? "#888" : "#666",
-                                            margin: "0 0 4px 0",
+                                            margin: "0 0 2px 0",
                                             fontWeight: "600",
                                           }}>
-                                            Quantité
+                                            📦 Quantité
                                           </p>
                                           <p style={{
-                                            fontSize: "14px",
+                                            fontSize: "12px",
                                             color: hasAuctionEnded ? "#888" : "#333",
                                             margin: 0,
                                             fontWeight: "500",
@@ -3187,17 +3192,22 @@ const MultipurposeDetails1 = () => {
                                           </p>
                                         </div>
 
-                                        <div>
+                                        <div style={{
+                                          background: hasAuctionEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                          borderRadius: '8px',
+                                          padding: '4px 8px',
+                                          borderLeft: hasAuctionEnded ? '3px solid #d0d0d0' : '3px solid #0063b1',
+                                        }}>
                                           <p style={{
-                                            fontSize: "12px",
+                                            fontSize: "10px",
                                             color: hasAuctionEnded ? "#888" : "#666",
-                                            margin: "0 0 4px 0",
+                                            margin: "0 0 2px 0",
                                             fontWeight: "600",
                                           }}>
-                                            Localisation
+                                            📍 Localisation
                                           </p>
                                           <p style={{
-                                            fontSize: "14px",
+                                            fontSize: "12px",
                                             color: hasAuctionEnded ? "#888" : "#333",
                                             margin: 0,
                                             fontWeight: "500",
@@ -3220,14 +3230,6 @@ const MultipurposeDetails1 = () => {
                                           </p>
                                         </div>
                                       </div>
-
-                                      {/* Separator Line */}
-                                      <div style={{
-                                        width: "100%",
-                                        height: "1px",
-                                        background: "linear-gradient(90deg, transparent, #e9ecef, transparent)",
-                                        margin: "0 0 16px 0",
-                                      }}></div>
 
                                       {/* Description */}
                                       {auction.description && (
@@ -3269,209 +3271,133 @@ const MultipurposeDetails1 = () => {
                                       {/* Price Info */}
                                       <div style={{
                                         background: hasAuctionEnded 
-                                          ? "#e8e8e8" 
+                                          ? "#f0f0f0" 
                                           : "linear-gradient(135deg, #f8f9fa, #e9ecef)",
-                                        borderRadius: "12px",
-                                        padding: "12px",
-                                        marginBottom: "16px",
+                                        borderRadius: "8px",
+                                        padding: "4px 8px",
+                                        marginBottom: "8px",
                                         border: hasAuctionEnded 
-                                          ? "1px solid #d8d8d8" 
+                                          ? "1px solid #e0e0e0" 
                                           : "1px solid #e9ecef",
+                                        borderLeft: hasAuctionEnded ? '3px solid #d0d0d0' : '3px solid #0063b1',
                                       }}>
-                                        <div style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          justifyContent: "center",
-                                          gap: "8px",
+                                        <p style={{
+                                          fontSize: "10px",
+                                          color: hasAuctionEnded ? "#888" : "#666",
+                                          margin: "0 0 2px 0",
+                                          fontWeight: "600",
                                         }}>
-                                          <div style={{
-                                            width: "8px",
-                                            height: "8px",
-                                            borderRadius: "50%",
-                                            background: hasAuctionEnded ? "#888" : "#28a745",
-                                            animation: hasAuctionEnded ? "none" : "pulse 2s infinite",
-                                          }}></div>
-                                          <span style={{
-                                            fontSize: "14px",
-                                            fontWeight: "600",
-                                            color: hasAuctionEnded ? "#888" : "#28a745",
-                                          }}>
-                                            Prix actuel
-                                          </span>
-                                        </div>
-                                        <div style={{ textAlign: "center", marginTop: "8px" }}>
-                                          <p style={{
-                                            fontSize: "22px",
-                                            fontWeight: "800",
-                                            margin: 0,
-                                            color: hasAuctionEnded ? "#888" : "#0063b1",
-                                            background: hasAuctionEnded 
-                                              ? "#888" 
-                                              : "linear-gradient(90deg, #0063b1, #00a3e0)",
-                                            WebkitBackgroundClip: "text",
-                                            backgroundClip: "text",
-                                            WebkitTextFillColor: hasAuctionEnded ? "#888" : "transparent",
-                                          }}>
-                                            {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()} DA
-                                          </p>
-                                        </div>
+                                          💰 Prix actuel
+                                        </p>
+                                        <p style={{
+                                          fontSize: "12px",
+                                          color: hasAuctionEnded ? "#888" : "#0063b1",
+                                          margin: 0,
+                                          fontWeight: "600",
+                                        }}>
+                                          {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()} DA
+                                        </p>
                                       </div>
 
                                       {/* Quantity Section */}
                                       <div style={{
                                         background: hasAuctionEnded 
-                                          ? "#f8f8f8" 
-                                          : "linear-gradient(135deg, #e3f2fd, #f3e5f5)",
-                                        borderRadius: "12px",
-                                        padding: "12px",
-                                        marginBottom: "12px",
+                                          ? "#f0f0f0" 
+                                          : "linear-gradient(135deg, #f8f9fa, #e9ecef)",
+                                        borderRadius: "8px",
+                                        padding: "4px 8px",
+                                        marginBottom: "8px",
                                         border: hasAuctionEnded 
                                           ? "1px solid #e0e0e0" 
-                                          : "1px solid rgba(0, 99, 177, 0.1)",
+                                          : "1px solid #e9ecef",
+                                        borderLeft: hasAuctionEnded ? '3px solid #d0d0d0' : '3px solid #0063b1',
                                       }}>
-                                        <div style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          justifyContent: "center",
-                                          gap: "8px",
+                                        <p style={{
+                                          fontSize: "10px",
+                                          color: hasAuctionEnded ? "#888" : "#666",
+                                          margin: "0 0 2px 0",
+                                          fontWeight: "600",
                                         }}>
-                                          <div style={{
-                                            width: "8px",
-                                            height: "8px",
-                                            borderRadius: "50%",
-                                            background: hasAuctionEnded ? "#888" : "#0063b1",
-                                            animation: hasAuctionEnded ? "none" : "pulse 2s infinite",
-                                          }}></div>
-                                          <span style={{
-                                            fontSize: "14px",
-                                            fontWeight: "600",
-                                            color: hasAuctionEnded ? "#888" : "#0063b1",
-                                          }}>
-                                            Quantité disponible
-                                          </span>
-                                        </div>
-                                        <div style={{ textAlign: "center", marginTop: "8px" }}>
-                                          <p style={{
-                                            fontSize: "18px",
-                                            fontWeight: "700",
-                                            margin: 0,
-                                            color: hasAuctionEnded ? "#888" : "#0063b1",
-                                          }}>
-                                            {auction.quantity || "Non spécifiée"}
-                                          </p>
-                                        </div>
+                                          📦 Quantité disponible
+                                        </p>
+                                        <p style={{
+                                          fontSize: "12px",
+                                          color: hasAuctionEnded ? "#888" : "#0063b1",
+                                          margin: 0,
+                                          fontWeight: "600",
+                                        }}>
+                                          {auction.quantity || "Non spécifiée"}
+                                        </p>
                                       </div>
 
                                       {/* Total Price Section */}
                                       <div style={{
                                         background: hasAuctionEnded 
-                                          ? "#f8f8f8" 
-                                          : "linear-gradient(135deg, #e8f5e8, #f0f8f0)",
-                                        borderRadius: "12px",
-                                        padding: "12px",
-                                        marginBottom: "12px",
+                                          ? "#f0f0f0" 
+                                          : "linear-gradient(135deg, #f8f9fa, #e9ecef)",
+                                        borderRadius: "8px",
+                                        padding: "4px 8px",
+                                        marginBottom: "8px",
                                         border: hasAuctionEnded 
                                           ? "1px solid #e0e0e0" 
-                                          : "1px solid rgba(40, 167, 69, 0.2)",
+                                          : "1px solid #e9ecef",
+                                        borderLeft: hasAuctionEnded ? '3px solid #d0d0d0' : '3px solid #28a745',
                                       }}>
-                                        <div style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          justifyContent: "center",
-                                          gap: "8px",
+                                        <p style={{
+                                          fontSize: "10px",
+                                          color: hasAuctionEnded ? "#888" : "#666",
+                                          margin: "0 0 2px 0",
+                                          fontWeight: "600",
                                         }}>
-                                          <div style={{
-                                            width: "8px",
-                                            height: "8px",
-                                            borderRadius: "50%",
-                                            background: hasAuctionEnded ? "#888" : "#28a745",
-                                            animation: hasAuctionEnded ? "none" : "pulse 2s infinite",
-                                          }}></div>
-                                          <span style={{
-                                            fontSize: "14px",
-                                            fontWeight: "600",
-                                            color: hasAuctionEnded ? "#888" : "#28a745",
-                                          }}>
-                                            Prix total (Prix actuel × Quantité)
-                                          </span>
-                                        </div>
-                                        <div style={{ textAlign: "center", marginTop: "8px" }}>
-                                          <p style={{
-                                            fontSize: "20px",
-                                            fontWeight: "800",
-                                            margin: 0,
-                                            color: hasAuctionEnded ? "#888" : "#28a745",
-                                            background: hasAuctionEnded 
-                                              ? "#888" 
-                                              : "linear-gradient(90deg, #28a745, #20c997)",
-                                            WebkitBackgroundClip: "text",
-                                            backgroundClip: "text",
-                                            WebkitTextFillColor: hasAuctionEnded ? "#888" : "transparent",
-                                          }}>
-                                            {auction.quantity && auction.quantity !== "Non spécifiée" 
-                                              ? (Number(auction.currentPrice || auction.startingPrice || 0) * parseInt(auction.quantity)).toLocaleString() + " DA"
-                                              : Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString() + " DA"
-                                            }
-                                          </p>
-                                        </div>
+                                          💰 Prix total
+                                        </p>
+                                        <p style={{
+                                          fontSize: "12px",
+                                          color: hasAuctionEnded ? "#888" : "#28a745",
+                                          margin: 0,
+                                          fontWeight: "600",
+                                        }}>
+                                          {auction.quantity && auction.quantity !== "Non spécifiée" 
+                                            ? (Number(auction.currentPrice || auction.startingPrice || 0) * parseInt(auction.quantity)).toLocaleString() + " DA"
+                                            : Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString() + " DA"
+                                          }
+                                        </p>
                                       </div>
 
-                                      {/* Separator Line after Price */}
-                                      <div style={{
-                                        width: "100%",
-                                        height: "1px",
-                                        background: "linear-gradient(90deg, transparent, #e9ecef, transparent)",
-                                        margin: "0 0 16px 0",
-                                      }}></div>
 
                                       {/* Bidders Count */}
                                       <div style={{
                                         background: hasAuctionEnded 
-                                          ? "#e8e8e8" 
+                                          ? "#f0f0f0" 
                                           : "linear-gradient(135deg, #f8f9fa, #e9ecef)",
-                                        borderRadius: "12px",
-                                        padding: "12px",
-                                        marginBottom: "16px",
+                                        borderRadius: "8px",
+                                        padding: "6px 8px",
+                                        marginBottom: "8px",
                                         border: hasAuctionEnded 
-                                          ? "1px solid #d8d8d8" 
+                                          ? "1px solid #e0e0e0" 
                                           : "1px solid #e9ecef",
                                       }}>
                                         <div style={{
                                           display: "flex",
                                           alignItems: "center",
                                           justifyContent: "center",
-                                          gap: "8px",
+                                          gap: "6px",
                                         }}>
                                           <div style={{
-                                            width: "8px",
-                                            height: "8px",
+                                            width: "6px",
+                                            height: "6px",
                                             borderRadius: "50%",
                                             background: hasAuctionEnded ? "#888" : "#0063b1",
-                                            animation: hasAuctionEnded ? "none" : "pulse 2s infinite",
                                           }}></div>
                                           <span style={{
-                                            fontSize: "14px",
+                                            fontSize: "12px",
                                             fontWeight: "600",
                                             color: hasAuctionEnded ? "#888" : "#0063b1",
                                           }}>
-                                            {auction.biddersCount || 0} participant{(auction.biddersCount || 0) !== 1 ? "s" : ""}
-                                          </span>
-                                          <span style={{
-                                            fontSize: "12px",
-                                            color: hasAuctionEnded ? "#888" : "#666",
-                                          }}>
-                                            ont enchéri
+                                            {auction.biddersCount || 0} participant{(auction.biddersCount || 0) !== 1 ? "s" : ""} ont enchéri
                                           </span>
                                         </div>
                                       </div>
-
-                                      {/* Separator Line after Bidders Count */}
-                                      <div style={{
-                                        width: "100%",
-                                        height: "1px",
-                                        background: "linear-gradient(90deg, transparent, #e9ecef, transparent)",
-                                        margin: "0 0 16px 0",
-                                      }}></div>
 
                                       {/* Seller Info */}
                                       <div style={{

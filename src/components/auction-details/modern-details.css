@@ -13,7 +13,7 @@
   height: 420px;
   background-color: #f8f8f8;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  margin-top: 0;
+  margin-top: clamp(120px, 15vw, 140px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1118,5 +1118,5 @@ section.auction-details-section > div:first-child {
 }
 
 .auction-details-modern .main-image-container {
-  margin-top: 0;
+  margin-top: clamp(120px, 15vw, 140px);
 }

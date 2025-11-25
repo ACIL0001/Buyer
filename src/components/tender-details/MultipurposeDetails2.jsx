@@ -1703,7 +1703,7 @@ const MultipurposeDetails2 = () => {
               <div className="row gy-5">
                 {/* Left Column - Image Section */}
                 <div className="col-xl-7">
-                  <div className="main-image-container" style={{ position: 'relative' }}>
+                  <div className="main-image-container" style={{ position: 'relative', marginTop: 'clamp(120px, 15vw, 140px)' }}>
                     {showVideo && safeVideos.length > 0 ? (
                       <video
                         src={`${app.route}${safeVideos[selectedVideoIndex]?.url}`}

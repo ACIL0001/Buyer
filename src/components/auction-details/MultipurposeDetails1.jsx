@@ -1478,7 +1478,13 @@ const MultipurposeDetails1 = () => {
                       background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
                       borderRadius: '12px',
                       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-                      border: '1px solid #e9ecef'
+                      border: '1px solid #e9ecef',
+                      display: 'block',
+                      width: '100%',
+                      visibility: 'visible',
+                      opacity: 1,
+                      position: 'relative',
+                      zIndex: 1
                     }}>
                       <h1 className="auction-title" style={{
                         fontSize: 'clamp(22px, 4.5vw, 32px)',
@@ -1487,7 +1493,11 @@ const MultipurposeDetails1 = () => {
                         margin: 0,
                         lineHeight: '1.4',
                         wordBreak: 'break-word',
-                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                        display: 'block',
+                        width: '100%',
+                        visibility: 'visible',
+                        opacity: 1
                       }}>
                         {safeTitle}
                       </h1>

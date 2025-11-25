@@ -410,7 +410,11 @@ function DirectSaleDetailContent() {
                     color: '#333',
                     margin: '0 0 15px 0',
                     lineHeight: '1.3',
-                    wordBreak: 'break-word'
+                    wordBreak: 'break-word',
+                    display: 'block',
+                    width: '100%',
+                    visibility: 'visible',
+                    opacity: 1
                   }}>
                     {directSale.title}
                   </h1>

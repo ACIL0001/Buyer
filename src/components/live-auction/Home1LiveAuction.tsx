@@ -2,6 +2,10 @@
 "use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 import Link from "next/link";
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { AuctionsAPI } from "@/app/api/auctions";
@@ -862,6 +866,7 @@ const Home1LiveAuction = () => {
           {liveAuctions.length > 0 ? (
             <div className="auction-carousel-container" style={{ position: 'relative' }}>
                     <Swiper
+                      modules={[Navigation, Autoplay, Pagination]}
                       {...settings}
                       className="swiper auction-slider"
                       style={{

@@ -2,6 +2,10 @@
 "use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 import Link from "next/link";
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { TendersAPI } from "@/app/api/tenders";
@@ -764,6 +768,7 @@ const Home1LiveTenders = () => {
           {liveTenders.length > 0 ? (
             <div className="tender-carousel-container" style={{ position: 'relative' }}>
               <Swiper
+                modules={[Navigation, Autoplay, Pagination]}
                 {...settings}
                 className="swiper tender-slider"
                 style={{

@@ -2,6 +2,10 @@
 "use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 import Link from "next/link";
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { DirectSaleAPI } from "@/app/api/direct-sale";
@@ -553,6 +557,7 @@ const Home1LiveDirectSales = () => {
           {directSales.length > 0 ? (
             <div className="direct-sale-carousel-container" style={{ position: 'relative' }}>
               <Swiper
+                modules={[Navigation, Autoplay, Pagination]}
                 {...settings}
                 className="swiper direct-sale-slider"
                 style={{

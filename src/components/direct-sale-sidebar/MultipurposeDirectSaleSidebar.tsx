@@ -35,6 +35,8 @@ interface DirectSale {
     firstName?: string;
     lastName?: string;
     username?: string;
+    entreprise?: string;
+    companyName?: string;
     avatar?: { url: string; };
     photoURL?: string;
   };

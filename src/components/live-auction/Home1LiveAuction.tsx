@@ -1100,7 +1100,7 @@ const Home1LiveAuction = () => {
                               </p>
                             </div>
 
-                            {auction?.bidType !== 'SERVICE' && auction.quantity && auction.quantity !== "Non spécifiée" && !isNaN(auction.quantity) && auction.quantity !== "" && (
+                            {auction?.bidType !== 'SERVICE' && auction.quantity && String(auction.quantity) !== "Non spécifiée" && !isNaN(Number(auction.quantity)) && String(auction.quantity) !== "" && (
                             <div style={{
                               background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                               borderRadius: '8px',

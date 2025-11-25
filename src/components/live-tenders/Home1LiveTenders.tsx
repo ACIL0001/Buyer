@@ -996,7 +996,7 @@ const Home1LiveTenders = () => {
                               </p>
                             </div>
 
-                            {tender?.tenderType !== 'SERVICE' && tender.quantity && tender.quantity !== "Non spécifiée" && !isNaN(tender.quantity) && tender.quantity !== "" && (
+                            {tender?.tenderType !== 'SERVICE' && tender.quantity && String(tender.quantity) !== "Non spécifiée" && !isNaN(Number(tender.quantity)) && String(tender.quantity) !== "" && (
                               <div style={{
                                 background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                                 borderRadius: '8px',

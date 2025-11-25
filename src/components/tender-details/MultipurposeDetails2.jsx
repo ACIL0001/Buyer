@@ -1946,21 +1946,31 @@ const MultipurposeDetails2 = () => {
                 {/* Right Column - Auction Details */}
                 <div className="col-xl-5">
                   <div className="auction-details-content">
+                    {/* Title above timer - Prominently displayed */}
+                    <div style={{ 
+                      marginBottom: '25px', 
+                      textAlign: 'center',
+                      padding: '15px 20px',
+                      background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                      border: '1px solid #e9ecef'
+                    }}>
+                      <h1 className="auction-title" style={{
+                        fontSize: 'clamp(22px, 4.5vw, 32px)',
+                        fontWeight: '700',
+                        color: '#0063b1',
+                        margin: 0,
+                        lineHeight: '1.4',
+                        wordBreak: 'break-word',
+                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.05)'
+                      }}>
+                        {safeTitle}
+                      </h1>
+                    </div>
+                    
                     {/* Auction timer and bid information */}
                     <div className="bid-container">
-                      {/* Title above timer */}
-                      <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-                        <h1 className="auction-title" style={{
-                          fontSize: 'clamp(20px, 4vw, 28px)',
-                          fontWeight: '700',
-                          color: '#333',
-                          margin: 0,
-                          lineHeight: '1.3',
-                          wordBreak: 'break-word'
-                        }}>
-                          {safeTitle}
-                        </h1>
-                      </div>
                       <div className="boxTime">
                         <div className="countdown-timer">
                           {/* Changed ul to div and applied inline styles for layout and appearance */}

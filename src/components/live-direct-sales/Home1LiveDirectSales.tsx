@@ -99,11 +99,14 @@ const Home1LiveDirectSales = () => {
         
         // IMPORTANT: Display ALL direct sales including sold-out ones
         // Sold-out items will be shown but visually deactivated (grayed out, non-clickable)
+        // DO NOT filter out SOLD_OUT, SOLD, or items with exhausted quantity
         // Only filter out items that are explicitly ARCHIVED or INACTIVE
-        // SOLD_OUT, SOLD, ACTIVE, and PAUSED items are all displayed
-        const visibleDirectSales = directSalesData.filter((sale: DirectSale) => 
-          sale.status !== 'ARCHIVED' && sale.status !== 'INACTIVE'
-        );
+        // This ensures sold-out items remain visible as deactivated cards
+        const visibleDirectSales = directSalesData.filter((sale: DirectSale) => {
+          // Include all items except ARCHIVED and INACTIVE
+          // This includes: ACTIVE, SOLD_OUT, SOLD, PAUSED, and items with exhausted quantity
+          return sale.status !== 'ARCHIVED' && sale.status !== 'INACTIVE';
+        });
 
         // Limit to 8 for display
         const limitedDirectSales = visibleDirectSales.slice(0, 8);

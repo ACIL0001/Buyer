@@ -323,7 +323,9 @@ const MultipurposeDirectSaleSidebar = () => {
         
         // IMPORTANT: Display ALL direct sales including sold-out ones
         // Sold-out items will be shown but visually deactivated (grayed out, non-clickable)
-        // No status filtering - all items are included
+        // DO NOT filter by status - include ALL items regardless of status or quantity
+        // This ensures sold-out items (SOLD_OUT, SOLD, or exhausted quantity) remain visible
+        // Only the API response determines what items are returned - we display everything
         setDirectSales(directSalesData);
         setFilteredDirectSales(directSalesData);
         setError(null);
@@ -429,9 +431,11 @@ const MultipurposeDirectSaleSidebar = () => {
 
   // useEffect to handle filtering (Including Type Filter with Fallback)
   // IMPORTANT: This does NOT filter out sold-out items - they remain visible but deactivated
+  // Sold-out items (SOLD_OUT, SOLD status, or exhausted quantity) are included in all filters
   useEffect(() => {
     if (directSales.length === 0) return;
 
+    // Start with all direct sales - includes sold-out items
     let result = [...directSales];
 
     // 1. Apply SaleType filter if selected

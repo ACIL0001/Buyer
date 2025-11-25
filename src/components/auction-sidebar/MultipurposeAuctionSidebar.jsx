@@ -1543,6 +1543,8 @@ const MultipurposeAuctionSidebar = () => {
                                                         </div>
 
                                                         {/* Price Info */}
+                                                        {((auction.currentPrice && !isNaN(auction.currentPrice) && auction.currentPrice > 0) || 
+                                                          (auction.startingPrice && !isNaN(auction.startingPrice) && auction.startingPrice > 0)) && (
                                                         <div style={{
                                                             background: hasAuctionEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                                                             borderRadius: '8px',
@@ -1555,19 +1557,20 @@ const MultipurposeAuctionSidebar = () => {
                                                                 fontSize: '10px',
                                                                 color: hasAuctionEnded ? '#888' : '#666',
                                                                 margin: '0 0 2px 0',
-                                                                fontWeight: '600',
+                                                                    fontWeight: '600',
                                                             }}>
                                                                 💰 Prix actuel
                                                             </p>
-                                                            <p style={{
+                                                                    <p style={{
                                                                 fontSize: '12px',
-                                                                color: hasAuctionEnded ? '#888' : '#0063b1',
+                                                                    color: hasAuctionEnded ? '#888' : '#0063b1',
                                                                 margin: 0,
                                                                 fontWeight: '600',
-                                                            }}>
-                                                                {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()} DA
-                                                            </p>
-                                                        </div>
+                                                                    }}>
+                                                                        {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()} DA
+                                                                    </p>
+                                                            </div>
+                                                        )}
 
                                                         {/* Bidders Count */}
                                                         <div style={{

@@ -1228,6 +1228,7 @@ const MultipurposeDirectSaleSidebar = () => {
                             </div>
 
                             {/* Price Info */}
+                            {directSale.price && !isNaN(directSale.price) && directSale.price > 0 && (
                             <div style={{
                               background: isSoldOut ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                               borderRadius: '8px',
@@ -1240,19 +1241,20 @@ const MultipurposeDirectSaleSidebar = () => {
                                 fontSize: '10px',
                                 color: isSoldOut ? '#888' : '#666',
                                 margin: '0 0 2px 0',
-                                fontWeight: '600',
+                                  fontWeight: '600',
                               }}>
                                 💰 Prix fixe
                               </p>
-                              <p style={{
+                                <p style={{
                                 fontSize: '12px',
                                 color: isSoldOut ? '#888' : '#d4af37',
-                                margin: 0,
+                                  margin: 0,
                                 fontWeight: '600',
                               }}>
-                                {Number(directSale.price || 0).toLocaleString()} DA
-                              </p>
-                            </div>
+                                {Number(directSale.price).toLocaleString()} DA
+                                </p>
+                              </div>
+                            )}
 
                             {/* Owner Info */}
                             <div style={{
@@ -1343,13 +1345,13 @@ const MultipurposeDirectSaleSidebar = () => {
                                   )}
                                 </Link>
                               ) : (
-                                <span style={{
-                                  fontSize: '14px',
-                                  color: isSoldOut ? '#888' : '#666',
-                                  fontWeight: '500',
-                                }}>
-                                  {displayName}
-                                </span>
+                              <span style={{
+                                fontSize: '14px',
+                                color: isSoldOut ? '#888' : '#666',
+                                fontWeight: '500',
+                              }}>
+                                {displayName}
+                              </span>
                               )}
                             </div>
 

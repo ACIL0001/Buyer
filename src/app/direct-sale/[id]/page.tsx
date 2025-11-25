@@ -423,17 +423,17 @@ function DirectSaleDetailContent() {
                     {directSale.title}
                   </h1>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <span style={{ 
-                      background: directSale.saleType === 'PRODUCT' ? '#e3f2fd' : '#fff3e0',
-                      color: directSale.saleType === 'PRODUCT' ? '#1976d2' : '#f57c00',
-                      padding: '4px 12px', 
-                      borderRadius: '20px', 
-                      fontSize: '12px', 
-                      fontWeight: '600' 
-                    }}>
-                      {directSale.saleType === 'PRODUCT' ? 'Produit' : 'Service'}
-                    </span>
-                    {directSale.productCategory && (
+                  <span style={{ 
+                    background: directSale.saleType === 'PRODUCT' ? '#e3f2fd' : '#fff3e0',
+                    color: directSale.saleType === 'PRODUCT' ? '#1976d2' : '#f57c00',
+                    padding: '4px 12px', 
+                    borderRadius: '20px', 
+                    fontSize: '12px', 
+                    fontWeight: '600' 
+                  }}>
+                    {directSale.saleType === 'PRODUCT' ? 'Produit' : 'Service'}
+                  </span>
+                  {directSale.productCategory && (
                       <span style={{ 
                         background: '#f5f5f5', 
                         color: '#666', 
@@ -441,9 +441,9 @@ function DirectSaleDetailContent() {
                         borderRadius: '20px', 
                         fontSize: '12px' 
                       }}>
-                        {directSale.productCategory.name}
-                      </span>
-                    )}
+                      {directSale.productCategory.name}
+                    </span>
+                  )}
                   </div>
                 </div>
 
@@ -469,9 +469,9 @@ function DirectSaleDetailContent() {
                         </tr>
                       )}
                       {directSale.owner && (
-                        <tr>
-                          <td className="fw-bold">Vendeur</td>
-                          <td>
+                      <tr>
+                        <td className="fw-bold">Vendeur</td>
+                        <td>
                             {directSale.owner.hidden === true ? (
                               <span>Anonyme</span>
                             ) : (
@@ -503,8 +503,8 @@ function DirectSaleDetailContent() {
                                 </svg>
                               </Link>
                             )}
-                          </td>
-                        </tr>
+                        </td>
+                      </tr>
                       )}
                       <tr>
                         <td className="fw-bold">Localisation</td>
@@ -678,7 +678,7 @@ function DirectSaleDetailContent() {
                             gap: "6px",
                             marginBottom: "8px",
                           }}>
-                            {sale.saleType !== 'SERVICE' && (
+                            {sale.saleType !== 'SERVICE' && sale.quantity && String(sale.quantity) !== "Non spécifiée" && !isNaN(Number(sale.quantity)) && String(sale.quantity) !== "" && (
                               <div style={{
                                 background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                                 borderRadius: '8px',
@@ -699,7 +699,7 @@ function DirectSaleDetailContent() {
                                   margin: 0,
                                   fontWeight: "500",
                                 }}>
-                                  {sale.quantity || "Non spécifiée"}
+                                  {sale.quantity}
                                 </p>
                               </div>
                             )}
@@ -732,6 +732,7 @@ function DirectSaleDetailContent() {
                           </div>
 
                           {/* Price Info */}
+                          {sale.price && !isNaN(sale.price) && sale.price > 0 && (
                           <div style={{
                             background: "linear-gradient(135deg, #f8f9fa, #e9ecef)",
                             borderRadius: "8px",
@@ -754,9 +755,10 @@ function DirectSaleDetailContent() {
                               margin: 0,
                               fontWeight: "600",
                             }}>
-                              {formatPrice(sale.price)}
+                            {formatPrice(sale.price)}
                             </p>
                           </div>
+                          )}
 
                           <button className="btn btn-primary w-100" style={{ borderRadius: "20px" }}>Voir les détails</button>
                         </div>

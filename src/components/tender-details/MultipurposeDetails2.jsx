@@ -1975,8 +1975,8 @@ const MultipurposeDetails2 = () => {
                         visibility: 'visible',
                         opacity: 1
                       }}>
-                        {safeTitle}
-                      </h1>
+                      {safeTitle}
+                    </h1>
                     </div>
                     
                     {/* Auction timer and bid information */}
@@ -4023,13 +4023,14 @@ const MultipurposeDetails2 = () => {
                                       </h3>
 
                                       {/* Quantity and Location Info */}
-                                      {safeTenderType !== 'SERVICE' && (
+                                            {safeTenderType !== 'SERVICE' && (
                                         <div style={{
                                           display: "grid",
                                           gridTemplateColumns: "1fr 1fr",
                                           gap: "6px",
                                           marginBottom: "8px",
                                         }}>
+                                          {tender.quantity && tender.quantity !== "Non spécifiée" && !isNaN(tender.quantity) && tender.quantity !== "" && (
                                           <div style={{
                                             background: hasTenderEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                                             borderRadius: '8px',
@@ -4045,14 +4046,15 @@ const MultipurposeDetails2 = () => {
                                               📦 Quantité
                                             </p>
                                             <p style={{
-                                              fontSize: "12px",
+                                                fontSize: "12px",
                                               color: hasTenderEnded ? "#888" : "#333",
                                               margin: 0,
-                                              fontWeight: "500",
+                                                fontWeight: "500",
                                             }}>
-                                              {tender.quantity || "Non spécifiée"}
+                                              {tender.quantity}
                                             </p>
                                           </div>
+                                          )}
                                           <div style={{
                                             background: hasTenderEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                                             borderRadius: '8px',
@@ -4070,7 +4072,7 @@ const MultipurposeDetails2 = () => {
                                             <p style={{
                                               fontSize: "12px",
                                               color: hasTenderEnded ? "#888" : "#333",
-                                              margin: 0,
+                                                margin: 0,
                                               fontWeight: "500",
                                               overflow: "hidden",
                                               textOverflow: "ellipsis",
@@ -4085,10 +4087,11 @@ const MultipurposeDetails2 = () => {
                                               })()}
                                             </p>
                                           </div>
-                                        </div>
+                                          </div>
                                       )}
 
                                       {/* Budget Info */}
+                                      {tender.maxBudget && !isNaN(tender.maxBudget) && tender.maxBudget > 0 && (
                                       <div style={{
                                         background: hasTenderEnded ? "#f0f0f0" : "linear-gradient(135deg, #f8f9fa, #e9ecef)",
                                         borderRadius: "8px",
@@ -4111,9 +4114,10 @@ const MultipurposeDetails2 = () => {
                                           margin: 0,
                                           fontWeight: "600",
                                         }}>
-                                          {tender.maxBudget ? `${Number(tender.maxBudget).toLocaleString()} DA` : "Non spécifié"}
+                                          {Number(tender.maxBudget).toLocaleString()} DA
                                         </p>
                                       </div>
+                                      )}
 
                                       {/* Seller Info */}
                                       <div

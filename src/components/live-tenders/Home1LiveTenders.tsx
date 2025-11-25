@@ -288,7 +288,7 @@ const Home1LiveTenders = () => {
             return endTime <= new Date();
           });
         }
-
+        
         // Limit to 8 for display
         const limitedTenders = filteredTenders.slice(0, 8);
         setLiveTenders(limitedTenders);
@@ -996,7 +996,7 @@ const Home1LiveTenders = () => {
                               </p>
                             </div>
 
-                            {tender?.tenderType !== 'SERVICE' && (
+                            {tender?.tenderType !== 'SERVICE' && tender.quantity && tender.quantity !== "Non spécifiée" && !isNaN(tender.quantity) && tender.quantity !== "" && (
                               <div style={{
                                 background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                                 borderRadius: '8px',
@@ -1020,7 +1020,7 @@ const Home1LiveTenders = () => {
                                   margin: 0,
                                   fontWeight: '500',
                                 }}>
-                                  {tender.quantity || 'Non spécifiée'}
+                                  {tender.quantity}
                                 </p>
                               </div>
                             )}

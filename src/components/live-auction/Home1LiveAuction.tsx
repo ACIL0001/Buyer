@@ -194,12 +194,14 @@ const Home1LiveAuction = () => {
   const router = useRouter();
   const { isLogged, auth } = useAuth();
   const [liveAuctions, setLiveAuctions] = useState<Auction[]>([]);
+  const [allAuctions, setAllAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timers, setTimers] = useState<{ [key: string]: Timer }>({});
   const [animatedCards, setAnimatedCards] = useState<number[]>([]);
   const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
   const [workingImageUrls, setWorkingImageUrls] = useState<{ [key: string]: string }>({});
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
 
   // Test image URL accessibility
   const testImageUrl = async (url: string) => {
@@ -348,22 +350,32 @@ const Home1LiveAuction = () => {
           id: auction.id || auction._id, // Use id if available, fallback to _id
         }));
         
-        // Filter out ended auctions and exclude professional auctions
-        const activeAuctions = transformedAuctions.filter((auction: Auction) => {
-          if (!auction.endingAt) return false;
-          const endTime = new Date(auction.endingAt);
-          const isActive = endTime > new Date();
-
-          // Exclude professional auctions from live auctions section
-          if (auction.isPro === true) {
-            return false;
-          }
-
-          return isActive;
+        // Exclude professional auctions
+        const nonProAuctions = transformedAuctions.filter((auction: Auction) => {
+          return auction.isPro !== true;
         });
 
+        // Store all auctions
+        setAllAuctions(nonProAuctions);
+        
+        // Apply initial filter (all by default)
+        let filteredAuctions = nonProAuctions;
+        if (statusFilter === 'active') {
+          filteredAuctions = nonProAuctions.filter((auction: Auction) => {
+            if (!auction.endingAt) return false;
+            const endTime = new Date(auction.endingAt);
+            return endTime > new Date();
+          });
+        } else if (statusFilter === 'finished') {
+          filteredAuctions = nonProAuctions.filter((auction: Auction) => {
+            if (!auction.endingAt) return true;
+            const endTime = new Date(auction.endingAt);
+            return endTime <= new Date();
+          });
+        }
+
         // Limit to 8 for display
-        const limitedAuctions = activeAuctions.slice(0, 8);
+        const limitedAuctions = filteredAuctions.slice(0, 8);
         setLiveAuctions(limitedAuctions);
         setError(null);
       } catch (err) {
@@ -377,6 +389,31 @@ const Home1LiveAuction = () => {
 
     fetchAuctions();
   }, []);
+
+  // Filter auctions based on status
+  useEffect(() => {
+    if (allAuctions.length === 0) return;
+
+    let filtered = [...allAuctions];
+    
+    if (statusFilter === 'active') {
+      filtered = allAuctions.filter((auction: Auction) => {
+        if (!auction.endingAt) return false;
+        const endTime = new Date(auction.endingAt);
+        return endTime > new Date();
+      });
+    } else if (statusFilter === 'finished') {
+      filtered = allAuctions.filter((auction: Auction) => {
+        if (!auction.endingAt) return true;
+        const endTime = new Date(auction.endingAt);
+        return endTime <= new Date();
+      });
+    }
+
+    // Limit to 8 for display
+    const limitedAuctions = filtered.slice(0, 8);
+    setLiveAuctions(limitedAuctions);
+  }, [allAuctions, statusFilter]);
 
   // Update timers
   useEffect(() => {
@@ -708,18 +745,117 @@ const Home1LiveAuction = () => {
               color: '#0063b1',
               marginBottom: '16px',
             }}>
-              Enchères en Cours
+              Enchères
             </h2>
             <p style={{
               fontSize: '1.1rem',
               color: '#666',
               maxWidth: '600px',
-              margin: '0 auto',
+              margin: '0 auto 24px',
               lineHeight: '1.6',
             }}>
               Enchérissez et remportez des objets intéressants
             </p>
             
+            {/* Status Filter Buttons */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '12px',
+              flexWrap: 'wrap',
+              marginBottom: '20px',
+            }}>
+              <button
+                onClick={() => setStatusFilter('all')}
+                style={{
+                  padding: '10px 24px',
+                  borderRadius: '25px',
+                  border: '2px solid',
+                  borderColor: statusFilter === 'all' ? '#0063b1' : '#e2e8f0',
+                  background: statusFilter === 'all' ? 'linear-gradient(135deg, #0063b1, #00a3e0)' : 'white',
+                  color: statusFilter === 'all' ? 'white' : '#666',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: statusFilter === 'all' ? '0 4px 12px rgba(0, 99, 177, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                }}
+                onMouseEnter={(e) => {
+                  if (statusFilter !== 'all') {
+                    e.currentTarget.style.borderColor = '#0063b1';
+                    e.currentTarget.style.color = '#0063b1';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (statusFilter !== 'all') {
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.color = '#666';
+                  }
+                }}
+              >
+                Toutes
+              </button>
+              <button
+                onClick={() => setStatusFilter('active')}
+                style={{
+                  padding: '10px 24px',
+                  borderRadius: '25px',
+                  border: '2px solid',
+                  borderColor: statusFilter === 'active' ? '#10b981' : '#e2e8f0',
+                  background: statusFilter === 'active' ? 'linear-gradient(135deg, #10b981, #059669)' : 'white',
+                  color: statusFilter === 'active' ? 'white' : '#666',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: statusFilter === 'active' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                }}
+                onMouseEnter={(e) => {
+                  if (statusFilter !== 'active') {
+                    e.currentTarget.style.borderColor = '#10b981';
+                    e.currentTarget.style.color = '#10b981';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (statusFilter !== 'active') {
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.color = '#666';
+                  }
+                }}
+              >
+                En Cours
+              </button>
+              <button
+                onClick={() => setStatusFilter('finished')}
+                style={{
+                  padding: '10px 24px',
+                  borderRadius: '25px',
+                  border: '2px solid',
+                  borderColor: statusFilter === 'finished' ? '#ef4444' : '#e2e8f0',
+                  background: statusFilter === 'finished' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'white',
+                  color: statusFilter === 'finished' ? 'white' : '#666',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: statusFilter === 'finished' ? '0 4px 12px rgba(239, 68, 68, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                }}
+                onMouseEnter={(e) => {
+                  if (statusFilter !== 'finished') {
+                    e.currentTarget.style.borderColor = '#ef4444';
+                    e.currentTarget.style.color = '#ef4444';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (statusFilter !== 'finished') {
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.color = '#666';
+                  }
+                }}
+              >
+                Terminées
+              </button>
+            </div>
                         </div>
 
           {/* Auctions Content - Always show on mobile, even with no data */}

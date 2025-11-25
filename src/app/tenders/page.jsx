@@ -101,6 +101,7 @@ const MultipurposeTenderSidebar = () => {
     const [tenderTimers, setTenderTimers] = useState({});
     const [filteredTenders, setFilteredTenders] = useState([]);
     const [sortOption, setSortOption] = useState(t('defaultSort'));
+    const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'finished'
     const [categories, setCategories] = useState([]);
     const [filteredCategories, setFilteredCategories] = useState([]);
     const [subCategories, setSubCategories] = useState([]);
@@ -823,7 +824,22 @@ const MultipurposeTenderSidebar = () => {
             );
         }
 
-        // 5. Apply sorting
+        // 5. Apply status filter
+        if (statusFilter === 'active') {
+            result = result.filter(tender => {
+                if (!tender.endingAt) return false;
+                const endTime = new Date(tender.endingAt);
+                return endTime > new Date();
+            });
+        } else if (statusFilter === 'finished') {
+            result = result.filter(tender => {
+                if (!tender.endingAt) return true;
+                const endTime = new Date(tender.endingAt);
+                return endTime <= new Date();
+            });
+        }
+
+        // 6. Apply sorting
         if (sortOption === t('priceAsc')) {
             result.sort((a, b) =>
                 (a.maxBudget || 0) - (b.maxBudget || 0)
@@ -838,7 +854,7 @@ const MultipurposeTenderSidebar = () => {
         setFilteredTenders(result);
         // Reset to page 1 when filters change
         setCurrentPage(1);
-    }, [tenders, selectedCategory, selectedSubCategory, selectedBidType, searchTerm, sortOption]); // Removed tenderTimers from dependency array as it's not filtering, only styling
+    }, [tenders, selectedCategory, selectedSubCategory, selectedBidType, searchTerm, sortOption, statusFilter]); // Removed tenderTimers from dependency array as it's not filtering, only styling
 
     // Reset currentPage if it exceeds totalPages after filtering
     useEffect(() => {
@@ -1181,6 +1197,74 @@ const MultipurposeTenderSidebar = () => {
                                                     <path d="M21 21l-4.35-4.35"/>
                                                 </svg>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Status Filter Buttons */}
+                                <div className="row mb-4">
+                                    <div className="col-12">
+                                        <div style={{
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            gap: '12px',
+                                            flexWrap: 'wrap',
+                                            marginBottom: '20px',
+                                        }}>
+                                            <button
+                                                onClick={() => setStatusFilter('all')}
+                                                style={{
+                                                    padding: '10px 24px',
+                                                    borderRadius: '25px',
+                                                    border: '2px solid',
+                                                    borderColor: statusFilter === 'all' ? '#27F5CC' : '#e2e8f0',
+                                                    background: statusFilter === 'all' ? 'linear-gradient(135deg, #27F5CC, #00D4AA)' : 'white',
+                                                    color: statusFilter === 'all' ? 'white' : '#666',
+                                                    fontWeight: '600',
+                                                    fontSize: '14px',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.3s ease',
+                                                    boxShadow: statusFilter === 'all' ? '0 4px 12px rgba(39, 245, 204, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                }}
+                                            >
+                                                Toutes
+                                            </button>
+                                            <button
+                                                onClick={() => setStatusFilter('active')}
+                                                style={{
+                                                    padding: '10px 24px',
+                                                    borderRadius: '25px',
+                                                    border: '2px solid',
+                                                    borderColor: statusFilter === 'active' ? '#10b981' : '#e2e8f0',
+                                                    background: statusFilter === 'active' ? 'linear-gradient(135deg, #10b981, #059669)' : 'white',
+                                                    color: statusFilter === 'active' ? 'white' : '#666',
+                                                    fontWeight: '600',
+                                                    fontSize: '14px',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.3s ease',
+                                                    boxShadow: statusFilter === 'active' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                }}
+                                            >
+                                                En Cours
+                                            </button>
+                                            <button
+                                                onClick={() => setStatusFilter('finished')}
+                                                style={{
+                                                    padding: '10px 24px',
+                                                    borderRadius: '25px',
+                                                    border: '2px solid',
+                                                    borderColor: statusFilter === 'finished' ? '#ef4444' : '#e2e8f0',
+                                                    background: statusFilter === 'finished' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'white',
+                                                    color: statusFilter === 'finished' ? 'white' : '#666',
+                                                    fontWeight: '600',
+                                                    fontSize: '14px',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.3s ease',
+                                                    boxShadow: statusFilter === 'finished' ? '0 4px 12px rgba(239, 68, 68, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                }}
+                                            >
+                                                Terminées
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

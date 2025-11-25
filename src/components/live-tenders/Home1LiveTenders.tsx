@@ -121,12 +121,14 @@ const Home1LiveTenders = () => {
   const router = useRouter();
   const { isLogged, auth } = useAuth();
   const [liveTenders, setLiveTenders] = useState<Tender[]>([]);
+  const [allTenders, setAllTenders] = useState<Tender[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [timers, setTimers] = useState<{ [key: string]: Timer }>({});
   const [animatedCards, setAnimatedCards] = useState<number[]>([]);
   const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
   const [workingImageUrls, setWorkingImageUrls] = useState<{ [key: string]: string }>({});
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
 
   // Test image URL accessibility
   const testImageUrl = async (url: string) => {
@@ -268,8 +270,27 @@ const Home1LiveTenders = () => {
           tendersData = [];
         }
         
+        // Store all tenders
+        setAllTenders(tendersData);
+        
+        // Apply initial filter (all by default)
+        let filteredTenders = tendersData;
+        if (statusFilter === 'active') {
+          filteredTenders = tendersData.filter((tender: Tender) => {
+            if (!tender.endingAt) return false;
+            const endTime = new Date(tender.endingAt);
+            return endTime > new Date();
+          });
+        } else if (statusFilter === 'finished') {
+          filteredTenders = tendersData.filter((tender: Tender) => {
+            if (!tender.endingAt) return true;
+            const endTime = new Date(tender.endingAt);
+            return endTime <= new Date();
+          });
+        }
+
         // Limit to 8 for display
-        const limitedTenders = tendersData.slice(0, 8);
+        const limitedTenders = filteredTenders.slice(0, 8);
         setLiveTenders(limitedTenders);
         setError(null);
       } catch (err) {
@@ -283,6 +304,31 @@ const Home1LiveTenders = () => {
 
     fetchTenders();
   }, []);
+
+  // Filter tenders based on status
+  useEffect(() => {
+    if (allTenders.length === 0) return;
+
+    let filtered = [...allTenders];
+    
+    if (statusFilter === 'active') {
+      filtered = allTenders.filter((tender: Tender) => {
+        if (!tender.endingAt) return false;
+        const endTime = new Date(tender.endingAt);
+        return endTime > new Date();
+      });
+    } else if (statusFilter === 'finished') {
+      filtered = allTenders.filter((tender: Tender) => {
+        if (!tender.endingAt) return true;
+        const endTime = new Date(tender.endingAt);
+        return endTime <= new Date();
+      });
+    }
+
+    // Limit to 8 for display
+    const limitedTenders = filtered.slice(0, 8);
+    setLiveTenders(limitedTenders);
+  }, [allTenders, statusFilter]);
 
   // Update timers
   useEffect(() => {
@@ -601,18 +647,117 @@ const Home1LiveTenders = () => {
               color: '#27F5CC',
               marginBottom: '16px',
             }}>
-              Appels d'Offres en Cours
+              Appels d'Offres
             </h2>
             <p style={{
               fontSize: '1.1rem',
               color: '#666',
               maxWidth: '600px',
-              margin: '0 auto',
+              margin: '0 auto 24px',
               lineHeight: '1.6',
             }}>
               Soumettez vos offres et remportez des contrats intéressants
             </p>
             
+            {/* Status Filter Buttons */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '12px',
+              flexWrap: 'wrap',
+              marginBottom: '20px',
+            }}>
+              <button
+                onClick={() => setStatusFilter('all')}
+                style={{
+                  padding: '10px 24px',
+                  borderRadius: '25px',
+                  border: '2px solid',
+                  borderColor: statusFilter === 'all' ? '#27F5CC' : '#e2e8f0',
+                  background: statusFilter === 'all' ? 'linear-gradient(135deg, #27F5CC, #00D4AA)' : 'white',
+                  color: statusFilter === 'all' ? 'white' : '#666',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: statusFilter === 'all' ? '0 4px 12px rgba(39, 245, 204, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                }}
+                onMouseEnter={(e) => {
+                  if (statusFilter !== 'all') {
+                    e.currentTarget.style.borderColor = '#27F5CC';
+                    e.currentTarget.style.color = '#27F5CC';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (statusFilter !== 'all') {
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.color = '#666';
+                  }
+                }}
+              >
+                Toutes
+              </button>
+              <button
+                onClick={() => setStatusFilter('active')}
+                style={{
+                  padding: '10px 24px',
+                  borderRadius: '25px',
+                  border: '2px solid',
+                  borderColor: statusFilter === 'active' ? '#10b981' : '#e2e8f0',
+                  background: statusFilter === 'active' ? 'linear-gradient(135deg, #10b981, #059669)' : 'white',
+                  color: statusFilter === 'active' ? 'white' : '#666',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: statusFilter === 'active' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                }}
+                onMouseEnter={(e) => {
+                  if (statusFilter !== 'active') {
+                    e.currentTarget.style.borderColor = '#10b981';
+                    e.currentTarget.style.color = '#10b981';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (statusFilter !== 'active') {
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.color = '#666';
+                  }
+                }}
+              >
+                En Cours
+              </button>
+              <button
+                onClick={() => setStatusFilter('finished')}
+                style={{
+                  padding: '10px 24px',
+                  borderRadius: '25px',
+                  border: '2px solid',
+                  borderColor: statusFilter === 'finished' ? '#ef4444' : '#e2e8f0',
+                  background: statusFilter === 'finished' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'white',
+                  color: statusFilter === 'finished' ? 'white' : '#666',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: statusFilter === 'finished' ? '0 4px 12px rgba(239, 68, 68, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                }}
+                onMouseEnter={(e) => {
+                  if (statusFilter !== 'finished') {
+                    e.currentTarget.style.borderColor = '#ef4444';
+                    e.currentTarget.style.color = '#ef4444';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (statusFilter !== 'finished') {
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.color = '#666';
+                  }
+                }}
+              >
+                Terminées
+              </button>
+            </div>
           </div>
 
           {/* Tenders Content - Always show on mobile, even with no data */}

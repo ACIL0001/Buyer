@@ -1056,37 +1056,28 @@ const Home1LiveAuction = () => {
                           <div style={{
                             display: 'grid',
                             gridTemplateColumns: auction?.bidType === 'SERVICE' ? '1fr' : '1fr 1fr',
-                            gap: '12px',
-                            marginBottom: '16px',
+                            gap: '6px',
+                            marginBottom: '8px',
                           }}>
                             <div style={{
                               background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                              borderRadius: '12px',
-                              padding: '12px',
+                              borderRadius: '8px',
+                              padding: '4px 8px',
                               border: '1px solid #e9ecef',
-                              borderLeft: '4px solid #0063b1',
+                              borderLeft: '3px solid #0063b1',
                               position: 'relative',
                               overflow: 'hidden',
                             }}>
-                              <div style={{
-                                position: 'absolute',
-                                top: 0,
-                                right: 0,
-                                width: '30px',
-                                height: '30px',
-                                background: 'linear-gradient(45deg, rgba(0, 99, 177, 0.1), rgba(0, 163, 224, 0.1))',
-                                borderRadius: '0 12px 0 100%',
-                              }}></div>
                               <p style={{
-                                fontSize: '12px',
+                                fontSize: '10px',
                                 color: '#666',
-                                margin: '0 0 4px 0',
+                                margin: '0 0 2px 0',
                                 fontWeight: '600',
                               }}>
                                 📍 Localisation
                               </p>
                               <p style={{
-                                fontSize: '14px',
+                                fontSize: '12px',
                                 color: '#333',
                                 margin: 0,
                                 fontWeight: '500',
@@ -1112,32 +1103,23 @@ const Home1LiveAuction = () => {
                             {auction?.bidType !== 'SERVICE' && (
                             <div style={{
                               background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                              borderRadius: '12px',
-                              padding: '12px',
+                              borderRadius: '8px',
+                              padding: '4px 8px',
                               border: '1px solid #e9ecef',
-                              borderLeft: '4px solid #0063b1',
+                              borderLeft: '3px solid #0063b1',
                               position: 'relative',
                               overflow: 'hidden',
                             }}>
-                              <div style={{
-                                position: 'absolute',
-                                top: 0,
-                                right: 0,
-                                width: '30px',
-                                height: '30px',
-                                background: 'linear-gradient(45deg, rgba(0, 99, 177, 0.1), rgba(0, 163, 224, 0.1))',
-                                borderRadius: '0 12px 0 100%',
-                              }}></div>
                               <p style={{
-                                fontSize: '12px',
+                                fontSize: '10px',
                                 color: '#666',
-                                margin: '0 0 4px 0',
+                                margin: '0 0 2px 0',
                                 fontWeight: '600',
                               }}>
                                 📦 Quantité
                               </p>
                               <p style={{
-                                fontSize: '14px',
+                                fontSize: '12px',
                                 color: '#333',
                                 margin: 0,
                                 fontWeight: '500',
@@ -1151,18 +1133,18 @@ const Home1LiveAuction = () => {
                           {/* Description */}
                           {auction.description && (
                             <div style={{
-                              marginBottom: '16px',
+                              marginBottom: '8px',
                             }}>
                               <p style={{
-                                fontSize: '12px',
+                                fontSize: '10px',
                                 color: '#666',
-                                margin: '0 0 4px 0',
+                                margin: '0 0 2px 0',
                                 fontWeight: '600',
                               }}>
                                 Description
                               </p>
                               <p style={{
-                                fontSize: '13px',
+                                fontSize: '12px',
                                 color: '#555',
                                 margin: 0,
                                 lineHeight: '1.4',
@@ -1180,33 +1162,33 @@ const Home1LiveAuction = () => {
                           {/* Participants Count */}
                           <div style={{
                             background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                            borderRadius: '12px',
-                            padding: '12px',
-                            marginBottom: '16px',
+                            borderRadius: '8px',
+                            padding: '6px 8px',
+                            marginBottom: '8px',
                             border: '1px solid #e9ecef',
                           }}>
                             <div style={{
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              gap: '8px',
+                              gap: '4px',
                             }}>
                               <div style={{
-                                width: '8px',
-                                height: '8px',
+                                width: '6px',
+                                height: '6px',
                                 borderRadius: '50%',
                                 background: '#0063b1',
                                 animation: 'pulse 2s infinite',
                               }}></div>
                               <span style={{
-                                fontSize: '14px',
+                                fontSize: '11px',
                                 fontWeight: '600',
                                 color: '#0063b1',
                               }}>
                                 {((auction as any).participantsCount || 0)} participant{(((auction as any).participantsCount || 0) !== 1) ? 's' : ''}
                               </span>
                               <span style={{
-                                fontSize: '12px',
+                                fontSize: '10px',
                                 color: '#666',
                               }}>
                                 ont enchéri

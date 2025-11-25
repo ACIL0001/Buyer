@@ -1476,14 +1476,20 @@ const MultipurposeAuctionSidebar = () => {
                                                             marginBottom: '8px',
                                                         }}>
                                                             {auction?.bidType !== 'SERVICE' && (
-                                                                <div style={{ padding: '4px' }}>
+                                                                <div style={{
+                                                                    background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                                                    borderRadius: '8px',
+                                                                    padding: '4px 8px',
+                                                                    border: '1px solid #e9ecef',
+                                                                    borderLeft: '3px solid #0063b1',
+                                                                }}>
                                                                     <p style={{
                                                                         fontSize: '10px',
                                                                         color: hasAuctionEnded ? '#888' : '#666',
                                                                         margin: '0 0 2px 0',
                                                                         fontWeight: '600',
                                                                     }}>
-                                                                        Quantité
+                                                                        📦 Quantité
                                                                     </p>
                                                                     <p style={{
                                                                         fontSize: '12px',
@@ -1496,14 +1502,20 @@ const MultipurposeAuctionSidebar = () => {
                                                                 </div>
                                                             )}
 
-                                                            <div style={{ padding: '4px' }}>
+                                                            <div style={{
+                                                                background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                                                borderRadius: '8px',
+                                                                padding: '4px 8px',
+                                                                border: '1px solid #e9ecef',
+                                                                borderLeft: '3px solid #0063b1',
+                                                            }}>
                                                                 <p style={{
                                                                     fontSize: '10px',
                                                                     color: hasAuctionEnded ? '#888' : '#666',
                                                                     margin: '0 0 2px 0',
                                                                     fontWeight: '600',
                                                                 }}>
-                                                                    Localisation
+                                                                    📍 Localisation
                                                                 </p>
                                                                 <p style={{
                                                                     fontSize: '12px',
@@ -1530,21 +1542,40 @@ const MultipurposeAuctionSidebar = () => {
                                                             </div>
                                                         </div>
 
-                                                        {/* Separator Line */}
-                                                        <div style={{
-                                                            width: '100%',
-                                                            height: '1px',
-                                                            background: hasAuctionEnded ? '#e0e0e0' : 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
-                                                            margin: '0 0 8px 0',
-                                                        }}></div>
-
                                                         {/* Price Info */}
                                                         <div style={{
                                                             background: hasAuctionEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                                                             borderRadius: '8px',
-                                                            padding: '6px 8px',
+                                                            padding: '4px 8px',
                                                             marginBottom: '8px',
                                                             border: hasAuctionEnded ? '1px solid #e0e0e0' : '1px solid #e9ecef',
+                                                            borderLeft: hasAuctionEnded ? '3px solid #ccc' : '3px solid #0063b1',
+                                                        }}>
+                                                            <p style={{
+                                                                fontSize: '10px',
+                                                                color: hasAuctionEnded ? '#888' : '#666',
+                                                                margin: '0 0 2px 0',
+                                                                fontWeight: '600',
+                                                            }}>
+                                                                💰 Prix actuel
+                                                            </p>
+                                                            <p style={{
+                                                                fontSize: '12px',
+                                                                color: hasAuctionEnded ? '#888' : '#0063b1',
+                                                                margin: 0,
+                                                                fontWeight: '600',
+                                                            }}>
+                                                                {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()} DA
+                                                            </p>
+                                                        </div>
+
+                                                        {/* Bidders Count */}
+                                                        <div style={{
+                                                            background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                                            borderRadius: '8px',
+                                                            padding: '6px 8px',
+                                                            marginBottom: '8px',
+                                                            border: '1px solid #e9ecef',
                                                         }}>
                                                             <div style={{
                                                                 display: 'flex',
@@ -1556,74 +1587,18 @@ const MultipurposeAuctionSidebar = () => {
                                                                     width: '6px',
                                                                     height: '6px',
                                                                     borderRadius: '50%',
-                                                                    background: hasAuctionEnded ? '#ccc' : '#28a745',
-                                                                    animation: hasAuctionEnded ? 'none' : 'pulse 2s infinite',
-                                                                }}></div>
-                                                                <span style={{
-                                                                    fontSize: '11px',
-                                                                    fontWeight: '600',
-                                                                    color: hasAuctionEnded ? '#888' : '#28a745',
-                                                                }}>
-                                                                    {hasAuctionEnded ? 'Enchère terminée' : 'Prix actuel'}
-                                                                </span>
-                                                            </div>
-                                                            <div style={{
-                                                                textAlign: 'center',
-                                                                marginTop: '4px',
-                                                            }}>
-                                                                    <p style={{
-                                                                        fontSize: '16px',
-                                                                        fontWeight: '800',
-                                                                        margin: 0,
-                                                                    color: hasAuctionEnded ? '#888' : '#0063b1',
-                                                                        background: hasAuctionEnded ? 'none' : 'linear-gradient(90deg, #0063b1, #00a3e0)',
-                                                                        WebkitBackgroundClip: hasAuctionEnded ? undefined : 'text',
-                                                                        backgroundClip: hasAuctionEnded ? undefined : 'text',
-                                                                        WebkitTextFillColor: hasAuctionEnded ? '#888' : 'transparent',
-                                                                    }}>
-                                                                        {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()} DA
-                                                                    </p>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Separator Line after Price */}
-                                                        <div style={{
-                                                            width: '100%',
-                                                            height: '1px',
-                                                            background: hasAuctionEnded ? '#e0e0e0' : 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
-                                                            margin: '0 0 16px 0',
-                                                        }}></div>
-
-                                                        {/* Bidders Count */}
-                                                        <div style={{
-                                                            background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                                            borderRadius: '12px',
-                                                            padding: '12px',
-                                                            marginBottom: '16px',
-                                                            border: '1px solid #e9ecef',
-                                                        }}>
-                                                            <div style={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                gap: '8px',
-                                                            }}>
-                                                                <div style={{
-                                                                    width: '8px',
-                                                                    height: '8px',
-                                                                    borderRadius: '50%',
                                                                     background: hasAuctionEnded ? '#ccc' : '#0063b1',
                                                                     animation: hasAuctionEnded ? 'none' : 'pulse 2s infinite',
                                                                 }}></div>
                                                                 <span style={{
-                                                                    fontSize: '14px',
+                                                                    fontSize: '11px',
                                                                     fontWeight: '600',
                                                                     color: hasAuctionEnded ? '#888' : '#0063b1',
                                                                 }}>
                                                                     {auction.biddersCount || 0} participant{(auction.biddersCount || 0) !== 1 ? 's' : ''}
                                                                 </span>
                                                                 <span style={{
-                                                                    fontSize: '12px',
+                                                                    fontSize: '10px',
                                                                     color: hasAuctionEnded ? '#888' : '#666',
                                                                 }}>
                                                                     ont enchéri
@@ -1631,13 +1606,6 @@ const MultipurposeAuctionSidebar = () => {
                                                             </div>
                                                         </div>
 
-                                                        {/* Separator Line after Bidders Count */}
-                                                        <div style={{
-                                                            width: '100%',
-                                                            height: '1px',
-                                                            background: hasAuctionEnded ? '#e0e0e0' : 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
-                                                            margin: '0 0 16px 0',
-                                                        }}></div>
 
                                                         {/* Owner Info */}
                                                         <div style={{

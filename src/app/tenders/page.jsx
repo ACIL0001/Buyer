@@ -1769,21 +1769,27 @@ const MultipurposeTenderSidebar = () => {
                                                         <div style={{
                                                             display: 'grid',
                                                             gridTemplateColumns: tender?.tenderType === 'SERVICE' ? '1fr' : '1fr 1fr',
-                                                            gap: '12px',
-                                                            marginBottom: '16px',
+                                                            gap: '6px',
+                                                            marginBottom: '8px',
                                                         }}>
                                                             {tender?.tenderType !== 'SERVICE' && (
-                                                                <div>
+                                                                <div style={{
+                                                                    background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                                                    borderRadius: '8px',
+                                                                    padding: '4px 8px',
+                                                                    border: '1px solid #e9ecef',
+                                                                    borderLeft: '3px solid #27F5CC',
+                                                                }}>
                                                                     <p style={{
-                                                                        fontSize: '12px',
+                                                                        fontSize: '10px',
                                                                         color: hasTenderEnded ? '#888' : '#666',
-                                                                        margin: '0 0 4px 0',
+                                                                        margin: '0 0 2px 0',
                                                                         fontWeight: '600',
                                                                     }}>
-                                                                        Quantité
+                                                                        📦 Quantité
                                                                     </p>
                                                                     <p style={{
-                                                                        fontSize: '14px',
+                                                                        fontSize: '12px',
                                                                         color: hasTenderEnded ? '#888' : '#333',
                                                                         margin: 0,
                                                                         fontWeight: '500',
@@ -1793,17 +1799,23 @@ const MultipurposeTenderSidebar = () => {
                                                                 </div>
                                                             )}
 
-                                                            <div>
+                                                            <div style={{
+                                                                background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                                                borderRadius: '8px',
+                                                                padding: '4px 8px',
+                                                                border: '1px solid #e9ecef',
+                                                                borderLeft: '3px solid #27F5CC',
+                                                            }}>
                                                                 <p style={{
-                                                                    fontSize: '12px',
+                                                                    fontSize: '10px',
                                                                     color: hasTenderEnded ? '#888' : '#666',
-                                                                    margin: '0 0 4px 0',
+                                                                    margin: '0 0 2px 0',
                                                                     fontWeight: '600',
                                                                 }}>
-                                                                    Localisation
+                                                                    📍 Localisation
                                                                 </p>
                                                                 <p style={{
-                                                                    fontSize: '14px',
+                                                                    fontSize: '12px',
                                                                     color: hasTenderEnded ? '#888' : '#333',
                                                                     margin: 0,
                                                                     fontWeight: '500',
@@ -1822,29 +1834,21 @@ const MultipurposeTenderSidebar = () => {
                                                             </div>
                                                         </div>
 
-                                                        {/* Separator Line */}
-                                                        <div style={{
-                                                            width: '100%',
-                                                            height: '1px',
-                                                            background: hasTenderEnded ? '#e0e0e0' : 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
-                                                            margin: '0 0 16px 0',
-                                                        }}></div>
-
                                                         {/* Description */}
                                                         {tender.description && (
                                                             <div style={{
-                                                                marginBottom: '16px',
+                                                                marginBottom: '8px',
                                                             }}>
                                                                 <p style={{
-                                                                    fontSize: '12px',
+                                                                    fontSize: '10px',
                                                                     color: hasTenderEnded ? '#888' : '#666',
-                                                                    margin: '0 0 4px 0',
+                                                                    margin: '0 0 2px 0',
                                                                     fontWeight: '600',
                                                                 }}>
                                                                     Description
                                                                 </p>
                                                                 <p style={{
-                                                                    fontSize: '13px',
+                                                                    fontSize: '12px',
                                                                     color: hasTenderEnded ? '#888' : '#555',
                                                                     margin: 0,
                                                                     lineHeight: '1.4',
@@ -1859,102 +1863,63 @@ const MultipurposeTenderSidebar = () => {
                                                             </div>
                                                         )}
 
-                                                        {/* Separator Line after Description */}
-                                                        {tender.description && (
-                                                            <div style={{
-                                                                width: '100%',
-                                                                height: '1px',
-                                                                background: hasTenderEnded ? '#e0e0e0' : 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
-                                                                margin: '0 0 16px 0',
-                                                            }}></div>
-                                                        )}
-
                                                         {/* Budget Info */}
                                                         <div style={{
                                                             background: hasTenderEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                                            borderRadius: '12px',
-                                                            padding: '12px',
-                                                            marginBottom: '16px',
+                                                            borderRadius: '8px',
+                                                            padding: '4px 8px',
+                                                            marginBottom: '8px',
                                                             border: hasTenderEnded ? '1px solid #e0e0e0' : '1px solid #e9ecef',
+                                                            borderLeft: hasTenderEnded ? '3px solid #ccc' : '3px solid #27F5CC',
                                                         }}>
-                                                            <div style={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                gap: '8px',
+                                                            <p style={{
+                                                                fontSize: '10px',
+                                                                color: hasTenderEnded ? '#888' : '#666',
+                                                                margin: '0 0 2px 0',
+                                                                fontWeight: '600',
                                                             }}>
-                                                                <div style={{
-                                                                    width: '8px',
-                                                                    height: '8px',
-                                                                    borderRadius: '50%',
-                                                                    background: hasTenderEnded ? '#ccc' : '#27F5CC',
-                                                                    animation: hasTenderEnded ? 'none' : 'pulse 2s infinite',
-                                                                }}></div>
-                                                                <span style={{
-                                                                    fontSize: '14px',
-                                                                    fontWeight: '600',
-                                                                    color: hasTenderEnded ? '#888' : '#27F5CC',
-                                                                }}>
-                                                                    {hasTenderEnded ? 'Appel d\'offre terminé' : 'Budget'}
-                                                                </span>
-                                                            </div>
-                                                            <div style={{
-                                                                textAlign: 'center',
-                                                                marginTop: '8px',
+                                                                💰 Budget
+                                                            </p>
+                                                            <p style={{
+                                                                fontSize: '12px',
+                                                                color: hasTenderEnded ? '#888' : '#27F5CC',
+                                                                margin: 0,
+                                                                fontWeight: '600',
                                                             }}>
-                                                                <p style={{
-                                                                    fontSize: '22px',
-                                                                    fontWeight: '800',
-                                                                    margin: 0,
-                                                                    color: hasTenderEnded ? '#888' : '#27F5CC',
-                                                                    background: hasTenderEnded ? 'none' : 'linear-gradient(90deg, #27F5CC, #00D4AA)',
-                                                                    WebkitBackgroundClip: hasTenderEnded ? undefined : 'text',
-                                                                    backgroundClip: hasTenderEnded ? undefined : 'text',
-                                                                    WebkitTextFillColor: hasTenderEnded ? '#888' : 'transparent',
-                                                                }}>
-                                                                    {Number(tender.maxBudget || tender.budget || 0).toLocaleString()} DA
-                                                                </p>
-                                                            </div>
+                                                                {Number(tender.maxBudget || tender.budget || 0).toLocaleString()} DA
+                                                            </p>
                                                         </div>
-
-                                                        {/* Separator Line after Budget */}
-                                                        <div style={{
-                                                            width: '100%',
-                                                            height: '1px',
-                                                            background: hasTenderEnded ? '#e0e0e0' : 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
-                                                            margin: '0 0 16px 0',
-                                                        }}></div>
 
                                                         {/* Participants Count */}
                                                         <div style={{
                                                             background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                                            borderRadius: '12px',
-                                                            padding: '12px',
-                                                            marginBottom: '16px',
+                                                            borderRadius: '8px',
+                                                            padding: '6px 8px',
+                                                            marginBottom: '8px',
                                                             border: '1px solid #e9ecef',
                                                         }}>
                                                             <div style={{
                                                                 display: 'flex',
                                                                 alignItems: 'center',
                                                                 justifyContent: 'center',
-                                                                gap: '8px',
+                                                                gap: '4px',
                                                             }}>
                                                                 <div style={{
-                                                                    width: '8px',
-                                                                    height: '8px',
+                                                                    width: '6px',
+                                                                    height: '6px',
                                                                     borderRadius: '50%',
                                                                     background: hasTenderEnded ? '#ccc' : '#27F5CC',
                                                                     animation: hasTenderEnded ? 'none' : 'pulse 2s infinite',
                                                                 }}></div>
                                                                 <span style={{
-                                                                    fontSize: '14px',
+                                                                    fontSize: '11px',
                                                                     fontWeight: '600',
                                                                     color: hasTenderEnded ? '#888' : '#27F5CC',
                                                                 }}>
                                                                     {tender.participantsCount || 0} participant{(tender.participantsCount || 0) !== 1 ? 's' : ''}
                                                                 </span>
                                                                 <span style={{
-                                                                    fontSize: '12px',
+                                                                    fontSize: '10px',
                                                                     color: hasTenderEnded ? '#888' : '#666',
                                                                 }}>
                                                                     ont soumis des offres
@@ -1962,13 +1927,6 @@ const MultipurposeTenderSidebar = () => {
                                                             </div>
                                                         </div>
 
-                                                        {/* Separator Line after Participants Count */}
-                                                        <div style={{
-                                                            width: '100%',
-                                                            height: '1px',
-                                                            background: hasTenderEnded ? '#e0e0e0' : 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
-                                                            margin: '0 0 16px 0',
-                                                        }}></div>
 
                                                         {/* Owner Info */}
                                                         <div style={{

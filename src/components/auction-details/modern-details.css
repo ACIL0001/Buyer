@@ -1090,6 +1090,11 @@ section,
   margin-top: 0 !important;
 }
 
+/* Allow padding-top for auction-details-content to account for fixed header */
+.auction-details-content {
+  padding-top: clamp(120px, 15vw, 140px) !important;
+}
+
 .auction-details-section {
   padding-top: 0 !important;
   margin-top: 0 !important;

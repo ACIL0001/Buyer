@@ -1945,7 +1945,7 @@ const MultipurposeDetails2 = () => {
 
                 {/* Right Column - Auction Details */}
                 <div className="col-xl-5">
-                  <div className="auction-details-content">
+                  <div className="auction-details-content" style={{ paddingTop: 'clamp(120px, 15vw, 140px)' }}>
                     {/* Title above timer - Prominently displayed */}
                     <div style={{ 
                       marginBottom: '25px', 

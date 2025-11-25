@@ -401,7 +401,7 @@ function DirectSaleDetailContent() {
 
             {/* Right Column - Details */}
             <div className="col-xl-5">
-              <div className="auction-details-content">
+              <div className="auction-details-content" style={{ paddingTop: 'clamp(120px, 15vw, 140px)' }}>
                 {/* Title Display - Prominently at the top */}
                 <div style={{ marginBottom: '20px', textAlign: 'center' }}>
                   <h1 className="auction-title" style={{

@@ -836,7 +836,16 @@ const MultipurposeTenderSidebar = () => {
 
         console.log(`Final filtered result: ${result.length} tenders`);
         setFilteredTenders(result);
+        // Reset to page 1 when filters change
+        setCurrentPage(1);
     }, [tenders, selectedCategory, selectedSubCategory, selectedBidType, searchTerm, sortOption]); // Removed tenderTimers from dependency array as it's not filtering, only styling
+
+    // Reset currentPage if it exceeds totalPages after filtering
+    useEffect(() => {
+        if (totalPages > 0 && currentPage > totalPages) {
+            setCurrentPage(1);
+        }
+    }, [totalPages, currentPage]);
 
     // Debug useEffect to monitor selectedCategory changes
     useEffect(() => {
@@ -1975,7 +1984,7 @@ const MultipurposeTenderSidebar = () => {
                 </div>
 
                 {/* Pagination */}
-                {filteredTenders && filteredTenders.length > 0 && Math.ceil(filteredTenders.length / 9) > 1 && (
+                {filteredTenders && filteredTenders.length > 0 && totalPages > 1 && (
                     <div className="row">
                         <div className="col-lg-12 d-flex justify-content-center">
                             <div className="inner-pagination-area" style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
@@ -1984,89 +1993,255 @@ const MultipurposeTenderSidebar = () => {
                                     gap: '12px',
                                     padding: 0,
                                     margin: 0,
-                                    listStyle: 'none'
+                                    listStyle: 'none',
+                                    flexWrap: 'wrap',
+                                    alignItems: 'center'
                                 }}>
-                                    <li className="page-item active" style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        <a href="#" style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            width: '45px',
-                                            height: '45px',
-                                            borderRadius: '50%',
-                                            background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
-                                            color: 'white',
-                                            fontWeight: '700',
-                                            textDecoration: 'none',
-                                            boxShadow: '0 4px 15px rgba(0, 99, 177, 0.3)',
-                                            transition: 'all 0.3s ease',
-                                        }}>{t('page01')}</a>
-                                    </li>
-                                    <li className="page-item" style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        <a href="#" style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            width: '45px',
-                                            height: '45px',
-                                            borderRadius: '50%',
-                                            background: '#f5f5f5',
-                                            color: '#333',
-                                            fontWeight: '600',
-                                            textDecoration: 'none',
-                                            transition: 'all 0.3s ease',
-                                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                        }}>{t('page02')}</a>
-                                    </li>
-                                    <li className="page-item" style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        <a href="#" style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            width: '45px',
-                                            height: '45px',
-                                            borderRadius: '50%',
-                                            background: '#f5f5f5',
-                                            color: '#333',
-                                            fontWeight: '600',
-                                            textDecoration: 'none',
-                                            transition: 'all 0.3s ease',
-                                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                        }}>{t('page03')}</a>
-                                    </li>
+                                    {/* Previous Button */}
                                     <li className="page-item paginations-button" style={{
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center'
                                     }}>
-                                        <a href="#" style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            width: '45px',
-                                            height: '45px',
-                                            borderRadius: '50%',
-                                            background: '#f5f5f5',
-                                            color: '#333',
-                                            fontWeight: '600',
-                                            textDecoration: 'none',
-                                            transition: 'all 0.3s ease',
-                                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                        }}>
+                                        <a 
+                                            href="#" 
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                if (currentPage > 1) {
+                                                    setCurrentPage(currentPage - 1);
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }
+                                            }}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                width: '45px',
+                                                height: '45px',
+                                                borderRadius: '50%',
+                                                background: currentPage > 1 ? '#f5f5f5' : '#e0e0e0',
+                                                color: currentPage > 1 ? '#333' : '#999',
+                                                fontWeight: '600',
+                                                textDecoration: 'none',
+                                                transition: 'all 0.3s ease',
+                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                cursor: currentPage > 1 ? 'pointer' : 'not-allowed',
+                                                opacity: currentPage > 1 ? 1 : 0.5,
+                                                transform: 'rotate(180deg)'
+                                            }}
+                                        >
                                             <svg width={16} height={13} viewBox="0 0 16 13" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M15.557 10.1026L1.34284 1.89603M15.557 10.1026C12.9386 8.59083 10.8853 3.68154 12.7282 0.489511M15.557 10.1026C12.9386 8.59083 7.66029 9.2674 5.81744 12.4593" strokeWidth="0.96" strokeLinecap="round" />
+                                                <path d="M15.557 10.1026L1.34284 1.89603M15.557 10.1026C12.9386 8.59083 10.8853 3.68154 12.7282 0.489511M15.557 10.1026C12.9386 8.59083 7.66029 9.2674 5.81744 12.4593" strokeWidth="0.96" strokeLinecap="round" stroke={currentPage > 1 ? '#333' : '#999'} />
+                                            </svg>
+                                        </a>
+                                    </li>
+
+                                    {/* Page Numbers */}
+                                    {(() => {
+                                        const pages = [];
+                                        const maxVisiblePages = 7;
+                                        let startPage = 1;
+                                        let endPage = totalPages;
+
+                                        // Calculate which pages to show
+                                        if (totalPages > maxVisiblePages) {
+                                            if (currentPage <= 4) {
+                                                // Show first pages
+                                                startPage = 1;
+                                                endPage = maxVisiblePages;
+                                            } else if (currentPage >= totalPages - 3) {
+                                                // Show last pages
+                                                startPage = totalPages - maxVisiblePages + 1;
+                                                endPage = totalPages;
+                                            } else {
+                                                // Show pages around current
+                                                startPage = currentPage - 3;
+                                                endPage = currentPage + 3;
+                                            }
+                                        }
+
+                                        // Add first page and ellipsis if needed
+                                        if (startPage > 1) {
+                                            pages.push(
+                                                <li key={1} className="page-item" style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <a 
+                                                        href="#" 
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setCurrentPage(1);
+                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                        }}
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            width: '45px',
+                                                            height: '45px',
+                                                            borderRadius: '50%',
+                                                            background: '#f5f5f5',
+                                                            color: '#333',
+                                                            fontWeight: '600',
+                                                            textDecoration: 'none',
+                                                            transition: 'all 0.3s ease',
+                                                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        1
+                                                    </a>
+                                                </li>
+                                            );
+                                            if (startPage > 2) {
+                                                pages.push(
+                                                    <li key="ellipsis-start" style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        padding: '0 8px',
+                                                        color: '#666'
+                                                    }}>
+                                                        ...
+                                                    </li>
+                                                );
+                                            }
+                                        }
+
+                                        // Add visible page numbers
+                                        for (let i = startPage; i <= endPage; i++) {
+                                            pages.push(
+                                                <li 
+                                                    key={i} 
+                                                    className={`page-item ${currentPage === i ? 'active' : ''}`}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}
+                                                >
+                                                    <a 
+                                                        href="#" 
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setCurrentPage(i);
+                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                        }}
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            width: '45px',
+                                                            height: '45px',
+                                                            borderRadius: '50%',
+                                                            background: currentPage === i 
+                                                                ? 'linear-gradient(135deg, #0063b1, #00a3e0)' 
+                                                                : '#f5f5f5',
+                                                            color: currentPage === i ? 'white' : '#333',
+                                                            fontWeight: currentPage === i ? '700' : '600',
+                                                            textDecoration: 'none',
+                                                            transition: 'all 0.3s ease',
+                                                            boxShadow: currentPage === i 
+                                                                ? '0 4px 15px rgba(0, 99, 177, 0.3)' 
+                                                                : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        {i}
+                                                    </a>
+                                                </li>
+                                            );
+                                        }
+
+                                        // Add last page and ellipsis if needed
+                                        if (endPage < totalPages) {
+                                            if (endPage < totalPages - 1) {
+                                                pages.push(
+                                                    <li key="ellipsis-end" style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        padding: '0 8px',
+                                                        color: '#666'
+                                                    }}>
+                                                        ...
+                                                    </li>
+                                                );
+                                            }
+                                            pages.push(
+                                                <li key={totalPages} className="page-item" style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <a 
+                                                        href="#" 
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setCurrentPage(totalPages);
+                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                        }}
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            width: '45px',
+                                                            height: '45px',
+                                                            borderRadius: '50%',
+                                                            background: '#f5f5f5',
+                                                            color: '#333',
+                                                            fontWeight: '600',
+                                                            textDecoration: 'none',
+                                                            transition: 'all 0.3s ease',
+                                                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        {totalPages}
+                                                    </a>
+                                                </li>
+                                            );
+                                        }
+
+                                        return pages;
+                                    })()}
+
+                                    {/* Next Button */}
+                                    <li className="page-item paginations-button" style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <a 
+                                            href="#" 
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                if (currentPage < totalPages) {
+                                                    setCurrentPage(currentPage + 1);
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }
+                                            }}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                width: '45px',
+                                                height: '45px',
+                                                borderRadius: '50%',
+                                                background: currentPage < totalPages ? '#f5f5f5' : '#e0e0e0',
+                                                color: currentPage < totalPages ? '#333' : '#999',
+                                                fontWeight: '600',
+                                                textDecoration: 'none',
+                                                transition: 'all 0.3s ease',
+                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                cursor: currentPage < totalPages ? 'pointer' : 'not-allowed',
+                                                opacity: currentPage < totalPages ? 1 : 0.5
+                                            }}
+                                        >
+                                            <svg width={16} height={13} viewBox="0 0 16 13" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M15.557 10.1026L1.34284 1.89603M15.557 10.1026C12.9386 8.59083 10.8853 3.68154 12.7282 0.489511M15.557 10.1026C12.9386 8.59083 7.66029 9.2674 5.81744 12.4593" strokeWidth="0.96" strokeLinecap="round" stroke={currentPage < totalPages ? '#333' : '#999'} />
                                             </svg>
                                         </a>
                                     </li>

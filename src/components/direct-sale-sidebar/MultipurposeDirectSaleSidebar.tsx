@@ -1208,13 +1208,55 @@ const MultipurposeDirectSaleSidebar = () => {
                                   target.src = DEFAULT_PROFILE_IMAGE;
                                 }}
                               />
-                              <span style={{
-                                fontSize: '14px',
-                                color: isSoldOut ? '#888' : '#666',
-                                fontWeight: '500',
-                              }}>
-                                {displayName}
-                              </span>
+                              {directSale.owner && !directSale.hidden ? (
+                                <Link
+                                  href={`/users/${directSale.owner._id}`}
+                                  style={{
+                                    fontSize: '14px',
+                                    color: isSoldOut ? '#888' : '#0063b1',
+                                    fontWeight: '600',
+                                    textDecoration: 'none',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    transition: 'all 0.3s ease',
+                                    cursor: isSoldOut ? 'not-allowed' : 'pointer',
+                                    pointerEvents: isSoldOut ? 'none' : 'auto',
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!isSoldOut) {
+                                      e.currentTarget.style.textDecoration = 'underline';
+                                      e.currentTarget.style.color = '#004c8c';
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!isSoldOut) {
+                                      e.currentTarget.style.textDecoration = 'none';
+                                      e.currentTarget.style.color = '#0063b1';
+                                    }
+                                  }}
+                                  onClick={(e) => {
+                                    if (isSoldOut) {
+                                      e.preventDefault();
+                                    }
+                                  }}
+                                >
+                                  {directSale.owner.entreprise || displayName}
+                                  {!isSoldOut && (
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
+                                      <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
+                                    </svg>
+                                  )}
+                                </Link>
+                              ) : (
+                                <span style={{
+                                  fontSize: '14px',
+                                  color: isSoldOut ? '#888' : '#666',
+                                  fontWeight: '500',
+                                }}>
+                                  {displayName}
+                                </span>
+                              )}
                             </div>
 
                             {/* View Details Button */}

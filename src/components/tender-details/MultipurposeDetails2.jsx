@@ -2102,6 +2102,43 @@ const MultipurposeDetails2 = () => {
                                 </span>
                               </td>
                             </tr>
+                            {safeOwner && (
+                              <tr>
+                                <td className="fw-bold">Acheteur</td>
+                                <td>
+                                  {safeOwner.hidden === true ? (
+                                    <span>{t('common.anonymous') || 'Anonyme'}</span>
+                                  ) : (
+                                    <Link
+                                      href={`/users/${safeOwner._id || safeOwner}`}
+                                      style={{
+                                        color: '#0063b1',
+                                        textDecoration: 'none',
+                                        fontWeight: '600',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        transition: 'all 0.3s ease',
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.textDecoration = 'underline';
+                                        e.currentTarget.style.color = '#004c8c';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.textDecoration = 'none';
+                                        e.currentTarget.style.color = '#0063b1';
+                                      }}
+                                    >
+                                      {safeOwner.entreprise || 
+                                       (safeOwner.firstName && safeOwner.lastName ? `${safeOwner.firstName} ${safeOwner.lastName}` : safeOwner.name || safeOwner.username || 'Acheteur')}
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
+                                        <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
+                                      </svg>
+                                    </Link>
+                                  )}
+                                </td>
+                              </tr>
+                            )}
                           </tbody>
                         </table>
                       </div>

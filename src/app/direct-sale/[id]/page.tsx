@@ -38,8 +38,12 @@ interface DirectSale {
     firstName?: string;
     lastName?: string;
     username?: string;
+    name?: string;
     avatar?: { url: string };
     photoURL?: string;
+    entreprise?: string;
+    companyName?: string;
+    hidden?: boolean;
   };
   productCategory?: {
     _id: string;
@@ -464,20 +468,44 @@ function DirectSaleDetailContent() {
                           </td>
                         </tr>
                       )}
-                      <tr>
-                        <td className="fw-bold">Vendeur</td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <img 
-                              src={getImageUrl(directSale.owner?.avatar?.url || directSale.owner?.photoURL)} 
-                              alt="Seller" 
-                              style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }}
-                              onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_PROFILE_IMAGE; }}
-                            />
-                            <span>{directSale.owner?.firstName} {directSale.owner?.lastName || directSale.owner?.username}</span>
-                          </div>
-                        </td>
-                      </tr>
+                      {directSale.owner && (
+                        <tr>
+                          <td className="fw-bold">Vendeur</td>
+                          <td>
+                            {directSale.owner.hidden === true ? (
+                              <span>Anonyme</span>
+                            ) : (
+                              <Link
+                                href={`/users/${directSale.owner._id || directSale.owner}`}
+                                style={{
+                                  color: '#0063b1',
+                                  textDecoration: 'none',
+                                  fontWeight: '600',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  transition: 'all 0.3s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.color = '#004d8c';
+                                  e.currentTarget.style.textDecoration = 'underline';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.color = '#0063b1';
+                                  e.currentTarget.style.textDecoration = 'none';
+                                }}
+                              >
+                                {directSale.owner.entreprise || 
+                                 directSale.owner.companyName ||
+                                 (directSale.owner.firstName && directSale.owner.lastName ? `${directSale.owner.firstName} ${directSale.owner.lastName}` : directSale.owner.name || directSale.owner.username || 'Vendeur')}
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
+                                  <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
+                                </svg>
+                              </Link>
+                            )}
+                          </td>
+                        </tr>
+                      )}
                       <tr>
                         <td className="fw-bold">Localisation</td>
                         <td>{directSale.wilaya}, {directSale.place}</td>

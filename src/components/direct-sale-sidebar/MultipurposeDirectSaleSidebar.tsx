@@ -1295,7 +1295,8 @@ const MultipurposeDirectSaleSidebar = () => {
                               />
                               {directSale.owner && !directSale.hidden ? (
                                 <Link
-                                  href={`/users/${directSale.owner._id}`}
+                                  href={`/users/${directSale.owner._id || directSale.owner}`}
+                                  scroll={false}
                                   style={{
                                     fontSize: '14px',
                                     color: isSoldOut ? '#888' : '#0063b1',
@@ -1303,7 +1304,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                     textDecoration: 'none',
                                     display: 'inline-flex',
                                     alignItems: 'center',
-                                    gap: '4px',
+                                    gap: '6px',
                                     transition: 'all 0.3s ease',
                                     cursor: isSoldOut ? 'not-allowed' : 'pointer',
                                     pointerEvents: isSoldOut ? 'none' : 'auto',
@@ -1321,14 +1322,22 @@ const MultipurposeDirectSaleSidebar = () => {
                                     }
                                   }}
                                   onClick={(e) => {
-                                    if (isSoldOut) {
+                                    e.stopPropagation();
+                                    if (isSoldOut || !directSale.owner?._id) {
                                       e.preventDefault();
+                                      return;
                                     }
+                                    e.preventDefault();
+                                    navigateWithTop(`/users/${directSale.owner._id}`);
                                   }}
                                 >
-                                  {directSale.owner.entreprise || displayName}
+                                  {directSale.owner.entreprise || 
+                                   directSale.owner.companyName ||
+                                   (directSale.owner.firstName && directSale.owner.lastName 
+                                     ? `${directSale.owner.firstName} ${directSale.owner.lastName}` 
+                                     : directSale.owner.username || displayName)}
                                   {!isSoldOut && (
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
                                       <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
                                     </svg>
                                   )}

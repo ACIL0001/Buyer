@@ -1063,7 +1063,7 @@ const MultipurposeDetails1 = () => {
     <>
       <style jsx>{`
         :global(.auction-details-section) {
-          padding-top: 0 !important;
+          padding-top: 100px !important;
         }
 
         @keyframes pulse {
@@ -1112,7 +1112,7 @@ const MultipurposeDetails1 = () => {
       {loading ? (
         <div
           className="auction-details-section mb-110"
-          style={{ marginTop: 0, paddingTop: 0 }}
+          style={{ marginTop: 0, paddingTop: '100px' }}
         >
           <div className="container-fluid">
             <div className="row">
@@ -1128,7 +1128,7 @@ const MultipurposeDetails1 = () => {
       ) : error ? (
         <div
           className="auction-details-section mb-110"
-          style={{ marginTop: 0, paddingTop: 0 }}
+          style={{ marginTop: 0, paddingTop: '100px' }}
         >
           <div className="container-fluid">
             <div className="row">
@@ -1144,7 +1144,7 @@ const MultipurposeDetails1 = () => {
         <>
           <div
             className="auction-details-section auction-details-modern mb-110"
-            style={{ marginTop: 0, paddingTop: 0 }}
+            style={{ marginTop: 0, paddingTop: '100px' }}
           >
             <div className="container">
               <div className="row gy-5">
@@ -1458,12 +1458,21 @@ const MultipurposeDetails1 = () => {
                 {/* Right Column - Auction Details */}
                 <div className="col-xl-5">
                   <div className="auction-details-content">
-                    <h1 className="auction-title">
-                      {safeTitle}
-                    </h1>
-
                     {/* Auction timer and bid information */}
                     <div className="bid-container">
+                      {/* Title above timer */}
+                      <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                        <h1 className="auction-title" style={{
+                          fontSize: 'clamp(20px, 4vw, 28px)',
+                          fontWeight: '700',
+                          color: '#333',
+                          margin: 0,
+                          lineHeight: '1.3',
+                          wordBreak: 'break-word'
+                        }}>
+                          {safeTitle}
+                        </h1>
+                      </div>
                       <div className="boxTime">
                         <div className="countdown-timer">
                           {/* Changed ul to div and applied inline styles for layout and appearance */}

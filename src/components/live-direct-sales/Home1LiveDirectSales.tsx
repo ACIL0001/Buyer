@@ -97,13 +97,13 @@ const Home1LiveDirectSales = () => {
           directSalesData = [];
         }
         
-        // Filter only active direct sales
-        const activeDirectSales = directSalesData.filter((sale: DirectSale) => 
-          sale.status === 'ACTIVE'
+        // Include both ACTIVE and SOLD_OUT direct sales (don't filter out SOLD_OUT)
+        const visibleDirectSales = directSalesData.filter((sale: DirectSale) => 
+          sale.status === 'ACTIVE' || sale.status === 'SOLD_OUT'
         );
 
         // Limit to 8 for display
-        const limitedDirectSales = activeDirectSales.slice(0, 8);
+        const limitedDirectSales = visibleDirectSales.slice(0, 8);
         setDirectSales(limitedDirectSales);
         setError(null);
       } catch (err) {
@@ -420,6 +420,7 @@ const Home1LiveDirectSales = () => {
                     ? 999 
                     : directSale.quantity - (directSale.soldQuantity || 0);
                   const isSoldOut = directSale.status === 'SOLD_OUT' || 
+                    directSale.status === 'SOLD' ||
                     (directSale.quantity > 0 && availableQuantity <= 0);
                   const displayName = getSellerDisplayName(directSale);
 

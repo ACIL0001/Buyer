@@ -25,6 +25,7 @@ interface DirectSale {
   description?: string;
   price: number;
   quantity: number;
+  soldQuantity?: number;
   // Type might be missing on the item itself, so we make it optional
   type?: 'PRODUCT' | 'SERVICE';
   status: 'ACTIVE' | 'SOLD' | 'PAUSED' | 'ARCHIVED' | 'SOLD_OUT' | 'INACTIVE';
@@ -849,7 +850,14 @@ const MultipurposeDirectSaleSidebar = () => {
                   </div>
                 ) : paginatedDirectSales && paginatedDirectSales.length > 0 ? (
                   paginatedDirectSales.map((directSale, index) => {
-                    const isSoldOut = directSale.quantity <= 0 || directSale.status === 'SOLD';
+                    // Calculate available quantity
+                    const availableQuantity = directSale.quantity === 0 
+                      ? 999 
+                      : directSale.quantity - (directSale.soldQuantity || 0);
+                    // Check if sold out: status is SOLD_OUT/SOLD, or quantity > 0 and availableQuantity <= 0
+                    const isSoldOut = directSale.status === 'SOLD_OUT' || 
+                      directSale.status === 'SOLD' ||
+                      (directSale.quantity > 0 && availableQuantity <= 0);
                     const displayName = getSellerDisplayName(directSale);
                     
                     // Determine the type for display (use map as fallback)

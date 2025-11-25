@@ -773,48 +773,27 @@ const Home1LiveDirectSales = () => {
                           <div style={{
                             background: 'linear-gradient(135deg, #fefce8, #fef9c3)',
                             borderRadius: '8px',
-                            padding: '6px 8px',
+                            padding: '4px 8px',
                             marginBottom: '8px',
                             border: '1px solid #fef9c3',
+                            borderLeft: '3px solid #f7ef8a',
                           }}>
-                            <div style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '4px',
+                            <p style={{
+                              fontSize: '10px',
+                              color: '#8a7e1f',
+                              margin: '0 0 2px 0',
+                              fontWeight: '600',
                             }}>
-                              <div style={{
-                                width: '6px',
-                                height: '6px',
-                                borderRadius: '50%',
-                                background: '#f7ef8a',
-                                animation: 'pulse 2s infinite',
-                              }}></div>
-                              <span style={{
-                                fontSize: '11px',
-                                fontWeight: '600',
-                                color: '#8a7e1f',
-                              }}>
-                                Prix fixe
-                              </span>
-                            </div>
-                            <div style={{
-                              textAlign: 'center',
-                              marginTop: '4px',
+                              💰 Prix fixe
+                            </p>
+                            <p style={{
+                              fontSize: '12px',
+                              color: '#8a7e1f',
+                              margin: 0,
+                              fontWeight: '600',
                             }}>
-                              <p style={{
-                                fontSize: '16px',
-                                fontWeight: '800',
-                                margin: 0,
-                                color: '#8a7e1f',
-                                background: 'linear-gradient(90deg, #8a7e1f, #f7ef8a)',
-                                WebkitBackgroundClip: 'text',
-                                backgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                              }}>
-                                {Number(directSale.price || 0).toLocaleString()} DA
-                              </p>
-                            </div>
+                              {Number(directSale.price || 0).toLocaleString()} DA
+                            </p>
                           </div>
 
                           {/* Owner Info */}

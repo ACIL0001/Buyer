@@ -1164,14 +1164,20 @@ const MultipurposeDirectSaleSidebar = () => {
                               marginBottom: '8px',
                             }}>
                                 {itemType !== 'SERVICE' && (
-                                  <div style={{ padding: '4px' }}>
+                                  <div style={{
+                                    background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                    borderRadius: '8px',
+                                    padding: '4px 8px',
+                                    border: '1px solid #e9ecef',
+                                    borderLeft: '3px solid #d4af37',
+                                  }}>
                                       <p style={{
                                           fontSize: '10px',
                                           color: isSoldOut ? '#888' : '#666',
                                           margin: '0 0 2px 0',
                                           fontWeight: '600',
                                       }}>
-                                          Quantité
+                                          📦 Quantité
                                       </p>
                                       <p style={{
                                           fontSize: '12px',
@@ -1184,14 +1190,20 @@ const MultipurposeDirectSaleSidebar = () => {
                                   </div>
                                 )}
 
-                              <div style={{ padding: '4px' }}>
+                              <div style={{
+                                background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                borderRadius: '8px',
+                                padding: '4px 8px',
+                                border: '1px solid #e9ecef',
+                                borderLeft: '3px solid #d4af37',
+                              }}>
                                 <p style={{
                                   fontSize: '10px',
                                   color: isSoldOut ? '#888' : '#666',
                                   margin: '0 0 2px 0',
                                   fontWeight: '600',
                                 }}>
-                                  Localisation
+                                  📍 Localisation
                                 </p>
                                 <p style={{
                                   fontSize: '12px',
@@ -1215,69 +1227,32 @@ const MultipurposeDirectSaleSidebar = () => {
                               </div>
                             </div>
 
-                            {/* Separator Line */}
-                            <div style={{
-                              width: '100%',
-                              height: '1px',
-                              background: isSoldOut ? '#e0e0e0' : 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
-                              margin: '0 0 8px 0',
-                            }}></div>
-
                             {/* Price Info */}
                             <div style={{
                               background: isSoldOut ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                               borderRadius: '8px',
-                              padding: '6px 8px',
+                              padding: '4px 8px',
                               marginBottom: '8px',
                               border: isSoldOut ? '1px solid #e0e0e0' : '1px solid #e9ecef',
+                              borderLeft: isSoldOut ? '3px solid #ccc' : '3px solid #d4af37',
                             }}>
-                              <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '4px',
+                              <p style={{
+                                fontSize: '10px',
+                                color: isSoldOut ? '#888' : '#666',
+                                margin: '0 0 2px 0',
+                                fontWeight: '600',
                               }}>
-                                <div style={{
-                                  width: '6px',
-                                  height: '6px',
-                                  borderRadius: '50%',
-                                  background: isSoldOut ? '#ccc' : '#d4af37', // Golden color
-                                  animation: isSoldOut ? 'none' : 'pulse 2s infinite',
-                                }}></div>
-                                <span style={{
-                                  fontSize: '11px',
-                                  fontWeight: '600',
-                                  color: isSoldOut ? '#888' : '#d4af37', // Golden color
-                                }}>
-                                  Prix fixe
-                                </span>
-                              </div>
-                              <div style={{
-                                textAlign: 'center',
-                                marginTop: '4px',
+                                💰 Prix fixe
+                              </p>
+                              <p style={{
+                                fontSize: '12px',
+                                color: isSoldOut ? '#888' : '#d4af37',
+                                margin: 0,
+                                fontWeight: '600',
                               }}>
-                                <p style={{
-                                  fontSize: '16px',
-                                  fontWeight: '800',
-                                  margin: 0,
-                                  color: isSoldOut ? '#888' : undefined,
-                                  background: isSoldOut ? 'none' : 'linear-gradient(135deg, #d4af37, #f7ef8a)', // Golden gradient
-                                  WebkitBackgroundClip: isSoldOut ? undefined : 'text',
-                                  backgroundClip: isSoldOut ? undefined : 'text',
-                                  WebkitTextFillColor: isSoldOut ? '#888' : 'transparent',
-                                }}>
-                                  {Number(directSale.price || 0).toLocaleString()} DA
-                                </p>
-                              </div>
+                                {Number(directSale.price || 0).toLocaleString()} DA
+                              </p>
                             </div>
-
-                            {/* Separator Line after Price */}
-                            <div style={{
-                              width: '100%',
-                              height: '1px',
-                              background: isSoldOut ? '#e0e0e0' : 'linear-gradient(90deg, transparent, #e9ecef, transparent)',
-                              margin: '0 0 16px 0',
-                            }}></div>
 
                             {/* Owner Info */}
                             <div style={{

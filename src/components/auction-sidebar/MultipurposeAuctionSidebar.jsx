@@ -906,74 +906,6 @@ const MultipurposeAuctionSidebar = () => {
                                     </div>
                                 </div>
 
-                                {/* Status Filter Buttons */}
-                                <div className="row mb-4">
-                                    <div className="col-12">
-                                        <div style={{
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            gap: '12px',
-                                            flexWrap: 'wrap',
-                                            marginBottom: '20px',
-                                        }}>
-                                            <button
-                                                onClick={() => setStatusFilter('all')}
-                                                style={{
-                                                    padding: '10px 24px',
-                                                    borderRadius: '25px',
-                                                    border: '2px solid',
-                                                    borderColor: statusFilter === 'all' ? '#0063b1' : '#e2e8f0',
-                                                    background: statusFilter === 'all' ? 'linear-gradient(135deg, #0063b1, #00a3e0)' : 'white',
-                                                    color: statusFilter === 'all' ? 'white' : '#666',
-                                                    fontWeight: '600',
-                                                    fontSize: '14px',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.3s ease',
-                                                    boxShadow: statusFilter === 'all' ? '0 4px 12px rgba(0, 99, 177, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                }}
-                                            >
-                                                Toutes
-                                            </button>
-                                            <button
-                                                onClick={() => setStatusFilter('active')}
-                                                style={{
-                                                    padding: '10px 24px',
-                                                    borderRadius: '25px',
-                                                    border: '2px solid',
-                                                    borderColor: statusFilter === 'active' ? '#10b981' : '#e2e8f0',
-                                                    background: statusFilter === 'active' ? 'linear-gradient(135deg, #10b981, #059669)' : 'white',
-                                                    color: statusFilter === 'active' ? 'white' : '#666',
-                                                    fontWeight: '600',
-                                                    fontSize: '14px',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.3s ease',
-                                                    boxShadow: statusFilter === 'active' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                }}
-                                            >
-                                                En Cours
-                                            </button>
-                                            <button
-                                                onClick={() => setStatusFilter('finished')}
-                                                style={{
-                                                    padding: '10px 24px',
-                                                    borderRadius: '25px',
-                                                    border: '2px solid',
-                                                    borderColor: statusFilter === 'finished' ? '#ef4444' : '#e2e8f0',
-                                                    background: statusFilter === 'finished' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'white',
-                                                    color: statusFilter === 'finished' ? 'white' : '#666',
-                                                    fontWeight: '600',
-                                                    fontSize: '14px',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.3s ease',
-                                                    boxShadow: statusFilter === 'finished' ? '0 4px 12px rgba(239, 68, 68, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                }}
-                                            >
-                                                Terminées
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 {/* Produit/Service Buttons with Categories Text - Like Home1Banner */}
                                 <div className="row mb-4">
                                     <div className="col-12">
@@ -1164,6 +1096,101 @@ const MultipurposeAuctionSidebar = () => {
                                 )}
 
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Status Filter Buttons - After Categories, Before Cards */}
+                <div className="row mb-4">
+                    <div className="col-12">
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            gap: '12px',
+                            flexWrap: 'wrap',
+                            marginBottom: '30px',
+                            marginTop: '20px',
+                            position: 'relative',
+                            zIndex: 100,
+                        }}>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setStatusFilter('all');
+                                }}
+                                style={{
+                                    padding: '10px 24px',
+                                    borderRadius: '25px',
+                                    border: '2px solid',
+                                    borderColor: statusFilter === 'all' ? '#0063b1' : '#e2e8f0',
+                                    background: statusFilter === 'all' ? 'linear-gradient(135deg, #0063b1, #00a3e0)' : 'white',
+                                    color: statusFilter === 'all' ? 'white' : '#666',
+                                    fontWeight: '600',
+                                    fontSize: '14px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    boxShadow: statusFilter === 'all' ? '0 4px 12px rgba(0, 99, 177, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                    position: 'relative',
+                                    zIndex: 100,
+                                    pointerEvents: 'auto',
+                                }}
+                            >
+                                Toutes
+                            </button>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setStatusFilter('active');
+                                }}
+                                style={{
+                                    padding: '10px 24px',
+                                    borderRadius: '25px',
+                                    border: '2px solid',
+                                    borderColor: statusFilter === 'active' ? '#10b981' : '#e2e8f0',
+                                    background: statusFilter === 'active' ? 'linear-gradient(135deg, #10b981, #059669)' : 'white',
+                                    color: statusFilter === 'active' ? 'white' : '#666',
+                                    fontWeight: '600',
+                                    fontSize: '14px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    boxShadow: statusFilter === 'active' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                    position: 'relative',
+                                    zIndex: 100,
+                                    pointerEvents: 'auto',
+                                }}
+                            >
+                                En Cours
+                            </button>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setStatusFilter('finished');
+                                }}
+                                style={{
+                                    padding: '10px 24px',
+                                    borderRadius: '25px',
+                                    border: '2px solid',
+                                    borderColor: statusFilter === 'finished' ? '#ef4444' : '#e2e8f0',
+                                    background: statusFilter === 'finished' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'white',
+                                    color: statusFilter === 'finished' ? 'white' : '#666',
+                                    fontWeight: '600',
+                                    fontSize: '14px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    boxShadow: statusFilter === 'finished' ? '0 4px 12px rgba(239, 68, 68, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                    position: 'relative',
+                                    zIndex: 100,
+                                    pointerEvents: 'auto',
+                                }}
+                            >
+                                Terminées
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -97,9 +97,11 @@ const Home1LiveDirectSales = () => {
           directSalesData = [];
         }
         
-        // Include both ACTIVE and SOLD_OUT direct sales (don't filter out SOLD_OUT)
+        // Don't filter out any direct sales - show all including sold out ones
+        // They will be displayed but deactivated based on quantity/status
+        // Only filter out items that are explicitly ARCHIVED or INACTIVE
         const visibleDirectSales = directSalesData.filter((sale: DirectSale) => 
-          sale.status === 'ACTIVE' || sale.status === 'SOLD_OUT'
+          sale.status !== 'ARCHIVED' && sale.status !== 'INACTIVE'
         );
 
         // Limit to 8 for display

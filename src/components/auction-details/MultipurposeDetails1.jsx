@@ -1161,8 +1161,8 @@ const MultipurposeDetails1 = () => {
             <div className="container">
               <div className="row gy-5">
                 {/* Left Column - Image Section */}
-                <div className="col-xl-7" style={{ marginTop: 'clamp(120px, 15vw, 140px)' }}>
-                  <div className="main-image-container" style={{ position: 'relative' }}>
+                <div className="col-xl-7 image-column-top-spacing" style={{ paddingTop: '0' }}>
+                  <div className="main-image-container" style={{ position: 'relative', marginTop: '0' }}>
                     {showVideo && safeVideos.length > 0 ? (
                       <video
                         src={(() => {

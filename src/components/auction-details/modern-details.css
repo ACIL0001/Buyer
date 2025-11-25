@@ -1120,3 +1120,10 @@ section.auction-details-section > div:first-child {
 .auction-details-modern .main-image-container {
   margin-top: 0;
 }
+
+/* Ensure image column has proper spacing from header */
+.auction-details-modern .col-xl-7.image-column-top-spacing,
+.auction-details-modern .col-xl-7:first-child {
+  margin-top: clamp(140px, 18vw, 160px) !important;
+  padding-top: 0 !important;
+}

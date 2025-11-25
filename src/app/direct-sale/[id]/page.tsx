@@ -625,7 +625,7 @@ function DirectSaleDetailContent() {
               <div className="row mb-50">
                 <div className="col-lg-12 d-flex align-items-center justify-content-between flex-wrap gap-3">
                   <div className="section-title">
-                    <h2 className="related-auction-title">Ventes <span>Similaires</span></h2>
+                    <h2 className="related-auction-title">Ventes Directes <span>Similaires</span></h2>
                   </div>
                   <div className="slider-btn-grp">
                     <div className="slider-btn auction-slider-prev"><i className="bi bi-arrow-left"></i></div>

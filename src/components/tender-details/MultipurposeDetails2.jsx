@@ -1963,7 +1963,7 @@ const MultipurposeDetails2 = () => {
                       zIndex: 1
                     }}>
                       <h1 className="auction-title" style={{
-                        fontSize: 'clamp(22px, 4.5vw, 32px)',
+                        fontSize: 'clamp(18px, 3.5vw, 26px)',
                         fontWeight: '700',
                         color: '#0063b1',
                         margin: 0,
@@ -3649,7 +3649,7 @@ const MultipurposeDetails2 = () => {
                 <div className="col-lg-12 d-flex align-items-center justify-content-between flex-wrap gap-3">
                   <div className="section-title">
                     <h2 className="related-auction-title">
-                      Appels d'Offres <span>Similaires</span>
+                      Soumissions <span>Similaires</span>
                     </h2>
                   </div>
                   <div className="slider-btn-grp">
@@ -3820,7 +3820,7 @@ const MultipurposeDetails2 = () => {
                                             top: "15px",
                                             left: "15px",
                                             background:
-                                              "linear-gradient(90deg, #0063b1, #00a3e0)",
+                                              "linear-gradient(90deg, #27F5CC, #20d4a8)",
                                             color: "white",
                                             padding: "6px 12px",
                                             borderRadius: "20px",

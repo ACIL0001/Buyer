@@ -1487,7 +1487,7 @@ const MultipurposeDetails1 = () => {
                       zIndex: 1
                     }}>
                       <h1 className="auction-title" style={{
-                        fontSize: 'clamp(22px, 4.5vw, 32px)',
+                        fontSize: 'clamp(18px, 3.5vw, 26px)',
                         fontWeight: '700',
                         color: '#0063b1',
                         margin: 0,

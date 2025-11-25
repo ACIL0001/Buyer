@@ -339,11 +339,20 @@ export const Header = () => {
     <header 
       style={{
         width: '100%',
-        position: 'sticky',
+        position: 'fixed',
         top: 0,
+        left: 0,
+        right: 0,
         zIndex: 9999,
         transition: 'all 0.3s ease',
-        paddingTop: 'env(safe-area-inset-top, 0px)'
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        backgroundColor: 'white',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+        willChange: 'transform',
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)'
       }}
     >
       <div style={{

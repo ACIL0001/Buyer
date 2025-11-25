@@ -1525,7 +1525,11 @@ const MultipurposeDetails2 = () => {
       {loading ? (
         <div
           className="auction-details-section mb-110"
-          style={{ marginTop: 0, paddingTop: '100px' }}
+          style={{ 
+            marginTop: 0, 
+            paddingTop: 'clamp(100px, 12vw, 120px)',
+            minHeight: 'calc(100vh - 100px)'
+          }}
         >
           <div className="container-fluid">
             <div className="row">
@@ -1541,7 +1545,11 @@ const MultipurposeDetails2 = () => {
       ) : error ? (
         <div
           className="auction-details-section mb-110"
-          style={{ marginTop: 0, paddingTop: '100px' }}
+          style={{ 
+            marginTop: 0, 
+            paddingTop: 'clamp(100px, 12vw, 120px)',
+            minHeight: 'calc(100vh - 100px)'
+          }}
         >
           <div className="container-fluid">
             <div className="row">
@@ -1556,7 +1564,11 @@ const MultipurposeDetails2 = () => {
       ) : !tenderData ? (
         <div
           className="auction-details-section mb-110"
-          style={{ marginTop: 0, paddingTop: '100px' }}
+          style={{ 
+            marginTop: 0, 
+            paddingTop: 'clamp(100px, 12vw, 120px)',
+            minHeight: 'calc(100vh - 100px)'
+          }}
         >
           <div className="container-fluid">
             <div className="row">
@@ -1681,7 +1693,11 @@ const MultipurposeDetails2 = () => {
 
           <div
             className="auction-details-section auction-details-modern mb-110"
-            style={{ marginTop: 0, paddingTop: '100px' }}
+            style={{ 
+              marginTop: 0, 
+              paddingTop: 'clamp(120px, 15vw, 140px)',
+              minHeight: 'calc(100vh - 120px)'
+            }}
           >
             <div className="container">
               <div className="row gy-5">

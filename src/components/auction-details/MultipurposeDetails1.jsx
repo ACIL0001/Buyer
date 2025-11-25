@@ -1063,7 +1063,7 @@ const MultipurposeDetails1 = () => {
     <>
       <style jsx>{`
         :global(.auction-details-section) {
-          padding-top: 100px !important;
+          padding-top: clamp(120px, 15vw, 140px) !important;
         }
 
         @keyframes pulse {
@@ -1112,7 +1112,11 @@ const MultipurposeDetails1 = () => {
       {loading ? (
         <div
           className="auction-details-section mb-110"
-          style={{ marginTop: 0, paddingTop: '100px' }}
+          style={{ 
+            marginTop: 0, 
+            paddingTop: 'clamp(100px, 12vw, 120px)',
+            minHeight: 'calc(100vh - 100px)'
+          }}
         >
           <div className="container-fluid">
             <div className="row">
@@ -1128,7 +1132,11 @@ const MultipurposeDetails1 = () => {
       ) : error ? (
         <div
           className="auction-details-section mb-110"
-          style={{ marginTop: 0, paddingTop: '100px' }}
+          style={{ 
+            marginTop: 0, 
+            paddingTop: 'clamp(100px, 12vw, 120px)',
+            minHeight: 'calc(100vh - 100px)'
+          }}
         >
           <div className="container-fluid">
             <div className="row">
@@ -1144,7 +1152,11 @@ const MultipurposeDetails1 = () => {
         <>
           <div
             className="auction-details-section auction-details-modern mb-110"
-            style={{ marginTop: 0, paddingTop: '100px' }}
+            style={{ 
+              marginTop: 0, 
+              paddingTop: 'clamp(120px, 15vw, 140px)',
+              minHeight: 'calc(100vh - 120px)'
+            }}
           >
             <div className="container">
               <div className="row gy-5">

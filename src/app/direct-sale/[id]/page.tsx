@@ -234,7 +234,11 @@ function DirectSaleDetailContent() {
 
   if (loading) {
     return (
-      <div className="auction-details-section mb-110" style={{ marginTop: 0, paddingTop: 100 }}>
+      <div className="auction-details-section mb-110" style={{ 
+        marginTop: 0, 
+        paddingTop: 'clamp(120px, 15vw, 140px)',
+        minHeight: 'calc(100vh - 120px)'
+      }}>
         <div className="container-fluid">
           <div className="row">
             <div className="col-12 text-center">
@@ -251,7 +255,11 @@ function DirectSaleDetailContent() {
 
   if (error || !directSale) {
     return (
-      <div className="auction-details-section mb-110" style={{ marginTop: 0, paddingTop: 100 }}>
+      <div className="auction-details-section mb-110" style={{ 
+        marginTop: 0, 
+        paddingTop: 'clamp(120px, 15vw, 140px)',
+        minHeight: 'calc(100vh - 120px)'
+      }}>
         <div className="container">
           <div className="alert alert-danger text-center">
             <h3>{error || "Vente directe introuvable"}</h3>
@@ -275,7 +283,7 @@ function DirectSaleDetailContent() {
     <>
       <style jsx>{`
         :global(.auction-details-section) {
-          padding-top: 0 !important;
+          padding-top: clamp(120px, 15vw, 140px) !important;
         }
         .quantity-selector {
           display: flex;
@@ -319,7 +327,11 @@ function DirectSaleDetailContent() {
         }
       `}</style>
 
-      <div className="auction-details-section auction-details-modern mb-110" style={{ marginTop: 0, paddingTop: 100 }}>
+      <div className="auction-details-section auction-details-modern mb-110" style={{ 
+        marginTop: 0, 
+        paddingTop: 'clamp(120px, 15vw, 140px)',
+        minHeight: 'calc(100vh - 120px)'
+      }}>
         <div className="container">
           <div className="row gy-5">
             {/* Left Column - Image Section */}
@@ -390,25 +402,42 @@ function DirectSaleDetailContent() {
             {/* Right Column - Details */}
             <div className="col-xl-5">
               <div className="auction-details-content">
-                <div style={{ marginBottom: '10px' }}>
-                  <span style={{ 
-                    background: directSale.saleType === 'PRODUCT' ? '#e3f2fd' : '#fff3e0',
-                    color: directSale.saleType === 'PRODUCT' ? '#1976d2' : '#f57c00',
-                    padding: '4px 12px', 
-                    borderRadius: '20px', 
-                    fontSize: '12px', 
-                    fontWeight: '600' 
+                {/* Title Display - Prominently at the top */}
+                <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                  <h1 className="auction-title" style={{
+                    fontSize: 'clamp(20px, 4vw, 28px)',
+                    fontWeight: '700',
+                    color: '#333',
+                    margin: '0 0 15px 0',
+                    lineHeight: '1.3',
+                    wordBreak: 'break-word'
                   }}>
-                    {directSale.saleType === 'PRODUCT' ? 'Produit' : 'Service'}
-                  </span>
-                  {directSale.productCategory && (
-                    <span style={{ marginLeft: '10px', background: '#f5f5f5', color: '#666', padding: '4px 12px', borderRadius: '20px', fontSize: '12px' }}>
-                      {directSale.productCategory.name}
+                    {directSale.title}
+                  </h1>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <span style={{ 
+                      background: directSale.saleType === 'PRODUCT' ? '#e3f2fd' : '#fff3e0',
+                      color: directSale.saleType === 'PRODUCT' ? '#1976d2' : '#f57c00',
+                      padding: '4px 12px', 
+                      borderRadius: '20px', 
+                      fontSize: '12px', 
+                      fontWeight: '600' 
+                    }}>
+                      {directSale.saleType === 'PRODUCT' ? 'Produit' : 'Service'}
                     </span>
-                  )}
+                    {directSale.productCategory && (
+                      <span style={{ 
+                        background: '#f5f5f5', 
+                        color: '#666', 
+                        padding: '4px 12px', 
+                        borderRadius: '20px', 
+                        fontSize: '12px' 
+                      }}>
+                        {directSale.productCategory.name}
+                      </span>
+                    )}
+                  </div>
                 </div>
-
-                <h1 className="auction-title">{directSale.title}</h1>
 
                 <div className="auction-details-table mb-4">
                   <table className="table">

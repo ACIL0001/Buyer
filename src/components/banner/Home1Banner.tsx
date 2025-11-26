@@ -407,6 +407,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           margin-bottom: clamp(10px, 3vw, 18px);
           height: 100%;
           position: relative;
+          transform: scale(0.9);
         }
 
         .categories-swiper {
@@ -434,12 +435,11 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           cursor: pointer;
           transition: transform 0.3s ease, box-shadow 0.3s ease;
           background: #f3f4f6;
-          transform: scale(0.8);
         }
         
 
         .category-card:hover {
-          transform: translateY(-8px) scale(0.82);
+          transform: translateY(-8px) scale(1.02);
           box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
         }
 

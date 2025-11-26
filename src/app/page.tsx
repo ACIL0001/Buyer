@@ -1603,7 +1603,7 @@ export default function Home() {
           position: absolute;
           top: 50%;
           right: clamp(-18px, -2.8vw, -12px);
-          transform: translateY(-50%) scale(0.8);
+          transform: translateY(-50%) scale(0.9);
           width: clamp(6px, 1.2vw, 10px);
           height: clamp(56px, 14vw, 92px);
           border-radius: 9999px;

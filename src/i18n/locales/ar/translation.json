@@ -72,6 +72,7 @@
     "auto": "تلقائي",
     "product": "منتج",
     "service": "خدمة",
+    "auction": "المزاد",
     "location": "الموقع",
     "quantity": "الكمية",
     "owner": "المالك",
@@ -724,6 +725,14 @@
     "categories": "الفئات",
     "loadingCategories": "جاري تحميل الفئات...",
     "noCategoriesAvailable": "لا توجد فئات متاحة في الوقت الحالي",
+    "searchPlaceholder": "البحث عن الفئات، المزادات، طلبات العروض أو المبيعات المباشرة...",
+    "searchPlaceholderShort": "بحث...",
+    "searchNoResults": "لم يتم العثور على نتائج لـ",
+    "searchLoading": "جاري البحث...",
+    "searchResultCategory": "الفئة",
+    "searchResultAuction": "المزاد",
+    "searchResultTender": "طلب العروض",
+    "searchResultDirectSale": "البيع المباشر",
     "categoriesSection": {
       "title": "تصفح حسب الفئات",
       "subtitle": "استكشف مجموعة متنوعة من فئات المزادات"

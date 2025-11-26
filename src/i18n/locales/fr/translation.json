@@ -72,6 +72,7 @@
     "auto": "Auto",
     "product": "Produit",
     "service": "Service",
+    "auction": "Enchère",
     "location": "Localisation",
     "quantity": "Quantité",
     "owner": "Propriétaire",
@@ -722,6 +723,14 @@
     "categories": "Catégories",
     "loadingCategories": "Chargement des catégories...",
     "noCategoriesAvailable": "Aucune catégorie disponible pour le moment",
+    "searchPlaceholder": "Rechercher des catégories, enchères, soumissions ou ventes directes...",
+    "searchPlaceholderShort": "Rechercher...",
+    "searchNoResults": "Aucun résultat trouvé pour",
+    "searchLoading": "Recherche en cours...",
+    "searchResultCategory": "Catégorie",
+    "searchResultAuction": "Enchère",
+    "searchResultTender": "Soumission",
+    "searchResultDirectSale": "Vente Directe",
     "categoriesSection": {
       "title": "Parcourir par catégories",
       "subtitle": "Explorez notre grande variété de catégories d'enchères"

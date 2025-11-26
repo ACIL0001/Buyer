@@ -72,6 +72,7 @@
     "auto": "Auto",
     "product": "Product",
     "service": "Service",
+    "auction": "Auction",
     "location": "Location",
     "quantity": "Quantity",
     "owner": "Owner",
@@ -707,6 +708,14 @@
     "categories": "Categories",
     "loadingCategories": "Loading categories...",
     "noCategoriesAvailable": "No categories available at the moment",
+    "searchPlaceholder": "Search for categories, auctions, tenders or direct sales...",
+    "searchPlaceholderShort": "Search...",
+    "searchNoResults": "No results found for",
+    "searchLoading": "Searching...",
+    "searchResultCategory": "Category",
+    "searchResultAuction": "Auction",
+    "searchResultTender": "Tender",
+    "searchResultDirectSale": "Direct Sale",
     "categoriesSection": {
       "title": "Browse by Categories",
       "subtitle": "Explore our wide variety of auction categories"

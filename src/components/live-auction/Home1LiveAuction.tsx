@@ -1135,35 +1135,6 @@ const Home1LiveAuction = () => {
                             )}
                           </div>
 
-                          {/* Description */}
-                          {auction.description && (
-                            <div style={{
-                              marginBottom: '8px',
-                            }}>
-                              <p style={{
-                                fontSize: '10px',
-                                color: '#666',
-                                margin: '0 0 2px 0',
-                                fontWeight: '600',
-                              }}>
-                                Description
-                              </p>
-                              <p style={{
-                                fontSize: '12px',
-                                color: '#555',
-                                margin: 0,
-                                lineHeight: '1.4',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}>
-                                {auction.description}
-                              </p>
-                            </div>
-                          )}
-
                           {/* Participants Count */}
                           <div style={{
                             background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',

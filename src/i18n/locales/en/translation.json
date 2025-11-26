@@ -699,10 +699,11 @@
     "open": "Open Chat"
   },
   "home": {
-    "categories": {
-      "title": "Categories",
-      "loading": "Loading categories...",
-      "noCategories": "No categories available at the moment",
+    "categories": "Categories",
+    "loadingCategories": "Loading categories...",
+    "noCategoriesAvailable": "No categories available at the moment",
+    "categoriesSection": {
+      "title": "Browse by Categories",
       "subtitle": "Explore our wide variety of auction categories"
     },
     "auctions": {

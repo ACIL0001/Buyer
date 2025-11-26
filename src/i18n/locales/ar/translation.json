@@ -543,16 +543,6 @@
     "newConversationStarted": "تم بدء محادثة جديدة",
     "newMessage": "رسالة جديدة"
   },
-  "home": {
-    "categories": {
-      "title": "تصفح حسب الفئات",
-      "subtitle": "استكشف مجموعتنا المتنوعة من فئات المزاد"
-    },
-    "auctions": {
-      "title": "المزادات المباشرة",
-      "subtitle": "لا تفوت هذه الفرص المذهلة"
-    }
-  },
   "notFound": {
     "categoriesNotFound": "الفئات غير موجودة",
     "categoriesDescription": "لم نتمكن من العثور على الفئات التي تبحث عنها. قد تكون قد نُقلت أو حُذفت.",
@@ -726,10 +716,11 @@
     "open": "فتح الدردشة"
   },
   "home": {
-    "categories": {
-      "title": "الفئات",
-      "loading": "جاري تحميل الفئات...",
-      "noCategories": "لا توجد فئات متاحة في الوقت الحالي",
+    "categories": "الفئات",
+    "loadingCategories": "جاري تحميل الفئات...",
+    "noCategoriesAvailable": "لا توجد فئات متاحة في الوقت الحالي",
+    "categoriesSection": {
+      "title": "تصفح حسب الفئات",
       "subtitle": "استكشف مجموعة متنوعة من فئات المزادات"
     },
     "auctions": {

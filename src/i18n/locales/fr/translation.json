@@ -715,10 +715,11 @@
     "open": "Ouvrir le Chat"
   },
   "home": {
-    "categories": {
-      "title": "Catégories",
-      "loading": "Chargement des catégories...",
-      "noCategories": "Aucune catégorie disponible pour le moment",
+    "categories": "Catégories",
+    "loadingCategories": "Chargement des catégories...",
+    "noCategoriesAvailable": "Aucune catégorie disponible pour le moment",
+    "categoriesSection": {
+      "title": "Parcourir par catégories",
       "subtitle": "Explorez notre grande variété de catégories d'enchères"
     },
     "auctions": {

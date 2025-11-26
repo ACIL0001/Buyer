@@ -96,20 +96,20 @@ function ProfilePage() {
     const requiredDocuments = [
         {
             key: 'registreCommerceCarteAuto',
-            label: 'RC/ Autres',
-            description: 'Registre de commerce ou autres documents',
+            label: t('profile.documents.rcOthers') || 'RC/ Autres',
+            description: t('profile.documents.rcOthersDesc') || 'Registre de commerce ou autres documents',
             required: true
         },
         {
             key: 'nifRequired',
-            label: 'NIF/N° Articles',
-            description: 'NIF ou Numéro d\'articles',
+            label: t('profile.documents.nifArticles') || 'NIF/N° Articles',
+            description: t('profile.documents.nifArticlesDesc') || 'NIF ou Numéro d\'articles',
             required: true
         },
         {
             key: 'carteFellah',
-            label: 'Carte Fellah',
-            description: 'Carte Fellah pour agriculteurs',
+            label: t('profile.documents.carteFellah') || 'Carte Fellah',
+            description: t('profile.documents.carteFellahDesc') || 'Carte Fellah pour agriculteurs',
             required: true
         }
     ];
@@ -117,62 +117,62 @@ function ProfilePage() {
     const optionalDocuments = [
         {
             key: 'commercialRegister',
-            label: 'Ancien Registre de commerce',
-            description: 'Ancienne version du registre de commerce (si disponible)',
+            label: t('profile.documents.oldCommercialRegister') || 'Ancien Registre de commerce',
+            description: t('profile.documents.oldCommercialRegisterDesc') || 'Ancienne version du registre de commerce (si disponible)',
             required: false
         },
         {
             key: 'carteAutoEntrepreneur',
-            label: 'Carte auto-entrepreneur',
-            description: 'Carte d\'auto-entrepreneur pour activités spécifiques',
+            label: t('profile.documents.autoEntrepreneur') || 'Carte auto-entrepreneur',
+            description: t('profile.documents.autoEntrepreneurDesc') || 'Carte d\'auto-entrepreneur pour activités spécifiques',
             required: false
         },
         {
             key: 'nif',
-            label: 'Ancien NIF',
-            description: 'Version précédente du NIF (si disponible)',
+            label: t('profile.documents.oldNif') || 'Ancien NIF',
+            description: t('profile.documents.oldNifDesc') || 'Version précédente du NIF (si disponible)',
             required: false
         },
         {
             key: 'nis',
-            label: 'NIS',
-            description: 'Numéro d\'identification sociale',
+            label: t('profile.documents.nis') || 'NIS',
+            description: t('profile.documents.nisDesc') || 'Numéro d\'identification sociale',
             required: false
         },
         {
             key: 'numeroArticle',
-            label: 'Numéro d\'article',
-            description: 'Numéro d\'article fiscal',
+            label: t('profile.documents.articleNumber') || 'Numéro d\'article',
+            description: t('profile.documents.articleNumberDesc') || 'Numéro d\'article fiscal',
             required: false
         },
         {
             key: 'c20',
-            label: 'Certificat C20',
-            description: 'Document C20',
+            label: t('profile.documents.certificateC20') || 'Certificat C20',
+            description: t('profile.documents.certificateC20Desc') || 'Document C20',
             required: false
         },
         {
             key: 'misesAJourCnas',
-            label: 'Mises à jour CNAS/CASNOS',
-            description: 'Mises à jour CNAS/CASNOS et CACOBAPT',
+            label: t('profile.documents.cnasUpdates') || 'Mises à jour CNAS/CASNOS',
+            description: t('profile.documents.cnasUpdatesDesc') || 'Mises à jour CNAS/CASNOS et CACOBAPT',
             required: false
         },
         {
             key: 'last3YearsBalanceSheet',
-            label: 'Bilans des 3 dernières années',
-            description: 'Bilans financiers des trois dernières années',
+            label: t('profile.documents.last3YearsBalance') || 'Bilans des 3 dernières années',
+            description: t('profile.documents.last3YearsBalanceDesc') || 'Bilans financiers des trois dernières années',
             required: false
         },
         {
             key: 'certificates',
-            label: 'Certificats',
-            description: 'Certificats professionnels ou autres documents complémentaires',
+            label: t('profile.documents.certificates') || 'Certificats',
+            description: t('profile.documents.certificatesDesc') || 'Certificats professionnels ou autres documents complémentaires',
             required: false
         },
         {
             key: 'paymentProof',
-            label: 'Preuve de paiement',
-            description: 'Justificatif de paiement de souscription',
+            label: t('profile.documents.paymentProof') || 'Preuve de paiement',
+            description: t('profile.documents.paymentProofDesc') || 'Justificatif de paiement de souscription',
             required: false
         }
     ];
@@ -302,7 +302,7 @@ function ProfilePage() {
                         user: mergedUser
                     });
 
-                    enqueueSnackbar('Profile updated successfully', { variant: 'success' });
+                    enqueueSnackbar(t('profile.updateSuccess') || 'Profile updated successfully', { variant: 'success' });
                     setIsEditing(false);
                 }
             } else {
@@ -313,11 +313,11 @@ function ProfilePage() {
             console.error('❌ Error updating profile:', error);
 
             if (error.response?.status === 401) {
-                enqueueSnackbar('Session expired', { variant: 'error' });
+                enqueueSnackbar(t('profile.sessionExpired') || 'Session expired', { variant: 'error' });
                 set({ tokens: undefined, user: undefined });
                 router.push(`${getSellerUrl()}login`);
             } else {
-                const errorMessage = error.response?.data?.message || error.message || 'Failed to update profile';
+                const errorMessage = error.response?.data?.message || error.message || t('profile.updateFailed') || 'Failed to update profile';
                 enqueueSnackbar(errorMessage, { variant: "error" });
             }
         } finally {
@@ -639,8 +639,8 @@ function ProfilePage() {
                         <div className="modern-document-note-card">
                             <i className="bi-info-circle-fill"></i>
                             <div className="modern-document-note-content">
-                                <h4>Documents Optionnels</h4>
-                                <p>Ajoutez ces documents si vous souhaitez être professionnel certified</p>
+                                <h4>{t("profile.documents.optional") || "Documents Optionnels"}</h4>
+                                <p>{t("profile.documents.optionalNote") || "Ajoutez ces documents si vous souhaitez être professionnel certified"}</p>
                             </div>
                         </div>
                     </div>
@@ -1374,11 +1374,11 @@ function ProfilePage() {
                             {/* Tab Navigation */}
                             <div className="modern-tab-nav">
                                 {[
-                                    { id: "personal-info", icon: "bi-person-circle", label: "Personal information" },
-                                    { id: "security", icon: "bi-shield-lock-fill", label: "Security" },
-                                    { id: "documents", icon: "bi-file-earmark-text-fill", label: "Documents" },
-                                    { id: "notifications", icon: "bi-bell-fill", label: "Notifications" },
-                                    { id: "history", icon: "bi-clock-history", label: "Offer history" }
+                                    { id: "personal-info", icon: "bi-person-circle", label: t("profile.tabs.personalInfo") || "Personal information" },
+                                    { id: "security", icon: "bi-shield-lock-fill", label: t("profile.tabs.security") || "Security" },
+                                    { id: "documents", icon: "bi-file-earmark-text-fill", label: t("profile.tabs.documents") || "Documents" },
+                                    { id: "notifications", icon: "bi-bell-fill", label: t("profile.tabs.notifications") || "Notifications" },
+                                    { id: "history", icon: "bi-clock-history", label: t("profile.tabs.history") || "Offer history" }
                                 ].map((tab, index) => (
                                     <motion.button
                                         key={tab.id}
@@ -1427,8 +1427,8 @@ function ProfilePage() {
                                                             <i className="bi bi-person-circle"></i>
                                                         </motion.div>
                                                         <div className="header-text">
-                                                            <h2>Personal info</h2>
-                                                            <p>Manage your personal information and profile details</p>
+                                                            <h2>{t("profile.personalInfo") || "Personal info"}</h2>
+                                                            <p>{t("profile.personalInfoDesc") || "Manage your personal information and profile details"}</p>
                                                         </div>
                                                     </div>
                                                     <motion.button
@@ -1443,7 +1443,7 @@ function ProfilePage() {
                                                             animate={{ rotate: isEditing ? 180 : 0 }}
                                                             transition={{ duration: 0.3 }}
                                                         />
-                                                        <span>{isEditing ? "Cancel" : "Edit"}</span>
+                                                        <span>{isEditing ? t("common.cancel") : t("common.edit")}</span>
                                                     </motion.button>
                                                 </div>
 
@@ -1461,7 +1461,7 @@ function ProfilePage() {
                                                             animate={{ opacity: 1, x: 0 }}
                                                             transition={{ duration: 0.5, delay: 0.6 }}
                                                         >
-                                                            <label htmlFor="firstName">First name</label>
+                                                            <label htmlFor="firstName">{t("profile.firstName") || "First name"}</label>
                                                             <input
                                                                 type="text"
                                                                 id="firstName"
@@ -1480,7 +1480,7 @@ function ProfilePage() {
                                                             animate={{ opacity: 1, x: 0 }}
                                                             transition={{ duration: 0.5, delay: 0.7 }}
                                                         >
-                                                            <label htmlFor="lastName">Last name</label>
+                                                            <label htmlFor="lastName">{t("profile.lastName") || "Last name"}</label>
                                                             <input
                                                                 type="text"
                                                                 id="lastName"
@@ -1499,7 +1499,7 @@ function ProfilePage() {
                                                             animate={{ opacity: 1, x: 0 }}
                                                             transition={{ duration: 0.5, delay: 0.8 }}
                                                         >
-                                                            <label htmlFor="email">Email</label>
+                                                            <label htmlFor="email">{t("profile.email") || "Email"}</label>
                                                             <input
                                                                 type="email"
                                                                 id="email"
@@ -1518,7 +1518,7 @@ function ProfilePage() {
                                                             animate={{ opacity: 1, x: 0 }}
                                                             transition={{ duration: 0.5, delay: 0.9 }}
                                                         >
-                                                            <label htmlFor="phone">Phone</label>
+                                                            <label htmlFor="phone">{t("profile.phone") || "Phone"}</label>
                                                             <input
                                                                 type="tel"
                                                                 id="phone"
@@ -1546,7 +1546,7 @@ function ProfilePage() {
                                                                 whileTap={{ scale: 0.98 }}
                                                             >
                                                                 <i className="bi bi-x-circle"></i>
-                                                                <span>Cancel</span>
+                                                                <span>{t("common.cancel")}</span>
                                                             </motion.button>
 
                                                             <motion.button
@@ -1559,12 +1559,12 @@ function ProfilePage() {
                                                                 {isLoading ? (
                                                                     <>
                                                                         <div className="loading-spinner-lg"></div>
-                                                                        <span>Saving...</span>
+                                                                        <span>{t("profile.saving") || "Saving..."}</span>
                                                                     </>
                                                                 ) : (
                                                                     <>
                                                                         <i className="bi bi-check-circle"></i>
-                                                                        <span>Save changes</span>
+                                                                        <span>{t("profile.saveChanges") || "Save changes"}</span>
                                                                     </>
                                                                 )}
                                                             </motion.button>
@@ -1611,9 +1611,9 @@ function ProfilePage() {
                                                 >
                                                     <div className="modern-form-grid">
                                                         {[
-                                                            { name: "currentPassword", label: "Current password", icon: "bi-lock" },
-                                                            { name: "newPassword", label: "New password", icon: "bi-key" },
-                                                            { name: "confirmPassword", label: "Confirm password", icon: "bi-check-circle" }
+                                                            { name: "currentPassword", label: t("profile.currentPassword") || "Current password", icon: "bi-lock" },
+                                                            { name: "newPassword", label: t("profile.newPassword") || "New password", icon: "bi-key" },
+                                                            { name: "confirmPassword", label: t("profile.confirmPassword") || "Confirm password", icon: "bi-check-circle" }
                                                         ].map((field, index) => (
                                                             <motion.div
                                                                 key={field.name}
@@ -1680,39 +1680,39 @@ function ProfilePage() {
                                                 <div className="modern-section-header">
                                                     <h2 className="modern-section-title">
                                                         <i className="bi-file-earmark-text-fill"></i>
-                                                        Gestion des Documents
+                                                        {t("profile.documents.management") || "Gestion des Documents"}
                                                     </h2>
                                                     <p className="modern-section-description">
-                                                        Gérez vos documents d'identité. Vous pouvez remplacer les documents existants ou ajouter de nouveaux documents optionnels.
+                                                        {t("profile.documents.managementDesc") || "Gérez vos documents d'identité. Vous pouvez remplacer les documents existants ou ajouter de nouveaux documents optionnels."}
                                                     </p>
                                                 </div>
 
                                                 {isLoadingDocuments ? (
                                                     <div className="modern-loading">
                                                         <div className="modern-spinner"></div>
-                                                        <p>Chargement des documents...</p>
+                                                        <p>{t("profile.documents.loading") || "Chargement des documents..."}</p>
                                                     </div>
                                                 ) : !identity ? (
                                                     <div className="modern-empty-state">
                                                         <i className="bi-file-earmark-x"></i>
-                                                        <h3>Aucune identité trouvée</h3>
-                                                        <p>Vous devez d'abord soumettre une demande d'identité pour gérer vos documents.</p>
+                                                        <h3>{t("profile.documents.noIdentity") || "Aucune identité trouvée"}</h3>
+                                                        <p>{t("profile.documents.noIdentityDesc") || "Vous devez d'abord soumettre une demande d'identité pour gérer vos documents."}</p>
                                                     </div>
                                                 ) : (
                                                     <>
-                                                        {renderDocumentCards(requiredDocuments, "Documents Obligatoires", true)}
-                                                        {renderDocumentCards(optionalDocuments, "Documents Optionnels", false)}
+                                                        {renderDocumentCards(requiredDocuments, t("profile.documents.required") || "Documents Obligatoires", true)}
+                                                        {renderDocumentCards(optionalDocuments, t("profile.documents.optional") || "Documents Optionnels", false)}
                                                         
                                                         <div className="modern-document-footer">
                                                             <div className="modern-document-status">
                                                                 <div className={`modern-status-badge ${identity.status.toLowerCase()}`}>
                                                                     <i className={`bi-${identity.status === 'DONE' ? 'check-circle-fill' : identity.status === 'REJECTED' ? 'x-circle-fill' : 'clock-fill'}`}></i>
-                                                                    Statut: {identity.status === 'DONE' ? 'Approuvé' : identity.status === 'REJECTED' ? 'Rejeté' : 'En attente'}
+                                                                    {t("profile.documents.status") || "Statut"}: {identity.status === 'DONE' ? t("profile.documents.approved") || 'Approuvé' : identity.status === 'REJECTED' ? t("profile.documents.rejected") || 'Rejeté' : t("profile.documents.pending") || 'En attente'}
                                                                 </div>
                                                             </div>
                                                             <p className="modern-document-note">
                                                                 <i className="bi-info-circle"></i>
-                                                                Les documents marqués d'un astérisque (*) sont obligatoires. Vous pouvez remplacer ou ajouter des documents à tout moment.
+                                                                {t("profile.documents.note") || "Les documents marqués d'un astérisque (*) sont obligatoires. Vous pouvez remplacer ou ajouter des documents à tout moment."}
                                                             </p>
                                                         </div>
                                                     </>

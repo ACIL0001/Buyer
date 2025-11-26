@@ -10,6 +10,7 @@ import RequestProvider from "@/contexts/RequestContext";
 import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
 import SocketProvider from "@/contexts/socket";
 import Chat from "@/chat/Chat";
+import { useTranslation } from 'react-i18next';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -39,9 +40,9 @@ class ErrorBoundary extends React.Component {
           padding: '20px'
         }}>
           <div style={{ textAlign: 'center', maxWidth: '500px' }}>
-            <h2 style={{ color: '#dc3545', marginBottom: '20px' }}>Une erreur s'est produite</h2>
+            <h2 style={{ color: '#dc3545', marginBottom: '20px' }}>{t('auctionDetails.errorOccurred') || 'Une erreur s\'est produite'}</h2>
             <p style={{ marginBottom: '20px' }}>
-              Désolé, une erreur inattendue s'est produite lors du chargement de cette page.
+              {t('auctionDetails.errorMessage') || 'Désolé, une erreur inattendue s\'est produite lors du chargement de cette page.'}
             </p>
             <button 
               onClick={() => window.location.reload()}
@@ -55,7 +56,7 @@ class ErrorBoundary extends React.Component {
                 fontSize: '16px'
               }}
             >
-              Recharger la page
+              {t('auctionDetails.reloadPage') || 'Recharger la page'}
             </button>
           </div>
         </div>
@@ -67,6 +68,7 @@ class ErrorBoundary extends React.Component {
 }
 
 export default function AuctionDetailsClient({ params }) {
+  const { t } = useTranslation();
   const { initializeAuth, isReady } = useAuth();
   const [show, setShow] = useState(false);
   const [check, setCheck] = useState(false);
@@ -94,7 +96,7 @@ export default function AuctionDetailsClient({ params }) {
         color: '#666'
       }}>
         <div style={{ textAlign: 'center' }}>
-          <h2 style={{ color: '#dc3545', marginBottom: '20px' }}>Erreur de chargement</h2>
+          <h2 style={{ color: '#dc3545', marginBottom: '20px' }}>{t('auctionDetails.loadingError') || 'Erreur de chargement'}</h2>
           <button 
             onClick={() => window.location.reload()}
             style={{
@@ -107,7 +109,7 @@ export default function AuctionDetailsClient({ params }) {
               fontSize: '16px'
             }}
           >
-            Réessayer
+            {t('auctionDetails.retry') || 'Réessayer'}
           </button>
         </div>
       </div>
@@ -135,7 +137,7 @@ export default function AuctionDetailsClient({ params }) {
             animation: 'spin 1s linear infinite',
             marginBottom: '15px'
           }}></div>
-          <p>Chargement...</p>
+          <p>{t('common.loading')}</p>
         </div>
         <style jsx>{`
           @keyframes spin {

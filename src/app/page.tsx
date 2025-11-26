@@ -24,8 +24,10 @@ import { TendersAPI } from '@/app/api/tenders';
 import { useRouter } from 'next/navigation';
 import ResponsiveTest from '@/components/common/ResponsiveTest';
 import { FaGavel } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
 
 export default function Home() {
+  const { t } = useTranslation();
   const { initializeAuth, isLogged, auth } = useAuth();
   const router = useRouter();
   const [animatedSections, setAnimatedSections] = useState({
@@ -2044,11 +2046,7 @@ export default function Home() {
                               textTransform: 'none',
                               width: '100%',
                             }}>
-                              <span style={{ whiteSpace: 'nowrap' }}>Auctions</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>Enchère</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>مزاد</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>{t('common.auctions')}</span>
                             </span>
                             <svg className="dropdown-arrow" width="clamp(14px, 3vw, 18px)" height="clamp(14px, 3vw, 18px)" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                               <path d="M6 9l6 6 6-6"/>
@@ -2068,7 +2066,7 @@ export default function Home() {
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                 <circle cx="12" cy="12" r="3"/>
                               </svg>
-                              Voir
+                              {t('common.view')}
                             </button>
                             <button className="dropdown-item" onClick={handleCreateAuction}>
                               {/* Plus Icon for Create */}
@@ -2076,7 +2074,7 @@ export default function Home() {
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                               </svg>
-                              Créer
+                              {t('common.create') || 'Créer'}
                             </button>
                           </div>
                         </div>
@@ -2151,11 +2149,7 @@ export default function Home() {
                               textTransform: 'none',
                               width: '100%',
                             }}>
-                              <span style={{ whiteSpace: 'nowrap' }}>Sell</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>Vente Direct</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>الشراء</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>{t('common.directSales') || 'Vente Direct'}</span>
                             </span>
                             <svg className="dropdown-arrow" width="clamp(14px, 3vw, 18px)" height="clamp(14px, 3vw, 18px)" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                               <path d="M6 9l6 6 6-6"/>
@@ -2175,7 +2169,7 @@ export default function Home() {
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                 <circle cx="12" cy="12" r="3"/>
                               </svg>
-                              Voir
+                              {t('common.view')}
                             </button>
                             <button className="dropdown-item" onClick={handleCreateVenteDirect}>
                               {/* Plus Icon for Create */}
@@ -2183,7 +2177,7 @@ export default function Home() {
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                               </svg>
-                              Créer
+                              {t('common.create') || 'Créer'}
                             </button>
                           </div>
                         </div>
@@ -2258,11 +2252,7 @@ export default function Home() {
                               textTransform: 'none',
                               width: '100%',
                             }}>
-                              <span style={{ whiteSpace: 'nowrap' }}>Tenders</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>Soumission</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>/</span>
-                              <span style={{ whiteSpace: 'nowrap' }}>طلبية</span>
+                              <span style={{ whiteSpace: 'nowrap' }}>{t('common.tenders') || 'Tenders'}</span>
                             </span>
                             <svg className="dropdown-arrow" width="clamp(14px, 3vw, 18px)" height="clamp(14px, 3vw, 18px)" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                               <path d="M6 9l6 6 6-6"/>
@@ -2282,7 +2272,7 @@ export default function Home() {
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                 <circle cx="12" cy="12" r="3"/>
                               </svg>
-                              Voir
+                              {t('common.view')}
                             </button>
                             <button className="dropdown-item" onClick={handleCreateTender}>
                               {/* Plus Icon for Create */}
@@ -2290,7 +2280,7 @@ export default function Home() {
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                               </svg>
-                              Créer
+                              {t('common.create') || 'Créer'}
                             </button>
                           </div>
                         </div>

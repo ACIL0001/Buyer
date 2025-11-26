@@ -102,12 +102,12 @@ const MultipurposeDetails1 = () => {
           <div className="row">
             <div className="col-12 text-center">
               <div className="alert alert-danger">
-                <h3>Une erreur s'est produite</h3>
+                <h3>{t('auctionDetails.errorOccurred') || 'Une erreur s\'est produite'}</h3>
                 <p>{error}</p>
                 {errorDetails && (
                   <details style={{ marginTop: '10px', textAlign: 'left' }}>
                     <summary style={{ cursor: 'pointer', color: '#721c24' }}>
-                      Détails techniques (pour le débogage)
+                      {t('auctionDetails.technicalDetails') || 'Détails techniques (pour le débogage)'}
                     </summary>
                     <pre style={{ 
                       background: '#f8f9fa', 
@@ -127,13 +127,13 @@ const MultipurposeDetails1 = () => {
                     className="btn btn-primary me-2"
                     onClick={() => window.location.reload()}
                   >
-                    Réessayer
+                    {t('auctionDetails.retry') || 'Réessayer'}
                   </button>
                   <button 
                     className="btn btn-secondary"
                     onClick={() => router.push('/auction-sidebar')}
                   >
-                    Retour aux enchères
+                    {t('auctionDetails.backToAuctions') || 'Retour aux enchères'}
                   </button>
                 </div>
               </div>
@@ -248,17 +248,17 @@ const MultipurposeDetails1 = () => {
           // Server responded with error status
           const status = err.response.status;
           if (status === 404) {
-            errorMessage = "Enchère introuvable. Elle a peut-être été supprimée.";
+            errorMessage = t("auctionDetails.notFound") || "Enchère introuvable. Elle a peut-être été supprimée.";
             errorType = "NOT_FOUND";
           } else if (status === 401) {
-            errorMessage = "Accès non autorisé. Veuillez vous reconnecter.";
+            errorMessage = t("auctionDetails.unauthorized") || "Accès non autorisé. Veuillez vous reconnecter.";
             errorType = "UNAUTHORIZED";
           } else if (status >= 500) {
-            errorMessage = "Erreur serveur. Veuillez réessayer plus tard.";
+            errorMessage = t("auctionDetails.serverError") || "Erreur serveur. Veuillez réessayer plus tard.";
             errorType = "SERVER_ERROR";
           }
         } else if (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND') {
-          errorMessage = "Serveur inaccessible. Vérifiez que le serveur est en cours d'exécution.";
+          errorMessage = t("auctionDetails.serverUnreachable") || "Serveur inaccessible. Vérifiez que le serveur est en cours d'exécution.";
           errorType = "SERVER_UNREACHABLE";
         }
         
@@ -1643,20 +1643,20 @@ const MultipurposeDetails1 = () => {
                         <table className="table">
                           <tbody>
                             <tr>
-                              <td className="fw-bold">Prix de départ</td>
+                              <td className="fw-bold">{t('auctionDetails.startingPrice') || 'Prix de départ'}</td>
                               <td>
                                 {formatPrice(safeStartingPrice)}
                               </td>
                             </tr>
                             <tr>
-                              <td className="fw-bold">Prix actuel</td>
+                              <td className="fw-bold">{t('auctionDetails.currentPrice') || 'Prix actuel'}</td>
                               <td>
                                 {formatPrice(safeCurrentPrice)}
                               </td>
                             </tr>
                             {auctionData?.bidType !== 'SERVICE' && auctionData?.quantity && auctionData?.quantity !== "Non spécifiée" && !isNaN(auctionData.quantity) && auctionData.quantity !== "" && (
                               <tr>
-                                <td className="fw-bold">Quantité disponible</td>
+                                <td className="fw-bold">{t('auctionDetails.availableQuantity') || 'Quantité disponible'}</td>
                                 <td>
                                   <span style={{
                                     color: '#0063b1',
@@ -1669,11 +1669,11 @@ const MultipurposeDetails1 = () => {
                               </tr>
                             )}
                             <tr>
-                              <td className="fw-bold">Type d'enchère</td>
+                              <td className="fw-bold">{t('auctionDetails.auctionType') || 'Type d\'enchère'}</td>
                               <td>{auctionData?.bidType || "PRODUCT"}</td>
                             </tr>
                             <tr>
-                              <td className="fw-bold">Statut</td>
+                              <td className="fw-bold">{t('common.status')}</td>
                               <td>
                                 <span className="status-badge">
                                   {auctionData?.status || "OPEN"}
@@ -1682,7 +1682,7 @@ const MultipurposeDetails1 = () => {
                             </tr>
                             {safeOwner && (
                               <tr>
-                                <td className="fw-bold">Vendeur</td>
+                                <td className="fw-bold">{t('common.seller')}</td>
                                 <td>
                                   {safeOwner.hidden === true ? (
                                     <span>{t('common.anonymous') || 'Anonyme'}</span>
@@ -1708,7 +1708,7 @@ const MultipurposeDetails1 = () => {
                                       }}
                                     >
                                       {safeOwner.entreprise || 
-                                       (safeOwner.firstName && safeOwner.lastName ? `${safeOwner.firstName} ${safeOwner.lastName}` : safeOwner.name || safeOwner.username || 'Vendeur')}
+                                       (safeOwner.firstName && safeOwner.lastName ? `${safeOwner.firstName} ${safeOwner.lastName}` : safeOwner.name || safeOwner.username || t('common.seller'))}
                                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
                                         <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
                                       </svg>
@@ -1722,7 +1722,7 @@ const MultipurposeDetails1 = () => {
                       </div>
 
                       <div className="bid-section">
-                        <p className="bid-label">Votre enchère DA </p>
+                        <p className="bid-label">{t('auctionDetails.yourBid') || 'Votre enchère'} DA </p>
                         {isOwner && (
                           <div
                             style={{
@@ -1747,8 +1747,7 @@ const MultipurposeDetails1 = () => {
                             >
                               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                             </svg>
-                            Vous ne pouvez pas enchérir sur votre propre
-                            enchère.
+                            {t('auctionDetails.cannotBidOwn') || 'Vous ne pouvez pas enchérir sur votre propre enchère.'}
                           </div>
                         )}
                         <div className="quantity-counter-and-btn-area">
@@ -1761,9 +1760,9 @@ const MultipurposeDetails1 = () => {
                                 : null;
                               const refPrice = lastOffer || safeCurrentPrice || safeStartingPrice || 0;
                               if (refPrice > 0) {
-                                return `Dernière offre: ${Number(refPrice).toLocaleString('fr-FR')} DA`;
+                                return `${t('auctionDetails.lastOffer') || 'Dernière offre'}: ${Number(refPrice).toLocaleString('fr-FR')} DA`;
                               }
-                              return "Entrez votre offre";
+                              return t('auctionDetails.enterYourBid') || "Entrez votre offre";
                             })()}
                           />
                           <button
@@ -1777,12 +1776,12 @@ const MultipurposeDetails1 = () => {
                             }}
                             title={
                               isOwner
-                                ? "Vous ne pouvez pas enchérir sur votre propre enchère."
+                                ? t('auctionDetails.cannotBidOwn') || "Vous ne pouvez pas enchérir sur votre propre enchère."
                                 : undefined
                             }
                           >
                             <div className="btn-content">
-                              <span>Placer une Enchère</span>
+                              <span>{t('auctionDetails.placeBid') || 'Placer une Enchère'}</span>
                               <svg
                                 width="20"
                                 height="20"
@@ -2147,7 +2146,7 @@ const MultipurposeDetails1 = () => {
                         aria-controls="nav-description"
                         aria-selected={activeTab === "description"}
                       >
-                        Description
+                        {t('common.description')}
                       </button>
                       <button
                         className={`tab-button ${
@@ -2159,7 +2158,7 @@ const MultipurposeDetails1 = () => {
                         aria-controls="nav-reviews"
                         aria-selected={activeTab === "reviews"}
                       >
-                        Avis ({auctionData?.reviews?.length || 0})
+                        {t('auctionDetails.reviews') || 'Avis'} ({auctionData?.reviews?.length || 0})
                       </button>
                       <button
                         className={`tab-button ${
@@ -2171,7 +2170,7 @@ const MultipurposeDetails1 = () => {
                         aria-controls="nav-offers"
                         aria-selected={activeTab === "offers"}
                       >
-                        Offres ({offers?.length || 0})
+                        {t('auctionDetails.offers') || 'Offres'} ({offers?.length || 0})
                       </button>
                     </div>
 
@@ -2185,10 +2184,10 @@ const MultipurposeDetails1 = () => {
                         aria-labelledby="nav-description-tab"
                       >
                         <div className="description-content">
-                          <h3>{auctionData?.name || "Détails du Produit"}</h3>
+                          <h3>{auctionData?.name || t('auctionDetails.productDetails') || "Détails du Produit"}</h3>
                           <p>
                             {auctionData?.description ||
-                              "Aucune description disponible."}
+                              t('auctionDetails.noDescription') || "Aucune description disponible."}
                           </p>
                           <ul className="features-list">
                             <li>
@@ -2735,7 +2734,7 @@ const MultipurposeDetails1 = () => {
                                 fontSize: "18px",
                               }}
                             >
-                              💰 Offres ({offers?.length || 0})
+                              💰 {t('auctionDetails.offers') || 'Offres'} ({offers?.length || 0})
                             </h4>
                           </div>
 
@@ -2840,7 +2839,7 @@ const MultipurposeDetails1 = () => {
                                         color: "#666",
                                       }}
                                     >
-                                      Offre placée le:{" "}
+                                      {t('auctionDetails.offerPlacedOn') || 'Offre placée le'}:{" "}
                                       {new Date(
                                         offer.createdAt
                                       ).toLocaleDateString("fr-FR", {
@@ -2914,7 +2913,7 @@ const MultipurposeDetails1 = () => {
                 <div className="col-lg-12 d-flex align-items-center justify-content-between flex-wrap gap-3">
                   <div className="section-title">
                     <h2 className="related-auction-title">
-                      Enchères <span>Similaires</span>
+                      {t('auctionDetails.similarAuctions') || 'Enchères'} <span>{t('auctionDetails.similar') || 'Similaires'}</span>
                     </h2>
                   </div>
                   <div className="slider-btn-grp">
@@ -3254,7 +3253,7 @@ const MultipurposeDetails1 = () => {
                                             margin: "0 0 2px 0",
                                             fontWeight: "600",
                                           }}>
-                                            💰 Prix actuel
+                                            💰 {t('auctionDetails.currentPrice') || 'Prix actuel'}
                                           </p>
                                           <p style={{
                                             fontSize: "12px",

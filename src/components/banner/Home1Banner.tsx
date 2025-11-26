@@ -1,10 +1,14 @@
 "use client";
 import Link from "next/link";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useTranslation } from 'react-i18next';
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Mousewheel, Keyboard, FreeMode, Autoplay } from "swiper/modules";
 import { CategoryAPI } from '@/app/api/category';
+import { AuctionsAPI } from '@/app/api/auctions';
+import { TendersAPI } from '@/app/api/tenders';
+import { DirectSaleAPI } from '@/app/api/direct-sale';
+import { useRouter } from 'next/navigation';
 import app from '@/config';
 import { FaShoppingBag, FaHandshake } from 'react-icons/fa';
 import "swiper/css";
@@ -15,11 +19,24 @@ type Home1BannerProps = object;
 
 const Home1Banner: React.FC<Home1BannerProps> = () => {
   const { t } = useTranslation();
+  const router = useRouter();
   const [allCategories, setAllCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<'ALL' | 'PRODUCT' | 'SERVICE'>('ALL');
   const [isDragging, setIsDragging] = useState(false);
   const [swiperInstance, setSwiperInstance] = useState<any>(null);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [loadingSearch, setLoadingSearch] = useState(false);
+  const [allAuctions, setAllAuctions] = useState<any[]>([]);
+  const [allTenders, setAllTenders] = useState<any[]>([]);
+  const [allDirectSales, setAllDirectSales] = useState<any[]>([]);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchResultsRef = useRef<HTMLDivElement>(null);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -38,6 +55,147 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
     fetchCategories();
   }, []);
+
+  // Check screen size for search placeholder
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsSmallScreen(window.innerWidth < 480);
+    };
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Fetch auctions, tenders, and direct sales for search
+  useEffect(() => {
+    const fetchSearchData = async () => {
+      try {
+        const [auctionsRes, tendersRes, directSalesRes] = await Promise.all([
+          AuctionsAPI.getAuctions().catch(() => ({ data: [] })),
+          TendersAPI.getActiveTenders().catch(() => []),
+          DirectSaleAPI.getDirectSales().catch(() => [])
+        ]);
+        
+        const auctions = auctionsRes?.data || auctionsRes || [];
+        const tenders = tendersRes?.data || tendersRes || [];
+        const directSales = Array.isArray(directSalesRes) ? directSalesRes : [];
+        
+        setAllAuctions(Array.isArray(auctions) ? auctions : []);
+        setAllTenders(Array.isArray(tenders) ? tenders : []);
+        setAllDirectSales(Array.isArray(directSales) ? directSales : []);
+      } catch (error) {
+        console.error('Error fetching search data:', error);
+      }
+    };
+    
+    fetchSearchData();
+  }, []);
+
+  // Search handler
+  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    
+    if (query.length > 0) {
+      setLoadingSearch(true);
+      try {
+        const lowerQuery = query.toLowerCase();
+        
+        // Search categories
+        const filteredCategories = allCategories.filter((category: any) => 
+          category.name.toLowerCase().includes(lowerQuery)
+        ).map(cat => ({ ...cat, type: 'category' }));
+        
+        // Search auctions
+        const filteredAuctions = allAuctions.filter((auction: any) => 
+          (auction.title || auction.name || '').toLowerCase().includes(lowerQuery)
+        ).map(auction => ({ ...auction, type: 'auction' }));
+        
+        // Search tenders
+        const filteredTenders = allTenders.filter((tender: any) => 
+          (tender.title || tender.name || '').toLowerCase().includes(lowerQuery)
+        ).map(tender => ({ ...tender, type: 'tender' }));
+        
+        // Search direct sales
+        const filteredDirectSales = allDirectSales.filter((directSale: any) => 
+          (directSale.title || directSale.name || '').toLowerCase().includes(lowerQuery)
+        ).map(directSale => ({ ...directSale, type: 'directSale' }));
+        
+        // Combine all results
+        const combinedResults = [
+          ...filteredCategories,
+          ...filteredAuctions,
+          ...filteredTenders,
+          ...filteredDirectSales
+        ];
+        
+        setSearchResults(combinedResults);
+        setShowSearchResults(true);
+      } catch (error) {
+        console.error('Error searching:', error);
+        setSearchResults([]);
+      } finally {
+        setLoadingSearch(false);
+      }
+    } else {
+      setSearchResults([]);
+      setShowSearchResults(false);
+    }
+  };
+
+  const navigateWithTop = useCallback((url: string) => {
+    router.push(url, { scroll: false });
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
+    });
+  }, [router]);
+
+  const handleSearchSelect = (item: any) => {
+    setSearchQuery(item.title || item.name || '');
+    setShowSearchResults(false);
+    
+    // Navigate based on item type
+    if (item.type === 'category') {
+      const categoryId = item._id || item.id;
+      const categoryName = item.name;
+      const categoryUrl = `/category?category=${categoryId}&name=${encodeURIComponent(categoryName)}`;
+      navigateWithTop(categoryUrl);
+    } else if (item.type === 'auction') {
+      const auctionId = item._id || item.id;
+      navigateWithTop(`/auction-details/${auctionId}`);
+    } else if (item.type === 'tender') {
+      const tenderId = item._id || item.id;
+      navigateWithTop(`/tender-details/${tenderId}`);
+    } else if (item.type === 'directSale') {
+      const directSaleId = item._id || item.id;
+      navigateWithTop(`/direct-sale/${directSaleId}`);
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (searchResults.length > 0) {
+      handleSearchSelect(searchResults[0]);
+    }
+  };
+
+  // Close search results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showSearchResults && 
+          !target.closest('.search-container') && 
+          !target.closest('.search-results')) {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSearchResults]);
 
   // Filter categories based on selected type
   const categories = useMemo(() => {
@@ -849,6 +1007,235 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         }
       `}} />
       <div className="categories-section">
+        {/* Search Bar - On top of categories */}
+        <div 
+          className="search-container"
+          style={{
+            position: 'relative',
+            maxWidth: 'clamp(300px, 90vw, 600px)',
+            margin: '0 auto clamp(20px, 4vw, 32px) auto',
+            width: '100%',
+            padding: '0 clamp(12px, 3vw, 20px)',
+            zIndex: 10,
+          }}
+        >
+          <form onSubmit={handleSearchSubmit}>
+            <div style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              background: 'rgba(0, 0, 0, 0.05)',
+              border: '1px solid rgba(0, 0, 0, 0.1)',
+              borderRadius: 'clamp(30px, 8vw, 50px)',
+              padding: 'clamp(2px, 1vw, 4px)',
+              transition: 'all 0.3s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(0, 0, 0, 0.08)';
+              e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)';
+              e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.1)';
+            }}>
+              {/* Search Icon */}
+              <div style={{
+                padding: 'clamp(8px, 2vw, 12px) clamp(10px, 2.5vw, 16px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                <svg width="clamp(18px, 4vw, 20px)" height="clamp(18px, 4vw, 20px)" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="M21 21l-4.35-4.35"/>
+                </svg>
+              </div>
+              
+              {/* Search Input */}
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder={isSmallScreen ? t('home.searchPlaceholderShort') : t('home.searchPlaceholder')}
+                value={searchQuery}
+                onChange={handleSearchChange}
+                style={{
+                  flex: 1,
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#1e293b',
+                  fontSize: 'clamp(14px, 3vw, 16px)',
+                  padding: 'clamp(8px, 2vw, 12px) 0',
+                  fontWeight: '500',
+                  minWidth: 0,
+                }}
+                onFocus={() => {
+                  if (searchResults.length > 0) {
+                    setShowSearchResults(true);
+                  }
+                }}
+              />
+            </div>
+          </form>
+
+          {/* Search Results Dropdown */}
+          {showSearchResults && searchResults.length > 0 && (
+            <div 
+              ref={searchResultsRef}
+              className="search-results"
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: '0',
+                right: '0',
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(0, 0, 0, 0.1)',
+                borderRadius: '16px',
+                marginTop: '8px',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.2)',
+                zIndex: 1000,
+                maxHeight: '300px',
+                overflowY: 'auto',
+              }}
+            >
+              {searchResults.map((item: any, index: number) => {
+                const itemName = item.name || item.title || '';
+                const itemId = item._id || item.id || index;
+                const isCategory = item.type === 'category';
+                const isAuction = item.type === 'auction';
+                const isTender = item.type === 'tender';
+                const isDirectSale = item.type === 'directSale';
+                
+                return (
+                  <div
+                    key={`${item.type}-${itemId}`}
+                    onClick={() => handleSearchSelect(item)}
+                    style={{
+                      padding: 'clamp(12px, 2.5vw, 16px) clamp(14px, 3vw, 20px)',
+                      cursor: 'pointer',
+                      borderBottom: index < searchResults.length - 1 ? '1px solid rgba(0, 0, 0, 0.1)' : 'none',
+                      transition: 'all 0.3s ease',
+                      color: '#1e293b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'clamp(8px, 2vw, 12px)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+                      e.currentTarget.style.color = '#2563eb';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = '#1e293b';
+                    }}
+                  >
+                    {isCategory && (
+                      item.thumb?.url || item.thumb?.fullUrl || item.image ? (
+                        <img
+                          src={getCategoryImageUrl(item)}
+                          alt={item.name}
+                          style={{
+                            width: 'clamp(20px, 4vw, 24px)',
+                            height: 'clamp(20px, 4vw, 24px)',
+                            borderRadius: 'clamp(4px, 1vw, 6px)',
+                            objectFit: 'cover',
+                            border: '1px solid rgba(0, 0, 0, 0.1)',
+                            flexShrink: 0,
+                          }}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/assets/images/cat.avif';
+                          }}
+                        />
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                          <polyline points="9,22 9,12 15,12 15,22"/>
+                        </svg>
+                      )
+                    )}
+                    {isAuction && (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 13H13V17H11V13H7V11H13V7H13V11H17V13Z"/>
+                      </svg>
+                    )}
+                    {isTender && (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 12l2 2 4-4"/>
+                        <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.09 0 2.13.2 3.1.56"/>
+                        <path d="M21 3l-6 6-4-4"/>
+                      </svg>
+                    )}
+                    {isDirectSale && (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
+                      </svg>
+                    )}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ fontWeight: '500' }}>{itemName}</span>
+                      <span style={{ 
+                        fontSize: '11px', 
+                        color: '#64748b',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                      }}>
+                        {isCategory && t('home.searchResultCategory')}
+                        {isAuction && t('home.searchResultAuction')}
+                        {isTender && t('home.searchResultTender')}
+                        {isDirectSale && t('home.searchResultDirectSale')}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* No Results Message */}
+          {showSearchResults && searchResults.length === 0 && searchQuery.length > 0 && !loadingSearch && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: '0',
+              right: '0',
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(0, 0, 0, 0.1)',
+              borderRadius: '16px',
+              marginTop: '8px',
+              padding: '20px',
+              textAlign: 'center',
+              color: '#64748b',
+              zIndex: 1000,
+            }}>
+              {t('home.searchNoResults')} "{searchQuery}"
+            </div>
+          )}
+          
+          {/* Loading Message */}
+          {loadingSearch && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: '0',
+              right: '0',
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(0, 0, 0, 0.1)',
+              borderRadius: '16px',
+              marginTop: '8px',
+              padding: '20px',
+              textAlign: 'center',
+              color: '#64748b',
+              zIndex: 1000,
+            }}>
+              {t('home.searchLoading')}
+            </div>
+          )}
+        </div>
+
         <div className="section-header">
           <button
             className={`filter-button product ${filterType === 'PRODUCT' ? 'active' : ''}`}

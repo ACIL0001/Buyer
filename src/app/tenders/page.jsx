@@ -1066,8 +1066,21 @@ const MultipurposeTenderSidebar = () => {
     return (
         <>
             <Header />
-            <div className="tender-grid-section pt-10 mb-110">
+            <div className="tender-grid-section mb-110" style={{ paddingTop: 'clamp(70px, 8vw, 100px)' }}>
             <style jsx>{`
+                .tender-grid-section {
+                  padding-top: clamp(70px, 8vw, 100px) !important;
+                }
+                @media (max-width: 768px) {
+                  .tender-grid-section {
+                    padding-top: 80px !important;
+                  }
+                }
+                @media (max-width: 576px) {
+                  .tender-grid-section {
+                    padding-top: 70px !important;
+                  }
+                }
                 @keyframes spin {
                     0% { transform: rotate(0deg); }
                     100% { transform: rotate(360deg); }

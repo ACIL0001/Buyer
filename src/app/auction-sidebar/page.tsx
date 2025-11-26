@@ -202,7 +202,7 @@ const AuctionSidebarPage = () => {
           <RequestProvider>
             <AxiosInterceptor>
               <Header />
-              <main style={{ minHeight: '100vh', backgroundColor: '#f9f9f9' }}>
+              <main style={{ minHeight: '100vh', backgroundColor: '#f9f9f9', paddingTop: 'clamp(70px, 8vw, 100px)' }}>
                 <section className="animate-fade-in">
                   <MultipurposeAuctionSidebar />
                 </section>

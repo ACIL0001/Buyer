@@ -11,7 +11,7 @@ export default function CategoryLayout({
   return (
     <>
       <Header />
-      <section>
+      <section style={{ paddingTop: 'clamp(70px, 8vw, 100px)' }}>
         {children}
       </section>
       <Footer />

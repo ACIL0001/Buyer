@@ -90,7 +90,7 @@ export default function HowToBid() {
         <RequestProvider>
           <AxiosInterceptor>
             <Header />
-            <main className="how-to-bid-page">
+            <main className="how-to-bid-page" style={{ paddingTop: 'clamp(70px, 8vw, 100px)' }}>
               {/* Steps Section */}
               <section id="steps-section" className="bid-steps-section">
                 <div className="container">

@@ -600,7 +600,7 @@ export default function UsersPage() {
           <Header />
           <main className="users-page-wrapper" style={{
             minHeight: '100vh',
-            padding: '60px 0',
+            padding: 'clamp(70px, 8vw, 100px) 0 60px 0',
             position: 'relative',
             zIndex: 1,
           }}>
@@ -808,7 +808,7 @@ export default function UsersPage() {
         <Header />
         <main className="users-page-wrapper" style={{
           minHeight: '100vh',
-          padding: '60px 0',
+          padding: 'clamp(70px, 8vw, 100px) 0 60px 0',
           position: 'relative',
           zIndex: 1,
         }}>

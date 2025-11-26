@@ -35,6 +35,7 @@
     "sort": "Sort",
     "view": "View",
     "details": "Details",
+    "viewDetails": "View Details",
     "description": "Description",
     "price": "Price",
     "bid": "Bid",
@@ -458,6 +459,7 @@
   "category": {
     "title": "Auction Categories",
     "description": "Explore our complete collection of auction categories and find items that interest you",
+    "allCategories": "All Categories",
     "ongoingAuctions": "Ongoing auctions",
     "viewCategory": "View Category",
     "items": "items",

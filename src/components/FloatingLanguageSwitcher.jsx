@@ -13,26 +13,26 @@ const FloatingLanguageSwitcher = () => {
 
   const languages = [
     {
-      code: 'en',
-      name: 'English',
-      flag: '🇬🇧',
+      code: 'fr',
+      name: 'Français',
+      label: 'FR',
       dir: 'ltr'
     },
     {
-      code: 'fr',
-      name: 'Français',
-      flag: '🇫🇷',
+      code: 'en',
+      name: 'English',
+      label: 'ENG',
       dir: 'ltr'
     },
     {
       code: 'ar',
       name: 'العربية',
-      flag: '🇸🇦',
+      label: 'AR',
       dir: 'rtl'
     }
   ];
 
-  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0]; // Default to French
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -106,7 +106,7 @@ const FloatingLanguageSwitcher = () => {
           e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
         }}
       >
-        <span style={{ fontSize: '20px' }}>{currentLanguage.flag}</span>
+        <span style={{ fontSize: '14px', fontWeight: '600' }}>{currentLanguage.label}</span>
       </button>
 
       {isOpen && (
@@ -156,7 +156,7 @@ const FloatingLanguageSwitcher = () => {
                 }
               }}
             >
-              <span style={{ fontSize: '16px' }}>{language.flag}</span>
+              <span style={{ fontSize: '12px', fontWeight: '600', minWidth: '32px' }}>{language.label}</span>
               <span>{language.name}</span>
               {i18n.language === language.code && (
                 <div

@@ -624,7 +624,7 @@ export const Header = () => {
                         </div>
                       );
                     })()}
-                    {!isMobile ? "Mon compte" : ""}
+                    {!isMobile ? t('common.myAccount') : ""}
                     <svg 
                       width={12} 
                       height={12} 

@@ -947,7 +947,7 @@ const MultipurposeAuctionSidebar = () => {
                                                     opacity: selectedBidType === BID_TYPE.PRODUCT ? 1 : 0.8,
                                                 }}
                                             >
-                                                Produit
+                                                {t('common.product')}
                                             </button>
                                             
                                             <h2 style={{
@@ -963,7 +963,7 @@ const MultipurposeAuctionSidebar = () => {
                                                 letterSpacing: '-0.5px',
                                                 padding: '0 clamp(24px, 5vw, 40px)',
                                             }}>
-                                                Categories
+                                                {t('home.categories')}
                                             </h2>
                                             
                                             <button
@@ -996,7 +996,7 @@ const MultipurposeAuctionSidebar = () => {
                                                     opacity: selectedBidType === BID_TYPE.SERVICE ? 1 : 0.8,
                                                 }}
                                             >
-                                                Service
+                                                {t('common.service')}
                                             </button>
                                         </div>
                                     </div>

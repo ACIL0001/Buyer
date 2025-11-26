@@ -65,7 +65,17 @@
     "theme": "Thème",
     "dark": "Sombre",
     "light": "Clair",
-    "auto": "Auto"
+    "auto": "Auto",
+    "product": "Produit",
+    "service": "Service",
+    "location": "Localisation",
+    "quantity": "Quantité",
+    "owner": "Propriétaire",
+    "notSpecified": "Non spécifiée",
+    "daysAbbr": "j",
+    "hoursAbbr": "h",
+    "minutesAbbr": "m",
+    "secondsAbbr": "s"
   },
   "navigation": {
     "home": "Accueil",
@@ -133,7 +143,7 @@
     "termsAndConditions": "Conditions générales"
   },
   "category": {
-    "title": "Catégorie",
+    "title": "Catégories d'Enchères",
     "categories": "Catégories",
     "allCategories": "Toutes les catégories",
     "selectCategory": "Sélectionner une catégorie",
@@ -141,7 +151,23 @@
     "categoryDetails": "Détails de la catégorie",
     "subcategories": "Sous-catégories",
     "items": "Articles",
-    "auctions": "Enchères"
+    "auctions": "Enchères",
+    "description": "Explorez notre collection complète de catégories d'enchères et trouvez des articles qui vous intéressent",
+    "ongoingAuctions": "Enchères en cours",
+    "viewCategory": "Voir la Catégorie",
+    "item": "article",
+    "searchPlaceholder": "Rechercher une catégorie...",
+    "all": "Toutes",
+    "loading": "Chargement des catégories...",
+    "noCategoriesFound": "Aucune catégorie trouvée",
+    "modifySearchCriteria": "Veuillez modifier vos critères de recherche",
+    "displayingDefaultCategories": "Affichage des catégories par défaut. Actualisez pour réessayer.",
+    "popularCategories": "CATÉGORIES POPULAIRES",
+    "exploreCategories": "Explorez nos",
+    "categoriesLabel": "Catégories",
+    "categoriesDescription": "Découvrez une large gamme de produits et services dans toutes les catégories",
+    "viewAllCategories": "Voir toutes les catégories",
+    "errorFetchingCategories": "Erreur lors de la récupération des catégories"
   },
   "profile": {
     "title": "Profil",
@@ -433,10 +459,13 @@
     }
   },
   "liveAuction": {
-    "title": "Enchères en direct",
-    "description": "Découvrez nos enchères en cours et participez en temps réel. Ne manquez pas ces opportunités uniques !",
+    "title": "Enchères",
+    "description": "Enchérissez et remportez des objets intéressants",
     "loading": "Chargement des enchères...",
-    "noAuctions": "Toutes les enchères sont actuellement terminées. Revenez bientôt pour de nouvelles opportunités !",
+    "errorLoading": "Erreur de chargement des enchères",
+    "participantsBid": "participant(s) ont enchéri",
+    "noAuctions": "Aucune enchère active",
+    "noAuctionsDescription": "Revenez plus tard pour voir les nouvelles enchères",
     "viewAll": "Voir toutes les enchères",
     "currentPrice": "Prix actuel",
     "inProgress": "En cours",
@@ -456,26 +485,6 @@
     "startingPrice": "Départ",
     "viewDetails": "Voir les Détails",
     "ended": "Terminé"
-  },
-  "category": {
-    "title": "Catégories d'Enchères",
-    "description": "Explorez notre collection complète de catégories d'enchères et trouvez des articles qui vous intéressent",
-    "ongoingAuctions": "Enchères en cours",
-    "viewCategory": "Voir la Catégorie",
-    "items": "articles",
-    "item": "article",
-    "searchPlaceholder": "Rechercher une catégorie...",
-    "all": "Toutes",
-    "loading": "Chargement des catégories...",
-    "noCategoriesFound": "Aucune catégorie trouvée",
-    "modifySearchCriteria": "Veuillez modifier vos critères de recherche",
-    "displayingDefaultCategories": "Affichage des catégories par défaut. Actualisez pour réessayer.",
-    "popularCategories": "CATÉGORIES POPULAIRES",
-    "exploreCategories": "Explorez nos",
-    "categoriesLabel": "Catégories",
-    "categoriesDescription": "Découvrez une large gamme de produits et services dans toutes les catégories",
-    "viewAllCategories": "Voir toutes les catégories",
-    "errorFetchingCategories": "Erreur lors de la récupération des catégories"
   },
   "subscription": {
     "title": "Choisissez votre abonnement",
@@ -530,34 +539,6 @@
     "termsOfUse": "Conditions d'utilisation",
     "and": "et notre",
     "privacyPolicy": "Politique de confidentialité"
-  },
-  "chat": {
-    "limitedAccess": "Accès limité",
-    "loginRequired": "Veuillez vous connecter pour utiliser le chat",
-    "backToHome": "Retour à l'accueil",
-    "back": "Retour",
-    "conversations": "Conversations",
-    "searchContacts": "Rechercher des contacts...",
-    "noConversations": "Aucune conversation",
-    "conversationsWillAppear": "Vos conversations apparaîtront ici",
-    "selectConversation": "Sélectionnez une conversation",
-    "chooseContact": "Choisissez un contact pour commencer à discuter",
-    "contact": "Contact",
-    "online": "En ligne",
-    "typing": "Tape...",
-    "connected": "Connecté",
-    "disconnected": "Déconnecté",
-    "noMessages": "Aucun message",
-    "startConversation": "Commencez la conversation maintenant",
-    "typeMessage": "Écrivez votre message...",
-    "noUsersOnline": "Aucun utilisateur en ligne",
-    "searchHere": "rechercher ici...",
-    "enterYourMessage": "Entrez votre message",
-    "send": "envoyer",
-    "closeChat": "Fermer le chat",
-    "addEmoji": "Ajouter un emoji",
-    "attachFile": "Joindre un fichier",
-    "sendMessage": "Envoyer le message"
   },
   "notFound": {
     "categoriesNotFound": "Catégories non trouvées",
@@ -642,7 +623,7 @@
     "defaultSort": "Tri par défaut",
     "priceAsc": "Prix croissant",
     "priceDesc": "Prix décroissant",
-    "searchAuctionPlaceholder": "🔍 Rechercher une enchère...",
+    "searchAuctionPlaceholder": "🔍",
     "loadingCategories": "Chargement des catégories...",
     "noCategoryAvailable": "Aucune catégorie disponible",
     "subCategories": "Sous-catégories",
@@ -663,6 +644,8 @@
     "placeBid": "Placer une Enchère",
     "noAuctionsFound": "Aucune enchère trouvée",
     "modifyFiltersOrSearch": "Essayez de modifier vos filtres ou votre recherche",
+    "clearCategoryFilter": "Effacer le filtre de catégorie",
+    "participantsBid": "participant(s) ont enchéri",
     "page01": "01",
     "page02": "02",
     "page03": "03"
@@ -733,12 +716,70 @@
   },
   "home": {
     "categories": {
-      "title": "Parcourir par catégories",
+      "title": "Catégories",
+      "loading": "Chargement des catégories...",
+      "noCategories": "Aucune catégorie disponible pour le moment",
       "subtitle": "Explorez notre grande variété de catégories d'enchères"
     },
     "auctions": {
       "title": "Enchères en direct",
       "subtitle": "Ne manquez pas ces opportunités incroyables"
     }
+  },
+  "liveTenders": {
+    "title": "Appels d'Offres",
+    "description": "Soumettez vos offres et remportez des contrats intéressants",
+    "loading": "Chargement des appels d'offres...",
+    "errorLoading": "Erreur de chargement des appels d'offres",
+    "participantsSubmittedOffers": "participant(s) ont soumis des offres",
+    "noTenders": "Aucun appel d'offres actif",
+    "noTendersDescription": "Revenez plus tard pour voir les nouveaux appels d'offres",
+    "viewAll": "Voir tous les appels d'offres",
+    "tenderTitle": "Tender Title"
+  },
+  "liveDirectSales": {
+    "title": "Ventes Directes",
+    "description": "Achetez directement à prix fixe",
+    "loading": "Chargement des ventes directes...",
+    "errorLoading": "Erreur de chargement des ventes directes",
+    "yourSale": "Votre vente",
+    "directSaleTitle": "Direct Sale Title",
+    "available": "Disponible",
+    "unlimited": "Illimité",
+    "fixedPrice": "Prix fixe",
+    "noDirectSales": "Aucune vente directe active",
+    "noDirectSalesDescription": "Revenez plus tard pour voir les nouvelles ventes directes",
+    "viewAll": "Voir toutes les ventes directes",
+    "noTitle": "Sans titre"
+  },
+  "tenders": {
+    "searchPlaceholder": "Rechercher une soumission...",
+    "loadingCategories": "Chargement des catégories...",
+    "noCategoryAvailable": "Aucune catégorie disponible",
+    "clearCategoryFilter": "Effacer le filtre de catégorie",
+    "loading": "Chargement des appels d'offres...",
+    "errorLoading": "Erreur de chargement des appels d'offres",
+    "title": "Appels d'Offres",
+    "description": "Soumettez vos offres et remportez des contrats intéressants",
+    "budget": "Budget",
+    "participantsSubmittedOffers": "participant(s) ont soumis des offres",
+    "noTendersFound": "Aucun appel d'offres trouvé",
+    "modifyFiltersOrSearch": "Modifiez vos filtres ou votre recherche"
+  },
+  "directSale": {
+    "searchPlaceholder": "Rechercher une vente directe...",
+    "loadingCategories": "Chargement des catégories...",
+    "noCategoryAvailable": "Aucune catégorie disponible",
+    "clearCategoryFilter": "Effacer le filtre de catégorie",
+    "loadingDirectSales": "Chargement des ventes directes...",
+    "noDirectSalesFound": "Aucune vente directe trouvée",
+    "modifyFiltersOrSearch": "Modifiez vos filtres ou votre recherche",
+    "seller": "Vendeur",
+    "directSale": "Vente Directe",
+    "noTitle": "Sans titre"
+  },
+  "auction": {
+    "title": "Auction Title",
+    "currentPrice": "Prix actuel"
   }
 } 

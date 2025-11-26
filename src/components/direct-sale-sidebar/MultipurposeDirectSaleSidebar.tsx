@@ -619,7 +619,7 @@ const MultipurposeDirectSaleSidebar = () => {
                     }}>
                       <input
                         type="text"
-                        placeholder={t('') || 'Rechercher une vente directe...'}
+                        placeholder={t('directSale.searchPlaceholder') || 'Rechercher une vente directe...'}
                         value={searchTerm}
                         onChange={handleSearchChange}
                         style={{
@@ -693,7 +693,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                     opacity: selectedSaleType === SALE_TYPE.PRODUCT ? 1 : 0.8,
                                 }}
                             >
-                                Produit
+                                {t('common.product')}
                             </button>
                             
                             {/* Categories Title */}
@@ -710,7 +710,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                 letterSpacing: '-0.5px',
                                 padding: '0 clamp(24px, 5vw, 40px)',
                             }}>
-                                Catégories
+                                {t('home.categories')}
                             </h2>
                             
                             {/* Service Button */}
@@ -744,7 +744,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                     opacity: selectedSaleType === SALE_TYPE.SERVICE ? 1 : 0.8,
                                 }}
                             >
-                                Service
+                                {t('common.service')}
                             </button>
                         </div>
                     </div>

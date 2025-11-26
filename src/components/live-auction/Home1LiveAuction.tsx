@@ -561,7 +561,7 @@ const Home1LiveAuction = () => {
               borderRadius: '50%',
               animation: 'spin 1s linear infinite',
             }}></div>
-            <p style={{ marginTop: '15px', color: '#666' }}>Chargement des enchères...</p>
+            <p style={{ marginTop: '15px', color: '#666' }}>{t('liveAuction.loading')}</p>
           </div>
         </div>
       </div>
@@ -582,7 +582,7 @@ const Home1LiveAuction = () => {
               maxWidth: '600px',
               margin: '0 auto',
             }}>
-              <h3>❌ Erreur de chargement des enchères</h3>
+              <h3>❌ {t('liveAuction.loadingError')}</h3>
               <p>{error}</p>
             </div>
           </div>
@@ -749,7 +749,7 @@ const Home1LiveAuction = () => {
               color: '#0063b1',
               marginBottom: '16px',
             }}>
-              Enchères
+              {t('liveAuction.title')}
             </h2>
             <p style={{
               fontSize: '1.1rem',
@@ -758,7 +758,7 @@ const Home1LiveAuction = () => {
               margin: '0 auto 24px',
               lineHeight: '1.6',
             }}>
-              Enchérissez et remportez des objets intéressants
+              {t('liveAuction.description')}
             </p>
             
             {/* Status Filter Buttons */}
@@ -797,7 +797,7 @@ const Home1LiveAuction = () => {
                   }
                 }}
               >
-                Toutes
+                {t('common.all')}
               </button>
               <button
                 onClick={() => setStatusFilter('active')}
@@ -827,7 +827,7 @@ const Home1LiveAuction = () => {
                   }
                 }}
               >
-                En Cours
+                {t('common.active')}
               </button>
               <button
                 onClick={() => setStatusFilter('finished')}
@@ -857,7 +857,7 @@ const Home1LiveAuction = () => {
                   }
                 }}
               >
-                Terminées
+                {t('common.finished')}
               </button>
             </div>
                         </div>
@@ -885,7 +885,7 @@ const Home1LiveAuction = () => {
                     ? `${auction.owner.firstName} ${auction.owner.lastName}`.trim()
                     : auction.owner?.name;
                   const sellerName = auction.seller?.name;
-                  const displayName = ownerName || sellerName || 'Vendeur';
+                  const displayName = ownerName || sellerName || t('common.seller');
 
                   return (
                     <SwiperSlide key={auction.id} style={{ height: 'auto', display: 'flex', justifyContent: 'center' }}>
@@ -993,7 +993,7 @@ const Home1LiveAuction = () => {
                             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
                           }}>
                             {isEnded ? (
-                              <span style={{ fontWeight: 800 }}>Terminé</span>
+                              <span style={{ fontWeight: 800 }}>{t('common.finished')}</span>
                             ) : (
                             <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                               <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.hours}</span>
@@ -1017,7 +1017,7 @@ const Home1LiveAuction = () => {
                             fontSize: '12px',
                             fontWeight: '600',
                           }}>
-                            Enchère
+                            {t('common.auction')}
                           </div>
 
                           {/* Owner Badge */}
@@ -1035,7 +1035,7 @@ const Home1LiveAuction = () => {
                               fontWeight: '600',
                               whiteSpace: 'nowrap',
                             }}>
-                              Votre enchère
+                              {t('liveAuction.yourAuction')}
                             </div>
                           )}
                         </div>
@@ -1079,7 +1079,7 @@ const Home1LiveAuction = () => {
                                 margin: '0 0 2px 0',
                                 fontWeight: '600',
                               }}>
-                                📍 Localisation
+                                📍 {t('common.location')}
                               </p>
                               <p style={{
                                 fontSize: '12px',
@@ -1100,12 +1100,12 @@ const Home1LiveAuction = () => {
                                   const parts = [place, address, location, wilaya].filter(Boolean);
                                   // Remove duplicates and join
                                   const uniqueParts = [...new Set(parts)];
-                                  return uniqueParts.length > 0 ? uniqueParts.join(', ') : 'Non spécifiée';
+                                  return uniqueParts.length > 0 ? uniqueParts.join(', ') : t('common.notSpecified');
                                 })()}
                               </p>
                             </div>
 
-                            {auction?.bidType !== 'SERVICE' && auction.quantity && String(auction.quantity) !== "Non spécifiée" && !isNaN(Number(auction.quantity)) && String(auction.quantity) !== "" && (
+                            {auction?.bidType !== 'SERVICE' && auction.quantity && String(auction.quantity) !== t('common.notSpecified') && !isNaN(Number(auction.quantity)) && String(auction.quantity) !== "" && (
                             <div style={{
                               background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                               borderRadius: '8px',
@@ -1121,7 +1121,7 @@ const Home1LiveAuction = () => {
                                 margin: '0 0 2px 0',
                                 fontWeight: '600',
                               }}>
-                                📦 Quantité
+                                📦 {t('common.quantity')}
                               </p>
                               <p style={{
                                 fontSize: '12px',
@@ -1161,13 +1161,13 @@ const Home1LiveAuction = () => {
                                 fontWeight: '600',
                                 color: '#0063b1',
                               }}>
-                                {((auction as any).participantsCount || 0)} participant{(((auction as any).participantsCount || 0) !== 1) ? 's' : ''}
+                                {((auction as any).participantsCount || 0)} {t('liveAuction.participants')}
                               </span>
                               <span style={{
                                 fontSize: '10px',
                                 color: '#666',
                               }}>
-                                ont enchéri
+                                {t('liveAuction.haveBid')}
                               </span>
                             </div>
                           </div>
@@ -1243,7 +1243,7 @@ const Home1LiveAuction = () => {
                               }
                             }}
                           >
-                            {isEnded ? 'Terminé' : 'Enchérir'}
+                            {isEnded ? t('common.finished') : t('liveAuction.bid')}
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
                             </svg>
@@ -1368,14 +1368,14 @@ const Home1LiveAuction = () => {
                 color: '#333',
                 marginBottom: '12px',
               }}>
-                🏷️ Aucune enchère active
+                🏷️ {t('liveAuction.noActiveAuctions')}
               </h3>
               <p style={{
                 fontSize: '16px',
                 color: '#666',
                 marginBottom: '30px',
               }}>
-                Revenez plus tard pour voir les nouvelles enchères
+                {t('liveAuction.comeBackLater')}
               </p>
             </div>
           )}
@@ -1422,7 +1422,7 @@ const Home1LiveAuction = () => {
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 99, 177, 0.3)';
               }}
             >
-              Voir toutes les enchères
+              {t('liveAuction.viewAll')}
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
               </svg>

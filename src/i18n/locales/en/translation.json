@@ -65,7 +65,17 @@
     "theme": "Theme",
     "dark": "Dark",
     "light": "Light",
-    "auto": "Auto"
+    "auto": "Auto",
+    "product": "Product",
+    "service": "Service",
+    "location": "Location",
+    "quantity": "Quantity",
+    "owner": "Owner",
+    "notSpecified": "Not specified",
+    "daysAbbr": "d",
+    "hoursAbbr": "h",
+    "minutesAbbr": "m",
+    "secondsAbbr": "s"
   },
   "navigation": {
     "home": "Home",
@@ -690,13 +700,89 @@
   },
   "home": {
     "categories": {
-      "title": "Browse by Categories",
+      "title": "Categories",
+      "loading": "Loading categories...",
+      "noCategories": "No categories available at the moment",
       "subtitle": "Explore our wide variety of auction categories"
     },
     "auctions": {
       "title": "Live Auctions",
       "subtitle": "Don't miss these amazing opportunities"
     }
+  },
+  "liveAuction": {
+    "title": "Auctions",
+    "description": "Bid and win interesting items",
+    "loading": "Loading auctions...",
+    "errorLoading": "Error loading auctions",
+    "participantsBid": "participant(s) have bid",
+    "noAuctions": "No active auctions",
+    "noAuctionsDescription": "Come back later to see new auctions",
+    "viewAll": "View all auctions"
+  },
+  "liveTenders": {
+    "title": "Tenders",
+    "description": "Submit your offers and win interesting contracts",
+    "loading": "Loading tenders...",
+    "errorLoading": "Error loading tenders",
+    "participantsSubmittedOffers": "participant(s) have submitted offers",
+    "noTenders": "No active tenders",
+    "noTendersDescription": "Come back later to see new tenders",
+    "viewAll": "View all tenders",
+    "tenderTitle": "Tender Title"
+  },
+  "liveDirectSales": {
+    "title": "Direct Sales",
+    "description": "Buy directly at fixed price",
+    "loading": "Loading direct sales...",
+    "errorLoading": "Error loading direct sales",
+    "yourSale": "Your sale",
+    "directSaleTitle": "Direct Sale Title",
+    "available": "Available",
+    "unlimited": "Unlimited",
+    "fixedPrice": "Fixed price",
+    "noDirectSales": "No active direct sales",
+    "noDirectSalesDescription": "Come back later to see new direct sales",
+    "viewAll": "View all direct sales",
+    "noTitle": "Untitled"
+  },
+  "tenders": {
+    "searchPlaceholder": "Search for a tender...",
+    "loadingCategories": "Loading categories...",
+    "noCategoryAvailable": "No category available",
+    "clearCategoryFilter": "Clear Category Filter",
+    "loading": "Loading tenders...",
+    "errorLoading": "Error loading tenders",
+    "title": "Tenders",
+    "description": "Submit your offers and win interesting contracts",
+    "budget": "Budget",
+    "participantsSubmittedOffers": "participant(s) have submitted offers",
+    "noTendersFound": "No tenders found",
+    "modifyFiltersOrSearch": "Modify your filters or search"
+  },
+  "directSale": {
+    "searchPlaceholder": "Search for a direct sale...",
+    "loadingCategories": "Loading categories...",
+    "noCategoryAvailable": "No category available",
+    "clearCategoryFilter": "Clear Category Filter",
+    "loadingDirectSales": "Loading direct sales...",
+    "noDirectSalesFound": "No direct sales found",
+    "modifyFiltersOrSearch": "Modify your filters or search",
+    "seller": "Seller",
+    "directSale": "Direct Sale",
+    "noTitle": "Untitled"
+  },
+  "auction": {
+    "title": "Auction Title",
+    "currentPrice": "Current price"
+  },
+  "auctionSidebar": {
+    "clearCategoryFilter": "Clear Category Filter",
+    "participantsBid": "participant(s) have bid",
+    "noTitle": "Untitled auction",
+    "searchAuctionPlaceholder": "🔍",
+    "noAuctionsFound": "No auctions found",
+    "modifyFiltersOrSearch": "Try modifying your filters or search"
   },
   "review": {
     "congratulations": "Congratulations!",

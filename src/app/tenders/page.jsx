@@ -493,8 +493,8 @@ const MultipurposeTenderSidebar = () => {
                                 margin: 0,
                             }}>
                                 {hasSubcategories 
-                                    ? `${category.children.length} subcategories • Click row to expand, name to filter` 
-                                    : 'Click name or image to filter tenders'
+                                    ? `${category.children.length} ${t('tenders.subcategories')} • ${t('tenders.clickRowToExpand')}` 
+                                    : t('tenders.clickNameToFilter')
                                 }
                             </p>
                         </div>
@@ -1169,7 +1169,7 @@ const MultipurposeTenderSidebar = () => {
                                         }}>
                                             <input
                                                 type="text"
-                                                placeholder={t('Rechercher une soummision')}
+                                                placeholder={t('tenders.searchPlaceholder') || 'Rechercher une soumission...'}
                                                 value={searchTerm}
                                                 onChange={handleSearchChange}
                                                 style={{
@@ -1241,7 +1241,7 @@ const MultipurposeTenderSidebar = () => {
                                                     opacity: selectedBidType === BID_TYPE.PRODUCT ? 1 : 0.8,
                                                 }}
                                             >
-                                                Produit
+                                                {t('common.product')}
                                             </button>
                                             
                                             <h2 style={{
@@ -1257,7 +1257,7 @@ const MultipurposeTenderSidebar = () => {
                                                 letterSpacing: '-0.5px',
                                                 padding: '0 clamp(24px, 5vw, 40px)',
                                             }}>
-                                                Categories
+                                                {t('home.categories')}
                                             </h2>
                                             
                                             <button
@@ -1289,7 +1289,7 @@ const MultipurposeTenderSidebar = () => {
                                                     opacity: selectedBidType === BID_TYPE.SERVICE ? 1 : 0.8,
                                                 }}
                                             >
-                                                Service
+                                                {t('common.service')}
                                             </button>
                                         </div>
                                     </div>
@@ -1322,7 +1322,7 @@ const MultipurposeTenderSidebar = () => {
                                                         borderTop: '2px solid #0063b1',
                                                         animation: 'spin 1s linear infinite'
                                                     }}></div>
-                                                    {t('loadingCategories')}
+                                                    {t('tenders.loadingCategories')}
                                                 </div>
                                             ) : filteredCategories && filteredCategories.length > 0 ? (
                                                 renderCircularCategories(filteredCategories)
@@ -1333,7 +1333,7 @@ const MultipurposeTenderSidebar = () => {
                                                     color: '#666',
                                                     textAlign: 'center'
                                                 }}>
-                                                    {selectedBidType ? t('noCategoryAvailable') : t('noCategoryAvailable')}
+                                                    {t('tenders.noCategoryAvailable')}
                                                 </div>
                                             )}
                                         </div>
@@ -1382,7 +1382,7 @@ const MultipurposeTenderSidebar = () => {
                                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                                     <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                                                 </svg>
-                                                Clear Category Filter
+                                                {t('tenders.clearCategoryFilter')}
                                             </button>
                                         </div>
                                     </div>
@@ -1430,7 +1430,7 @@ const MultipurposeTenderSidebar = () => {
                                     pointerEvents: 'auto',
                                 }}
                             >
-                                Toutes
+                                {t('common.all')}
                             </button>
                             <button
                                 type="button"
@@ -1456,7 +1456,7 @@ const MultipurposeTenderSidebar = () => {
                                     pointerEvents: 'auto',
                                 }}
                             >
-                                En Cours
+                                {t('common.active')}
                             </button>
                             <button
                                 type="button"
@@ -1482,7 +1482,7 @@ const MultipurposeTenderSidebar = () => {
                                     pointerEvents: 'auto',
                                 }}
                             >
-                                Terminées
+                                {t('common.finished')}
                             </button>
                         </div>
                     </div>
@@ -1506,7 +1506,7 @@ const MultipurposeTenderSidebar = () => {
                                             borderTop: '4px solid #0063b1',
                                             animation: 'spin 1s linear infinite'
                                         }}></div>
-                                        <p style={{ marginTop: '15px', color: '#666' }}>{t('loadingTenders')}</p>
+                                        <p style={{ marginTop: '15px', color: '#666' }}>{t('tenders.loading')}</p>
                                     </div>
                                 ) : error ? (
                                     <div className="col-12 text-center py-5">
@@ -1521,7 +1521,7 @@ const MultipurposeTenderSidebar = () => {
                                         const ownerName = tender.owner?.firstName && tender.owner?.lastName
                                             ? `${tender.owner.firstName} ${tender.owner.lastName}`.trim()
                                             : tender.owner?.name;
-                                        const displayName = ownerName || 'Acheteur';
+                                        const displayName = ownerName || t('common.buyer');
 
                                         return (
                                             <div
@@ -1654,7 +1654,7 @@ const MultipurposeTenderSidebar = () => {
                                                                 border: '1px solid rgba(255, 255, 255, 0.2)',
                                                             }}
                                                         >
-                                                            {tender.tenderType === 'PRODUCT' ? 'Produit' : 'Service'}
+                                                            {tender.tenderType === 'PRODUCT' ? t('common.product') : t('common.service')}
                                                         </div>
 
                                                         {/* Countdown Timer */}
@@ -1786,7 +1786,7 @@ const MultipurposeTenderSidebar = () => {
                                                                         margin: '0 0 2px 0',
                                                                         fontWeight: '600',
                                                                     }}>
-                                                                        📦 Quantité
+                                                                        📦 {t('common.quantity')}
                                                                     </p>
                                                                     <p style={{
                                                                         fontSize: '12px',
@@ -1794,7 +1794,7 @@ const MultipurposeTenderSidebar = () => {
                                                                         margin: 0,
                                                                         fontWeight: '500',
                                                                     }}>
-                                                                        {tender.quantity || 'Non spécifiée'}
+                                                                        {tender.quantity || t('common.notSpecified')}
                                                                     </p>
                                                                 </div>
                                                             )}
@@ -1812,7 +1812,7 @@ const MultipurposeTenderSidebar = () => {
                                                                     margin: '0 0 2px 0',
                                                                     fontWeight: '600',
                                                                 }}>
-                                                                    📍 Localisation
+                                                                    📍 {t('common.location')}
                                                                 </p>
                                                                 <p style={{
                                                                     fontSize: '12px',
@@ -1828,7 +1828,7 @@ const MultipurposeTenderSidebar = () => {
                                                                       const location = tender.location || '';
                                                                       const wilaya = tender.wilaya || '';
                                                                       const parts = [address, location, wilaya].filter(Boolean);
-                                                                      return parts.length > 0 ? parts.join(', ') : 'Non spécifiée';
+                                                                      return parts.length > 0 ? parts.join(', ') : t('common.notSpecified');
                                                                     })()}
                                                                 </p>
                                                             </div>
@@ -1849,7 +1849,7 @@ const MultipurposeTenderSidebar = () => {
                                                                 margin: '0 0 2px 0',
                                                                 fontWeight: '600',
                                                             }}>
-                                                                💰 Budget
+                                                                💰 {t('tenders.budget')}
                                                             </p>
                                                             <p style={{
                                                                 fontSize: '12px',
@@ -1887,13 +1887,13 @@ const MultipurposeTenderSidebar = () => {
                                                                     fontWeight: '600',
                                                                     color: hasTenderEnded ? '#888' : '#27F5CC',
                                                                 }}>
-                                                                    {tender.participantsCount || 0} participant{(tender.participantsCount || 0) !== 1 ? 's' : ''}
+                                                                    {tender.participantsCount || 0} {t('tenders.participants')}
                                                                 </span>
                                                                 <span style={{
                                                                     fontSize: '10px',
                                                                     color: hasTenderEnded ? '#888' : '#666',
                                                                 }}>
-                                                                    ont soumis des offres
+                                                                    {t('tenders.haveSubmitted')}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -1975,7 +1975,7 @@ const MultipurposeTenderSidebar = () => {
                                                                 navigateWithTop(`/tender-details/${tender._id}`);
                                                             }}
                                                         >
-                                                            {hasTenderEnded ? 'Terminé' : 'Voir les détails'}
+                                                            {hasTenderEnded ? t('common.finished') : t('tenders.viewDetails')}
                                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                                                 <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
                                                             </svg>
@@ -2006,14 +2006,14 @@ const MultipurposeTenderSidebar = () => {
                                                 color: '#666',
                                                 marginBottom: '10px',
                                             }}>
-                                                {t('noTendersFound')}
+                                                {t('tenders.noTendersFound')}
                                             </h3>
                                             <p style={{
                                                 fontSize: '16px',
                                                 color: '#999',
                                                 margin: 0,
                                             }}>
-                                                {t('modifyFiltersOrSearch')}
+                                                {t('tenders.modifyFiltersOrSearch')}
                                             </p>
                                         </div>
                                     </div>

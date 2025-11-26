@@ -281,7 +281,7 @@ const Home1LiveDirectSales = () => {
               borderRadius: '50%',
               animation: 'spin 1s linear infinite',
             }}></div>
-            <p style={{ marginTop: '15px', color: '#666' }}>Chargement des ventes directes...</p>
+            <p style={{ marginTop: '15px', color: '#666' }}>{t('liveDirectSales.loading')}</p>
           </div>
         </div>
       </div>
@@ -302,7 +302,7 @@ const Home1LiveDirectSales = () => {
               maxWidth: '600px',
               margin: '0 auto',
             }}>
-              <h3>❌ Erreur de chargement des ventes directes</h3>
+              <h3>❌ {t('liveDirectSales.loadingError')}</h3>
               <p>{error}</p>
             </div>
           </div>
@@ -440,7 +440,7 @@ const Home1LiveDirectSales = () => {
               backgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}>
-              Ventes Directes
+              {t('liveDirectSales.title')}
             </h2>
             <p style={{
               fontSize: '1.1rem',
@@ -449,7 +449,7 @@ const Home1LiveDirectSales = () => {
               margin: '0 auto 24px',
               lineHeight: '1.6',
             }}>
-              Achetez directement à prix fixe
+              {t('liveDirectSales.description')}
             </p>
             
             {/* Status Filter Buttons */}
@@ -488,7 +488,7 @@ const Home1LiveDirectSales = () => {
                   }
                 }}
               >
-                Toutes
+                {t('common.all')}
               </button>
               <button
                 onClick={() => setStatusFilter('active')}
@@ -518,7 +518,7 @@ const Home1LiveDirectSales = () => {
                   }
                 }}
               >
-                En Cours
+                {t('common.active')}
               </button>
               <button
                 onClick={() => setStatusFilter('finished')}
@@ -548,7 +548,7 @@ const Home1LiveDirectSales = () => {
                   }
                 }}
               >
-                Terminées
+                {t('common.finished')}
               </button>
             </div>
           </div>
@@ -644,7 +644,7 @@ const Home1LiveDirectSales = () => {
                               fontSize: '12px',
                               fontWeight: '600',
                             }}>
-                              {directSale.saleType === 'PRODUCT' ? 'Produit' : 'Service'}
+                              {directSale.saleType === 'PRODUCT' ? t('common.product') : t('common.service')}
                             </div>
                           )}
 
@@ -661,7 +661,7 @@ const Home1LiveDirectSales = () => {
                               fontSize: '12px',
                               fontWeight: '600',
                             }}>
-                              Épuisé
+                              {t('liveDirectSales.soldOut')}
                             </div>
                           )}
 
@@ -680,7 +680,7 @@ const Home1LiveDirectSales = () => {
                               fontWeight: '600',
                               whiteSpace: 'nowrap',
                             }}>
-                              Votre vente
+                              {t('liveDirectSales.yourSale')}
                             </div>
                           )}
                         </div>
@@ -724,7 +724,7 @@ const Home1LiveDirectSales = () => {
                                 margin: '0 0 2px 0',
                                 fontWeight: '600',
                               }}>
-                                📍 Localisation
+                                📍 {t('common.location')}
                               </p>
                               <p style={{
                                 fontSize: '12px',
@@ -739,7 +739,7 @@ const Home1LiveDirectSales = () => {
                                   const location = directSale.location || directSale.place || '';
                                   const wilaya = directSale.wilaya || '';
                                   const parts = [location, wilaya].filter(Boolean);
-                                  return parts.length > 0 ? parts.join(', ') : 'Non spécifiée';
+                                  return parts.length > 0 ? parts.join(', ') : t('common.notSpecified');
                                 })()}
                               </p>
                             </div>
@@ -759,7 +759,7 @@ const Home1LiveDirectSales = () => {
                                 margin: '0 0 2px 0',
                                 fontWeight: '600',
                               }}>
-                                📦 Disponible
+                                📦 {t('liveDirectSales.available')}
                               </p>
                               <p style={{
                                 fontSize: '12px',
@@ -768,7 +768,7 @@ const Home1LiveDirectSales = () => {
                                 fontWeight: '500',
                               }}>
                                 {directSale.quantity === 0 
-                                  ? 'Illimité' 
+                                  ? t('liveDirectSales.unlimited') 
                                   : `${availableQuantity} / ${directSale.quantity}`}
                               </p>
                             </div>
@@ -789,7 +789,7 @@ const Home1LiveDirectSales = () => {
                               margin: '0 0 2px 0',
                               fontWeight: '600',
                             }}>
-                              💰 Prix fixe
+                              💰 {t('liveDirectSales.fixedPrice')}
                             </p>
                             <p style={{
                               fontSize: '12px',
@@ -913,7 +913,7 @@ const Home1LiveDirectSales = () => {
                               }
                             }}
                           >
-                            {isSoldOut ? 'Épuisé' : 'Voir les détails'}
+                            {isSoldOut ? t('liveDirectSales.soldOut') : t('liveDirectSales.viewDetails')}
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
                             </svg>
@@ -1038,14 +1038,14 @@ const Home1LiveDirectSales = () => {
                 color: '#8a7e1f',
                 marginBottom: '12px',
               }}>
-                Aucune vente directe active
+                {t('liveDirectSales.noActiveSales')}
               </h3>
               <p style={{
                 fontSize: '16px',
                 color: '#8a7e1f',
                 marginBottom: '30px',
               }}>
-                Revenez plus tard pour voir les nouvelles ventes directes
+                {t('liveDirectSales.comeBackLater')}
               </p>
             </div>
           )}
@@ -1092,7 +1092,7 @@ const Home1LiveDirectSales = () => {
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(247, 239, 138, 0.3)';
               }}
             >
-              Voir toutes les ventes directes
+              {t('liveDirectSales.viewAll')}
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
               </svg>

@@ -463,7 +463,7 @@ const Home1LiveTenders = () => {
               borderRadius: '50%',
               animation: 'spin 1s linear infinite',
             }}></div>
-            <p style={{ marginTop: '15px', color: '#666' }}>Chargement des appels d'offres...</p>
+            <p style={{ marginTop: '15px', color: '#666' }}>{t('liveTenders.loading')}</p>
           </div>
         </div>
       </div>
@@ -484,7 +484,7 @@ const Home1LiveTenders = () => {
               maxWidth: '600px',
               margin: '0 auto',
             }}>
-              <h3>❌ Erreur de chargement des appels d'offres</h3>
+              <h3>❌ {t('liveTenders.loadingError')}</h3>
               <p>{error}</p>
             </div>
           </div>
@@ -651,7 +651,7 @@ const Home1LiveTenders = () => {
               color: '#27F5CC',
               marginBottom: '16px',
             }}>
-              Appels d'Offres
+              {t('liveTenders.title')}
             </h2>
             <p style={{
               fontSize: '1.1rem',
@@ -660,7 +660,7 @@ const Home1LiveTenders = () => {
               margin: '0 auto 24px',
               lineHeight: '1.6',
             }}>
-              Soumettez vos offres et remportez des contrats intéressants
+              {t('liveTenders.description')}
             </p>
             
             {/* Status Filter Buttons */}
@@ -699,7 +699,7 @@ const Home1LiveTenders = () => {
                   }
                 }}
               >
-                Toutes
+                {t('common.all')}
               </button>
               <button
                 onClick={() => setStatusFilter('active')}
@@ -729,7 +729,7 @@ const Home1LiveTenders = () => {
                   }
                 }}
               >
-                En Cours
+                {t('common.active')}
               </button>
               <button
                 onClick={() => setStatusFilter('finished')}
@@ -759,7 +759,7 @@ const Home1LiveTenders = () => {
                   }
                 }}
               >
-                Terminées
+                {t('common.finished')}
               </button>
             </div>
           </div>
@@ -786,7 +786,7 @@ const Home1LiveTenders = () => {
                   const ownerName = tender.owner?.firstName && tender.owner?.lastName
                     ? `${tender.owner.firstName} ${tender.owner.lastName}`.trim()
                     : tender.owner?.name;
-                  const displayName = ownerName || 'Acheteur';
+                  const displayName = ownerName || t('common.buyer');
 
                   return (
                     <SwiperSlide key={tender._id} style={{ height: 'auto', display: 'flex', justifyContent: 'center' }}>
@@ -894,7 +894,7 @@ const Home1LiveTenders = () => {
                             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
                           }}>
                             {isEnded ? (
-                              <span style={{ fontWeight: 800 }}>Terminé</span>
+                              <span style={{ fontWeight: 800 }}>{t('common.finished')}</span>
                             ) : (
                               <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                                 <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.hours}</span>
@@ -918,7 +918,7 @@ const Home1LiveTenders = () => {
                             fontSize: '12px',
                             fontWeight: '600',
                           }}>
-                            {tender.tenderType === 'PRODUCT' ? 'Produit' : 'Service'}
+                            {tender.tenderType === 'PRODUCT' ? t('common.product') : t('common.service')}
                           </div>
 
                           {/* Owner Badge */}
@@ -936,7 +936,7 @@ const Home1LiveTenders = () => {
                               fontWeight: '600',
                               whiteSpace: 'nowrap',
                             }}>
-                              Votre appel d'offres
+                              {t('liveTenders.yourTender')}
                             </div>
                           )}
                         </div>
@@ -980,7 +980,7 @@ const Home1LiveTenders = () => {
                                 margin: '0 0 2px 0',
                                 fontWeight: '600',
                               }}>
-                                📍 Localisation
+                                📍 {t('common.location')}
                               </p>
                               <p style={{
                                 fontSize: '12px',
@@ -996,12 +996,12 @@ const Home1LiveTenders = () => {
                                   const location = tender.location || '';
                                   const wilaya = tender.wilaya || '';
                                   const parts = [address, location, wilaya].filter(Boolean);
-                                  return parts.length > 0 ? parts.join(', ') : 'Non spécifiée';
+                                  return parts.length > 0 ? parts.join(', ') : t('common.notSpecified');
                                 })()}
                               </p>
                             </div>
 
-                            {tender?.tenderType !== 'SERVICE' && tender.quantity && String(tender.quantity) !== "Non spécifiée" && !isNaN(Number(tender.quantity)) && String(tender.quantity) !== "" && (
+                            {tender?.tenderType !== 'SERVICE' && tender.quantity && String(tender.quantity) !== t('common.notSpecified') && !isNaN(Number(tender.quantity)) && String(tender.quantity) !== "" && (
                               <div style={{
                                 background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                                 borderRadius: '8px',
@@ -1017,7 +1017,7 @@ const Home1LiveTenders = () => {
                                   margin: '0 0 2px 0',
                                   fontWeight: '600',
                                 }}>
-                                  📦 Quantité
+                                  📦 {t('common.quantity')}
                                 </p>
                                 <p style={{
                                   fontSize: '12px',
@@ -1057,13 +1057,13 @@ const Home1LiveTenders = () => {
                                 fontWeight: '600',
                                 color: '#27F5CC',
                               }}>
-                                {((tender as any).participantsCount || 0)} participant{(((tender as any).participantsCount || 0) !== 1) ? 's' : ''}
+                                {((tender as any).participantsCount || 0)} {t('liveTenders.participants')}
                               </span>
                               <span style={{
                                 fontSize: '10px',
                                 color: '#666',
                               }}>
-                                ont soumis des offres
+                                {t('liveTenders.haveSubmitted')}
                               </span>
                             </div>
                           </div>
@@ -1139,7 +1139,7 @@ const Home1LiveTenders = () => {
                               }
                             }}
                           >
-                            {isEnded ? 'Terminé' : 'Soumettre une offre'}
+                            {isEnded ? t('common.finished') : t('liveTenders.submitOffer')}
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
                             </svg>
@@ -1264,14 +1264,14 @@ const Home1LiveTenders = () => {
                 color: '#333',
                 marginBottom: '12px',
               }}>
-                📋 Aucun appel d'offres actif
+                📋 {t('liveTenders.noActiveTenders')}
               </h3>
               <p style={{
                 fontSize: '16px',
                 color: '#666',
                 marginBottom: '30px',
               }}>
-                Revenez plus tard pour voir les nouveaux appels d'offres
+                {t('liveTenders.comeBackLater')}
               </p>
             </div>
           )}
@@ -1318,7 +1318,7 @@ const Home1LiveTenders = () => {
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(39, 245, 204, 0.3)';
               }}
             >
-              Voir tous les appels d'offres
+              {t('liveTenders.viewAll')}
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
               </svg>

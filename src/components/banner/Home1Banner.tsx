@@ -853,20 +853,20 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             className={`filter-button product ${filterType === 'PRODUCT' ? 'active' : ''}`}
             onClick={() => setFilterType(filterType === 'PRODUCT' ? 'ALL' : 'PRODUCT')}
           >
-            Produit
+            {t('common.product')}
           </button>
-          <h2 className="section-title">Categories</h2>
+          <h2 className="section-title">{t('home.categories')}</h2>
           <button
             className={`filter-button service ${filterType === 'SERVICE' ? 'active' : ''}`}
             onClick={() => setFilterType(filterType === 'SERVICE' ? 'ALL' : 'SERVICE')}
           >
-            Service
+            {t('common.service')}
           </button>
                 </div>
         {loading ? (
-          <div className="loading-state">Loading categories...</div>
+          <div className="loading-state">{t('home.loadingCategories')}</div>
         ) : categories.length === 0 ? (
-          <div className="empty-state">No categories available at the moment</div>
+          <div className="empty-state">{t('home.noCategoriesAvailable')}</div>
         ) : (
           <div className={`categories-carousel filter-${filterType.toLowerCase()}`}>
             <Swiper

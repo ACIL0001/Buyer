@@ -162,7 +162,7 @@ export const Header = () => {
     { name: t('navigation.home'), path: "/", matchPaths: ["/"] },
     { name: t('navigation.auctions'), path: "/auction-sidebar", matchPaths: ["/auction-sidebar", "/auction-details"] },
     { name: t('navigation.tenders'), path: "/tenders", matchPaths: ["/tenders", "/tender-details"] },
-    { name: 'Ventes Directes', path: "/direct-sale", matchPaths: ["/direct-sale"] },
+    { name: t('navigation.directSales'), path: "/direct-sale", matchPaths: ["/direct-sale"] },
     { name: t('navigation.categories'), path: "/category", matchPaths: ["/category"] },
     { name: t('navigation.howToBid'), path: "/how-to-bid", matchPaths: ["/how-to-bid"] },
     { name: t('navigation.members'), path: "/users", matchPaths: ["/users"] },

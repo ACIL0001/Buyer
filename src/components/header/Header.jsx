@@ -73,6 +73,7 @@ export const Header = () => {
   const badgeRef = useRef(null);
   const [windowVal , setWindowVal] = useState('')
   const windowRef = useRef(null)
+  const headerRef = useRef(null);
 
   // Get chat-related notifications (including CHAT_CREATED)
   const { totalUnread: chatTotalUnread } = useChatNotificationsWithGeneral();
@@ -337,9 +338,10 @@ export const Header = () => {
 
   return (
     <header 
+      ref={headerRef}
       style={{
         width: '100%',
-        position: 'sticky',
+        position: 'fixed',
         top: 0,
         left: 0,
         right: 0,

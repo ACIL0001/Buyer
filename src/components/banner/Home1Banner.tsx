@@ -324,26 +324,26 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
       <style jsx>{`
         .categories-section {
           background: white;
-          padding: clamp(12px, 3vw, 24px) clamp(12px, 3vw, 24px);
-          paddingTop: clamp(0px, 2vw, 10px);
-          margin: 0 auto clamp(12px, 3vw, 24px) auto;
+          padding: clamp(8px, 2vw, 16px) clamp(12px, 3vw, 24px);
+          paddingTop: clamp(0px, 1vw, 6px);
+          margin: 0 auto clamp(8px, 2vw, 16px) auto;
           max-width: 1280px;
-          border-radius: clamp(16px, 4vw, 32px);
+          border-radius: clamp(12px, 3vw, 24px);
         }
 
         .section-header {
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: clamp(20px, 3vw, 32px);
-          gap: clamp(16px, 3vw, 24px);
+          margin-bottom: clamp(12px, 2vw, 20px);
+          gap: clamp(12px, 2vw, 18px);
           flex-wrap: nowrap;
           position: relative;
           padding: 0 clamp(20px, 4vw, 40px);
         }
 
         .section-title {
-          font-size: clamp(1.5rem, 3vw, 2.2rem);
+          font-size: clamp(1.2rem, 2.5vw, 1.8rem);
           font-weight: 900;
           background: linear-gradient(135deg, #1e293b 0%, #475569 30%, #64748b 50%, #475569 70%, #1e293b 100%);
           background-size: 300% auto;
@@ -354,7 +354,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           margin: 0;
           letter-spacing: -0.5px;
           position: relative;
-          padding: 0 clamp(24px, 5vw, 40px);
+          padding: 0 clamp(20px, 4vw, 32px);
           animation: shimmer-text 4s ease-in-out infinite;
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
           line-height: 1.2;
@@ -402,21 +402,21 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         }
 
         .filter-button {
-          padding: 12px 28px;
-          border-radius: 35px;
-          font-size: clamp(0.85rem, 1.4vw, 1rem);
+          padding: clamp(8px, 1.5vw, 10px) clamp(20px, 3vw, 24px);
+          border-radius: 30px;
+          font-size: clamp(0.75rem, 1.2vw, 0.9rem);
           font-weight: 700;
           cursor: pointer;
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          border: 3px solid transparent;
+          border: 2px solid transparent;
           background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
           color: #495057;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+          box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95);
           position: relative;
           overflow: hidden;
           text-transform: uppercase;
-          letter-spacing: 0.6px;
-          min-width: 110px;
+          letter-spacing: 0.5px;
+          min-width: 90px;
         }
 
         .filter-button::before {
@@ -518,10 +518,10 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
         .categories-carousel {
           position: relative;
-          padding: 10px clamp(24px, 4vw, 36px) clamp(10px, 2vw, 18px);
-          border-radius: clamp(16px, 3vw, 24px);
+          padding: 10px clamp(20px, 3vw, 32px) clamp(8px, 1.5vw, 14px);
+          border-radius: clamp(12px, 2.5vw, 20px);
           transition: background 0.3s ease;
-          margin: clamp(12px, 3vw, 20px) 0;
+          margin: clamp(8px, 2vw, 16px) 0;
           overflow: visible;
           /* Add z-index for stacking context */
           z-index: 0;
@@ -561,11 +561,11 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: clamp(8px, 2vw, 14px);
-          margin-bottom: clamp(10px, 3vw, 18px);
+          gap: clamp(6px, 1.5vw, 10px);
+          margin-bottom: clamp(6px, 2vw, 12px);
           height: 100%;
           position: relative;
-          transform: scale(0.9);
+          transform: scale(0.95);
         }
 
         .categories-swiper {
@@ -623,23 +623,23 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           position: static;
           transform: none;
           color: #111827;
-          font-size: clamp(0.85rem, 1.5vw, 1.05rem);
+          font-size: clamp(0.75rem, 1.3vw, 0.9rem);
           font-weight: 700;
           text-shadow: none;
           z-index: auto;
-          line-height: 1.45;
+          line-height: 1.3;
           opacity: 1;
           text-align: center;
           max-width: 95%;
-          padding: clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 18px);
+          padding: clamp(4px, 1vw, 8px) clamp(10px, 2.5vw, 14px);
           word-wrap: break-word;
           overflow-wrap: anywhere;
-          letter-spacing: 0.2px;
+          letter-spacing: 0.15px;
           background: rgba(255, 255, 255, 0.94);
-          border-radius: clamp(10px, 2.4vw, 16px);
+          border-radius: clamp(8px, 2vw, 12px);
           display: inline-block;
-          box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
-          margin-top: clamp(6px, 1.8vw, 12px);
+          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+          margin-top: clamp(4px, 1.2vw, 8px);
         }
 
 
@@ -647,7 +647,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         /* Pagination dots */
         .swiper-pagination {
           position: relative;
-          margin-top: clamp(56px, 7vw, 68px) !important;
+          margin-top: clamp(40px, 5vw, 50px) !important;
           bottom: auto !important;
         }
 
@@ -708,8 +708,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             flex-wrap: nowrap;
             justify-content: center;
             align-items: center;
-            gap: clamp(8px, 3vw, 12px);
-            margin-bottom: clamp(16px, 2.5vw, 24px);
+            gap: clamp(6px, 2vw, 10px);
+            margin-bottom: clamp(10px, 2vw, 16px);
             padding: 0 clamp(12px, 3vw, 18px);
           }
 
@@ -754,7 +754,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .swiper-pagination {
-            margin-top: clamp(70px, 16vw, 88px) !important;
+            margin-top: clamp(50px, 12vw, 65px) !important;
             margin-bottom: 0.7px !important;
           }
 
@@ -777,8 +777,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .section-header {
-            gap: clamp(16px, 3vw, 24px);
-            margin-bottom: clamp(20px, 3.5vw, 28px);
+            gap: clamp(12px, 2.5vw, 18px);
+            margin-bottom: clamp(12px, 2.5vw, 18px);
             padding: 0 clamp(16px, 3.5vw, 24px);
           }
 
@@ -1013,7 +1013,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           style={{
             position: 'relative',
             maxWidth: 'clamp(300px, 90vw, 600px)',
-            margin: 'clamp(2px, 0.5vw, 4px) auto clamp(20px, 4vw, 32px) auto',
+            margin: 'clamp(2px, 0.5vw, 4px) auto clamp(12px, 2.5vw, 20px) auto',
             width: '100%',
             padding: '0 clamp(12px, 3vw, 20px)',
             zIndex: 10,

@@ -1013,7 +1013,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           style={{
             position: 'relative',
             maxWidth: 'clamp(300px, 90vw, 600px)',
-            margin: 'clamp(4px, 1vw, 8px) auto clamp(20px, 4vw, 32px) auto',
+            margin: 'clamp(2px, 0.5vw, 4px) auto clamp(20px, 4vw, 32px) auto',
             width: '100%',
             padding: '0 clamp(12px, 3vw, 20px)',
             zIndex: 10,

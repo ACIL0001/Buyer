@@ -6,6 +6,7 @@ import { AuctionsAPI } from '../api/auctions';
 import { TendersAPI } from '../api/tenders';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import app from '../../config';
 
 // Category interface for component usage (tree structure)
@@ -69,6 +70,7 @@ interface Tender {
 }
 
 export default function CategoryClient() {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -601,7 +603,7 @@ export default function CategoryClient() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                 </svg>
-                <span>{category.children?.length || 0} categories</span>
+                <span>{category.children?.length || 0} {t('category.subcategoryCount')}</span>
               </>
             )}
           </div>
@@ -668,7 +670,7 @@ export default function CategoryClient() {
               >
                 <path d="M6 9l6 6 6-6"/>
               </svg>
-              <span>{isExpanded ? 'Hide' : 'Explore'} subcategories</span>
+              <span>{isExpanded ? t('category.hideSubcategories') : t('category.exploreSubcategories')}</span>
             </button>
             </div>
         )}
@@ -813,7 +815,7 @@ export default function CategoryClient() {
               background: '#fff',
               animation: 'pulse 2s ease-in-out infinite',
             }}></div>
-            Live
+            {t('category.live')}
           </div>
           <div style={{
             position: 'absolute',
@@ -857,7 +859,7 @@ export default function CategoryClient() {
               margin: '0 0 4px 0',
               fontWeight: '500',
             }}>
-              Current Bid
+              {t('category.currentBid')}
             </p>
             <p style={{
               fontSize: '20px',
@@ -979,7 +981,7 @@ export default function CategoryClient() {
               e.currentTarget.style.transform = 'translateY(0)';
             }}
           >
-            Place Bid
+            {t('category.placeBid')}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
             </svg>
@@ -1022,11 +1024,11 @@ export default function CategoryClient() {
         margin: '20px',
       }}>
         <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.6 }}>📂</div>
-        <h3 style={{ color: '#0063b1', marginBottom: '10px', fontSize: '20px', fontWeight: '600' }}>
-          No Categories Found
+          <h3 style={{ color: '#0063b1', marginBottom: '10px', fontSize: '20px', fontWeight: '600' }}>
+          {t('category.noCategoriesFoundTitle')}
         </h3>
         <p style={{ color: '#64748b', fontSize: '14px' }}>
-          Categories will be available soon. Please try again later.
+          {t('category.errorFetchingCategories')}
         </p>
       </div>
     );
@@ -1140,7 +1142,7 @@ export default function CategoryClient() {
         }}>
           <input
             type="text"
-            placeholder="Search categories, auctions, and tenders..."
+            placeholder={t('category.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={(e) => {
@@ -1201,7 +1203,7 @@ export default function CategoryClient() {
               {searchResults.categories.length > 0 && (
                 <div style={{ padding: '12px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    Categories
+                    {t('category.searchCategories')}
                   </div>
                   {searchResults.categories.slice(0, 5).map((category) => (
                     <div
@@ -1228,7 +1230,7 @@ export default function CategoryClient() {
               {searchResults.auctions.length > 0 && (
                 <div style={{ padding: '12px', borderTop: searchResults.categories.length > 0 ? '1px solid #e2e8f0' : 'none' }}>
                   <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    Auctions
+                    {t('category.searchAuctions')}
                   </div>
                   {searchResults.auctions.slice(0, 5).map((auction) => (
                     <div
@@ -1255,7 +1257,7 @@ export default function CategoryClient() {
               {searchResults.tenders.length > 0 && (
                 <div style={{ padding: '12px', borderTop: (searchResults.categories.length > 0 || searchResults.auctions.length > 0) ? '1px solid #e2e8f0' : 'none' }}>
                   <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    Tenders
+                    {t('category.searchTenders')}
                   </div>
                   {searchResults.tenders.slice(0, 5).map((tender) => (
                     <div
@@ -1321,7 +1323,7 @@ export default function CategoryClient() {
                   opacity: filterType === 'PRODUCT' ? 1 : 0.8,
                 }}
               >
-                Produit
+                {t('common.product')}
               </button>
               <h2 style={{
                 fontSize: 'clamp(1.5rem, 3vw, 2.2rem)',
@@ -1367,7 +1369,7 @@ export default function CategoryClient() {
                   opacity: filterType === 'SERVICE' ? 1 : 0.8,
                 }}
               >
-                Service
+                {t('common.service')}
               </button>
             </div>
           </>
@@ -1394,7 +1396,7 @@ export default function CategoryClient() {
               margin: '0 auto',
               lineHeight: '1.6',
             }}>
-              {`Discover amazing auctions in the ${selectedCategoryName} category`}
+              {t('category.discoverAuctions', { category: selectedCategoryName })}
             </p>
           </div>
         )}
@@ -1430,7 +1432,7 @@ export default function CategoryClient() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
               </svg>
-              Back to Categories
+              {t('category.backToCategories')}
             </button>
           </div>
         )}
@@ -1491,10 +1493,10 @@ export default function CategoryClient() {
               }}>
                 <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.6 }}>🔍</div>
                 <h3 style={{ color: '#0063b1', marginBottom: '10px', fontSize: '20px', fontWeight: '600' }}>
-                  No Auctions Found
+                  {t('category.noAuctionsFound')}
                 </h3>
                 <p style={{ color: '#64748b', fontSize: '14px' }}>
-                  {searchTerm ? 'No auctions match your search criteria.' : 'No auctions available in this category yet.'}
+                  {searchTerm ? t('category.noAuctionsMatchSearch') : t('category.noAuctionsInCategory')}
                 </p>
               </div>
             )}

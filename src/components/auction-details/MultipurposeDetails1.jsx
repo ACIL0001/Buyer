@@ -1186,7 +1186,7 @@ const MultipurposeDetails1 = () => {
                         style={{
                           width: '100%',
                           height: '400px',
-                          objectFit: 'cover',
+                          objectFit: 'contain',
                           borderRadius: '8px'
                         }}
                         onError={(e) => {

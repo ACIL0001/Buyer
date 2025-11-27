@@ -119,15 +119,32 @@ const Home1LiveDirectSales = () => {
         // Store all direct sales
         setAllDirectSales(visibleDirectSales);
         
-        // Apply initial filter (all by default)
+        // IMPORTANT: Always display ALL items (including sold-out ones)
+        // Sold-out items will be shown but visually deactivated (grayed out, non-clickable)
+        // DO NOT filter out sold-out items - they should remain visible but deactivated
+        // Only apply status filter for display priority, but always include sold-out items
         let filteredDirectSales = visibleDirectSales;
+        
+        // When filtering by 'active', prioritize ACTIVE/PAUSED but still include sold-out items
+        // When filtering by 'finished', prioritize SOLD_OUT/SOLD but still include all items
+        // When 'all', show everything
         if (statusFilter === 'active') {
-          filteredDirectSales = visibleDirectSales.filter((sale: DirectSale) => {
-            return sale.status === 'ACTIVE' || sale.status === 'PAUSED';
+          // Sort to show active items first, but include all items
+          filteredDirectSales = [...visibleDirectSales].sort((a, b) => {
+            const aIsActive = a.status === 'ACTIVE' || a.status === 'PAUSED';
+            const bIsActive = b.status === 'ACTIVE' || b.status === 'PAUSED';
+            if (aIsActive && !bIsActive) return -1;
+            if (!aIsActive && bIsActive) return 1;
+            return 0;
           });
         } else if (statusFilter === 'finished') {
-          filteredDirectSales = visibleDirectSales.filter((sale: DirectSale) => {
-            return sale.status === 'SOLD_OUT' || sale.status === 'SOLD';
+          // Sort to show finished items first, but include all items
+          filteredDirectSales = [...visibleDirectSales].sort((a, b) => {
+            const aIsFinished = a.status === 'SOLD_OUT' || a.status === 'SOLD';
+            const bIsFinished = b.status === 'SOLD_OUT' || b.status === 'SOLD';
+            if (aIsFinished && !bIsFinished) return -1;
+            if (!aIsFinished && bIsFinished) return 1;
+            return 0;
           });
         }
 
@@ -148,18 +165,34 @@ const Home1LiveDirectSales = () => {
   }, []);
 
   // Filter direct sales based on status
+  // IMPORTANT: Always display ALL items (including sold-out ones)
+  // Sold-out items will be shown but visually deactivated (grayed out, non-clickable)
+  // DO NOT filter out sold-out items - they should remain visible but deactivated
   useEffect(() => {
     if (allDirectSales.length === 0) return;
 
     let filtered = [...allDirectSales];
     
+    // When filtering by 'active', prioritize ACTIVE/PAUSED but still include sold-out items
+    // When filtering by 'finished', prioritize SOLD_OUT/SOLD but still include all items
+    // When 'all', show everything
     if (statusFilter === 'active') {
-      filtered = allDirectSales.filter((sale: DirectSale) => {
-        return sale.status === 'ACTIVE' || sale.status === 'PAUSED';
+      // Sort to show active items first, but include all items
+      filtered = [...allDirectSales].sort((a, b) => {
+        const aIsActive = a.status === 'ACTIVE' || a.status === 'PAUSED';
+        const bIsActive = b.status === 'ACTIVE' || b.status === 'PAUSED';
+        if (aIsActive && !bIsActive) return -1;
+        if (!aIsActive && bIsActive) return 1;
+        return 0;
       });
     } else if (statusFilter === 'finished') {
-      filtered = allDirectSales.filter((sale: DirectSale) => {
-        return sale.status === 'SOLD_OUT' || sale.status === 'SOLD';
+      // Sort to show finished items first, but include all items
+      filtered = [...allDirectSales].sort((a, b) => {
+        const aIsFinished = a.status === 'SOLD_OUT' || a.status === 'SOLD';
+        const bIsFinished = b.status === 'SOLD_OUT' || b.status === 'SOLD';
+        if (aIsFinished && !bIsFinished) return -1;
+        if (!aIsFinished && bIsFinished) return 1;
+        return 0;
       });
     }
 
@@ -611,7 +644,7 @@ const Home1LiveDirectSales = () => {
                               style={{
                                 width: '100%',
                                 height: '100%',
-                                objectFit: 'cover',
+                                objectFit: 'contain',
                                 transition: 'transform 0.4s ease',
                               }}
                               onError={(e) => {

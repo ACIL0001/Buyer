@@ -1637,7 +1637,7 @@ const MultipurposeTenderSidebar = () => {
                                                                 style={{
                                                                     width: '100%',
                                                                     height: '100%',
-                                                                    objectFit: 'cover',
+                                                                    objectFit: 'contain',
                                                                     transition: 'transform 0.5s ease',
                                                                     filter: hasTenderEnded ? 'grayscale(100%)' : 'none',
                                                                 }}

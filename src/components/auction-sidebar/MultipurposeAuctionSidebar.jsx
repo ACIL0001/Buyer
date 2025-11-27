@@ -1327,7 +1327,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                 style={{
                                                                     width: '100%',
                                                                     height: '100%',
-                                                                    objectFit: 'cover',
+                                                                    objectFit: 'contain',
                                                                     transition: 'transform 0.5s ease',
                                                                     filter: hasAuctionEnded ? 'grayscale(100%)' : 'none', // Grey out image
                                                                 }}

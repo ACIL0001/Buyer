@@ -150,9 +150,39 @@ export default function Home() {
 
   // Helper function to get category image URL
   const getCategoryImageUrl = (category: any): string => {
-    // Try to get image from thumb.url, thumb.fullUrl, or other possible fields
-    const imageUrl = category.thumb?.url || 
-                     category.thumb?.fullUrl || 
+    // Check if category has thumb with url (matching working implementation)
+    if (category.thumb && category.thumb.url) {
+      const imageUrl = category.thumb.url;
+      
+      // If it's already a full URL, return it as-is
+      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+        // Replace localhost:3000 with current baseURL if needed
+        if (imageUrl.includes('localhost:3000')) {
+          const baseURL = app.baseURL || 'http://localhost:3000/';
+          return imageUrl.replace('http://localhost:3000', baseURL.replace(/\/$/, ''));
+        }
+        return imageUrl;
+      }
+      
+      // Handle /static/ paths by removing leading slash and prepending baseURL
+      if (imageUrl.startsWith('/static/')) {
+        const baseURL = app.baseURL || 'http://localhost:3000/';
+        return `${baseURL}${imageUrl.substring(1)}`;
+      }
+      
+      // Handle other paths starting with /
+      if (imageUrl.startsWith('/')) {
+        const baseURL = app.baseURL || 'http://localhost:3000/';
+        return `${baseURL}${imageUrl.substring(1)}`;
+      }
+      
+      // Handle paths without leading slash
+      const baseURL = app.baseURL || 'http://localhost:3000/';
+      return `${baseURL}${imageUrl}`;
+    }
+    
+    // Fallback: try other possible fields
+    const imageUrl = category.thumb?.fullUrl || 
                      category.image || 
                      category.thumbnail || 
                      category.photo || 
@@ -164,7 +194,6 @@ export default function Home() {
 
     // If it's already a full URL, return it as-is
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      // Replace localhost:3000 with current baseURL if needed
       if (imageUrl.includes('localhost:3000')) {
         const baseURL = app.baseURL || 'http://localhost:3000/';
         return imageUrl.replace('http://localhost:3000', baseURL.replace(/\/$/, ''));
@@ -172,20 +201,17 @@ export default function Home() {
       return imageUrl;
     }
 
-    // Clean the URL - remove leading slash if present
-    const cleanUrl = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
-    
-    // Construct full URL from baseURL
-    const baseURL = (app.baseURL || 'http://localhost:3000/').replace(/\/$/, ''); // Remove trailing slash
-    
-    // First try: direct path with baseURL
-    // If the URL contains 'static', use it as-is
-    if (cleanUrl.includes('static/') || cleanUrl.startsWith('static/')) {
-      return `${baseURL}/${cleanUrl}`;
+    // Handle relative paths
+    const baseURL = app.baseURL || 'http://localhost:3000/';
+    if (imageUrl.startsWith('/static/')) {
+      return `${baseURL}${imageUrl.substring(1)}`;
     }
     
-    // Try common paths - most likely: /static/filename
-    return `${baseURL}/static/${cleanUrl}`;
+    if (imageUrl.startsWith('/')) {
+      return `${baseURL}${imageUrl.substring(1)}`;
+    }
+    
+    return `${baseURL}${imageUrl}`;
   };
 
   // Category search functions

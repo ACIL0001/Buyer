@@ -346,7 +346,7 @@ function DirectSaleDetailContent() {
                     src={getImageUrl(safeVideos[selectedVideoIndex]?.url)}
                     controls
                     className="main-video"
-                    style={{ width: '100%', height: '400px', objectFit: 'cover', borderRadius: '8px' }}
+                    style={{ width: '100%', height: '400px', objectFit: 'contain', borderRadius: '8px' }}
                   />
                 ) : (
                   <img
@@ -652,7 +652,7 @@ function DirectSaleDetailContent() {
                           <img 
                             src={getImageUrl(sale.thumbs?.[0]?.url)} 
                             alt={sale.title} 
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            style={{ width: "100%", height: "100%", objectFit: "contain" }}
                             onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_DIRECT_SALE_IMAGE; }}
                           />
                         </div>

@@ -259,9 +259,35 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
   }, [categoryCount]);
 
   const getCategoryImageUrl = (category: any): string => {
-    // Try to get image from thumb.url, thumb.fullUrl, or other possible fields
-    const imageUrl = category.thumb?.url || 
-                     category.thumb?.fullUrl || 
+    // Check if category has thumb with url (matching working implementation)
+    if (category.thumb && category.thumb.url) {
+      const imageUrl = category.thumb.url;
+      
+      // If it's already a full URL, return it as-is
+      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+        // Replace localhost:3000 with current baseURL if needed
+        if (imageUrl.includes('localhost:3000')) {
+          return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+        }
+        return imageUrl;
+      }
+      
+      // Handle /static/ paths by removing leading slash and prepending baseURL
+      if (imageUrl.startsWith('/static/')) {
+        return `${app.baseURL}${imageUrl.substring(1)}`;
+      }
+      
+      // Handle other paths starting with /
+      if (imageUrl.startsWith('/')) {
+        return `${app.baseURL}${imageUrl.substring(1)}`;
+      }
+      
+      // Handle paths without leading slash
+      return `${app.baseURL}${imageUrl}`;
+    }
+    
+    // Fallback: try other possible fields
+    const imageUrl = category.thumb?.fullUrl || 
                      category.image || 
                      category.thumbnail || 
                      category.photo || 
@@ -273,37 +299,22 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
     // If it's already a full URL, return it as-is
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      // Replace localhost:3000 with current baseURL if needed
       if (imageUrl.includes('localhost:3000')) {
         return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
       }
       return imageUrl;
     }
 
-    // Clean the URL - remove leading slash if present
-    const cleanUrl = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
-    
-    // Construct full URL from baseURL
-    // Try multiple possible paths
-    const baseURL = app.baseURL.replace(/\/$/, ''); // Remove trailing slash
-    
-    // First try: direct path with baseURL
-    // If the URL contains 'static', use it as-is
-    if (cleanUrl.includes('static/') || cleanUrl.startsWith('static/')) {
-      return `${baseURL}/${cleanUrl}`;
+    // Handle relative paths
+    if (imageUrl.startsWith('/static/')) {
+      return `${app.baseURL}${imageUrl.substring(1)}`;
     }
     
-    // Try common paths
-    const possiblePaths = [
-      `${baseURL}/static/${cleanUrl}`,
-      `${baseURL}/${cleanUrl}`,
-      `${baseURL}/uploads/${cleanUrl}`,
-      `${baseURL}/images/${cleanUrl}`,
-      `${baseURL}/public/${cleanUrl}`,
-    ];
+    if (imageUrl.startsWith('/')) {
+      return `${app.baseURL}${imageUrl.substring(1)}`;
+    }
     
-    // Return the first path (most likely: /static/filename)
-    return possiblePaths[0];
+    return `${app.baseURL}${imageUrl}`;
   };
 
   const navigateToCategory = (category: any, event: React.MouseEvent) => {

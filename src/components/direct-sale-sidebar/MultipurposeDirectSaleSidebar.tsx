@@ -489,14 +489,27 @@ const MultipurposeDirectSaleSidebar = () => {
     result.sort((a, b) => a.price - b.price);
     
     setCurrentPage(1);
-    // Apply status filter
+    // IMPORTANT: Always display ALL items (including sold-out ones)
+    // Sold-out items will be shown but visually deactivated (grayed out, non-clickable)
+    // DO NOT filter out sold-out items - they should remain visible but deactivated
+    // When filtering by status, prioritize matching items but still include all items
     if (statusFilter === 'active') {
-      result = result.filter((sale: DirectSale) => {
-        return sale.status === 'ACTIVE' || sale.status === 'PAUSED';
+      // Sort to show active items first, but include all items
+      result = [...result].sort((a, b) => {
+        const aIsActive = a.status === 'ACTIVE' || a.status === 'PAUSED';
+        const bIsActive = b.status === 'ACTIVE' || b.status === 'PAUSED';
+        if (aIsActive && !bIsActive) return -1;
+        if (!aIsActive && bIsActive) return 1;
+        return 0;
       });
     } else if (statusFilter === 'finished') {
-      result = result.filter((sale: DirectSale) => {
-        return sale.status === 'SOLD_OUT' || sale.status === 'SOLD';
+      // Sort to show finished items first, but include all items
+      result = [...result].sort((a, b) => {
+        const aIsFinished = a.status === 'SOLD_OUT' || a.status === 'SOLD';
+        const bIsFinished = b.status === 'SOLD_OUT' || b.status === 'SOLD';
+        if (aIsFinished && !bIsFinished) return -1;
+        if (!aIsFinished && bIsFinished) return 1;
+        return 0;
       });
     }
 
@@ -1067,7 +1080,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                 style={{
                                   width: '100%',
                                   height: '100%',
-                                  objectFit: 'cover',
+                                  objectFit: 'contain',
                                   transition: 'transform 0.5s ease',
                                   filter: isSoldOut ? 'grayscale(100%)' : 'none',
                                 }}

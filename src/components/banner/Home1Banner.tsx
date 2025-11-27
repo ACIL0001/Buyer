@@ -518,7 +518,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
         .categories-carousel {
           position: relative;
-          padding: clamp(16px, 2.5vw, 24px) clamp(24px, 4vw, 36px) clamp(10px, 2vw, 18px);
+          padding: 10px clamp(24px, 4vw, 36px) clamp(10px, 2vw, 18px);
           border-radius: clamp(16px, 3vw, 24px);
           transition: background 0.3s ease;
           margin: clamp(12px, 3vw, 20px) 0;
@@ -728,7 +728,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .categories-carousel {
-            padding: clamp(14px, 3vw, 20px) clamp(14px, 4vw, 18px);
+            padding: 10px clamp(14px, 4vw, 18px);
           }
           
           /* --- MODIFICATION FOR MOBILE LINE THICKNESS --- */
@@ -794,7 +794,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .categories-carousel {
-            padding: clamp(18px, 2.8vw, 28px) clamp(35px, 7vw, 45px);
+            padding: 10px clamp(35px, 7vw, 45px);
           }
           
           /* --- MODIFICATION FOR MOBILE LINE THICKNESS --- */
@@ -830,7 +830,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .categories-carousel {
-            padding: clamp(20px, 3vw, 30px) clamp(40px, 6vw, 50px);
+            padding: 10px clamp(40px, 6vw, 50px);
           }
         }
 
@@ -849,7 +849,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .categories-carousel {
-            padding: clamp(22px, 3vw, 32px) 45px;
+            padding: 10px 45px;
           }
         }
 
@@ -860,7 +860,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .categories-carousel {
-            padding: clamp(24px, 3.5vw, 36px) 48px;
+            padding: 10px 48px;
           }
         }
 
@@ -871,7 +871,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .categories-carousel {
-            padding: clamp(24px, 3.5vw, 36px) 50px;
+            padding: 10px 50px;
           }
         }
 
@@ -893,7 +893,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .categories-carousel {
-            padding: clamp(16px, 2.5vw, 24px) clamp(30px, 5vw, 40px);
+            padding: 10px clamp(30px, 5vw, 40px);
           }
           
           .categories-carousel::before {
@@ -1013,7 +1013,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           style={{
             position: 'relative',
             maxWidth: 'clamp(300px, 90vw, 600px)',
-            margin: 'clamp(8px, 1.5vw, 16px) auto clamp(20px, 4vw, 32px) auto',
+            margin: 'clamp(4px, 1vw, 8px) auto clamp(20px, 4vw, 32px) auto',
             width: '100%',
             padding: '0 clamp(12px, 3vw, 20px)',
             zIndex: 10,

@@ -340,11 +340,10 @@ export const Header = () => {
     <header 
       ref={headerRef}
       style={{
-        width: '100%',
+        width: 'calc(100% - var(--scrollbar-width, 17px))',
         position: 'fixed',
         top: 0,
         left: 0,
-        right: 0,
         zIndex: 9999,
         transition: 'all 0.3s ease',
         paddingTop: 'env(safe-area-inset-top, 0px)',

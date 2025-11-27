@@ -412,6 +412,14 @@ export default function Home() {
     <>
       <style jsx global>{`
         /* Global styles */
+        :root {
+          --scrollbar-width: 17px;
+        }
+        
+        html {
+          scrollbar-gutter: stable;
+        }
+        
         * {
           box-sizing: border-box;
           margin: 0;
@@ -1708,11 +1716,12 @@ export default function Home() {
                   width: '100%',
                   maxWidth: '100vw',
                   overflowX: 'hidden',
-                  overflowY: 'visible',
+                  overflowY: 'auto',
                   paddingTop: `${headerHeight}px`,
                   paddingBottom: 'env(safe-area-inset-bottom)',
                   paddingRight: '0',
                   boxSizing: 'border-box',
+                  scrollbarGutter: 'stable',
                 }}>
                   {/* Hero Banner Section */}
                   <section 

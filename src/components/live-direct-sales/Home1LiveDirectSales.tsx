@@ -420,21 +420,21 @@ const Home1LiveDirectSales = () => {
         }
       `}</style>
 
-      <div className="modern-direct-sales-section" style={{ padding: 'clamp(40px, 8vw, 80px) 0', background: 'white' }}>
+      <div className="modern-direct-sales-section" style={{ padding: 'clamp(20px, 4vw, 40px) 0', background: 'white' }}>
         <div className="container-responsive">
           {/* Section Header */}
           <div className="section-header" style={{
             textAlign: 'center',
-            marginBottom: 'clamp(30px, 6vw, 50px)',
+            marginBottom: 'clamp(12px, 2.5vw, 20px)',
             opacity: 0,
             transform: 'translateY(30px)',
             animation: 'fadeInUp 0.8s ease-out forwards',
           }}>
             <h2 style={{
-              fontSize: 'clamp(2rem, 4vw, 3rem)',
+              fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)',
               fontWeight: '800',
               color: '#8a7e1f',
-              marginBottom: '16px',
+              marginBottom: 'clamp(8px, 1.5vw, 12px)',
               background: 'linear-gradient(135deg, #8a7e1f, #f7ef8a)',
               WebkitBackgroundClip: 'text',
               backgroundClip: 'text',
@@ -443,11 +443,11 @@ const Home1LiveDirectSales = () => {
               {t('liveDirectSales.title')}
             </h2>
             <p style={{
-              fontSize: '1.1rem',
+              fontSize: 'clamp(0.85rem, 1.8vw, 1rem)',
               color: '#8a7e1f',
               maxWidth: '600px',
-              margin: '0 auto 24px',
-              lineHeight: '1.6',
+              margin: '0 auto clamp(12px, 2vw, 16px)',
+              lineHeight: '1.5',
             }}>
               {t('liveDirectSales.description')}
             </p>
@@ -456,21 +456,21 @@ const Home1LiveDirectSales = () => {
             <div style={{
               display: 'flex',
               justifyContent: 'center',
-              gap: '12px',
+              gap: 'clamp(8px, 1.5vw, 12px)',
               flexWrap: 'wrap',
-              marginBottom: '20px',
+              marginBottom: 'clamp(12px, 2vw, 16px)',
             }}>
               <button
                 onClick={() => setStatusFilter('all')}
                 style={{
-                  padding: '10px 24px',
+                  padding: 'clamp(6px, 1.2vw, 8px) clamp(16px, 3vw, 20px)',
                   borderRadius: '25px',
-                  border: '2px solid',
+                  border: '1.5px solid',
                   borderColor: statusFilter === 'all' ? '#f7ef8a' : '#e2e8f0',
                   background: statusFilter === 'all' ? 'linear-gradient(135deg, #f7ef8a, #8a7e1f)' : 'white',
                   color: statusFilter === 'all' ? '#3d370e' : '#666',
                   fontWeight: '600',
-                  fontSize: '14px',
+                  fontSize: 'clamp(11px, 1.8vw, 13px)',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   boxShadow: statusFilter === 'all' ? '0 4px 12px rgba(247, 239, 138, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
@@ -493,14 +493,14 @@ const Home1LiveDirectSales = () => {
               <button
                 onClick={() => setStatusFilter('active')}
                 style={{
-                  padding: '10px 24px',
+                  padding: 'clamp(6px, 1.2vw, 8px) clamp(16px, 3vw, 20px)',
                   borderRadius: '25px',
-                  border: '2px solid',
+                  border: '1.5px solid',
                   borderColor: statusFilter === 'active' ? '#10b981' : '#e2e8f0',
                   background: statusFilter === 'active' ? 'linear-gradient(135deg, #10b981, #059669)' : 'white',
                   color: statusFilter === 'active' ? 'white' : '#666',
                   fontWeight: '600',
-                  fontSize: '14px',
+                  fontSize: 'clamp(11px, 1.8vw, 13px)',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   boxShadow: statusFilter === 'active' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
@@ -523,14 +523,14 @@ const Home1LiveDirectSales = () => {
               <button
                 onClick={() => setStatusFilter('finished')}
                 style={{
-                  padding: '10px 24px',
+                  padding: 'clamp(6px, 1.2vw, 8px) clamp(16px, 3vw, 20px)',
                   borderRadius: '25px',
-                  border: '2px solid',
+                  border: '1.5px solid',
                   borderColor: statusFilter === 'finished' ? '#ef4444' : '#e2e8f0',
                   background: statusFilter === 'finished' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'white',
                   color: statusFilter === 'finished' ? 'white' : '#666',
                   fontWeight: '600',
-                  fontSize: '14px',
+                  fontSize: 'clamp(11px, 1.8vw, 13px)',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   boxShadow: statusFilter === 'finished' ? '0 4px 12px rgba(239, 68, 68, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
@@ -561,7 +561,7 @@ const Home1LiveDirectSales = () => {
                 {...settings}
                 className="swiper direct-sale-slider"
                 style={{
-                  padding: '20px 0 50px',
+                  padding: 'clamp(10px, 2vw, 16px) 0 clamp(30px, 4vw, 40px)',
                   overflow: 'visible',
                 }}
               >
@@ -581,14 +581,14 @@ const Home1LiveDirectSales = () => {
                         className={`direct-sale-card-animate direct-sale-card-hover ${isAnimated ? 'animated' : ''}`}
                         style={{
                           background: 'white',
-                          borderRadius: 'clamp(16px, 3vw, 20px)',
+                          borderRadius: 'clamp(12px, 2.5vw, 16px)',
                           overflow: 'hidden',
                           boxShadow: '0 8px 25px rgba(247, 239, 138, 0.08)',
                           border: '1px solid rgba(247, 239, 138, 0.1)',
                           width: '100%',
                           maxWidth: '320px',
                           position: 'relative',
-                          minHeight: '380px',
+                          minHeight: 'clamp(320px, 45vw, 360px)',
                           opacity: isSoldOut ? 0.6 : 1,
                           filter: isSoldOut ? 'grayscale(60%)' : 'none',
                           cursor: isSoldOut ? 'not-allowed' : 'default'
@@ -597,7 +597,7 @@ const Home1LiveDirectSales = () => {
                         {/* Direct Sale Image */}
                         <div style={{
                           position: 'relative',
-                          height: 'clamp(160px, 25vw, 200px)',
+                          height: 'clamp(120px, 20vw, 160px)',
                           overflow: 'hidden',
                           background: 'linear-gradient(135deg, #f7ef8a, #8a7e1f)',
                           display: 'flex',
@@ -686,12 +686,12 @@ const Home1LiveDirectSales = () => {
                         </div>
 
                         {/* Direct Sale Details */}
-                        <div style={{ padding: 'clamp(16px, 3vw, 20px)' }}>
+                        <div style={{ padding: 'clamp(12px, 2.5vw, 16px)' }}>
                           <h3 style={{
-                            fontSize: '18px',
+                            fontSize: 'clamp(14px, 2.2vw, 16px)',
                             fontWeight: '600',
                             color: '#3d370e',
-                            marginBottom: '12px',
+                            marginBottom: 'clamp(8px, 1.5vw, 10px)',
                             lineHeight: '1.3',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -805,8 +805,8 @@ const Home1LiveDirectSales = () => {
                           <div style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '10px',
-                            marginBottom: '16px',
+                            gap: 'clamp(6px, 1.5vw, 10px)',
+                            marginBottom: 'clamp(10px, 2vw, 14px)',
                           }}>
                             <img
                               src={directSale.owner?.avatar?.url || directSale.owner?.photoURL || DEFAULT_PROFILE_IMAGE}
@@ -885,15 +885,15 @@ const Home1LiveDirectSales = () => {
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              gap: '8px',
+                              gap: 'clamp(6px, 1.5vw, 8px)',
                               width: '100%',
-                              padding: '12px 20px',
+                              padding: 'clamp(10px, 2vw, 12px) clamp(16px, 3vw, 20px)',
                               background: isSoldOut ? '#c7c7c7' : 'linear-gradient(90deg, #f7ef8a, #8a7e1f)',
                               color: 'white',
                               textDecoration: 'none',
                               borderRadius: '25px',
                               fontWeight: '600',
-                              fontSize: '14px',
+                              fontSize: 'clamp(12px, 2vw, 14px)',
                               transition: 'all 0.3s ease',
                               boxShadow: isSoldOut ? 'none' : '0 4px 12px rgba(247, 239, 138, 0.3)',
                               pointerEvents: isSoldOut ? 'none' : 'auto'
@@ -1006,7 +1006,7 @@ const Home1LiveDirectSales = () => {
               {/* Pagination */}
               <div className="swiper-pagination" style={{
                 position: 'relative',
-                marginTop: '30px',
+                marginTop: 'clamp(20px, 3vw, 25px)',
               }}></div>
             </div>
           ) : (
@@ -1055,7 +1055,7 @@ const Home1LiveDirectSales = () => {
             className="view-all-button-container"
             style={{
               textAlign: 'center',
-              marginTop: '50px',
+              marginTop: 'clamp(30px, 4vw, 40px)',
               opacity: 0,
               transform: 'translateY(30px)',
               animation: 'fadeInUp 0.8s ease-out 0.4s forwards',
@@ -1070,14 +1070,14 @@ const Home1LiveDirectSales = () => {
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '10px',
-                padding: '16px 32px',
+                gap: 'clamp(8px, 1.5vw, 10px)',
+                padding: 'clamp(12px, 2.5vw, 14px) clamp(24px, 4vw, 28px)',
                 background: 'linear-gradient(90deg, #f7ef8a, #8a7e1f)',
                 color: 'white',
                 textDecoration: 'none',
                 borderRadius: '50px',
                 fontWeight: '600',
-                fontSize: '16px',
+                fontSize: 'clamp(13px, 2.2vw, 15px)',
                 boxShadow: '0 8px 25px rgba(247, 239, 138, 0.3)',
                 transition: 'all 0.3s ease',
               }}

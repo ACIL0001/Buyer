@@ -1709,9 +1709,8 @@ export default function Home() {
                   maxWidth: '100vw',
                   overflowX: 'hidden',
                   overflowY: 'visible',
-                  paddingTop: `${headerHeight}px`,
+                  paddingTop: '0',
                   paddingBottom: 'env(safe-area-inset-bottom)',
-                  scrollbarGutter: 'stable',
                 }}>
                   {/* Hero Banner Section */}
                   <section 

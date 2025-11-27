@@ -1711,6 +1711,7 @@ export default function Home() {
                   overflowY: 'visible',
                   paddingTop: `${headerHeight}px`,
                   paddingBottom: 'env(safe-area-inset-bottom)',
+                  scrollbarGutter: 'stable',
                 }}>
                   {/* Hero Banner Section */}
                   <section 

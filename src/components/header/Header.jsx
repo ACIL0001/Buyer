@@ -352,7 +352,9 @@ export const Header = () => {
         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
         willChange: 'transform',
         transform: 'translateZ(0)',
-        WebkitTransform: 'translateZ(0)'
+        WebkitTransform: 'translateZ(0)',
+        paddingRight: '0',
+        boxSizing: 'border-box'
       }}
     >
       <div style={{

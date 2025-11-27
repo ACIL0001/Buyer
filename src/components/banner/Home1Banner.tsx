@@ -324,8 +324,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
       <style jsx>{`
         .categories-section {
           background: white;
-          padding: clamp(8px, 2vw, 16px) clamp(12px, 3vw, 24px);
-          paddingTop: clamp(0px, 1vw, 6px);
+          padding: 0 clamp(12px, 3vw, 24px) clamp(8px, 2vw, 16px) clamp(12px, 3vw, 24px);
+          paddingTop: 0;
           margin: 0 auto clamp(8px, 2vw, 16px) auto;
           max-width: 1280px;
           border-radius: clamp(12px, 3vw, 24px);
@@ -696,8 +696,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         /* Extra Small Devices (phones, 320px-479px) */
         @media (max-width: 479px) {
           .categories-section {
-            padding: clamp(12px, 3vw, 20px) clamp(12px, 3vw, 16px);
-            paddingTop: clamp(0px, 1vw, 12px);
+            padding: 0 clamp(12px, 3vw, 16px) clamp(12px, 3vw, 20px) clamp(12px, 3vw, 16px);
+            paddingTop: 0;
             margin-bottom: clamp(12px, 3vw, 20px);
             border-radius: clamp(12px, 3vw, 20px);
           }
@@ -772,8 +772,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         /* Small Devices (phones, 480px-639px) */
         @media (min-width: 480px) and (max-width: 639px) {
           .categories-section {
-            padding: clamp(16px, 3.5vw, 24px) clamp(16px, 3.5vw, 24px);
-            paddingTop: clamp(8px, 1.5vw, 16px);
+            padding: 0 clamp(16px, 3.5vw, 24px) clamp(16px, 3.5vw, 24px) clamp(16px, 3.5vw, 24px);
+            paddingTop: 0;
           }
 
           .section-header {
@@ -813,7 +813,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         /* Medium Devices (tablets, 640px-767px) */
         @media (min-width: 640px) and (max-width: 767px) {
           .categories-section {
-            padding: clamp(20px, 3.5vw, 32px) clamp(20px, 3.5vw, 32px);
+            padding: 0 clamp(20px, 3.5vw, 32px) clamp(20px, 3.5vw, 32px) clamp(20px, 3.5vw, 32px);
+            paddingTop: 0;
           }
 
           .section-header {
@@ -837,7 +838,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         /* Large Devices (tablets, 768px-1023px) */
         @media (min-width: 768px) and (max-width: 1023px) {
           .categories-section {
-            padding: clamp(24px, 3.5vw, 36px) clamp(24px, 3.5vw, 36px);
+            padding: 0 clamp(24px, 3.5vw, 36px) clamp(24px, 3.5vw, 36px) clamp(24px, 3.5vw, 36px);
+            paddingTop: 0;
           }
 
           .section-header {
@@ -856,7 +858,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         /* Extra Large Devices (desktops, 1024px-1279px) */
         @media (min-width: 1024px) and (max-width: 1279px) {
           .categories-section {
-            padding: clamp(28px, 3.5vw, 40px) clamp(28px, 3.5vw, 40px);
+            padding: 0 clamp(28px, 3.5vw, 40px) clamp(28px, 3.5vw, 40px) clamp(28px, 3.5vw, 40px);
+            paddingTop: 0;
           }
 
           .categories-carousel {
@@ -867,7 +870,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         /* XXL Devices (large desktops, 1280px+) */
         @media (min-width: 1280px) {
           .categories-section {
-            padding: clamp(32px, 3.5vw, 40px) clamp(32px, 3.5vw, 40px);
+            padding: 0 clamp(32px, 3.5vw, 40px) clamp(32px, 3.5vw, 40px) clamp(32px, 3.5vw, 40px);
+            paddingTop: 0;
           }
 
           .categories-carousel {
@@ -885,7 +889,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         /* Landscape Orientation */
         @media (orientation: landscape) and (max-height: 500px) {
           .categories-section {
-            padding: clamp(12px, 2vw, 20px) clamp(16px, 3vw, 24px);
+            padding: 0 clamp(16px, 3vw, 24px) clamp(12px, 2vw, 20px) clamp(16px, 3vw, 24px);
+            paddingTop: 0;
           }
 
           .section-header {

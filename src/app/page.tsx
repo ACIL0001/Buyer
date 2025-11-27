@@ -418,6 +418,33 @@ export default function Home() {
         
         html {
           scrollbar-gutter: stable;
+          overflow-y: scroll; /* Always show scrollbar to reserve space */
+        }
+        
+        /* Ensure scrollbar appears above fixed header - styled for visibility */
+        html::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        html::-webkit-scrollbar-track {
+          background: rgba(0, 99, 177, 0.1);
+          position: fixed;
+          right: 0;
+          top: 0;
+          bottom: 0;
+          z-index: 10000; /* Higher than header z-index */
+        }
+        
+        html::-webkit-scrollbar-thumb {
+          background: rgba(0, 99, 177, 0.6);
+          border-radius: 3px;
+          position: fixed;
+          right: 0;
+          z-index: 10001; /* Even higher to ensure visibility */
+        }
+        
+        html::-webkit-scrollbar-thumb:hover {
+          background: rgba(0, 99, 177, 0.8);
         }
         
         * {
@@ -1762,6 +1789,8 @@ export default function Home() {
                   boxSizing: 'border-box',
                   scrollbarGutter: 'stable',
                   scrollbarWidth: 'thin',
+                  /* Ensure scrollbar is visible and accessible */
+                  scrollbarColor: 'rgba(0, 99, 177, 0.5) rgba(0, 99, 177, 0.1)',
                 }}>
                   {/* Hero Banner Section */}
                   <section 

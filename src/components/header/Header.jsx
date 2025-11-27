@@ -356,7 +356,9 @@ export const Header = () => {
         transform: 'translateZ(0)',
         WebkitTransform: 'translateZ(0)',
         paddingRight: '0',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        /* Ensure header doesn't cover scrollbar - scrollbar will appear over it */
+        pointerEvents: 'auto',
       }}
     >
       <div style={{

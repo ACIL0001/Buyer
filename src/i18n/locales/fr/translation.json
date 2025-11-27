@@ -795,7 +795,10 @@
     "title": "Appels d'Offres",
     "description": "Soumettez vos offres et remportez des contrats intéressants",
     "budget": "Budget",
+    "participants": "participant(s)",
     "participantsSubmittedOffers": "participant(s) ont soumis des offres",
+    "haveSubmitted": "ont soumis",
+    "viewDetails": "Voir les Détails",
     "noTendersFound": "Aucun appel d'offres trouvé",
     "modifyFiltersOrSearch": "Modifiez vos filtres ou votre recherche"
   },

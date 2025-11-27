@@ -788,7 +788,10 @@
     "title": "Tenders",
     "description": "Submit your offers and win interesting contracts",
     "budget": "Budget",
+    "participants": "participant(s)",
     "participantsSubmittedOffers": "participant(s) have submitted offers",
+    "haveSubmitted": "have submitted",
+    "viewDetails": "View Details",
     "noTendersFound": "No tenders found",
     "modifyFiltersOrSearch": "Modify your filters or search"
   },

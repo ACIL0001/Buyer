@@ -808,7 +808,10 @@
     "title": "طلبات العروض",
     "description": "قدم عروضك واربح عقوداً مثيرة للاهتمام",
     "budget": "الميزانية",
+    "participants": "مشارك(ين)",
     "participantsSubmittedOffers": "مشارك(ين) قدموا عروضاً",
+    "haveSubmitted": "قدموا عروضاً",
+    "viewDetails": "عرض التفاصيل",
     "noTendersFound": "لم يتم العثور على طلبات عروض",
     "modifyFiltersOrSearch": "قم بتعديل المرشحات أو البحث"
   },

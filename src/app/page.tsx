@@ -39,13 +39,40 @@ export default function Home() {
   // Mobile detection
   const [isMobile, setIsMobile] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(112); // Default desktop height
   
   useEffect(() => {
     const checkMobile = () => {
-      const mobile = window.innerWidth <= 768;
-      const small = window.innerWidth < 480;
+      const width = window.innerWidth;
+      const mobile = width <= 768;
+      const small = width < 480;
       setIsMobile(mobile);
       setIsSmallScreen(small);
+      
+      // Calculate header height based on screen size
+      // Header structure: padding (8px mobile, 16px desktop) + height (56-80px) + safe area
+      let calculatedHeight = 112; // Default desktop
+      if (width <= 375) {
+        // Small mobile: 16px padding + 56px height = 72px
+        calculatedHeight = 72;
+      } else if (width <= 768) {
+        // Mobile: 16px padding + 60px height = 76px
+        calculatedHeight = 76;
+      } else if (width <= 1024) {
+        // Tablet: 32px padding + 70px height = 102px
+        calculatedHeight = 102;
+      } else {
+        // Desktop: 32px padding + 80px height = 112px
+        calculatedHeight = 112;
+      }
+      
+      // Add safe area inset top if available
+      const safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-top)') || '0', 10) || 0;
+      const totalHeight = calculatedHeight + safeAreaTop;
+      setHeaderHeight(totalHeight);
+      
+      // Set CSS variable for use in other components
+      document.documentElement.style.setProperty('--header-height', `${totalHeight}px`);
       
       // On mobile, immediately show all sections without animations
       if (mobile) {
@@ -1682,7 +1709,7 @@ export default function Home() {
                   maxWidth: '100vw',
                   overflowX: 'hidden',
                   overflowY: 'visible',
-                  paddingTop: 'env(safe-area-inset-top)',
+                  paddingTop: `${headerHeight}px`,
                   paddingBottom: 'env(safe-area-inset-bottom)',
                 }}>
                   {/* Hero Banner Section */}

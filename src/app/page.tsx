@@ -413,7 +413,7 @@ export default function Home() {
       <style jsx global>{`
         /* Global styles */
         :root {
-          --scrollbar-width: 17px;
+          --scrollbar-width: 6px; /* 65% smaller than typical 17px scrollbar */
         }
         
         html {
@@ -490,6 +490,45 @@ export default function Home() {
           max-width: 100vw;
           margin: 0;
           padding: 0;
+          /* Custom scrollbar - 65% smaller (35% of original) */
+          scrollbar-width: thin;
+          scrollbar-color: rgba(0, 99, 177, 0.5) rgba(0, 99, 177, 0.1);
+        }
+        
+        /* Webkit scrollbar styling (Chrome, Safari, Edge) */
+        body::-webkit-scrollbar {
+          width: 6px; /* 35% of typical 17px scrollbar */
+        }
+        
+        body::-webkit-scrollbar-track {
+          background: rgba(0, 99, 177, 0.1);
+        }
+        
+        body::-webkit-scrollbar-thumb {
+          background: rgba(0, 99, 177, 0.5);
+          border-radius: 3px;
+        }
+        
+        body::-webkit-scrollbar-thumb:hover {
+          background: rgba(0, 99, 177, 0.7);
+        }
+        
+        /* Apply to main element as well */
+        main::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        main::-webkit-scrollbar-track {
+          background: rgba(0, 99, 177, 0.1);
+        }
+        
+        main::-webkit-scrollbar-thumb {
+          background: rgba(0, 99, 177, 0.5);
+          border-radius: 3px;
+        }
+        
+        main::-webkit-scrollbar-thumb:hover {
+          background: rgba(0, 99, 177, 0.7);
         }
         
         .container {
@@ -1722,6 +1761,7 @@ export default function Home() {
                   paddingRight: '0',
                   boxSizing: 'border-box',
                   scrollbarGutter: 'stable',
+                  scrollbarWidth: 'thin',
                 }}>
                   {/* Hero Banner Section */}
                   <section 

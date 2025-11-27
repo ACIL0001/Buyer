@@ -699,7 +699,7 @@ const Home1LiveDirectSales = () => {
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
                           }}>
-                            {directSale.title || 'Direct Sale Title'}
+                            {directSale.title || t('liveDirectSales.directSaleTitle')}
                           </h3>
 
                           {/* Location and Quantity Info */}

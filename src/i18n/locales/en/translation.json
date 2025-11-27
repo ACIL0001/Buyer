@@ -764,6 +764,7 @@
     "description": "Buy directly at fixed price",
     "loading": "Loading direct sales...",
     "loadingError": "Error loading direct sales",
+    "errorLoading": "Error loading direct sales",
     "yourSale": "Your sale",
     "directSaleTitle": "Direct Sale Title",
     "available": "Available",

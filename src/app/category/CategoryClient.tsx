@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import app from '../../config';
-import { getCategoryImageUrl, handleCategoryImageError } from '../../utils/categoryImageUtils';
 
 // Category interface for component usage (tree structure)
 interface Category {
@@ -480,8 +479,43 @@ export default function CategoryClient() {
                 justifyContent: 'center',
               }}>
             <img
-              src={getCategoryImageUrl(category) || DEFAULT_CATEGORY_IMAGE}
-              alt={name || 'Category'}
+              src={(() => {
+                if (category.thumb && category.thumb.url) {
+                  const imageUrl = category.thumb.url;
+                  if (imageUrl.startsWith('http')) {
+                    return imageUrl;
+                  } else if (imageUrl.startsWith('/static/')) {
+                    const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
+                    console.log('🎯 CATEGORY PAGE CATEGORY IMAGE:', {
+                      originalUrl: imageUrl,
+                      finalUrl: finalUrl,
+                      categoryId: category._id,
+                      categoryName: name
+                    });
+                    return finalUrl;
+                  } else if (imageUrl.startsWith('/')) {
+                    const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
+                    console.log('🎯 CATEGORY PAGE CATEGORY IMAGE:', {
+                      originalUrl: imageUrl,
+                      finalUrl: finalUrl,
+                      categoryId: category._id,
+                      categoryName: name
+                    });
+                    return finalUrl;
+                  } else {
+                    const finalUrl = `${app.baseURL}${imageUrl}`;
+                    console.log('🎯 CATEGORY PAGE CATEGORY IMAGE:', {
+                      originalUrl: imageUrl,
+                      finalUrl: finalUrl,
+                      categoryId: category._id,
+                      categoryName: name
+                    });
+                    return finalUrl;
+                  }
+                }
+                return DEFAULT_CATEGORY_IMAGE;
+              })()}
+                  alt={name}
               style={{
                     width: '90%',
                     height: '90%',
@@ -490,14 +524,12 @@ export default function CategoryClient() {
                     transition: 'all 0.4s ease',
                     transform: isHovered ? 'scale(1.1)' : 'scale(1)',
               }}
-              loading="lazy"
               onError={(e) => {
-                handleCategoryImageError(e, DEFAULT_CATEGORY_IMAGE, {
-                  id: category._id,
-                  name: category.name
-                });
+                console.log('❌ Category image failed to load:', category.name, e.currentTarget.src);
+                e.currentTarget.src = DEFAULT_CATEGORY_IMAGE;
               }}
-            />
+                  loading="lazy"
+                />
               </div>
             </div>
             

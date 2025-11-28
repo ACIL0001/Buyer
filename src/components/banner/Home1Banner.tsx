@@ -11,6 +11,7 @@ import { DirectSaleAPI } from '@/app/api/direct-sale';
 import { useRouter } from 'next/navigation';
 import app from '@/config';
 import { FaShoppingBag, FaHandshake } from 'react-icons/fa';
+import { getCategoryImageUrl, handleCategoryImageError } from '@/utils/categoryImageUtils';
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -258,64 +259,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     };
   }, [categoryCount]);
 
-  const getCategoryImageUrl = (category: any): string => {
-    // Check if category has thumb with url (matching working implementation)
-    if (category.thumb && category.thumb.url) {
-      const imageUrl = category.thumb.url;
-      
-      // If it's already a full URL, return it as-is
-      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-        // Replace localhost:3000 with current baseURL if needed
-        if (imageUrl.includes('localhost:3000')) {
-          return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-        }
-        return imageUrl;
-      }
-      
-      // Handle /static/ paths by removing leading slash and prepending baseURL
-      if (imageUrl.startsWith('/static/')) {
-        return `${app.baseURL}${imageUrl.substring(1)}`;
-      }
-      
-      // Handle other paths starting with /
-      if (imageUrl.startsWith('/')) {
-        return `${app.baseURL}${imageUrl.substring(1)}`;
-      }
-      
-      // Handle paths without leading slash
-      return `${app.baseURL}${imageUrl}`;
-    }
-    
-    // Fallback: try other possible fields
-    const imageUrl = category.thumb?.fullUrl || 
-                     category.image || 
-                     category.thumbnail || 
-                     category.photo || 
-                     '';
-    
-    if (!imageUrl) {
-      return '/assets/images/cat.avif'; // Fallback image
-    }
-
-    // If it's already a full URL, return it as-is
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      if (imageUrl.includes('localhost:3000')) {
-        return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-      }
-      return imageUrl;
-    }
-
-    // Handle relative paths
-    if (imageUrl.startsWith('/static/')) {
-      return `${app.baseURL}${imageUrl.substring(1)}`;
-    }
-    
-    if (imageUrl.startsWith('/')) {
-      return `${app.baseURL}${imageUrl.substring(1)}`;
-    }
-    
-    return `${app.baseURL}${imageUrl}`;
-  };
 
   const navigateToCategory = (category: any, event: React.MouseEvent) => {
     // Prevent navigation if user was dragging the swiper
@@ -1151,7 +1094,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                       item.thumb?.url || item.thumb?.fullUrl || item.image ? (
                         <img
                           src={getCategoryImageUrl(item)}
-                          alt={item.name}
+                          alt={item.name || 'Category'}
                           style={{
                             width: 'clamp(20px, 4vw, 24px)',
                             height: 'clamp(20px, 4vw, 24px)',
@@ -1160,9 +1103,12 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                             border: '1px solid rgba(0, 0, 0, 0.1)',
                             flexShrink: 0,
                           }}
+                          loading="lazy"
                           onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/assets/images/cat.avif';
+                            handleCategoryImageError(e, '/assets/images/cat.avif', {
+                              id: item._id || item.id,
+                              name: item.name
+                            });
                           }}
                         />
                       ) : (
@@ -1333,11 +1279,23 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                       >
                       <img
                         src={getCategoryImageUrl(category)}
-                        alt={category.name}
+                        alt={category.name || 'Category'}
                         className="category-image"
+                        loading="lazy"
                         onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/assets/images/cat.avif';
+                          handleCategoryImageError(e, '/assets/images/cat.avif', {
+                            id: category._id || category.id,
+                            name: category.name
+                          });
+                        }}
+                        onLoad={() => {
+                          // Image loaded successfully
+                          if (process.env.NODE_ENV === 'development') {
+                            console.log('Category image loaded successfully:', {
+                              categoryId: category._id || category.id,
+                              categoryName: category.name
+                            });
+                          }
                         }}
                       />
                       <div className="category-overlay"></div>

@@ -109,7 +109,7 @@ const Footer = () => {
       `}</style>
       <footer style={{
         background: 'white',
-        paddingTop: '60px',
+        paddingTop: '35px',
         borderTop: '1px solid #eaeaea',
       }}>
       {/* Main Footer Section */}

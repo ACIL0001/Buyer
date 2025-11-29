@@ -549,7 +549,7 @@ const Home1LiveAuction = () => {
 
   if (loading) {
     return (
-      <div className="modern-auctions-section" style={{ padding: 'clamp(40px, 8vw, 80px) 0' }}>
+      <div className="modern-auctions-section" style={{ padding: '10px 0' }}>
         <div className="container-responsive">
           <div className="section-header" style={{ textAlign: 'center', marginBottom: 'clamp(30px, 6vw, 50px)' }}>
             <div style={{
@@ -570,7 +570,7 @@ const Home1LiveAuction = () => {
 
   if (error) {
     return (
-      <div className="modern-auctions-section" style={{ padding: 'clamp(40px, 8vw, 80px) 0' }}>
+      <div className="modern-auctions-section" style={{ padding: '10px 0' }}>
         <div className="container-responsive">
           <div className="section-header" style={{ textAlign: 'center', marginBottom: 'clamp(30px, 6vw, 50px)' }}>
             <div className="alert alert-warning" style={{
@@ -733,7 +733,7 @@ const Home1LiveAuction = () => {
         }
       `}</style>
 
-      <div className="modern-auctions-section" style={{ padding: 'clamp(20px, 4vw, 40px) 0', background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)' }}>
+      <div className="modern-auctions-section" style={{ padding: '10px 0', background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)' }}>
         <div className="container-responsive">
           {/* Section Header */}
           <div className="section-header" style={{

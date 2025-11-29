@@ -51,6 +51,17 @@ export const IdentityAPI = {
     }
   },
 
+  // Create identity with FormData (for document uploads)
+  create: async (formData: FormData): Promise<any> => {
+    try {
+      const res = await requests.post('identities', formData);
+      return res;
+    } catch (error: unknown) {
+      console.error('Error creating identity:', error);
+      throw error;
+    }
+  },
+
   createIdentity: async (identityData: Partial<Identity>): Promise<ApiResponse<Identity>> => {
     try {
       const res = await requests.post('identities', identityData);
@@ -162,6 +173,42 @@ export const IdentityAPI = {
       } as ApiResponse<Identity>;
     } catch (error: unknown) {
       console.error('Error updating identity document:', error);
+      throw error;
+    }
+  },
+
+  // Submit identity for admin review
+  submitIdentity: async (identityId: string): Promise<ApiResponse<Identity>> => {
+    try {
+      const res = await requests.put(`identities/${identityId}/submit`, {});
+      if ('success' in res) {
+        return res as ApiResponse<Identity>;
+      }
+      return {
+        success: (res as any)?.status >= 200 && (res as any)?.status < 300,
+        data: (res as any)?.data?.data ?? (res as any)?.data,
+        message: (res as any)?.data?.message,
+      } as ApiResponse<Identity>;
+    } catch (error: unknown) {
+      console.error('Error submitting identity:', error);
+      throw error;
+    }
+  },
+
+  // Submit certification documents for admin review
+  submitCertification: async (identityId: string): Promise<ApiResponse<Identity>> => {
+    try {
+      const res = await requests.put(`identities/${identityId}/submit-certification`, {});
+      if ('success' in res) {
+        return res as ApiResponse<Identity>;
+      }
+      return {
+        success: (res as any)?.status >= 200 && (res as any)?.status < 300,
+        data: (res as any)?.data?.data ?? (res as any)?.data,
+        message: (res as any)?.data?.message,
+      } as ApiResponse<Identity>;
+    } catch (error: unknown) {
+      console.error('Error submitting certification:', error);
       throw error;
     }
   },

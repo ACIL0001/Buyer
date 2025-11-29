@@ -1123,16 +1123,6 @@ export default function CategoryClient() {
             box-shadow: 0 8px 28px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
           }
         }
-        
-        /* Mobile searchbar - Reduce height by 30% */
-        @media (max-width: 768px) {
-          .category-search-input {
-            padding: 11.2px 14px !important;
-            padding-right: 35px !important;
-            font-size: 14px !important;
-            border-radius: 12px !important;
-          }
-        }
       `}</style>
     <div style={{ 
         padding: '80px 0', 
@@ -1162,7 +1152,6 @@ export default function CategoryClient() {
                 setShowSearchResults(true);
               }
             }}
-            className="category-search-input"
             style={{
               width: '100%',
               padding: '16px 20px',

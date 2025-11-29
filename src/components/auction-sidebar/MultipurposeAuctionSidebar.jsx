@@ -837,16 +837,6 @@ const MultipurposeAuctionSidebar = () => {
                 .auction-card {
                     animation: slideIn 0.8s ease-out 0.4s both;
                 }
-                
-                /* Mobile searchbar - Reduce height by 30% */
-                @media (max-width: 768px) {
-                  .auction-search-input {
-                    padding: 11.2px 14px !important;
-                    padding-right: 35px !important;
-                    font-size: 14px !important;
-                    border-radius: 12px !important;
-                  }
-                }
             `}</style>
             <div className="container">
                 {/* Enhanced Filter Section */}
@@ -887,7 +877,6 @@ const MultipurposeAuctionSidebar = () => {
                                                 placeholder={t('auctionSidebar.searchAuctionPlaceholder')}
                                                 value={searchTerm}
                                                 onChange={handleSearchChange}
-                                                className="auction-search-input"
                                                 style={{
                                                     width: '100%',
                                                     padding: '16px 20px',

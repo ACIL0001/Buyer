@@ -364,28 +364,26 @@ export const Header = () => {
       <div style={{
         background: 'white',
         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
-        padding: isMobile ? '6px 0' : '16px 0',
+        padding: isMobile ? '8px 0' : '16px 0',
         transition: 'all 0.3s ease'
       }}>
         <div className="container-responsive" style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          height: isSmallMobile ? '52px' : isMobile ? '56px' : isTablet ? '70px' : '80px',
+          height: isSmallMobile ? '56px' : isMobile ? '60px' : isTablet ? '70px' : '80px',
           transition: 'height 0.3s ease',
-          paddingLeft: isSmallMobile ? '10px' : isMobile ? '12px' : '20px',
-          paddingRight: isSmallMobile ? '10px' : isMobile ? '12px' : '20px',
-          maxWidth: '100vw',
-          gap: isMobile ? '8px' : '20px'
+          paddingLeft: isSmallMobile ? '12px' : isMobile ? '16px' : '20px',
+          paddingRight: isSmallMobile ? '12px' : isMobile ? '16px' : '20px',
+          maxWidth: '100vw'
         }}>
           {/* Logo */}
           <div style={{ 
             flexShrink: 0, 
             padding: 0, 
-            margin: 0,
+            margin: 5,
             display: 'flex',
-            alignItems: 'center',
-            minWidth: isMobile ? '100px' : 'auto'
+            alignItems: 'center'
           }}>
             <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
               <div style={{
@@ -399,12 +397,14 @@ export const Header = () => {
                   alt="MazadClick"
                   className="header-logo"
                   style={{ 
-                    height: isSmallMobile ? '40px' : isMobile ? '44px' : isTablet ? '65px' : '65px',
-                    width: isSmallMobile ? '100px' : isMobile ? '110px' : isTablet ? '155px' : '165px',
+
+                    height: isMobile ? '50px' : isTablet ? '65px' : '65px',
+                    width: isMobile ? '120px' : isTablet ? '155px' : '165px',
+
                     transition: 'all 0.3s ease',
                     objectFit: 'contain',
                     objectPosition: 'center center',
-                    borderRadius: isMobile ? '8px' : '16px',
+                    borderRadius: isMobile ? '12px' : '16px',
                     display: 'block',
                     filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))',
                     maxWidth: '100%'
@@ -467,8 +467,7 @@ export const Header = () => {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: isSmallMobile ? '6px' : isMobile ? '8px' : '20px',
-            flexShrink: 0
+            gap: '20px'
           }}>
             {/* Language Switcher moved to floating button at bottom-right */}
             
@@ -477,28 +476,14 @@ export const Header = () => {
 
             {/* Notification Bell - Testing stable version */}
             {isClient && isReady && isLogged && (
-              <div style={{ 
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: isMobile ? '36px' : 'auto',
-                height: isMobile ? '36px' : 'auto'
-              }}>
+              <div style={{ position: 'relative' }}>
                 <NotificationBellStable key="notification-bell-header" variant="header" />
               </div>
             )}
 
             {/* Chat Icon - Messages Notifications */}
             {isClient && isReady && isLogged && (
-              <div style={{ 
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: isMobile ? '36px' : 'auto',
-                height: isMobile ? '36px' : 'auto'
-              }}>
+              <div style={{ position: 'relative' }}>
                 <ChatNotifications variant="header" />
               </div>
             )}
@@ -515,18 +500,16 @@ export const Header = () => {
                       gap: '10px',
                       background: isAccountDropdownOpen ? '#0063b1' : 'linear-gradient(45deg, #0063b1, #0078d7)',
                       border: 'none',
-                      borderRadius: isMobile ? '20px' : '30px',
-                      padding: isSmallMobile ? '6px 8px' : isMobile ? '7px 10px' : isTablet ? '9px 16px' : '10px 20px',
+                      borderRadius: '30px',
+                      padding: isMobile ? '8px 12px' : isTablet ? '9px 16px' : '10px 20px',
                       color: 'white',
-                      fontSize: isSmallMobile ? '11px' : isMobile ? '12px' : isTablet ? '14px' : '15px',
+                      fontSize: isMobile ? '13px' : isTablet ? '14px' : '15px',
                       fontWeight: '600',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
                       boxShadow: isAccountDropdownOpen 
                         ? '0 4px 15px rgba(0, 99, 177, 0.5)' 
-                        : '0 3px 10px rgba(0, 99, 177, 0.3)',
-                      minWidth: isMobile ? 'auto' : '120px',
-                      justifyContent: isMobile ? 'center' : 'flex-start'
+                        : '0 3px 10px rgba(0, 99, 177, 0.3)'
                     }}
                     onMouseOver={(e) => {
                       if (!isAccountDropdownOpen) {
@@ -608,19 +591,18 @@ export const Header = () => {
                       
                       return (
                         <div style={{
-                          width: isSmallMobile ? '18px' : isMobile ? '20px' : '24px',
-                          height: isSmallMobile ? '18px' : isMobile ? '20px' : '24px',
+                          width: isMobile ? '20px' : '24px',
+                          height: isMobile ? '20px' : '24px',
                           borderRadius: '50%',
                           background: 'rgba(255, 255, 255, 0.2)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           overflow: 'hidden',
-                          position: 'relative',
-                          flexShrink: 0
+                          position: 'relative'
                         }}>
                           {/* SVG fallback - always rendered */}
-                          <svg width={isSmallMobile ? 12 : isMobile ? 14 : 16} height={isSmallMobile ? 12 : isMobile ? 14 : 16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', zIndex: 0 }}>
+                          <svg width={isMobile ? 14 : 16} height={isMobile ? 14 : 16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', zIndex: 0 }}>
                             <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" fill="white" />
                             <path d="M8 9C5.79086 9 4 10.7909 4 13C4 13.5523 4.44772 14 5 14H11C11.5523 14 12 13.5523 12 13C12 10.7909 10.2091 9 8 9Z" fill="white" />
                           </svg>
@@ -648,7 +630,7 @@ export const Header = () => {
                         </div>
                       );
                     })()}
-                    {!isMobile && <span style={{ whiteSpace: 'nowrap' }}>{t('common.myAccount')}</span>}
+                    {!isMobile ? t('common.myAccount') : ""}
                     <svg 
                       width={12} 
                       height={12} 
@@ -879,52 +861,40 @@ export const Header = () => {
                 style={{
                   border: 'none',
                   background: 'transparent',
-                  width: isSmallMobile ? '32px' : isMobile ? '36px' : '40px',
-                  height: isSmallMobile ? '32px' : isMobile ? '36px' : '40px',
+                  width: '40px',
+                  height: '40px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  gap: isMobile ? '4px' : '6px',
+                  gap: '6px',
                   cursor: 'pointer',
-                  zIndex: 9999,
-                  padding: '4px',
-                  borderRadius: '6px',
-                  transition: 'background-color 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
+                  zIndex: 9999
                 }}
               >
                 <span style={{
                   display: 'block',
-                  width: isMobile ? '20px' : '24px',
+                  width: '24px',
                   height: '2px',
                   background: '#333',
                   transform: isMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none',
-                  transition: 'transform 0.3s ease',
-                  borderRadius: '2px'
+                  transition: 'transform 0.3s ease'
                 }}></span>
                 <span style={{
                   display: 'block',
-                  width: isMobile ? '20px' : '24px',
+                  width: '24px',
                   height: '2px',
                   background: '#333',
                   opacity: isMenuOpen ? 0 : 1,
-                  transition: 'opacity 0.3s ease',
-                  borderRadius: '2px'
+                  transition: 'opacity 0.3s ease'
                 }}></span>
                 <span style={{
                   display: 'block',
-                  width: isMobile ? '20px' : '24px',
+                  width: '24px',
                   height: '2px',
                   background: '#333',
                   transform: isMenuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none',
-                  transition: 'transform 0.3s ease',
-                  borderRadius: '2px'
+                  transition: 'transform 0.3s ease'
                 }}></span>
               </button>
             )}

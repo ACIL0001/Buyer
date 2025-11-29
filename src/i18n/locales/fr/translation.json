@@ -282,6 +282,7 @@
       "submitForCertification": "Soumettre pour certification",
       "requiredForVerification": "Documents Obligatoires pour Vérification",
       "optionalForCertification": "Documents Optionnels pour Certification",
+      "requiredForCertification": "Documents requis pour certification",
       "clickButtonsNote": "Cliquez sur les boutons ci-dessus pour voir les documents requis pour chaque niveau de vérification.",
       "status": "Statut",
       "approved": "Approuvé",

@@ -1932,7 +1932,7 @@ function ProfilePage() {
                                                                     exit={{ opacity: 0, height: 0 }}
                                                                     transition={{ duration: 0.3 }}
                                                                 >
-                                                                    {renderDocumentCards(optionalDocuments, t("profile.documents.optionalForCertification") || "Documents Optionnels pour Certification", false)}
+                                                                    {renderDocumentCards(optionalDocuments, t("profile.documents.requiredForCertification") || "Documents requis pour certification", false)}
                                                                 </motion.div>
                                                             )}
                                                         </AnimatePresence>

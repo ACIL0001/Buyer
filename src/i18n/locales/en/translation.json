@@ -266,6 +266,7 @@
       "submitForCertification": "Submit for certification",
       "requiredForVerification": "Required Documents for Verification",
       "optionalForCertification": "Optional Documents for Certification",
+      "requiredForCertification": "Documents required for certification",
       "clickButtonsNote": "Click the buttons above to see the documents required for each verification level.",
       "status": "Status",
       "approved": "Approved",

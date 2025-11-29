@@ -2727,13 +2727,14 @@
   }
   
   .modern-document-note-card {
-    padding: 0.5rem 0.65rem;
-    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    gap: 0.35rem;
+    margin: 0.3rem 0;
   }
   
   .modern-document-note-card i {
-    font-size: 0.8rem;
-    padding: 0.25rem;
+    font-size: 0.7rem;
+    padding: 0.2rem;
   }
   
   .modern-document-note-content h4 {
@@ -2770,11 +2771,15 @@
   .modern-document-note-card {
     flex-direction: column;
     text-align: center;
-    padding: 1rem;
+    padding: 0.35rem 0.5rem;
+    gap: 0.35rem;
+    margin: 0.3rem 0;
   }
   
   .modern-document-note-card i {
     margin-top: 0;
+    font-size: 0.7rem;
+    padding: 0.2rem;
   }
   
   .modern-document-buttons {

@@ -250,6 +250,7 @@
       "submitForCertification": "إرسال للاعتماد",
       "requiredForVerification": "المستندات المطلوبة للتحقق",
       "optionalForCertification": "المستندات الاختيارية للاعتماد",
+      "requiredForCertification": "المستندات المطلوبة للاعتماد",
       "clickButtonsNote": "انقر على الأزرار أعلاه لرؤية المستندات المطلوبة لكل مستوى تحقق.",
       "status": "الحالة",
       "approved": "موافق عليه",

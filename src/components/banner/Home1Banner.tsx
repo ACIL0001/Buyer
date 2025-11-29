@@ -713,20 +713,39 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             border-radius: clamp(12px, 3vw, 20px);
           }
           
+          /* Searchbar - Reduce height by 30% on mobile */
+          .search-bar-container {
+            padding: clamp(1.4px, 0.7vw, 2.8px) !important;
+            border-radius: clamp(21px, 5.6vw, 35px) !important;
+          }
+          
+          .search-icon-wrapper {
+            padding: clamp(5.6px, 1.4vw, 8.4px) clamp(7px, 1.75vw, 11.2px) !important;
+          }
+          
+          .search-icon-wrapper svg {
+            width: clamp(12.6px, 2.8vw, 14px) !important;
+            height: clamp(12.6px, 2.8vw, 14px) !important;
+          }
+          
+          .search-input {
+            padding: clamp(5.6px, 1.4vw, 8.4px) 0 !important;
+            font-size: clamp(12px, 2.5vw, 14px) !important;
+          }
 
           .section-header {
             flex-direction: row;
             flex-wrap: nowrap;
             justify-content: center;
             align-items: center;
-            gap: clamp(6px, 2vw, 10px);
-            margin-bottom: clamp(10px, 2vw, 16px);
-            padding: 0 clamp(12px, 3vw, 18px);
+            gap: clamp(4px, 1.5vw, 8px);
+            margin-bottom: clamp(8px, 1.5vw, 12px);
+            padding: 0 clamp(10px, 2.5vw, 14px);
           }
 
           .section-title {
-            font-size: clamp(1.05rem, 3.8vw, 1.3rem);
-            padding: 0 clamp(12px, 3vw, 16px);
+            font-size: clamp(0.9rem, 3.2vw, 1.1rem);
+            padding: 0 clamp(10px, 2.5vw, 14px);
             width: auto;
             margin: 0;
           }
@@ -786,16 +805,36 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: 0 clamp(16px, 3.5vw, 24px) clamp(16px, 3.5vw, 24px) clamp(16px, 3.5vw, 24px);
             paddingTop: 0;
           }
+          
+          /* Searchbar - Reduce height by 30% on mobile */
+          .search-bar-container {
+            padding: clamp(1.4px, 0.7vw, 2.8px) !important;
+            border-radius: clamp(21px, 5.6vw, 35px) !important;
+          }
+          
+          .search-icon-wrapper {
+            padding: clamp(5.6px, 1.4vw, 8.4px) clamp(7px, 1.75vw, 11.2px) !important;
+          }
+          
+          .search-icon-wrapper svg {
+            width: clamp(12.6px, 2.8vw, 14px) !important;
+            height: clamp(12.6px, 2.8vw, 14px) !important;
+          }
+          
+          .search-input {
+            padding: clamp(5.6px, 1.4vw, 8.4px) 0 !important;
+            font-size: clamp(12px, 2.5vw, 14px) !important;
+          }
 
           .section-header {
-            gap: clamp(12px, 2.5vw, 18px);
-            margin-bottom: clamp(12px, 2.5vw, 18px);
-            padding: 0 clamp(16px, 3.5vw, 24px);
+            gap: clamp(8px, 2vw, 14px);
+            margin-bottom: clamp(8px, 2vw, 14px);
+            padding: 0 clamp(12px, 3vw, 18px);
           }
 
           .section-title {
-            font-size: clamp(1.4rem, 3.5vw, 1.8rem);
-            padding: 0 clamp(20px, 4vw, 32px);
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            padding: 0 clamp(14px, 3.5vw, 24px);
           }
 
           .filter-button {
@@ -827,13 +866,27 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             padding: 0 clamp(20px, 3.5vw, 32px) clamp(20px, 3.5vw, 32px) clamp(20px, 3.5vw, 32px);
             paddingTop: 0;
           }
+          
+          /* Searchbar - Reduce height by 30% on mobile */
+          .search-bar-container {
+            padding: clamp(1.4px, 0.7vw, 2.8px) !important;
+          }
+          
+          .search-icon-wrapper {
+            padding: clamp(5.6px, 1.4vw, 8.4px) clamp(7px, 1.75vw, 11.2px) !important;
+          }
+          
+          .search-input {
+            padding: clamp(5.6px, 1.4vw, 8.4px) 0 !important;
+          }
 
           .section-header {
-            gap: clamp(20px, 3.5vw, 28px);
+            gap: clamp(14px, 2.5vw, 20px);
+            margin-bottom: clamp(10px, 2vw, 16px);
           }
 
           .section-title {
-            font-size: clamp(1.6rem, 3.5vw, 2rem);
+            font-size: clamp(1.3rem, 3vw, 1.6rem);
           }
 
           .filter-button {
@@ -1036,7 +1089,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }}
         >
           <form onSubmit={handleSearchSubmit}>
-            <div style={{
+            <div className="search-bar-container" style={{
               position: 'relative',
               display: 'flex',
               alignItems: 'center',
@@ -1055,7 +1108,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
               e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.1)';
             }}>
               {/* Search Icon */}
-              <div style={{
+              <div className="search-icon-wrapper" style={{
                 padding: 'clamp(8px, 2vw, 12px) clamp(10px, 2.5vw, 16px)',
                 display: 'flex',
                 alignItems: 'center',
@@ -1072,6 +1125,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
               <input
                 ref={searchInputRef}
                 type="text"
+                className="search-input"
                 placeholder={isSmallScreen ? t('home.searchPlaceholderShort') : t('home.searchPlaceholder')}
                 value={searchQuery}
                 onChange={handleSearchChange}

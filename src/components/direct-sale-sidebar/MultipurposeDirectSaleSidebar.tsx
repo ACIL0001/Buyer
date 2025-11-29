@@ -595,6 +595,16 @@ const MultipurposeDirectSaleSidebar = () => {
         .direct-sale-card {
           animation: slideIn 0.8s ease-out 0.4s both;
         }
+        
+        /* Mobile searchbar - Reduce height by 30% */
+        @media (max-width: 768px) {
+          .direct-sale-search-input {
+            padding: 11.2px 14px !important;
+            padding-right: 35px !important;
+            font-size: 14px !important;
+            border-radius: 12px !important;
+          }
+        }
       `}</style>
       <div className="container">
         {/* Enhanced Filter Section */}
@@ -635,6 +645,7 @@ const MultipurposeDirectSaleSidebar = () => {
                         placeholder={t('directSale.searchPlaceholder') || 'Rechercher une vente directe...'}
                         value={searchTerm}
                         onChange={handleSearchChange}
+                        className="direct-sale-search-input"
                         style={{
                           width: '100%',
                           padding: '16px 20px',

@@ -413,22 +413,21 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         }
 
         .filter-button {
-          padding: clamp(6px, 1.2vw, 8px) clamp(16px, 2.5vw, 20px);
-          border-radius: 20px;
-          font-size: clamp(0.7rem, 1.1vw, 0.85rem);
+          padding: clamp(8px, 1.5vw, 10px) clamp(20px, 3vw, 24px);
+          border-radius: 30px;
+          font-size: clamp(0.75rem, 1.2vw, 0.9rem);
           font-weight: 700;
           cursor: pointer;
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           border: 2px solid transparent;
           background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
           color: #495057;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+          box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95);
           position: relative;
           overflow: hidden;
           text-transform: uppercase;
-          letter-spacing: 0.4px;
-          min-width: 80px;
-          line-height: 1.4;
+          letter-spacing: 0.5px;
+          min-width: 90px;
         }
 
         .filter-button::before {
@@ -451,7 +450,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           background-size: 200% 200%;
           color: white;
           border-color: #0063b1;
-          box-shadow: 0 4px 16px rgba(0, 99, 177, 0.3), 
+          box-shadow: 0 6px 24px rgba(0, 99, 177, 0.35), 
                       0 0 0 1px rgba(255, 255, 255, 0.1) inset,
                       inset 0 1px 0 rgba(255, 255, 255, 0.25);
           animation: gradient-shift 3s ease infinite;
@@ -460,8 +459,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         .filter-button.product:hover {
           background: linear-gradient(135deg, #005299 0%, #004080 50%, #003366 100%);
           border-color: #004080;
-          transform: translateY(-2px) scale(1.05);
-          box-shadow: 0 6px 20px rgba(0, 99, 177, 0.4), 
+          transform: translateY(-4px) scale(1.08);
+          box-shadow: 0 10px 32px rgba(0, 99, 177, 0.5), 
                       0 0 0 1px rgba(255, 255, 255, 0.15) inset,
                       inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
@@ -475,7 +474,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           background-size: 200% 200%;
           color: white;
           border-color: #10b981;
-          box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3), 
+          box-shadow: 0 6px 24px rgba(16, 185, 129, 0.35), 
                       0 0 0 1px rgba(255, 255, 255, 0.1) inset,
                       inset 0 1px 0 rgba(255, 255, 255, 0.25);
           animation: gradient-shift 3s ease infinite;
@@ -484,8 +483,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         .filter-button.service:hover {
           background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
           border-color: #047857;
-          transform: translateY(-2px) scale(1.05);
-          box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4), 
+          transform: translateY(-4px) scale(1.08);
+          box-shadow: 0 10px 32px rgba(16, 185, 129, 0.5), 
                       0 0 0 1px rgba(255, 255, 255, 0.15) inset,
                       inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
@@ -506,25 +505,25 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         .filter-button:not(.product):not(.service):hover {
           background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
           border-color: #ced4da;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
         }
 
         @keyframes pulse-blue {
           0%, 100% {
-            box-shadow: 0 4px 14px rgba(0, 99, 177, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 20px rgba(0, 99, 177, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
           }
           50% {
-            box-shadow: 0 5px 18px rgba(0, 99, 177, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 28px rgba(0, 99, 177, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
           }
         }
 
         @keyframes pulse-green {
           0%, 100% {
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
           }
           50% {
-            box-shadow: 0 5px 18px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 28px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
           }
         }
 
@@ -752,12 +751,10 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .filter-button {
-            padding: clamp(5px, 1.4vw, 7px) clamp(12px, 3.5vw, 16px);
-            font-size: clamp(0.65rem, 2.5vw, 0.75rem);
+            padding: clamp(8px, 2vw, 10px) clamp(14px, 4vw, 18px);
+            font-size: clamp(0.75rem, 3vw, 0.85rem);
             min-width: auto;
             flex: 0 0 auto;
-            border-radius: 16px;
-            line-height: 1.3;
           }
 
           .categories-carousel {
@@ -841,11 +838,9 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .filter-button {
-            padding: clamp(6px, 1.5vw, 8px) clamp(16px, 3vw, 20px);
-            font-size: clamp(0.7rem, 1.8vw, 0.8rem);
-            min-width: 85px;
-            border-radius: 18px;
-            line-height: 1.3;
+            padding: clamp(10px, 2.5vw, 12px) clamp(20px, 4vw, 24px);
+            font-size: clamp(0.8rem, 2vw, 0.95rem);
+            min-width: 100px;
           }
 
           .categories-carousel {
@@ -895,10 +890,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           }
 
           .filter-button {
-            padding: clamp(7px, 1.5vw, 8px) clamp(18px, 3vw, 22px);
-            font-size: clamp(0.75rem, 1.5vw, 0.85rem);
-            border-radius: 20px;
-            line-height: 1.4;
+            padding: clamp(11px, 2vw, 12px) clamp(24px, 4vw, 26px);
+            font-size: clamp(0.85rem, 1.8vw, 0.95rem);
           }
 
           .categories-carousel {

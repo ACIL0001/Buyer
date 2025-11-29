@@ -2018,8 +2018,8 @@ function ProfilePage() {
                                                             <i className="bi bi-bell-fill"></i>
                                                         </motion.div>
                                                         <div className="header-text">
-                                                            <h2>Notifications</h2>
-                                                            <p>Manage your notification preferences</p>
+                                                            <h2 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Notifications</h2>
+                                                            <p style={{ fontSize: '0.75rem' }}>Manage your notification preferences</p>
                                                         </div>
                                                     </div>
                                                 </div>

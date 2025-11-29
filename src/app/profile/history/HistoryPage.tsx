@@ -31,61 +31,61 @@ interface OfferHistoryItem {
 // --- Styled Components ---
 
 const HistoryContainer = styled(Box)(({ theme }) => ({
-  padding: '40px', // Increased padding for a more premium feel
+  padding: '1.25rem', // Reduced padding for better UI/UX
   backgroundColor: '#ffffff', // Clean white background for the main content area
-  borderRadius: '20px', // More significantly rounded corners
-  boxShadow: '0 15px 45px rgba(0,0,0,0.1)', // Deeper, softer shadow for elevation
+  borderRadius: '12px', // Smaller rounded corners
+  boxShadow: '0 4px 12px rgba(0,0,0,0.08)', // Lighter shadow
   border: '1px solid #e0e0e0', // Subtle border for definition
   position: 'relative',
   overflow: 'hidden',
   background: 'linear-gradient(135deg, #f8fbfd 0%, #edf2f7 100%)', // Very light, subtle gradient
   [theme.breakpoints.down('sm')]: {
-    padding: '20px', // Adjust padding for smaller screens
+    padding: '1rem', // Adjust padding for smaller screens
   },
 }));
 
 const OfferCard = styled(Card)(({ theme }) => ({
-  marginBottom: '25px', // More space between cards
-  borderRadius: '16px', // Consistent, slightly more rounded corners
-  boxShadow: '0 8px 25px rgba(0,0,0,0.08)', // Deeper shadow for elevation
+  marginBottom: '0.75rem', // Reduced space between cards
+  borderRadius: '10px', // Smaller rounded corners
+  boxShadow: '0 2px 8px rgba(0,0,0,0.06)', // Lighter shadow
   transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
   backgroundColor: '#ffffff', // White card background
   border: '1px solid #f5f5f5', // Very light border
   '&:hover': {
-    transform: 'translateY(-10px)', // More pronounced lift on hover
-    boxShadow: '0 15px 40px rgba(0,0,0,0.15)', // Even deeper shadow on hover
+    transform: 'translateY(-4px)', // Less pronounced lift on hover
+    boxShadow: '0 6px 16px rgba(0,0,0,0.1)', // Lighter shadow on hover
     backgroundColor: '#fdfdfd', // Slight background change on hover
   },
   [theme.breakpoints.down('sm')]: {
-    marginBottom: '15px',
+    marginBottom: '0.625rem',
   },
 }));
 
 const StatusChip = styled(Chip)<{ status: string }>(({ status, theme }) => ({
   fontWeight: '600',
   color: 'white',
-  padding: '6px 12px', // More padding for a softer, pill-like look
-  borderRadius: '20px', // More rounded, pill shape
-  fontSize: '0.8rem', // Slightly larger font for readability
+  padding: '4px 10px', // Reduced padding
+  borderRadius: '12px', // Smaller rounded corners
+  fontSize: '0.7rem', // Smaller font
   textTransform: 'uppercase',
-  letterSpacing: '0.7px', // More letter spacing
-  boxShadow: '0 2px 10px rgba(0,0,0,0.2)', // Consistent shadow for chips
+  letterSpacing: '0.5px', // Less letter spacing
+  boxShadow: '0 2px 6px rgba(0,0,0,0.15)', // Lighter shadow
   ...(status === 'accepted' && {
     backgroundColor: '#28a745', // Success green
-    boxShadow: '0 4px 12px rgba(40,167,69,0.3)',
+    boxShadow: '0 2px 8px rgba(40,167,69,0.25)',
   }),
   ...(status === 'en attente' && {
     backgroundColor: '#ffc107', // Warning yellow
     color: '#495057', // Darker text for contrast on yellow
-    boxShadow: '0 4px 12px rgba(255,193,7,0.3)',
+    boxShadow: '0 2px 8px rgba(255,193,7,0.25)',
   }),
   ...(status === 'declined' && {
     backgroundColor: '#dc3545', // Danger red
-    boxShadow: '0 4px 12px rgba(220,53,69,0.3)',
+    boxShadow: '0 2px 8px rgba(220,53,69,0.25)',
   }),
   [theme.breakpoints.down('sm')]: {
-    fontSize: '0.7rem',
-    padding: '4px 8px',
+    fontSize: '0.65rem',
+    padding: '3px 8px',
   },
 }));
 
@@ -212,22 +212,22 @@ export default function HistoryPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        style={{ marginBottom: '40px' }} // Increased bottom margin for header
+        style={{ marginBottom: '1.25rem' }} // Reduced bottom margin for header
       >
         <Typography variant="h4" component="h2" sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: '15px', // More space around icon
+          gap: '0.625rem', // Reduced space around icon
           color: '#2C3E50', // Deep charcoal for main title
           fontWeight: 700,
-          marginBottom: '10px',
-          fontSize: '2.2rem', // Slightly larger font size for impact
+          marginBottom: '0.5rem',
+          fontSize: '1.25rem', // Smaller font size
         }}>
-          <i className="bi bi-clock-history" style={{ fontSize: '2.5rem', color: '#5DADE2' }}></i> {/* Brighter blue for icon */}
+          <i className="bi bi-clock-history" style={{ fontSize: '1.5rem', color: '#5DADE2' }}></i> {/* Smaller icon */}
           My Offer History
         </Typography>
         <Typography variant="body1" color="textSecondary" sx={{
-          fontSize: '1.15rem', // Slightly larger description text
+          fontSize: '0.875rem', // Smaller description text
           color: '#7F8C8D', // Softer, professional grey for description
         }}>
           Review all the offers you&apos;ve made and track their current status.
@@ -258,13 +258,13 @@ export default function HistoryPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {offers.map((offer) => (
                   <Box key={offer._id}>
                     <OfferCard>
                       <CardContent>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-                          <Typography variant="h6" component="div" sx={{ color: '#34495E', fontWeight: 600, fontSize: '1.4rem' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                          <Typography variant="h6" component="div" sx={{ color: '#34495E', fontWeight: 600, fontSize: '1rem' }}>
                             {offer.bid?.title || 'Untitled Bid'}
                           </Typography>
                           {/* Corrected: Apply optional chaining and nullish coalescing consistently */}
@@ -281,12 +281,12 @@ export default function HistoryPage() {
                           alignItems: { xs: 'flex-start', sm: 'center' }, 
                           gap: { xs: '10px', sm: '0' }, 
                         }}>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <AttachMoneyIcon sx={{ color: '#607d8b', fontSize: '1.4rem' }} />
-                            Offer Amount: <Typography component="span" sx={{ fontWeight: 700, color: '#27AE60', fontSize: '1.1rem' }}>${offer.price.toFixed(2)}</Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <AttachMoneyIcon sx={{ color: '#607d8b', fontSize: '1rem' }} />
+                            Offer Amount: <Typography component="span" sx={{ fontWeight: 700, color: '#27AE60', fontSize: '0.875rem' }}>${offer.price.toFixed(2)}</Typography>
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <CalendarTodayIcon sx={{ color: '#607d8b', fontSize: '1.3rem' }} />
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <CalendarTodayIcon sx={{ color: '#607d8b', fontSize: '1rem' }} />
                             Date: {formatDateTime(offer.createdAt)}
                           </Typography>
                         </Box>
@@ -296,7 +296,7 @@ export default function HistoryPage() {
                 ))}
               </Box>
               {totalPages > 1 && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
                   <Pagination
                     count={totalPages}
                     page={page}
@@ -306,13 +306,14 @@ export default function HistoryPage() {
                     showLastButton
                     sx={{
                       '& .MuiPaginationItem-root': {
-                        borderRadius: '12px', // More rounded pagination items
-                        padding: '8px 16px', // More clickable area
+                        borderRadius: '8px', // Smaller rounded pagination items
+                        padding: '6px 12px', // Reduced clickable area
                         fontWeight: 600,
+                        fontSize: '0.875rem',
                         '&.Mui-selected': {
                           backgroundColor: '#3f51b5', // Primary color for selected
                           color: 'white',
-                          boxShadow: '0 4px 15px rgba(63,81,181,0.3)',
+                          boxShadow: '0 2px 8px rgba(63,81,181,0.25)',
                           '&:hover': {
                             backgroundColor: '#303f9f', // Darker on hover for selected
                           },

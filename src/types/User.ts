@@ -27,4 +27,5 @@ export default interface User {
   photoURL?: string;
   avatar?: Attachment;
   isHasIdentity?: boolean;
+  isVerified?: boolean | number;
 }

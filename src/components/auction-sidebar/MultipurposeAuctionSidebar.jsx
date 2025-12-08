@@ -8,6 +8,7 @@ import { CategoryAPI } from '@/app/api/category'
 import { SubCategoryAPI } from '@/app/api/subcategory'
 import app from '@/config'; // Import the app config
 import { useTranslation } from 'react-i18next';
+import useAuth from '@/hooks/useAuth';
 
 // Define BID_TYPE enum to match server definition
 const BID_TYPE = {
@@ -29,6 +30,7 @@ const getDefaultCategoryImage = () => {
 const MultipurposeAuctionSidebar = () => {
     const { t } = useTranslation();
     const router = useRouter();
+    const { isLogged, auth } = useAuth();
 
     const [activeColumn, setActiveColumn] = useState(3);
     const [currentPage, setCurrentPage] = useState(1);
@@ -214,7 +216,7 @@ const MultipurposeAuctionSidebar = () => {
                                     style={{
                                         width: '100%',
                                         height: '100%',
-                                        objectFit: 'cover',
+                                        objectFit: 'contain',
                                     }}
                                     onError={(e) => {
                                         const target = e.currentTarget;
@@ -369,7 +371,7 @@ const MultipurposeAuctionSidebar = () => {
                                 width: level === 0 ? '40px' : '32px',
                                 height: level === 0 ? '40px' : '32px',
                                 borderRadius: '8px',
-                                objectFit: 'cover',
+                                objectFit: 'contain',
                                 marginRight: '12px',
                                 border: '2px solid white',
                                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
@@ -517,13 +519,24 @@ const MultipurposeAuctionSidebar = () => {
                 // Ensure this API call fetches bids/auctions with populated owner and avatar
                 // This call should hit your backend endpoint that uses the updated bid.service.ts
                 const data = await AuctionsAPI.getAuctions();
-                setAuctions(data);
+                
+                // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+                const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+                const visibleAuctions = Array.isArray(data) ? data.filter(auction => {
+                  // If auction is verifiedOnly and user is not verified, hide it
+                  if (auction.verifiedOnly === true && !isUserVerified) {
+                    return false;
+                  }
+                  return true;
+                }) : data;
+                
+                setAuctions(visibleAuctions);
                 // Initial filtering for display, the useEffect below will refine it
-                setFilteredAuctions(data);
+                setFilteredAuctions(visibleAuctions);
 
                 // Initialize countdown timers for each auction
                 const timers = {};
-                data.forEach(auction => {
+                visibleAuctions.forEach(auction => {
                     if (auction._id) {
                         const endTime = auction.endingAt || "2024-10-23 12:00:00";
                         const currentTime = new Date();
@@ -541,7 +554,7 @@ const MultipurposeAuctionSidebar = () => {
                 // Update timers every second
                 const interval = setInterval(() => {
                     const updatedTimers = {};
-                    data.forEach(auction => {
+                    visibleAuctions.forEach(auction => {
                         if (auction._id) {
                             const endTime = auction.endingAt || "2024-10-23 12:00:00";
                             updatedTimers[auction._id] = calculateTimeRemaining(endTime);
@@ -561,7 +574,7 @@ const MultipurposeAuctionSidebar = () => {
         };
 
         fetchAuctions();
-    }, []);
+    }, [auth.user]);
 
     // Fetch categories
     useEffect(() => {
@@ -660,6 +673,16 @@ const MultipurposeAuctionSidebar = () => {
         // Do NOT filter out auctions that have already ended.
         // Instead, their 'hasEnded' flag will be used for styling and click prevention.
 
+        // 0. Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+        result = result.filter(auction => {
+          // If auction is verifiedOnly and user is not verified, hide it
+          if (auction.verifiedOnly === true && !isUserVerified) {
+            return false;
+          }
+          return true;
+        });
+
         // 1. Apply bidType filter if selected
         if (selectedBidType) {
             result = result.filter(auction =>
@@ -718,7 +741,7 @@ const MultipurposeAuctionSidebar = () => {
         
         setCurrentPage(1); // Reset to first page on any filter change
         setFilteredAuctions(result);
-    }, [auctions, selectedCategory, selectedSubCategory, selectedBidType, searchTerm, sortOption, categories, statusFilter]);
+    }, [auctions, selectedCategory, selectedSubCategory, selectedBidType, searchTerm, sortOption, categories, statusFilter, auth.user]);
 
     // Function to calculate time remaining
     function calculateTimeRemaining(endTime) {
@@ -1659,7 +1682,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                     width: '32px',
                                                                     height: '32px',
                                                                     borderRadius: '50%',
-                                                                            objectFit: 'cover',
+                                                                            objectFit: 'contain',
                                                                     filter: hasAuctionEnded ? 'grayscale(100%)' : 'none',
                                                                         }}
                                                                         onError={(e) => {
@@ -1678,7 +1701,15 @@ const MultipurposeAuctionSidebar = () => {
                                                                         return 'Anonyme';
                                                                             }
                                                                             
-                                                                            // Try owner firstName + lastName first
+                                                                            // Prioritize company name over personal name
+                                                                            if (auction.owner?.entreprise) {
+                                                                                return auction.owner.entreprise;
+                                                                            }
+                                                                            if (auction.owner?.companyName) {
+                                                                                return auction.owner.companyName;
+                                                                            }
+                                                                            
+                                                                            // Try owner firstName + lastName
                                                                             if (auction.owner?.firstName && auction.owner?.lastName) {
                                                                                 return `${auction.owner.firstName} ${auction.owner.lastName}`;
                                                                             }

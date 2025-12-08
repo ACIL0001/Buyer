@@ -274,11 +274,21 @@ const Home1LiveTenders = () => {
           tendersData = [];
         }
         
+        // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+        const visibleTenders = tendersData.filter((tender: Tender) => {
+          // If tender is verifiedOnly and user is not verified, hide it
+          if (tender.verifiedOnly === true && !isUserVerified) {
+            return false;
+          }
+          return true;
+        });
+
         // Store all tenders
-        setAllTenders(tendersData);
+        setAllTenders(visibleTenders);
         
         // Apply initial filter (all by default)
-        let filteredTenders = tendersData;
+        let filteredTenders = visibleTenders;
         if (statusFilter === 'active') {
           filteredTenders = tendersData.filter((tender: Tender) => {
             if (!tender.endingAt) return false;
@@ -313,7 +323,15 @@ const Home1LiveTenders = () => {
   useEffect(() => {
     if (allTenders.length === 0) return;
 
-    let filtered = [...allTenders];
+    // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+    const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+    let filtered = allTenders.filter((tender: Tender) => {
+      // If tender is verifiedOnly and user is not verified, hide it
+      if (tender.verifiedOnly === true && !isUserVerified) {
+        return false;
+      }
+      return true;
+    });
     
     if (statusFilter === 'active') {
       filtered = allTenders.filter((tender: Tender) => {
@@ -451,7 +469,7 @@ const Home1LiveTenders = () => {
 
   if (loading) {
     return (
-      <div className="modern-tenders-section" style={{ padding: '10px 0' }}>
+      <div className="modern-tenders-section" style={{ padding: '10px 0 0 0' }}>
         <div className="container-responsive">
           <div className="section-header" style={{ textAlign: 'center', marginBottom: 'clamp(30px, 6vw, 50px)' }}>
             <div style={{
@@ -472,7 +490,7 @@ const Home1LiveTenders = () => {
 
   if (error) {
     return (
-      <div className="modern-tenders-section" style={{ padding: '10px 0' }}>
+      <div className="modern-tenders-section" style={{ padding: '10px 0 0 0' }}>
         <div className="container-responsive">
           <div className="section-header" style={{ textAlign: 'center', marginBottom: 'clamp(30px, 6vw, 50px)' }}>
             <div className="alert alert-warning" style={{
@@ -513,12 +531,21 @@ const Home1LiveTenders = () => {
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
-            padding: 40px 16px !important;
+            padding: 15px 16px 0 16px !important;
+            padding-top: 15px !important;
             transform: none !important;
             transition: none !important;
             position: relative !important;
             z-index: 10 !important;
             min-height: 200px !important;
+          }
+          
+          .tender-slider {
+            padding-bottom: 0 !important;
+          }
+          
+          .view-all-button-container {
+            margin-top: 0 !important;
           }
           
           .section-header {
@@ -635,7 +662,7 @@ const Home1LiveTenders = () => {
         }
       `}</style>
 
-      <div className="modern-tenders-section" style={{ padding: '10px 0', background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)' }}>
+      <div className="modern-tenders-section" style={{ padding: '10px 0 0 0', background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)' }}>
         <div className="container-responsive">
           {/* Section Header */}
           <div className="section-header" style={{
@@ -772,7 +799,7 @@ const Home1LiveTenders = () => {
                 {...settings}
                 className="swiper tender-slider"
                 style={{
-                  padding: 'clamp(10px, 2vw, 16px) 0 clamp(30px, 4vw, 40px)',
+                  padding: 'clamp(10px, 2vw, 16px) 0 0',
                   overflow: 'visible',
                 }}
               >
@@ -783,10 +810,12 @@ const Home1LiveTenders = () => {
                   const isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30;
 
                   // Determine the display name for the tender owner
+                  // Prioritize company name over personal name
+                  const companyName = tender.owner?.entreprise || tender.owner?.companyName;
                   const ownerName = tender.owner?.firstName && tender.owner?.lastName
                     ? `${tender.owner.firstName} ${tender.owner.lastName}`.trim()
                     : tender.owner?.name;
-                  const displayName = ownerName || t('common.buyer');
+                  const displayName = companyName || ownerName || t('common.buyer');
 
                   return (
                     <SwiperSlide key={tender._id} style={{ height: 'auto', display: 'flex', justifyContent: 'center' }}>
@@ -1083,7 +1112,7 @@ const Home1LiveTenders = () => {
                                 width: '32px',
                                 height: '32px',
                                 borderRadius: '50%',
-                                objectFit: 'cover',
+                                objectFit: 'contain',
                               }}
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
@@ -1281,7 +1310,8 @@ const Home1LiveTenders = () => {
             className="view-all-button-container"
             style={{
               textAlign: 'center',
-              marginTop: 'clamp(30px, 4vw, 40px)',
+              marginTop: '0',
+              marginBottom: 'clamp(20px, 3vw, 30px)',
               opacity: 0,
               transform: 'translateY(30px)',
               animation: 'fadeInUp 0.8s ease-out 0.4s forwards',

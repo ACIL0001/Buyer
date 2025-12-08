@@ -67,6 +67,7 @@ export default function Chat() {
   const processedMessagesRef = useRef<Set<string>>(new Set())
   const socketListenersAddedRef = useRef<boolean>(false)
   const messageTimeoutRef = useRef<Map<string, NodeJS.Timeout>>(new Map())
+  const urlParamsProcessedRef = useRef<string | null>(null)
   const socketContext = useCreateSocket()
   const socket = socketContext?.socket
 
@@ -165,13 +166,19 @@ export default function Chat() {
   // Fetch messages for a specific chat
   const getMessages = useCallback(async (chatId: string) => {
     try {
-    setLoading(true)
+      setLoading(true)
       const response = await MessageAPI.getByConversation(chatId)
-      if (response.data) {
-        setMessages(response.data)
+      if (response.data && Array.isArray(response.data)) {
+        // Deduplicate messages by _id before setting
+        const uniqueMessages = response.data.filter((message: Message, index: number, self: Message[]) => 
+          index === self.findIndex(m => m._id === message._id)
+        )
+        setMessages(uniqueMessages)
+        console.log('✅ Loaded', uniqueMessages.length, 'unique messages for chat:', chatId)
       }
     } catch (error) {
       console.error('Error fetching messages:', error)
+      setMessages([])
     } finally {
       setLoading(false)
     }
@@ -190,7 +197,7 @@ export default function Chat() {
 
   // Send message
   const sendMessage = useCallback(async () => {
-    if (!text.trim() || !idChat) return
+    if (!text.trim()) return
 
     try {
       const authData = localStorage.getItem('auth')
@@ -204,20 +211,29 @@ export default function Chat() {
       
       if (!currentUserId) return
 
+      // If no chat ID but we have a userChat (userId from URL), send message without idChat
+      // Server will create chat automatically
       const messageData = {
-        idChat,
+        idChat: idChat || 'undefined', // Server will handle chat creation if undefined
         message: text.trim(),
         sender: currentUserId,
         reciver: userChat?._id || ''
       }
 
-      await MessageAPI.send(messageData)
+      const response = await MessageAPI.send(messageData)
+      
+      // If chat was created, update idChat and refresh chats
+      if (response && response.data?.idChat && !idChat) {
+        setIdChat(response.data.idChat)
+        await getChats()
+      }
+      
       setText('')
       setReget(prev => !prev)
     } catch (error) {
       console.error('Error sending message:', error)
     }
-  }, [text, idChat, userChat])
+  }, [text, idChat, userChat, getChats])
 
   // Handle chat selection
   const handleChatSelect = useCallback((chat: Chat) => {
@@ -244,6 +260,123 @@ export default function Chat() {
       console.error('Error in handleChatSelect:', error)
     }
   }, [markChatAsRead, getMessages])
+
+  // Handle URL parameters to open specific chat
+  useEffect(() => {
+    const chatIdParam = searchParams.get('chatId');
+    const userIdParam = searchParams.get('userId');
+    
+    // Create a stable key for tracking processed params
+    const currentParams = `${chatIdParam || ''}_${userIdParam || ''}`;
+    const lastProcessed = urlParamsProcessedRef.current;
+    
+    // Skip if we've already processed these exact params
+    if (currentParams === lastProcessed && currentParams !== '') {
+      return;
+    }
+    
+    if (!chatIdParam && !userIdParam) {
+      urlParamsProcessedRef.current = null;
+      return;
+    }
+    
+    // Mark as processing
+    urlParamsProcessedRef.current = currentParams;
+    
+    // If chats haven't loaded yet, wait for them
+    if (chats.length === 0 && !chatIdParam) {
+      // If userId is provided but chats aren't loaded, fetch chats first
+      if (userIdParam) {
+        getChats();
+      }
+      return;
+    }
+    
+    if (chatIdParam) {
+      // Find chat by ID and open it
+      const chat = chats.find(c => c._id === chatIdParam);
+      if (chat) {
+        handleChatSelect(chat);
+      }
+    } else if (userIdParam) {
+      // Find chat with specific user and open it
+      const chat = chats.find(c => 
+        c.users?.some((user: any) => {
+          const userIdStr = user._id?.toString() || user._id;
+          return userIdStr === userIdParam?.toString() || userIdStr === userIdParam;
+        })
+      );
+      if (chat) {
+        handleChatSelect(chat);
+      } else {
+        // Chat doesn't exist yet - set up the interface so user can start chatting
+        // The chat will be created automatically by the server when first message is sent
+        console.log('💬 Chat with user not found, will be created on first message:', userIdParam);
+        
+        const authData = localStorage.getItem('auth');
+        if (authData) {
+          // Create async function to fetch user details
+          const setupChatWithUser = async () => {
+            try {
+              const userData = JSON.parse(authData);
+              const currentUserId = userData?.user?._id || 
+                                   userData?.user?.id || 
+                                   userData?.user?.user?._id || 
+                                   userData?._id;
+              
+              // Try to fetch user details for better display
+              try {
+                const UserAPI = await import('@/app/api/users');
+                const userResponse = await UserAPI.UserAPI.getUserById(userIdParam);
+                if (userResponse && userResponse.data) {
+                  const sellerUser: User = {
+                    _id: userResponse.data._id || userIdParam,
+                    firstName: userResponse.data.firstName || 'Vendeur',
+                    lastName: userResponse.data.lastName || '',
+                    avatar: userResponse.data.avatar
+                  };
+                  setUserChat(sellerUser);
+                  console.log('✅ Fetched seller user details:', sellerUser);
+                } else {
+                  // Fallback to temp user if fetch fails
+                  const tempUser: User = {
+                    _id: userIdParam,
+                    firstName: 'Vendeur',
+                    lastName: '',
+                  };
+                  setUserChat(tempUser);
+                }
+              } catch (fetchError) {
+                console.warn('⚠️ Could not fetch user details, using temp user:', fetchError);
+                // Fallback to temp user
+                const tempUser: User = {
+                  _id: userIdParam,
+                  firstName: 'Vendeur',
+                  lastName: '',
+                };
+                setUserChat(tempUser);
+              }
+              
+              // Note: idChat will be set when first message is sent and chat is created
+            } catch (error) {
+              console.error('❌ Error setting up chat:', error);
+              // Fallback to temp user on any error
+              const tempUser: User = {
+                _id: userIdParam,
+                firstName: 'Vendeur',
+                lastName: '',
+              };
+              setUserChat(tempUser);
+            }
+          };
+          
+          // Call the async function
+          setupChatWithUser();
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, chats]);
 
   // Filter chats based on search
   useEffect(() => {
@@ -301,14 +434,30 @@ export default function Chat() {
         // Only add message if it's for the current chat
         if (data.idChat === currentChatRef.current) {
           setMessages(prev => {
-            // Double-check if message already exists in state
-            const messageExists = prev.some(msg => msg._id === data._id)
+            // Double-check if message already exists in state (by _id or by content + sender + time)
+            const messageExists = prev.some(msg => {
+              if (msg._id === data._id) return true
+              // Also check by content, sender, and time to catch duplicates without _id
+              if (msg.message === data.message && 
+                  msg.sender === data.sender && 
+                  msg.idChat === data.idChat &&
+                  Math.abs(new Date(msg.createdAt || 0).getTime() - new Date(data.createdAt || 0).getTime()) < 2000) {
+                return true
+              }
+              return false
+            })
             if (messageExists) {
-              console.log('⚠️ Message already exists in state, skipping duplicate')
+              console.log('⚠️ Message already exists in state, skipping duplicate:', data._id)
               return prev
             }
-            console.log('✅ Adding new message to current chat')
-            return [...prev, data]
+            console.log('✅ Adding new message to current chat:', data._id)
+            // Sort messages by createdAt to maintain order
+            const updated = [...prev, data].sort((a, b) => {
+              const timeA = new Date(a.createdAt || 0).getTime()
+              const timeB = new Date(b.createdAt || 0).getTime()
+              return timeA - timeB
+            })
+            return updated
           })
         }
         
@@ -346,14 +495,30 @@ export default function Chat() {
         // Only add message if it's for the current chat
         if (data.idChat === currentChatRef.current) {
           setMessages(prev => {
-            // Double-check if message already exists in state
-            const messageExists = prev.some(msg => msg._id === data._id)
+            // Double-check if message already exists in state (by _id or by content + sender + time)
+            const messageExists = prev.some(msg => {
+              if (msg._id === data._id) return true
+              // Also check by content, sender, and time to catch duplicates without _id
+              if (msg.message === data.message && 
+                  msg.sender === data.sender && 
+                  msg.idChat === data.idChat &&
+                  Math.abs(new Date(msg.createdAt || 0).getTime() - new Date(data.createdAt || 0).getTime()) < 2000) {
+                return true
+              }
+              return false
+            })
             if (messageExists) {
-              console.log('⚠️ Admin message already exists in state, skipping duplicate')
+              console.log('⚠️ Admin message already exists in state, skipping duplicate:', data._id)
               return prev
             }
-            console.log('✅ Adding new admin message to current chat')
-            return [...prev, data]
+            console.log('✅ Adding new admin message to current chat:', data._id)
+            // Sort messages by createdAt to maintain order
+            const updated = [...prev, data].sort((a, b) => {
+              const timeA = new Date(a.createdAt || 0).getTime()
+              const timeB = new Date(b.createdAt || 0).getTime()
+              return timeA - timeB
+            })
+            return updated
           })
         }
         
@@ -387,10 +552,15 @@ export default function Chat() {
     }
   }, [socket]) // Only run when socket changes
 
-  // Scroll to bottom when new messages arrive
+  // Scroll to bottom when new messages arrive or chat changes
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    if (messages.length > 0 && messagesEndRef.current) {
+      // Use setTimeout to ensure DOM is updated
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
+  }, [messages, idChat])
 
   // Load chats on mount
   useEffect(() => {
@@ -647,7 +817,7 @@ export default function Chat() {
   
         {/* Chat Area */}
         <div className="chat-area-modern">
-          {!idChat ? (
+          {!idChat && !userChat ? (
             <div className="empty-chat-modern">
               <div className="empty-chat-content">
                 <div className="empty-chat-icon">
@@ -713,43 +883,61 @@ export default function Chat() {
                   </div>
                 ) : (
                   <div className="messages-list">
-                    {Array.isArray(messages) && messages.length > 0 ? Object.entries(groupMessagesByDate(messages)).map(([date, dateMessages]) => (
-                      <div key={date}>
-                        <div className="date-divider">
-                          <span>{dateMessages[0]?.createdAt ? formatMessageDate(dateMessages[0].createdAt) : ''}</span>
-                        </div>
-                        {dateMessages.map((message) => {
-                          let isSender = false
-                          try {
-                            const authData = localStorage.getItem('auth')
-                            if (authData) {
-                              const userData = JSON.parse(authData)
-                              const currentUserId = userData?.user?._id || 
-                                                   userData?.user?.id || 
-                                                   userData?.user?.user?._id || 
-                                                   userData?._id
-                              isSender = message.sender === currentUserId
-                            }
-                          } catch (error) {
-                            console.error('Error checking message sender:', error)
+                    {Array.isArray(messages) && messages.length > 0 ? (() => {
+                      // Deduplicate messages before grouping by date
+                      const uniqueMessages = messages.filter((message, index, self) => 
+                        index === self.findIndex(m => {
+                          // Check by _id first
+                          if (m._id && message._id && m._id === message._id) return true
+                          // Also check by content, sender, and time (within 2 seconds)
+                          if (m.message === message.message && 
+                              m.sender === message.sender && 
+                              m.idChat === message.idChat &&
+                              Math.abs(new Date(m.createdAt || 0).getTime() - new Date(message.createdAt || 0).getTime()) < 2000) {
+                            return true
                           }
-                          
-                          return (
-                            <div
-                              key={message._id}
-                              className={`message-wrapper-modern ${isSender ? 'sender' : 'receiver'}`}
-                            >
-                              <div className={`message-bubble ${isSender ? 'sent' : 'received'}`}>
-                                <p>{message.message}</p>
-                                <span className="message-time">
-                                  {message.createdAt ? formatTime(message.createdAt) : ''}
-                                </span>
+                          return false
+                        })
+                      )
+                      
+                      return Object.entries(groupMessagesByDate(uniqueMessages)).map(([date, dateMessages]) => (
+                        <div key={date}>
+                          <div className="date-divider">
+                            <span>{dateMessages[0]?.createdAt ? formatMessageDate(dateMessages[0].createdAt) : ''}</span>
+                          </div>
+                          {dateMessages.map((message) => {
+                            let isSender = false
+                            try {
+                              const authData = localStorage.getItem('auth')
+                              if (authData) {
+                                const userData = JSON.parse(authData)
+                                const currentUserId = userData?.user?._id || 
+                                                     userData?.user?.id || 
+                                                     userData?.user?.user?._id || 
+                                                     userData?._id
+                                isSender = message.sender === currentUserId
+                              }
+                            } catch (error) {
+                              console.error('Error checking message sender:', error)
+                            }
+                            
+                            return (
+                              <div
+                                key={message._id || `${message.sender}_${message.createdAt}_${message.message}`}
+                                className={`message-wrapper-modern ${isSender ? 'sender' : 'receiver'}`}
+                              >
+                                <div className={`message-bubble ${isSender ? 'sent' : 'received'}`}>
+                                  <p>{message.message}</p>
+                                  <span className="message-time">
+                                    {message.createdAt ? formatTime(message.createdAt) : ''}
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )) : null}
+                            )
+                          })}
+                        </div>
+                      ))
+                    })() : null}
                     <div ref={messagesEndRef} />
                   </div>
                 )}

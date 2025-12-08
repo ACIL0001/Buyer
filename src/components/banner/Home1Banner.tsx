@@ -335,9 +335,9 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
       <style jsx>{`
         .categories-section {
           background: white;
-          padding: 0 clamp(12px, 3vw, 24px) clamp(8px, 2vw, 16px) clamp(12px, 3vw, 24px);
+          padding: 0 clamp(12px, 3vw, 24px) 5px clamp(12px, 3vw, 24px);
           paddingTop: 0;
-          margin: 0 auto clamp(8px, 2vw, 16px) auto;
+          margin: 0 auto 0 auto;
           max-width: 1280px;
           border-radius: clamp(12px, 3vw, 24px);
         }
@@ -537,6 +537,17 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           /* Add z-index for stacking context */
           z-index: 0;
         }
+        
+        @media (max-width: 768px) {
+          .categories-section {
+            padding: 3px !important;
+          }
+          
+          .categories-carousel {
+            padding-bottom: 5px !important;
+            margin-bottom: 4px !important;
+          }
+        }
 
         /* --- UPDATED STYLES FOR CONNECTING LINE --- */
         .categories-carousel::before {
@@ -704,13 +715,18 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           font-size: 1.1rem;
         }
 
-        /* Extra Small Devices (phones, 320px-479px) */
+          /* Extra Small Devices (phones, 320px-479px) */
         @media (max-width: 479px) {
           .categories-section {
-            padding: 0 clamp(12px, 3vw, 16px) clamp(12px, 3vw, 20px) clamp(12px, 3vw, 16px);
+            padding: 3px !important;
             paddingTop: 0;
-            margin-bottom: clamp(12px, 3vw, 20px);
+            margin: 0 auto 0 auto;
             border-radius: clamp(12px, 3vw, 20px);
+          }
+          
+          .categories-carousel {
+            padding-bottom: 5px !important;
+            margin-bottom: 4px !important;
           }
           
           /* Searchbar - Reduce height by 30% on mobile */

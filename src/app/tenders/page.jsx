@@ -15,6 +15,7 @@ import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import useAuth from '@/hooks/useAuth';
 
 // Define BID_TYPE enum to match server definition
 const BID_TYPE = {
@@ -86,6 +87,7 @@ const useTenderTimers = (tenders) => {
 const MultipurposeTenderSidebar = () => {
     const { t } = useTranslation();
     const router = useRouter();
+    const { isLogged, auth } = useAuth();
     // Default countdown timer for the page (fallback)
     const defaultTimer = useCountdownTimer("2024-08-23 11:42:00");
 
@@ -267,7 +269,7 @@ const MultipurposeTenderSidebar = () => {
                                     style={{
                                         width: '100%',
                                         height: '100%',
-                                        objectFit: 'cover',
+                                        objectFit: 'contain',
                                     }}
                                     onError={(e) => {
                                         const target = e.currentTarget;
@@ -424,7 +426,7 @@ const MultipurposeTenderSidebar = () => {
                                 width: level === 0 ? '40px' : '32px',
                                 height: level === 0 ? '40px' : '32px',
                                 borderRadius: '8px',
-                                objectFit: 'cover',
+                                objectFit: 'contain',
                                 marginRight: '12px',
                                 border: '2px solid white',
                                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
@@ -637,9 +639,19 @@ const MultipurposeTenderSidebar = () => {
                 
                 console.log('Processed tenders data:', tendersData);
                 
-                setTenders(tendersData);
+                // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+                const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+                const visibleTenders = tendersData.filter(tender => {
+                  // If tender is verifiedOnly and user is not verified, hide it
+                  if (tender.verifiedOnly === true && !isUserVerified) {
+                    return false;
+                  }
+                  return true;
+                });
+                
+                setTenders(visibleTenders);
                 // Initial filtering for display, the useEffect below will refine it
-                setFilteredTenders(tendersData);
+                setFilteredTenders(visibleTenders);
 
                 // Initialize countdown timers for each tender
                 const timers = {};
@@ -681,7 +693,7 @@ const MultipurposeTenderSidebar = () => {
         };
 
         fetchTenders();
-    }, []);
+    }, [auth.user]);
 
     // Fetch categories
     useEffect(() => {
@@ -789,6 +801,16 @@ const MultipurposeTenderSidebar = () => {
         // Do NOT filter out tenders that have already ended.
         // Instead, their 'hasEnded' flag will be used for styling and click prevention.
 
+        // 0. Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+        result = result.filter(tender => {
+          // If tender is verifiedOnly and user is not verified, hide it
+          if (tender.verifiedOnly === true && !isUserVerified) {
+            return false;
+          }
+          return true;
+        });
+
         // 1. Apply bidType filter if selected
         if (selectedBidType) {
             result = result.filter(tender =>
@@ -854,7 +876,7 @@ const MultipurposeTenderSidebar = () => {
         setFilteredTenders(result);
         // Reset to page 1 when filters change
         setCurrentPage(1);
-    }, [tenders, selectedCategory, selectedSubCategory, selectedBidType, searchTerm, sortOption, statusFilter]); // Removed tenderTimers from dependency array as it's not filtering, only styling
+    }, [tenders, selectedCategory, selectedSubCategory, selectedBidType, searchTerm, sortOption, statusFilter, auth.user]); // Removed tenderTimers from dependency array as it's not filtering, only styling
 
     // Reset currentPage if it exceeds totalPages after filtering
     useEffect(() => {
@@ -1531,10 +1553,12 @@ const MultipurposeTenderSidebar = () => {
                                         const hasTenderEnded = timer.hasEnded || false;
 
                                         // Determine the display name for the tender owner
+                                        // Prioritize company name over personal name
+                                        const companyName = tender.owner?.entreprise || tender.owner?.companyName;
                                         const ownerName = tender.owner?.firstName && tender.owner?.lastName
                                             ? `${tender.owner.firstName} ${tender.owner.lastName}`.trim()
                                             : tender.owner?.name;
-                                        const displayName = ownerName || t('common.buyer');
+                                        const displayName = companyName || ownerName || t('common.buyer');
 
                                         return (
                                             <div
@@ -1926,7 +1950,7 @@ const MultipurposeTenderSidebar = () => {
                                                                     width: '32px',
                                                                     height: '32px',
                                                                     borderRadius: '50%',
-                                                                    objectFit: 'cover',
+                                                                    objectFit: 'contain',
                                                                     filter: hasTenderEnded ? 'grayscale(100%)' : 'none',
                                                                 }}
                                                                 onError={(e) => {

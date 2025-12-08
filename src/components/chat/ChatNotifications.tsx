@@ -21,12 +21,27 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
   const { auth } = useAuth();
   
   const { 
-    chatCreatedNotifications, 
-    chatNotifications, // This is the chat messages, not chatMessages
+    chatCreatedNotifications: initialChatCreatedNotifications, 
+    chatNotifications: initialChatNotifications, // This is the chat messages, not chatMessages
     loading, 
     refresh, 
-    totalUnread 
+    totalUnread: initialTotalUnread 
   } = useChatNotificationsWithGeneral();
+  
+  // Local state to manage optimistic updates
+  const [chatCreatedNotifications, setChatCreatedNotifications] = useState(initialChatCreatedNotifications);
+  const [chatNotifications, setChatNotifications] = useState(initialChatNotifications);
+  
+  // Update local state when hook state changes
+  useEffect(() => {
+    setChatCreatedNotifications(initialChatCreatedNotifications);
+    setChatNotifications(initialChatNotifications);
+  }, [initialChatCreatedNotifications, initialChatNotifications]);
+  
+  // Recalculate totalUnread from local state
+  const chatMessagesUnread = chatNotifications.reduce((total, notification) => total + notification.unread, 0);
+  const chatCreatedUnread = chatCreatedNotifications.length;
+  const totalUnread = chatMessagesUnread + chatCreatedUnread;
 
   console.log('💬 ChatNotifications: chatCreatedNotifications count:', chatCreatedNotifications.length);
   console.log('💬 ChatNotifications: chatNotifications count:', chatNotifications.length);
@@ -96,17 +111,47 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
       console.log('🔖 Marking chat notification as read:', notification);
       
       if (notification._id && auth?.tokens?.accessToken) {
+        // Optimistically update the UI first
+        // Check if it's a chat-created notification (has type, title, message, read properties)
+        const isChatCreatedNotification = notification.type && notification.title && notification.read !== undefined;
+        const isChatMessageNotification = notification.chatId && notification.unread !== undefined;
+        
+        if (isChatCreatedNotification) {
+          // It's a chat-created notification - remove it from the list immediately
+          console.log('📝 Removing chat-created notification from list:', notification._id);
+          setChatCreatedNotifications(prev => prev.filter(n => n._id !== notification._id));
+        } else if (isChatMessageNotification) {
+          // It's a chat message notification - decrement unread count or remove if unread becomes 0
+          console.log('📝 Updating chat message notification unread count:', notification.chatId);
+          setChatNotifications(prev => {
+            const updated = prev.map(n => {
+              if (n.chatId === notification.chatId) {
+                const newUnread = Math.max(0, n.unread - 1);
+                return { ...n, unread: newUnread };
+              }
+              return n;
+            });
+            // Remove notifications with unread count of 0
+            return updated.filter(n => n.unread > 0);
+          });
+        }
+        
+        // Mark as read on server
         await markNotificationAsRead(notification._id);
         console.log('✅ Chat notification marked as read');
         
-        // Refresh notifications to update the count and UI
-        await refresh();
-        console.log('🔄 Chat notifications refreshed after marking as read');
+        // Refresh notifications to sync with server (but don't wait, let optimistic update show immediately)
+        refresh().catch(err => {
+          console.error('❌ Error refreshing notifications:', err);
+          // On error, refresh to get correct state
+          refresh();
+        });
       }
       
       // Navigate to chat (you can customize the navigation logic)
-      if (notification.data?.chatId) {
-        window.location.href = `/chat/${notification.data.chatId}`;
+      if (notification.data?.chatId || notification.chatId) {
+        const chatId = notification.data?.chatId || notification.chatId;
+        window.location.href = `/chat?chatId=${chatId}`;
       } else {
         window.location.href = '/chat';
       }
@@ -114,6 +159,8 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
       setIsOpen(false);
     } catch (error) {
       console.error('❌ Error marking chat notification as read:', error);
+      // Revert optimistic update on error by refreshing
+      await refresh();
     }
   };
 
@@ -121,6 +168,10 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
   const handleMarkAllAsRead = async () => {
     try {
       console.log('🔖 Marking all chat notifications as read');
+      
+      // Optimistically clear all notifications
+      setChatCreatedNotifications([]);
+      setChatNotifications(prev => prev.map(n => ({ ...n, unread: 0 })));
       
       if (auth?.tokens?.accessToken) {
         await markAllNotificationsAsRead();

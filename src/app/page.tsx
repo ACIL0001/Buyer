@@ -1,6 +1,7 @@
 "use client";
 
 import Header from "@/components/header/Header"
+import AdsSlider from "@/components/banner/AdsSlider";
 import Home1Banner from "@/components/banner/Home1Banner";
 import Home1LiveAuction from "@/components/live-auction/Home1LiveAuction";
 import Home1LiveTenders from "@/components/live-tenders/Home1LiveTenders";
@@ -1038,7 +1039,7 @@ export default function Home() {
           
           .section-spacing {
             margin-bottom: clamp(24px, 5vw, 32px);
-            padding: clamp(20px, 4vw, 32px) clamp(12px, 3vw, 20px);
+            padding: clamp(20px, 4vw, 32px) clamp(12px, 3vw, 20px) 0 clamp(12px, 3vw, 20px);
           }
 
           .hero-banner-section {
@@ -1050,13 +1051,13 @@ export default function Home() {
           }
 
           .hero-content {
-            padding-bottom: 50px !important;
+            padding-bottom: 0 !important;
           }
 
           .hero-content {
             max-width: 100% !important;
             padding: 0 clamp(8px, 2vw, 12px) !important;
-            padding-bottom: 50px !important;
+            padding-bottom: 0 !important;
           }
 
           .search-container {
@@ -1635,13 +1636,34 @@ export default function Home() {
         /* Mobile Section Visibility Fix */
         @media (max-width: 768px) {
           .section-spacing {
-            padding: 40px 16px !important;
+            padding: 15px 16px 0 16px !important;
             margin: 0 !important;
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
             transform: none !important;
             transition: none !important;
+          }
+          
+          .hero-cta-buttons {
+            marginBottom: 0 !important;
+          }
+          
+          /* Hide empty div with jsx-d2110ddaf660d28 class on mobile */
+          div[class*="jsx-d2110ddaf660d28"]:empty,
+          div[class*="jsx-d2110ddaf660d28"] {
+            display: none !important;
+          }
+          
+          /* Override for hero-content if it has that class - keep it visible if it has content */
+          .hero-content[class*="jsx-d2110ddaf660d28"] {
+            display: block !important;
+          }
+          
+          /* Target section with data-section="auction" for reduced padding top on mobile */
+          section[data-section="auction"].section-spacing {
+            padding-top: 0 !important;
+            padding: 0 16px 0 16px !important;
           }
           
           .modern-auctions-section,
@@ -1826,15 +1848,27 @@ export default function Home() {
                     style={{ 
                       position: 'relative',
                       overflow: 'visible',
-                      padding: 'clamp(20px, 4vw, 40px) clamp(20px, 4vw, 40px)',
-                      paddingTop: 'clamp(20px, 4vw, 40px)',
-                  paddingBottom: 'clamp(40px, 8vw, 120px)',
+                      padding: '0 clamp(20px, 4vw, 40px)',
+                      paddingTop: '0',
+                  paddingBottom: '0',
                       width: '100%',
                       maxWidth: '100vw',
                       background: 'white',
                       minHeight: '520px',
                     }}
                   >
+                    {/* Ads Slider - Full Width Hero Banner */}
+                    <div style={{
+                      width: 'calc(100% + clamp(40px, 8vw, 80px))',
+                      maxWidth: '100vw',
+                      marginLeft: 'clamp(-20px, -4vw, -40px)',
+                      marginRight: 'clamp(-20px, -4vw, -40px)',
+                      marginBottom: '0',
+                      padding: '0',
+                    }}>
+                      <AdsSlider />
+                    </div>
+
                     {/* Main Content */}
                     <div className="hero-content" style={{
                       position: 'relative',
@@ -1842,7 +1876,7 @@ export default function Home() {
                       maxWidth: '1400px',
                       margin: '0 auto',
                       padding: '0',
-                      paddingBottom: '40px',
+                      paddingBottom: '0',
                       textAlign: 'center',
                       width: '100%',
                       overflowX: 'hidden',
@@ -1857,7 +1891,7 @@ export default function Home() {
                         style={{
                           display: 'flex',
                           gap: 'clamp(12px, 3vw, 20px)',
-                          marginTop: 'clamp(20px, 4vw, 36px)',
+                          marginTop: '0',
                           marginBottom: 'clamp(12px, 3vw, 24px)',
                           flexWrap: 'wrap',
                           justifyContent: 'center',
@@ -1865,48 +1899,40 @@ export default function Home() {
                           width: '100%',
                           position: 'relative',
                           zIndex: 10,
+                          background: 'white',
                         }}
                       >
                         {/* 1. AUCTIONS - Blue with Hammer Icon */}
-                        <div className="dropdown-container">
+                        <div className="dropdown-container" style={{ position: 'relative' }}>
                           <button
                             onClick={() => {
-                              console.log('Auction button clicked, current state:', auctionDropdownOpen);
                               setAuctionDropdownOpen(!auctionDropdownOpen);
+                              setVenteDirectDropdownOpen(false);
+                              setTenderDropdownOpen(false);
                             }}
                             className={`dropdown-button auction-cta ${auctionDropdownOpen ? 'open' : ''}`}
                             style={{
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: 'clamp(6px, 2vw, 10px)',
+                              justifyContent: auctionDropdownOpen ? 'flex-start' : 'center',
+                              gap: 'clamp(8px, 2vw, 12px)',
                               background: '#ffffff',
                               color: '#004c8c',
-                              padding: 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
+                              padding: auctionDropdownOpen ? 'clamp(16px, 3vw, 20px) clamp(20px, 5vw, 28px)' : 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
                               borderRadius: 'clamp(22px, 5vw, 30px)',
                               border: '3px solid #0063b1',
                               fontSize: 'clamp(15px, 3.8vw, 19px)',
                               fontWeight: 800,
                               cursor: 'pointer',
-                              boxShadow: '0 14px 30px rgba(0, 99, 177, 0.28)',
-                              transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
+                              boxShadow: 'none',
+                              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                               position: 'relative',
                               overflow: 'hidden',
                               textTransform: 'none',
                               letterSpacing: '0.3px',
-                              height: '100%',
+                              minHeight: 'clamp(120px, 15vw, 160px)',
                               width: '100%',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = 'translateY(-6px) scale(1.04)';
-                              e.currentTarget.style.boxShadow = '0 22px 42px rgba(0, 99, 177, 0.38)';
-                              e.currentTarget.style.borderColor = '#005299';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                              e.currentTarget.style.boxShadow = '0 14px 30px rgba(0, 99, 177, 0.28)';
-                              e.currentTarget.style.borderColor = '#0063b1';
                             }}
                           >
                             <div style={{
@@ -1916,9 +1942,10 @@ export default function Home() {
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                              boxShadow: 'none',
+                              transform: auctionDropdownOpen ? 'translateY(-10px)' : 'translateY(0)',
+                              transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                             }}>
-                              {/* Gavel/Hammer Icon for Auctions */}
                               <FaGavel 
                                 style={{ 
                                   fontSize: 'clamp(32px, 5.6vw, 42px)',
@@ -1927,92 +1954,145 @@ export default function Home() {
                               />
                             </div>
                             <span style={{
-                              display: 'flex',
-                              flexWrap: 'wrap',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '4px',
+                              display: auctionDropdownOpen ? 'block' : 'none',
                               color: '#004c8c',
-                              fontSize: 'clamp(11px, 2.8vw, 14px)',
+                              fontSize: 'clamp(13px, 2.5vw, 16px)',
                               fontWeight: 800,
                               textAlign: 'center',
                               lineHeight: 1.25,
                               textTransform: 'none',
                               width: '100%',
+                              opacity: auctionDropdownOpen ? 1 : 0,
+                              transition: 'opacity 0.3s ease 0.2s',
                             }}>
-                              <span style={{ whiteSpace: 'nowrap' }}>{t('common.auctions')}</span>
+                              {t('common.auctions')}
                             </span>
-                            <svg className="dropdown-arrow" width="clamp(14px, 3vw, 18px)" height="clamp(14px, 3vw, 18px)" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <path d="M6 9l6 6 6-6"/>
-                            </svg>
-                          </button>
-
-                          <div 
-                            className={`dropdown-menu ${auctionDropdownOpen ? 'open' : ''}`}
+                            <div style={{
+                              display: auctionDropdownOpen ? 'flex' : 'none',
+                              gap: isMobile ? '6px' : 'clamp(8px, 2vw, 12px)',
+                              width: '100%',
+                              justifyContent: 'center',
+                              opacity: auctionDropdownOpen ? 1 : 0,
+                              transition: 'opacity 0.3s ease 0.3s',
+                              flexWrap: 'nowrap',
+                              marginLeft: isMobile ? 'clamp(8px, 2vw, 12px)' : '0',
+                              marginRight: isMobile ? 'clamp(8px, 2vw, 12px)' : '0',
+                            }}>
+                              <div 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAuctionViewAll();
+                                }}
                             style={{
-                              zIndex: 9999,
-                              display: auctionDropdownOpen ? 'block' : 'none',
-                            }}
-                          >
-                            <button className="dropdown-item" onClick={handleAuctionViewAll}>
-                              {/* Eye Icon for View */}
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
+                                  background: '#0063b1',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
+                                  cursor: 'pointer',
+                                  fontSize: isMobile ? '11px' : 'clamp(11px, 2vw, 13px)',
+                                  fontWeight: 600,
+                                  transition: 'all 0.3s ease',
+                                  gap: isMobile ? '4px' : '6px',
+                                  boxShadow: isMobile ? '0 2px 4px rgba(0, 99, 177, 0.2)' : 'none',
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!isMobile) {
+                                    e.currentTarget.style.background = '#005299';
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!isMobile) {
+                                    e.currentTarget.style.background = '#0063b1';
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                  }
+                                }}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "16"} height={isMobile ? "12" : "16"}>
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                 <circle cx="12" cy="12" r="3"/>
                               </svg>
                               {t('common.view')}
-                            </button>
-                            <button className="dropdown-item" onClick={handleCreateAuction}>
-                              {/* Plus Icon for Create */}
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
+                            </div>
+                              <div 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCreateAuction();
+                                }}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
+                                  background: '#0063b1',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
+                                  cursor: 'pointer',
+                                  fontSize: isMobile ? '11px' : 'clamp(11px, 2vw, 13px)',
+                                  fontWeight: 600,
+                                  transition: 'all 0.3s ease',
+                                  gap: isMobile ? '4px' : '6px',
+                                  boxShadow: isMobile ? '0 2px 4px rgba(0, 99, 177, 0.2)' : 'none',
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!isMobile) {
+                                    e.currentTarget.style.background = '#005299';
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!isMobile) {
+                                    e.currentTarget.style.background = '#0063b1';
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                  }
+                                }}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "16"} height={isMobile ? "12" : "16"}>
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                               </svg>
                               {t('common.create') || 'Créer'}
-                            </button>
+                            </div>
                           </div>
+                          </button>
                         </div>
 
                         {/* 2. VENTE DIRECT - Orange/Amber with Store Icon */}
-                        <div className="dropdown-container">
+                        <div className="dropdown-container" style={{ position: 'relative' }}>
                           <button
                             onClick={() => {
-                              console.log('Vente Direct button clicked, current state:', venteDirectDropdownOpen);
                               setVenteDirectDropdownOpen(!venteDirectDropdownOpen);
+                              setAuctionDropdownOpen(false);
+                              setTenderDropdownOpen(false);
                             }}
                             className={`dropdown-button vente-direct-cta ${venteDirectDropdownOpen ? 'open' : ''}`}
                             style={{
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: 'clamp(6px, 2vw, 10px)',
+                              justifyContent: venteDirectDropdownOpen ? 'flex-start' : 'center',
+                              gap: 'clamp(8px, 2vw, 12px)',
                               background: '#ffffff',
                               color: '#d97706',
-                              padding: 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
+                              padding: venteDirectDropdownOpen ? 'clamp(16px, 3vw, 20px) clamp(20px, 5vw, 28px)' : 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
                               borderRadius: 'clamp(22px, 5vw, 30px)',
                               border: '3px solid #f59e0b',
                               fontSize: 'clamp(15px, 3.8vw, 19px)',
                               fontWeight: 800,
                               cursor: 'pointer',
-                              boxShadow: '0 14px 30px rgba(245, 158, 11, 0.26)',
-                              transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
+                              boxShadow: 'none',
+                              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                               position: 'relative',
                               overflow: 'hidden',
                               textTransform: 'none',
                               letterSpacing: '0.3px',
-                              height: '100%',
+                              minHeight: 'clamp(120px, 15vw, 160px)',
                               width: '100%',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = 'translateY(-8px) scale(1.07)';
-                              e.currentTarget.style.boxShadow = '0 22px 42px rgba(245, 158, 11, 0.34)';
-                              e.currentTarget.style.borderColor = '#d97706';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                              e.currentTarget.style.boxShadow = '0 14px 30px rgba(245, 158, 11, 0.26)';
-                              e.currentTarget.style.borderColor = '#f59e0b';
                             }}
                           >
                             <div style={{
@@ -2022,100 +2102,154 @@ export default function Home() {
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                              boxShadow: 'none',
+                              transform: venteDirectDropdownOpen ? 'translateY(-10px)' : 'translateY(0)',
+                              transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                             }}>
-                              {/* Store Icon for Vente Direct */}
                               <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="#d97706">
                                 <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
                               </svg>
                             </div>
                             <span style={{
-                              display: 'flex',
-                              flexWrap: 'wrap',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '4px',
+                              display: venteDirectDropdownOpen ? 'block' : 'none',
                               color: '#d97706',
-                              fontSize: 'clamp(11px, 2.8vw, 14px)',
+                              fontSize: 'clamp(13px, 2.5vw, 16px)',
                               fontWeight: 800,
                               textAlign: 'center',
                               lineHeight: 1.25,
                               textTransform: 'none',
                               width: '100%',
+                              opacity: venteDirectDropdownOpen ? 1 : 0,
+                              transition: 'opacity 0.3s ease 0.2s',
                             }}>
-                              <span style={{ whiteSpace: 'nowrap' }}>{t('common.directSales') || 'Vente Direct'}</span>
+                              {t('common.directSales') || 'Vente Direct'}
                             </span>
-                            <svg className="dropdown-arrow" width="clamp(14px, 3vw, 18px)" height="clamp(14px, 3vw, 18px)" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <path d="M6 9l6 6 6-6"/>
-                            </svg>
-                          </button>
-                          
-                          <div 
-                            className={`dropdown-menu ${venteDirectDropdownOpen ? 'open' : ''}`}
+                            <div style={{
+                              display: venteDirectDropdownOpen ? 'flex' : 'none',
+                              gap: isMobile ? '6px' : 'clamp(8px, 2vw, 12px)',
+                              width: '100%',
+                              justifyContent: 'center',
+                              opacity: venteDirectDropdownOpen ? 1 : 0,
+                              transition: 'opacity 0.3s ease 0.3s',
+                              flexWrap: 'nowrap',
+                              marginLeft: isMobile ? 'clamp(8px, 2vw, 12px)' : '0',
+                              marginRight: isMobile ? 'clamp(8px, 2vw, 12px)' : '0',
+                            }}>
+                              <div 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleVenteDirectViewAll();
+                                }}
                             style={{
-                              zIndex: 9999,
-                              display: venteDirectDropdownOpen ? 'block' : 'none',
-                            }}
-                          >
-                            <button className="dropdown-item" onClick={handleVenteDirectViewAll}>
-                              {/* Eye Icon for View */}
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
+                                  background: '#f59e0b',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
+                                  cursor: 'pointer',
+                                  fontSize: isMobile ? '11px' : 'clamp(11px, 2vw, 13px)',
+                                  fontWeight: 600,
+                                  transition: 'all 0.3s ease',
+                                  gap: isMobile ? '4px' : '6px',
+                                  boxShadow: isMobile ? '0 2px 4px rgba(245, 158, 11, 0.2)' : 'none',
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!isMobile) {
+                                    e.currentTarget.style.background = '#d97706';
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!isMobile) {
+                                    e.currentTarget.style.background = '#f59e0b';
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                  }
+                                }}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "16"} height={isMobile ? "12" : "16"}>
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                 <circle cx="12" cy="12" r="3"/>
                               </svg>
                               {t('common.view')}
-                            </button>
-                            <button className="dropdown-item" onClick={handleCreateVenteDirect}>
-                              {/* Plus Icon for Create */}
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
+                            </div>
+                              <div 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCreateVenteDirect();
+                                }}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
+                                  background: '#f59e0b',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
+                                  cursor: 'pointer',
+                                  fontSize: isMobile ? '11px' : 'clamp(11px, 2vw, 13px)',
+                                  fontWeight: 600,
+                                  transition: 'all 0.3s ease',
+                                  gap: isMobile ? '4px' : '6px',
+                                  boxShadow: isMobile ? '0 2px 4px rgba(245, 158, 11, 0.2)' : 'none',
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!isMobile) {
+                                    e.currentTarget.style.background = '#d97706';
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!isMobile) {
+                                    e.currentTarget.style.background = '#f59e0b';
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                  }
+                                }}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "16"} height={isMobile ? "12" : "16"}>
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                               </svg>
                               {t('common.create') || 'Créer'}
-                            </button>
+                            </div>
                           </div>
+                          </button>
                         </div>
 
                         {/* 3. TENDERS - Green with Envelope Icon */}
-                        <div className="dropdown-container">
+                        <div className="dropdown-container" style={{ position: 'relative' }}>
                           <button
                             onClick={() => {
-                              console.log('Tender button clicked, current state:', tenderDropdownOpen);
                               setTenderDropdownOpen(!tenderDropdownOpen);
+                              setAuctionDropdownOpen(false);
+                              setVenteDirectDropdownOpen(false);
                             }}
                             className={`dropdown-button tender-cta ${tenderDropdownOpen ? 'open' : ''}`}
                             style={{
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: 'clamp(6px, 2vw, 10px)',
+                              justifyContent: tenderDropdownOpen ? 'flex-start' : 'center',
+                              gap: 'clamp(8px, 2vw, 12px)',
                               background: '#ffffff',
                               color: '#047857',
-                              padding: 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
+                              padding: tenderDropdownOpen ? 'clamp(16px, 3vw, 20px) clamp(20px, 5vw, 28px)' : 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
                               borderRadius: 'clamp(22px, 5vw, 30px)',
                               border: '3px solid #10b981',
                               fontSize: 'clamp(15px, 3.8vw, 19px)',
                               fontWeight: 800,
                               cursor: 'pointer',
-                              boxShadow: '0 14px 30px rgba(16, 185, 129, 0.26)',
-                              transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
+                              boxShadow: 'none',
+                              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                               position: 'relative',
                               overflow: 'hidden',
                               textTransform: 'none',
                               letterSpacing: '0.3px',
-                              height: '100%',
+                              minHeight: 'clamp(120px, 15vw, 160px)',
                               width: '100%',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = 'translateY(-8px) scale(1.07)';
-                              e.currentTarget.style.boxShadow = '0 22px 42px rgba(16, 185, 129, 0.34)';
-                              e.currentTarget.style.borderColor = '#0f9f6b';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                              e.currentTarget.style.boxShadow = '0 14px 30px rgba(16, 185, 129, 0.26)';
-                              e.currentTarget.style.borderColor = '#10b981';
                             }}
                           >
                             <div style={{
@@ -2125,58 +2259,121 @@ export default function Home() {
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                              boxShadow: 'none',
+                              transform: tenderDropdownOpen ? 'translateY(-10px)' : 'translateY(0)',
+                              transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                             }}>
-                              {/* Envelope Icon for Tenders */}
                               <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="#047857">
                                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
                               </svg>
                             </div>
                             <span style={{
-                              display: 'flex',
-                              flexWrap: 'wrap',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '4px',
+                              display: tenderDropdownOpen ? 'block' : 'none',
                               color: '#047857',
-                              fontSize: 'clamp(11px, 2.8vw, 14px)',
+                              fontSize: 'clamp(13px, 2.5vw, 16px)',
                               fontWeight: 800,
                               textAlign: 'center',
                               lineHeight: 1.25,
                               textTransform: 'none',
                               width: '100%',
+                              opacity: tenderDropdownOpen ? 1 : 0,
+                              transition: 'opacity 0.3s ease 0.2s',
                             }}>
-                              <span style={{ whiteSpace: 'nowrap' }}>{t('common.tenders') || 'Tenders'}</span>
+                              {t('common.tenders') || 'Tenders'}
                             </span>
-                            <svg className="dropdown-arrow" width="clamp(14px, 3vw, 18px)" height="clamp(14px, 3vw, 18px)" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <path d="M6 9l6 6 6-6"/>
-                            </svg>
-                          </button>
-                          
-                          <div 
-                            className={`dropdown-menu ${tenderDropdownOpen ? 'open' : ''}`}
+                            <div style={{
+                              display: tenderDropdownOpen ? 'flex' : 'none',
+                              gap: isMobile ? '6px' : 'clamp(8px, 2vw, 12px)',
+                              width: '100%',
+                              justifyContent: 'center',
+                              opacity: tenderDropdownOpen ? 1 : 0,
+                              transition: 'opacity 0.3s ease 0.3s',
+                              flexWrap: 'nowrap',
+                              marginLeft: isMobile ? 'clamp(8px, 2vw, 12px)' : '0',
+                              marginRight: isMobile ? 'clamp(8px, 2vw, 12px)' : '0',
+                            }}>
+                              <div 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleTenderViewAll();
+                                }}
                             style={{
-                              zIndex: 9999,
-                              display: tenderDropdownOpen ? 'block' : 'none',
-                            }}
-                          >
-                            <button className="dropdown-item" onClick={handleTenderViewAll}>
-                              {/* Eye Icon for View */}
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
+                                  background: '#10b981',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
+                                  cursor: 'pointer',
+                                  fontSize: isMobile ? '11px' : 'clamp(11px, 2vw, 13px)',
+                                  fontWeight: 600,
+                                  transition: 'all 0.3s ease',
+                                  gap: isMobile ? '4px' : '6px',
+                                  boxShadow: isMobile ? '0 2px 4px rgba(16, 185, 129, 0.2)' : 'none',
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!isMobile) {
+                                    e.currentTarget.style.background = '#059669';
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!isMobile) {
+                                    e.currentTarget.style.background = '#10b981';
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                  }
+                                }}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "16"} height={isMobile ? "12" : "16"}>
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                 <circle cx="12" cy="12" r="3"/>
                               </svg>
                               {t('common.view')}
-                            </button>
-                            <button className="dropdown-item" onClick={handleCreateTender}>
-                              {/* Plus Icon for Create */}
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
+                            </div>
+                              <div 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCreateTender();
+                                }}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
+                                  background: '#10b981',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
+                                  cursor: 'pointer',
+                                  fontSize: isMobile ? '11px' : 'clamp(11px, 2vw, 13px)',
+                                  fontWeight: 600,
+                                  transition: 'all 0.3s ease',
+                                  gap: isMobile ? '4px' : '6px',
+                                  boxShadow: isMobile ? '0 2px 4px rgba(16, 185, 129, 0.2)' : 'none',
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!isMobile) {
+                                    e.currentTarget.style.background = '#059669';
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!isMobile) {
+                                    e.currentTarget.style.background = '#10b981';
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                  }
+                                }}
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "16"} height={isMobile ? "12" : "16"}>
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                               </svg>
                               {t('common.create') || 'Créer'}
-                            </button>
+                            </div>
                           </div>
+                          </button>
                         </div>
                       </div>
 
@@ -2288,6 +2485,8 @@ export default function Home() {
                       display: isMobile ? 'block' : 'block',
                       visibility: isMobile ? 'visible' : 'visible',
                       minHeight: isMobile ? '300px' : 'auto',
+                      paddingTop: isMobile ? '0' : '0',
+                      paddingBottom: '0',
                     }}
                   >
                     <Home1LiveAuction />
@@ -2306,6 +2505,8 @@ export default function Home() {
                       display: isMobile ? 'block' : 'block',
                       visibility: isMobile ? 'visible' : 'visible',
                       minHeight: isMobile ? '300px' : 'auto',
+                      paddingTop: isMobile ? '15px' : undefined,
+                      paddingBottom: '0',
                     }}
                   >
                     <Home1LiveDirectSales />
@@ -2324,6 +2525,7 @@ export default function Home() {
                       display: isMobile ? 'block' : 'block',
                       visibility: isMobile ? 'visible' : 'visible',
                       minHeight: isMobile ? '300px' : 'auto',
+                      paddingBottom: '0',
                     }}
                   >
                     <Home1LiveTenders />

@@ -7,6 +7,7 @@ import Footer from "@/components/footer/Footer";
 import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
 import useAuth from '@/hooks/useAuth';
 import { UserAPI, USER_TYPE } from "@/app/api/users";
+import { requests } from '@/app/api/utils';
 import app, { DEV_SERVER_URL } from "@/config";
 
 const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -37,7 +38,8 @@ interface User {
   verificationStatus?: string;
   isVerified?: boolean;
   isCertified?: boolean;
-  isRecommended?: boolean; 
+  isRecommended?: boolean;
+  secteur?: string | { _id: string; name: string };
   history: {
     date: string;
     action: string;
@@ -60,7 +62,17 @@ export default function UserDetailsPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"overview" | "activity" | "auctions" | "reviews">("overview");
+  const [activeSection, setActiveSection] = useState<"activities" | "info" | "rating">("activities");
+  const [userActivities, setUserActivities] = useState<{
+    auctions: any[];
+    tenders: any[];
+    directSales: any[];
+  }>({
+    auctions: [],
+    tenders: [],
+    directSales: []
+  });
+  const [activitiesLoading, setActivitiesLoading] = useState(false);
 
   const userId = params?.id as string;
 
@@ -121,6 +133,7 @@ export default function UserDetailsPage() {
           isVerified: Boolean((userData as any).isVerified),
           isCertified: Boolean((userData as any).isCertified),
           isRecommended: Boolean(isRecommended),
+          secteur: (userData as any).secteur,
           history: (userData as any).history || []
         };
         console.log('🔍 User data debug:', {
@@ -150,8 +163,140 @@ export default function UserDetailsPage() {
     initializeAuth();
     if (userId) {
       fetchUserDetails();
+      fetchUserActivities();
     }
   }, [userId, initializeAuth, fetchUserDetails]);
+
+  const fetchUserActivities = useCallback(async () => {
+    if (!userId) return;
+    
+    try {
+      setActivitiesLoading(true);
+
+      // Use the requests utility which handles authentication automatically
+      const [auctionsRes, tendersRes, directSalesRes] = await Promise.allSettled([
+        requests.get('bid').catch((err) => {
+          console.error('Error fetching auctions:', err);
+          return { data: [] };
+        }),
+        requests.get('tender').catch((err) => {
+          console.error('Error fetching tenders:', err);
+          return { data: [] };
+        }),
+        requests.get('direct-sale').catch((err) => {
+          console.error('Error fetching direct sales:', err);
+          return { data: [] };
+        })
+      ]);
+
+      // Extract data from responses - handle different response formats
+      let allAuctions: any[] = [];
+      let allTenders: any[] = [];
+      let allDirectSales: any[] = [];
+
+      if (auctionsRes.status === 'fulfilled') {
+        const value = auctionsRes.value;
+        if (Array.isArray(value)) {
+          allAuctions = value;
+        } else if (value && typeof value === 'object' && 'data' in value && Array.isArray(value.data)) {
+          allAuctions = value.data;
+        } else if (value && typeof value === 'object' && 'success' in value && 'data' in value && Array.isArray(value.data)) {
+          allAuctions = value.data;
+        }
+      }
+
+      if (tendersRes.status === 'fulfilled') {
+        const value = tendersRes.value;
+        if (Array.isArray(value)) {
+          allTenders = value;
+        } else if (value && typeof value === 'object' && 'data' in value && Array.isArray(value.data)) {
+          allTenders = value.data;
+        } else if (value && typeof value === 'object' && 'success' in value && 'data' in value && Array.isArray(value.data)) {
+          allTenders = value.data;
+        }
+      }
+
+      if (directSalesRes.status === 'fulfilled') {
+        const value = directSalesRes.value;
+        if (Array.isArray(value)) {
+          allDirectSales = value;
+        } else if (value && typeof value === 'object' && 'data' in value && Array.isArray(value.data)) {
+          allDirectSales = value.data;
+        } else if (value && typeof value === 'object' && 'success' in value && 'data' in value && Array.isArray(value.data)) {
+          allDirectSales = value.data;
+        }
+      }
+
+      console.log('Raw API responses:', {
+        auctionsRaw: auctionsRes.status === 'fulfilled' ? auctionsRes.value : 'rejected',
+        tendersRaw: tendersRes.status === 'fulfilled' ? tendersRes.value : 'rejected',
+        directSalesRaw: directSalesRes.status === 'fulfilled' ? directSalesRes.value : 'rejected',
+        allAuctionsCount: allAuctions.length,
+        allTendersCount: allTenders.length,
+        allDirectSalesCount: allDirectSales.length
+      });
+
+      // Filter by owner ID - check multiple possible owner field formats
+      const auctions = allAuctions.filter((auction: any) => {
+        const ownerId = auction.owner?._id?.toString() || 
+                       auction.owner?._id || 
+                       auction.owner?.toString() || 
+                       auction.owner || 
+                       auction.ownerId?.toString() || 
+                       auction.ownerId;
+        const match = ownerId === userId.toString();
+        if (match) {
+          console.log('Found matching auction:', { auctionId: auction._id, title: auction.title, ownerId, userId });
+        }
+        return match;
+      });
+      
+      const tenders = allTenders.filter((tender: any) => {
+        const ownerId = tender.owner?._id?.toString() || 
+                       tender.owner?._id || 
+                       tender.owner?.toString() || 
+                       tender.owner || 
+                       tender.ownerId?.toString() || 
+                       tender.ownerId;
+        const match = ownerId === userId.toString();
+        if (match) {
+          console.log('Found matching tender:', { tenderId: tender._id, title: tender.title, ownerId, userId });
+        }
+        return match;
+      });
+      
+      const directSales = allDirectSales.filter((sale: any) => {
+        const ownerId = sale.owner?._id?.toString() || 
+                       sale.owner?._id || 
+                       sale.owner?.toString() || 
+                       sale.owner || 
+                       sale.ownerId?.toString() || 
+                       sale.ownerId;
+        const match = ownerId === userId.toString();
+        if (match) {
+          console.log('Found matching direct sale:', { saleId: sale._id, title: sale.title, ownerId, userId });
+        }
+        return match;
+      });
+
+      console.log('User activities filtered:', {
+        totalAuctions: allAuctions.length,
+        filteredAuctions: auctions.length,
+        totalTenders: allTenders.length,
+        filteredTenders: tenders.length,
+        totalDirectSales: allDirectSales.length,
+        filteredDirectSales: directSales.length,
+        userId
+      });
+
+      setUserActivities({ auctions, tenders, directSales });
+    } catch (error) {
+      console.error('Error fetching user activities:', error);
+      setUserActivities({ auctions: [], tenders: [], directSales: [] });
+    } finally {
+      setActivitiesLoading(false);
+    }
+  }, [userId]);
 
   const getUserFullName = (user: User): string => {
     // Display entreprise name if available, otherwise use first and last name
@@ -1157,296 +1302,605 @@ export default function UserDetailsPage() {
               </div>
             </div>
 
-            {/* Statistics Cards */}
+            {/* Three Section Buttons */}
             <div className="row mb-4">
-              <div className="col-md-3 mb-3">
-                <div
-                  className="card h-100 text-center stat-card-hover"
+              <div className="col-md-4 mb-3">
+                <button
+                  onClick={() => setActiveSection('activities')}
+                  className="w-100"
                   style={{
-                    borderRadius: '15px',
+                    padding: '20px',
+                    borderRadius: '20px',
                     border: 'none',
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    backdropFilter: 'blur(20px)',
-                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
-                    transition: 'all 0.3s ease'
+                    background: activeSection === 'activities' 
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                      : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                    color: activeSection === 'activities' ? 'white' : '#333',
+                    fontWeight: '600',
+                    fontSize: '18px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: activeSection === 'activities' 
+                      ? '0 8px 25px rgba(102, 126, 234, 0.4)' 
+                      : '0 4px 15px rgba(0, 0, 0, 0.1)',
+                    transform: activeSection === 'activities' ? 'translateY(-5px)' : 'none',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeSection !== 'activities') {
+                      e.currentTarget.style.transform = 'translateY(-3px)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeSection !== 'activities') {
+                      e.currentTarget.style.transform = 'none';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+                    }
                   }}
                 >
-                  <div className="card-body">
-                    <i className="bi bi-hammer" style={{ fontSize: '2.5rem', color: '#0063b1', marginBottom: '10px' }}></i>
-                    <h3 className="mb-1" style={{ fontWeight: '700', color: '#0063b1' }}>{user.totalBids}</h3>
-                    <p className="text-muted mb-0">Total Bids</p>
-                  </div>
-                </div>
+                  <i className="bi bi-activity me-2" style={{ fontSize: '24px' }}></i>
+                  Activités
+                </button>
               </div>
-              <div className="col-md-3 mb-3">
-                <div
-                  className="card h-100 text-center stat-card-hover"
+              <div className="col-md-4 mb-3">
+                <button
+                  onClick={() => setActiveSection('info')}
+                  className="w-100"
                   style={{
-                    borderRadius: '15px',
+                    padding: '20px',
+                    borderRadius: '20px',
                     border: 'none',
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    backdropFilter: 'blur(20px)',
-                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
-                    transition: 'all 0.3s ease'
+                    background: activeSection === 'info' 
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                      : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                    color: activeSection === 'info' ? 'white' : '#333',
+                    fontWeight: '600',
+                    fontSize: '18px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: activeSection === 'info' 
+                      ? '0 8px 25px rgba(102, 126, 234, 0.4)' 
+                      : '0 4px 15px rgba(0, 0, 0, 0.1)',
+                    transform: activeSection === 'info' ? 'translateY(-5px)' : 'none',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeSection !== 'info') {
+                      e.currentTarget.style.transform = 'translateY(-3px)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeSection !== 'info') {
+                      e.currentTarget.style.transform = 'none';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+                    }
                   }}
                 >
-                  <div className="card-body">
-                    <i className="bi bi-trophy" style={{ fontSize: '2.5rem', color: '#28a745', marginBottom: '10px' }}></i>
-                    <h3 className="mb-1" style={{ fontWeight: '700', color: '#28a745' }}>{user.winningBids}</h3>
-                    <p className="text-muted mb-0">Won Bids</p>
-                  </div>
-                </div>
+                  <i className="bi bi-person-circle me-2" style={{ fontSize: '24px' }}></i>
+                  Informations
+                </button>
               </div>
-              <div className="col-md-3 mb-3">
-                <div
-                  className="card h-100 text-center stat-card-hover"
+              <div className="col-md-4 mb-3">
+                <button
+                  onClick={() => setActiveSection('rating')}
+                  className="w-100"
                   style={{
-                    borderRadius: '15px',
+                    padding: '20px',
+                    borderRadius: '20px',
                     border: 'none',
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    backdropFilter: 'blur(20px)',
-                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
-                    transition: 'all 0.3s ease'
+                    background: activeSection === 'rating' 
+                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                      : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                    color: activeSection === 'rating' ? 'white' : '#333',
+                    fontWeight: '600',
+                    fontSize: '18px',
+                    transition: 'all 0.3s ease',
+                    boxShadow: activeSection === 'rating' 
+                      ? '0 8px 25px rgba(102, 126, 234, 0.4)' 
+                      : '0 4px 15px rgba(0, 0, 0, 0.1)',
+                    transform: activeSection === 'rating' ? 'translateY(-5px)' : 'none',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeSection !== 'rating') {
+                      e.currentTarget.style.transform = 'translateY(-3px)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeSection !== 'rating') {
+                      e.currentTarget.style.transform = 'none';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+                    }
                   }}
                 >
-                  <div className="card-body">
-                    <i className="bi bi-percent" style={{ fontSize: '2.5rem', color: '#ffc107', marginBottom: '10px' }}></i>
-                    <h3 className="mb-1" style={{ fontWeight: '700', color: '#ffc107' }}>
-                      {user.totalBids > 0 ? ((user.winningBids / user.totalBids) * 100).toFixed(1) : '0'}%
-                    </h3>
-                    <p className="text-muted mb-0">Success Rate</p>
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-3 mb-3">
-                <div
-                  className="card h-100 text-center stat-card-hover"
-                  style={{
-                    borderRadius: '15px',
-                    border: 'none',
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    backdropFilter: 'blur(20px)',
-                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  <div className="card-body">
-                    <i className="bi bi-collection" style={{ fontSize: '2.5rem', color: '#6f42c1', marginBottom: '10px' }}></i>
-                    <h3 className="mb-1" style={{ fontWeight: '700', color: '#6f42c1' }}>{user.totalAuctions || 0}</h3>
-                    <p className="text-muted mb-0">
-                      {user.type === USER_TYPE.CLIENT ? 'Participated' : 'Created'}
-                    </p>
-                  </div>
-                </div>
+                  <i className="bi bi-star-fill me-2" style={{ fontSize: '24px' }}></i>
+                  Note
+                </button>
               </div>
             </div>
 
-            {/* Tabs Section */}
+            {/* Section Content */}
             <div className="card" style={{ 
               borderRadius: '20px', 
               boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
               backgroundColor: 'rgba(255, 255, 255, 0.95)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              minHeight: '400px'
             }}>
-              <div className="card-header bg-white" style={{ padding: '0', borderBottom: '1px solid #eee', borderRadius: '20px 20px 0 0' }}>
-                <ul className="nav nav-tabs" style={{ borderBottom: 'none', padding: '20px 20px 0 20px' }}>
-                  <li className="nav-item">
-                    <button
-                      className={`nav-link ${activeTab === 'overview' ? 'active' : ''}`}
-                      onClick={() => setActiveTab('overview')}
-                      style={{
-                        padding: '12px 20px',
-                        fontWeight: activeTab === 'overview' ? '600' : '400',
-                        color: activeTab === 'overview' ? '#0063b1' : '#666',
-                        borderBottom: activeTab === 'overview' ? '3px solid #0063b1' : 'none',
-                        borderRadius: '8px 8px 0 0',
-                        backgroundColor: 'transparent',
-                        border: 'none'
-                      }}
-                    >
-                      <i className="bi bi-person-circle me-2"></i>
-                      Overview
-                    </button>
-                  </li>
-                  <li className="nav-item">
-                    <button
-                      className={`nav-link ${activeTab === 'activity' ? 'active' : ''}`}
-                      onClick={() => setActiveTab('activity')}
-                      style={{
-                        padding: '12px 20px',
-                        fontWeight: activeTab === 'activity' ? '600' : '400',
-                        color: activeTab === 'activity' ? '#0063b1' : '#666',
-                        borderBottom: activeTab === 'activity' ? '3px solid #0063b1' : 'none',
-                        borderRadius: '8px 8px 0 0',
-                        backgroundColor: 'transparent',
-                        border: 'none'
-                      }}
-                    >
-                      <i className="bi bi-activity me-2"></i>
-                      Activity
-                    </button>
-                  </li>
-                  <li className="nav-item">
-                    <button
-                      className={`nav-link ${activeTab === 'auctions' ? 'active' : ''}`}
-                      onClick={() => setActiveTab('auctions')}
-                      style={{
-                        padding: '12px 20px',
-                        fontWeight: activeTab === 'auctions' ? '600' : '400',
-                        color: activeTab === 'auctions' ? '#0063b1' : '#666',
-                        borderBottom: activeTab === 'auctions' ? '3px solid #0063b1' : 'none',
-                        borderRadius: '8px 8px 0 0',
-                        backgroundColor: 'transparent',
-                        border: 'none'
-                      }}
-                    >
-                      <i className="bi bi-hammer me-2"></i>
-                      Auctions
-                    </button>
-                  </li>
-                  <li className="nav-item">
-                    <button
-                      className={`nav-link ${activeTab === 'reviews' ? 'active' : ''}`}
-                      onClick={() => setActiveTab('reviews')}
-                      style={{
-                        padding: '12px 20px',
-                        fontWeight: activeTab === 'reviews' ? '600' : '400',
-                        color: activeTab === 'reviews' ? '#0063b1' : '#666',
-                        borderBottom: activeTab === 'reviews' ? '3px solid #0063b1' : 'none',
-                        borderRadius: '8px 8px 0 0',
-                        backgroundColor: 'transparent',
-                        border: 'none'
-                      }}
-                    >
-                      <i className="bi bi-star me-2"></i>
-                      Reviews
-                    </button>
-                  </li>
-                </ul>
-              </div>
-              <div className="card-body" style={{ padding: '30px' }}>
-                {/* Overview Tab */}
-                {activeTab === 'overview' && (
-                  <div className="overview-tab">
-                    <div className="row">
-                      <div className="col-12">
-                        <h5 className="mb-4">Profile Information</h5>
-                        <div className="profile-info">
-                          <div className="row mb-3">
-                            <div className="col-sm-4">
-                              <strong>Full Name:</strong>
-                            </div>
-                            <div className="col-sm-8">
-                              {getUserFullName(user)}
-                            </div>
-                          </div>
-                          <div className="row mb-3">
-                            <div className="col-sm-4">
-                              <strong>User Type:</strong>
-                            </div>
-                            <div className="col-sm-8">
-                              {getUserTypeBadge(user.type)}
-                            </div>
-                          </div>
-                          <div className="row mb-3">
-                            <div className="col-sm-4">
-                              <strong>Join Date:</strong>
-                            </div>
-                            <div className="col-sm-8">
-                              {new Date(user.joinDate).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
+              <div className="card-body" style={{ padding: '40px' }}>
+                {/* Activities Section */}
+                {activeSection === 'activities' && (
+                  <div className="activities-section">
+                    <h4 className="mb-4" style={{ fontWeight: '700', color: '#333' }}>
+                      <i className="bi bi-activity me-2" style={{ color: '#667eea' }}></i>
+                      Activités de l'utilisateur
+                    </h4>
+                    {activitiesLoading ? (
+                      <div className="text-center py-5">
+                        <div className="spinner-border text-primary" role="status">
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        {/* Auctions */}
+                        <div className="mb-5">
+                          <h5 className="mb-4" style={{ color: '#0063b1', fontWeight: '700' }}>
+                            <i className="bi bi-hammer me-2"></i>
+                            Enchères ({userActivities.auctions.length})
+                          </h5>
+                          {userActivities.auctions.length === 0 ? (
+                            <p className="text-muted text-center py-4">Aucune enchère créée</p>
+                          ) : (
+                            <div className="row">
+                              {userActivities.auctions.map((auction: any) => {
+                                const getAuctionImageUrl = () => {
+                                  if (auction.thumbs && auction.thumbs.length > 0 && auction.thumbs[0].url) {
+                                    const imageUrl = auction.thumbs[0].url;
+                                    if (imageUrl.startsWith('http')) return imageUrl;
+                                    if (imageUrl.startsWith('/')) return `${app.baseURL}${imageUrl.substring(1)}`;
+                                    return `${app.baseURL}${imageUrl}`;
+                                  }
+                                  return "/assets/images/logo-white.png";
+                                };
+
+                                return (
+                                  <div key={auction._id || auction.id} className="col-lg-4 col-md-6 mb-4">
+                                    <div 
+                                      className="card h-100"
+                                      style={{ 
+                                        borderRadius: '20px',
+                                        overflow: 'hidden',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.4s ease',
+                                        border: '1px solid rgba(0, 99, 177, 0.1)',
+                                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)'
+                                      }}
+                                      onClick={() => router.push(`/auction-details/${auction._id || auction.id}`)}
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-10px)';
+                                        e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 99, 177, 0.2)';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'none';
+                                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.08)';
+                                      }}
+                                    >
+                                      <div style={{
+                                        position: 'relative',
+                                        height: '200px',
+                                        overflow: 'hidden',
+                                        background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                      }}>
+                                        <img
+                                          src={getAuctionImageUrl()}
+                                          alt={auction.title || 'Auction'}
+                                          style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'contain',
+                                            padding: '10px'
+                                          }}
+                                          onError={(e) => {
+                                            e.currentTarget.src = "/assets/images/logo-white.png";
+                                          }}
+                                        />
+                                      </div>
+                                      <div className="card-body" style={{ padding: '20px' }}>
+                                        <h6 className="card-title mb-2" style={{ 
+                                          fontWeight: '600', 
+                                          color: '#333',
+                                          fontSize: '16px',
+                                          minHeight: '48px',
+                                          display: '-webkit-box',
+                                          WebkitLineClamp: 2,
+                                          WebkitBoxOrient: 'vertical',
+                                          overflow: 'hidden'
+                                        }}>
+                                          {auction.title || 'Sans titre'}
+                                        </h6>
+                                        <div className="d-flex justify-content-between align-items-center mb-2">
+                                          <span style={{ fontSize: '18px', fontWeight: '700', color: '#0063b1' }}>
+                                            {auction.currentPrice || auction.startingPrice || 0} DA
+                                          </span>
+                                          <span className="badge" style={{
+                                            background: auction.status === 'ACTIVE' ? '#28a745' : '#6c757d',
+                                            color: 'white',
+                                            padding: '5px 12px',
+                                            borderRadius: '20px'
+                                          }}>
+                                            {auction.status || 'ACTIVE'}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
                               })}
                             </div>
-                          </div>
-                          {user.location && (
-                            <div className="row mb-3">
-                              <div className="col-sm-4">
-                                <strong>Location:</strong>
-                              </div>
-                              <div className="col-sm-8">
-                                {user.location}
-                              </div>
+                          )}
+                        </div>
+
+                        {/* Tenders */}
+                        <div className="mb-5">
+                          <h5 className="mb-4" style={{ color: '#28a745', fontWeight: '700' }}>
+                            <i className="bi bi-file-earmark-text me-2"></i>
+                            Appels d'offres ({userActivities.tenders.length})
+                          </h5>
+                          {userActivities.tenders.length === 0 ? (
+                            <p className="text-muted text-center py-4">Aucun appel d'offres créé</p>
+                          ) : (
+                            <div className="row">
+                              {userActivities.tenders.map((tender: any) => {
+                                const getTenderImageUrl = () => {
+                                  if (tender.attachments && tender.attachments.length > 0 && tender.attachments[0].url) {
+                                    const imageUrl = tender.attachments[0].url;
+                                    if (imageUrl.startsWith('http')) return imageUrl;
+                                    if (imageUrl.startsWith('/')) return `${app.baseURL}${imageUrl.substring(1)}`;
+                                    return `${app.baseURL}${imageUrl}`;
+                                  }
+                                  return "/assets/images/logo-white.png";
+                                };
+
+                                return (
+                                  <div key={tender._id} className="col-lg-4 col-md-6 mb-4">
+                                    <div 
+                                      className="card h-100"
+                                      style={{ 
+                                        borderRadius: '20px',
+                                        overflow: 'hidden',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.4s ease',
+                                        border: '1px solid rgba(40, 167, 69, 0.1)',
+                                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)'
+                                      }}
+                                      onClick={() => router.push(`/tender/${tender._id}`)}
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-10px)';
+                                        e.currentTarget.style.boxShadow = '0 12px 30px rgba(40, 167, 69, 0.2)';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'none';
+                                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.08)';
+                                      }}
+                                    >
+                                      <div style={{
+                                        position: 'relative',
+                                        height: '200px',
+                                        overflow: 'hidden',
+                                        background: 'linear-gradient(135deg, #27F5CC, #00D4AA)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                      }}>
+                                        <img
+                                          src={getTenderImageUrl()}
+                                          alt={tender.title || 'Tender'}
+                                          style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'contain',
+                                            padding: '10px'
+                                          }}
+                                          onError={(e) => {
+                                            e.currentTarget.src = "/assets/images/logo-white.png";
+                                          }}
+                                        />
+                                      </div>
+                                      <div className="card-body" style={{ padding: '20px' }}>
+                                        <h6 className="card-title mb-2" style={{ 
+                                          fontWeight: '600', 
+                                          color: '#333',
+                                          fontSize: '16px',
+                                          minHeight: '48px',
+                                          display: '-webkit-box',
+                                          WebkitLineClamp: 2,
+                                          WebkitBoxOrient: 'vertical',
+                                          overflow: 'hidden'
+                                        }}>
+                                          {tender.title || 'Sans titre'}
+                                        </h6>
+                                        <div className="d-flex justify-content-between align-items-center mb-2">
+                                          <span style={{ fontSize: '18px', fontWeight: '700', color: '#28a745' }}>
+                                            {tender.budget || 0} DA
+                                          </span>
+                                          <span className="badge" style={{
+                                            background: tender.status === 'ACTIVE' ? '#28a745' : '#6c757d',
+                                            color: 'white',
+                                            padding: '5px 12px',
+                                            borderRadius: '20px'
+                                          }}>
+                                            {tender.status || 'ACTIVE'}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
+                        </div>
+
+                        {/* Direct Sales */}
+                        <div>
+                          <h5 className="mb-4" style={{ color: '#ffc107', fontWeight: '700' }}>
+                            <i className="bi bi-cart me-2"></i>
+                            Ventes directes ({userActivities.directSales.length})
+                          </h5>
+                          {userActivities.directSales.length === 0 ? (
+                            <p className="text-muted text-center py-4">Aucune vente directe créée</p>
+                          ) : (
+                            <div className="row">
+                              {userActivities.directSales.map((sale: any) => {
+                                const getDirectSaleImageUrl = () => {
+                                  if (sale.thumbs && sale.thumbs.length > 0 && sale.thumbs[0].url) {
+                                    const imageUrl = sale.thumbs[0].url;
+                                    if (imageUrl.startsWith('http')) return imageUrl;
+                                    if (imageUrl.startsWith('/')) return `${app.baseURL}${imageUrl.substring(1)}`;
+                                    return `${app.baseURL}${imageUrl}`;
+                                  }
+                                  return "/assets/images/logo-white.png";
+                                };
+
+                                const isSoldOut = sale.quantity > 0 && sale.soldQuantity >= sale.quantity;
+
+                                return (
+                                  <div key={sale._id} className="col-lg-4 col-md-6 mb-4">
+                                    <div 
+                                      className="card h-100"
+                                      style={{ 
+                                        borderRadius: '20px',
+                                        overflow: 'hidden',
+                                        cursor: isSoldOut ? 'not-allowed' : 'pointer',
+                                        transition: 'all 0.4s ease',
+                                        border: '1px solid rgba(255, 193, 7, 0.1)',
+                                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)',
+                                        opacity: isSoldOut ? 0.6 : 1,
+                                        filter: isSoldOut ? 'grayscale(60%)' : 'none'
+                                      }}
+                                      onClick={() => !isSoldOut && router.push(`/direct-sale/${sale._id}`)}
+                                      onMouseEnter={(e) => {
+                                        if (!isSoldOut) {
+                                          e.currentTarget.style.transform = 'translateY(-10px)';
+                                          e.currentTarget.style.boxShadow = '0 12px 30px rgba(255, 193, 7, 0.2)';
+                                        }
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        if (!isSoldOut) {
+                                          e.currentTarget.style.transform = 'none';
+                                          e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.08)';
+                                        }
+                                      }}
+                                    >
+                                      <div style={{
+                                        position: 'relative',
+                                        height: '200px',
+                                        overflow: 'hidden',
+                                        background: 'linear-gradient(135deg, #f7ef8a, #ffc107)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                      }}>
+                                        {isSoldOut && (
+                                          <div style={{
+                                            position: 'absolute',
+                                            top: '10px',
+                                            right: '10px',
+                                            background: '#dc3545',
+                                            color: 'white',
+                                            padding: '5px 12px',
+                                            borderRadius: '20px',
+                                            fontSize: '12px',
+                                            fontWeight: '600',
+                                            zIndex: 10
+                                          }}>
+                                            ÉPUISÉ
+                                          </div>
+                                        )}
+                                        <img
+                                          src={getDirectSaleImageUrl()}
+                                          alt={sale.title || 'Direct Sale'}
+                                          style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'contain',
+                                            padding: '10px'
+                                          }}
+                                          onError={(e) => {
+                                            e.currentTarget.src = "/assets/images/logo-white.png";
+                                          }}
+                                        />
+                                      </div>
+                                      <div className="card-body" style={{ padding: '20px' }}>
+                                        <h6 className="card-title mb-2" style={{ 
+                                          fontWeight: '600', 
+                                          color: '#333',
+                                          fontSize: '16px',
+                                          minHeight: '48px',
+                                          display: '-webkit-box',
+                                          WebkitLineClamp: 2,
+                                          WebkitBoxOrient: 'vertical',
+                                          overflow: 'hidden'
+                                        }}>
+                                          {sale.title || 'Sans titre'}
+                                        </h6>
+                                        <div className="d-flex justify-content-between align-items-center mb-2">
+                                          <span style={{ fontSize: '18px', fontWeight: '700', color: '#ffc107' }}>
+                                            {sale.price || 0} DA
+                                          </span>
+                                          <span className="badge" style={{
+                                            background: sale.status === 'ACTIVE' ? '#ffc107' : '#6c757d',
+                                            color: sale.status === 'ACTIVE' ? '#000' : 'white',
+                                            padding: '5px 12px',
+                                            borderRadius: '20px'
+                                          }}>
+                                            {sale.status || 'ACTIVE'}
+                                          </span>
+                                        </div>
+                                        {sale.quantity > 0 && (
+                                          <p className="text-muted mb-0" style={{ fontSize: '12px' }}>
+                                            Disponible: {sale.quantity - (sale.soldQuantity || 0)} / {sale.quantity}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Info Section */}
+                {activeSection === 'info' && (
+                  <div className="info-section">
+                    <h4 className="mb-4" style={{ fontWeight: '700', color: '#333' }}>
+                      <i className="bi bi-person-circle me-2" style={{ color: '#667eea' }}></i>
+                      Informations de l'utilisateur
+                    </h4>
+                    <div className="row">
+                      <div className="col-md-6 mb-4">
+                        <div className="info-item" style={{
+                          padding: '20px',
+                          borderRadius: '15px',
+                          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                          marginBottom: '15px'
+                        }}>
+                          <div style={{ fontSize: '14px', color: '#666', marginBottom: '5px' }}>Nom complet</div>
+                          <div style={{ fontSize: '18px', fontWeight: '600', color: '#333' }}>
+                            {getUserFullName(user)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-md-6 mb-4">
+                        <div className="info-item" style={{
+                          padding: '20px',
+                          borderRadius: '15px',
+                          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                          marginBottom: '15px'
+                        }}>
+                          <div style={{ fontSize: '14px', color: '#666', marginBottom: '5px' }}>Email</div>
+                          <div style={{ fontSize: '18px', fontWeight: '600', color: '#333' }}>
+                            {user.email}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-md-6 mb-4">
+                        <div className="info-item" style={{
+                          padding: '20px',
+                          borderRadius: '15px',
+                          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                          marginBottom: '15px'
+                        }}>
+                          <div style={{ fontSize: '14px', color: '#666', marginBottom: '5px' }}>Téléphone</div>
+                          <div style={{ fontSize: '18px', fontWeight: '600', color: '#333' }}>
+                            {user.phone || 'Non renseigné'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-md-6 mb-4">
+                        <div className="info-item" style={{
+                          padding: '20px',
+                          borderRadius: '15px',
+                          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                          marginBottom: '15px'
+                        }}>
+                          <div style={{ fontSize: '14px', color: '#666', marginBottom: '5px' }}>Entreprise</div>
+                          <div style={{ fontSize: '18px', fontWeight: '600', color: '#333' }}>
+                            {user.entreprise || 'Non renseigné'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-md-6 mb-4">
+                        <div className="info-item" style={{
+                          padding: '20px',
+                          borderRadius: '15px',
+                          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                          marginBottom: '15px'
+                        }}>
+                          <div style={{ fontSize: '14px', color: '#666', marginBottom: '5px' }}>Secteur</div>
+                          <div style={{ fontSize: '18px', fontWeight: '600', color: '#333' }}>
+                            {typeof user.secteur === 'object' && user.secteur?.name 
+                              ? user.secteur.name 
+                              : (typeof user.secteur === 'string' ? user.secteur : 'Non renseigné')}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="col-md-6 mb-4">
+                        <div className="info-item" style={{
+                          padding: '20px',
+                          borderRadius: '15px',
+                          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                          marginBottom: '15px'
+                        }}>
+                          <div style={{ fontSize: '14px', color: '#666', marginBottom: '5px' }}>Type d'utilisateur</div>
+                          <div style={{ marginTop: '5px' }}>
+                            {getUserTypeBadge(user.type)}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Activity Tab */}
-                {activeTab === 'activity' && (
-                  <div className="activity-tab">
-                    <h5 className="mb-4">Recent Activity</h5>
-                    {user.history.length === 0 ? (
-                      <div className="text-center py-5">
-                        <i className="bi bi-activity" style={{ fontSize: '3rem', color: '#ccc' }}></i>
-                        <p className="text-muted mt-3">No activity history available.</p>
+                {/* Rating Section */}
+                {activeSection === 'rating' && (
+                  <div className="rating-section text-center">
+                    <h4 className="mb-4" style={{ fontWeight: '700', color: '#333' }}>
+                      <i className="bi bi-star-fill me-2" style={{ color: '#FFD700' }}></i>
+                      Note de l'utilisateur
+                    </h4>
+                    <div style={{
+                      display: 'inline-block',
+                      padding: '40px',
+                      borderRadius: '20px',
+                      background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+                      boxShadow: '0 10px 30px rgba(255, 215, 0, 0.3)',
+                      marginBottom: '30px'
+                    }}>
+                      <div style={{ fontSize: '72px', fontWeight: '800', color: 'white', lineHeight: '1' }}>
+                        {user.rating || 0}
                       </div>
-                    ) : (
-                      <div className="table-responsive">
-                        <table className="table table-hover">
-                          <thead style={{ backgroundColor: '#f8f9fa' }}>
-                            <tr>
-                              <th>Date</th>
-                              <th>Action</th>
-                              <th>Item</th>
-                              <th>Amount</th>
-                              <th>Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {user.history.map((item, index) => (
-                              <tr key={index}>
-                                <td>{new Date(item.date).toLocaleDateString()}</td>
-                                <td>
-                                  <i className="bi bi-hammer me-2"></i>
-                                  {item.action}
-                                </td>
-                                <td>{item.itemName}</td>
-                                <td className="fw-bold">${item.amount.toFixed(2)}</td>
-                                <td>
-                                  <span className={`badge ${item.status === 'Won' ? 'bg-success' : 'bg-danger'}`}>
-                                    {item.status}
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                      <div style={{ fontSize: '24px', color: 'white', marginTop: '10px', fontWeight: '600' }}>
+                        / 10
                       </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Auctions Tab */}
-                {activeTab === 'auctions' && (
-                  <div className="auctions-tab">
-                    <h5 className="mb-4">
-                      {user.type === USER_TYPE.CLIENT ? 'Auction Participation' : 'Created Auctions'}
-                    </h5>
-                    <div className="text-center py-5">
-                      <i className="bi bi-hammer" style={{ fontSize: '3rem', color: '#ccc' }}></i>
-                      <p className="text-muted mt-3">
-                        {user.type === USER_TYPE.CLIENT
-                          ? 'Auction participation details will be displayed here.'
-                          : 'Created auction details will be displayed here.'}
-                      </p>
                     </div>
-                  </div>
-                )}
-
-                {/* Reviews Tab */}
-                {activeTab === 'reviews' && (
-                  <div className="reviews-tab">
-                    <h5 className="mb-4">User Reviews</h5>
-                    <div className="text-center py-5">
-                      <i className="bi bi-star" style={{ fontSize: '3rem', color: '#ccc' }}></i>
-                      <p className="text-muted mt-3">User reviews and feedback will be displayed here.</p>
+                    <div className="mt-4">
+                      {renderStars(user.rating || 0)}
                     </div>
+                    <p className="text-muted mt-3" style={{ fontSize: '16px' }}>
+                      Note basée sur les performances et les interactions de l'utilisateur
+                    </p>
                   </div>
                 )}
               </div>

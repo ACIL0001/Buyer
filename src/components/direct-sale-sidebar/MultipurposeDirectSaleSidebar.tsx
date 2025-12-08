@@ -54,6 +54,7 @@ interface DirectSale {
   address?: string;
   isPro?: boolean;
   hidden?: boolean;
+  verifiedOnly?: boolean;
 }
 
 const MultipurposeDirectSaleSidebar = () => {
@@ -253,7 +254,7 @@ const MultipurposeDirectSaleSidebar = () => {
                   style={{
                     width: '100%',
                     height: '100%',
-                    objectFit: 'cover',
+                    objectFit: 'contain',
                   }}
                   onError={(e) => {
                     const target = e.currentTarget;
@@ -329,8 +330,19 @@ const MultipurposeDirectSaleSidebar = () => {
         // DO NOT filter by status - include ALL items regardless of status or quantity
         // This ensures sold-out items (SOLD_OUT, SOLD, or exhausted quantity) remain visible
         // Only the API response determines what items are returned - we display everything
-        setDirectSales(directSalesData);
-        setFilteredDirectSales(directSalesData);
+        
+        // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+        const visibleDirectSales = directSalesData.filter((sale: DirectSale) => {
+          // If sale is verifiedOnly and user is not verified, hide it
+          if (sale.verifiedOnly === true && !isUserVerified) {
+            return false;
+          }
+          return true;
+        });
+        
+        setDirectSales(visibleDirectSales);
+        setFilteredDirectSales(visibleDirectSales);
         setError(null);
       } catch (err) {
         console.error("Error fetching direct sales:", err);
@@ -343,7 +355,7 @@ const MultipurposeDirectSaleSidebar = () => {
     };
 
     fetchDirectSales();
-  }, []);
+  }, [auth.user]);
 
   // Fetch categories
   useEffect(() => {
@@ -441,6 +453,16 @@ const MultipurposeDirectSaleSidebar = () => {
     // Start with all direct sales - includes sold-out items
     let result = [...directSales];
 
+    // 0. Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+    const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+    result = result.filter((sale: DirectSale) => {
+      // If sale is verifiedOnly and user is not verified, hide it
+      if (sale.verifiedOnly === true && !isUserVerified) {
+        return false;
+      }
+      return true;
+    });
+
     // 1. Apply SaleType filter if selected
     if (selectedSaleType) {
       result = result.filter((sale: DirectSale) => {
@@ -515,7 +537,7 @@ const MultipurposeDirectSaleSidebar = () => {
 
     setFilteredDirectSales(result);
     setCurrentPage(1); // Reset to first page on any filter change
-  }, [directSales, selectedCategory, selectedSubCategory, searchTerm, selectedSaleType, categories, categoryTypeMap, statusFilter]);
+  }, [directSales, selectedCategory, selectedSubCategory, searchTerm, selectedSaleType, categories, categoryTypeMap, statusFilter, auth.user]);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -559,6 +581,14 @@ const MultipurposeDirectSaleSidebar = () => {
   const getSellerDisplayName = (directSale: DirectSale) => {
     if (directSale.hidden === true) {
       return t('common.anonymous') || 'Anonyme';
+    }
+
+    // Prioritize company name over personal name
+    if (directSale.owner?.entreprise) {
+      return directSale.owner.entreprise;
+    }
+    if (directSale.owner?.companyName) {
+      return directSale.owner.companyName;
     }
 
     if (directSale.owner?.firstName && directSale.owner?.lastName) {
@@ -1300,7 +1330,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                   width: '32px',
                                   height: '32px',
                                   borderRadius: '50%',
-                                  objectFit: 'cover',
+                                  objectFit: 'contain',
                                   filter: isSoldOut ? 'grayscale(100%)' : 'none',
                                 }}
                                 onError={(e) => {

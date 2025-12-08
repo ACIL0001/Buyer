@@ -49,6 +49,7 @@ interface DirectSale {
   wilaya?: string;
   isPro?: boolean;
   hidden?: boolean;
+  verifiedOnly?: boolean;
 }
 
 // Helper function to get the correct image URL
@@ -110,10 +111,20 @@ const Home1LiveDirectSales = () => {
         // DO NOT filter out SOLD_OUT, SOLD, or items with exhausted quantity
         // Only filter out items that are explicitly ARCHIVED or INACTIVE
         // This ensures sold-out items remain visible as deactivated cards
-        const visibleDirectSales = directSalesData.filter((sale: DirectSale) => {
+        const statusFilteredSales = directSalesData.filter((sale: DirectSale) => {
           // Include all items except ARCHIVED and INACTIVE
           // This includes: ACTIVE, SOLD_OUT, SOLD, PAUSED, and items with exhausted quantity
           return sale.status !== 'ARCHIVED' && sale.status !== 'INACTIVE';
+        });
+
+        // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+        const visibleDirectSales = statusFilteredSales.filter((sale: DirectSale) => {
+          // If sale is verifiedOnly and user is not verified, hide it
+          if (sale.verifiedOnly === true && !isUserVerified) {
+            return false;
+          }
+          return true;
         });
 
         // Store all direct sales
@@ -171,7 +182,15 @@ const Home1LiveDirectSales = () => {
   useEffect(() => {
     if (allDirectSales.length === 0) return;
 
-    let filtered = [...allDirectSales];
+    // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+    const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+    let filtered = allDirectSales.filter((sale: DirectSale) => {
+      // If sale is verifiedOnly and user is not verified, hide it
+      if (sale.verifiedOnly === true && !isUserVerified) {
+        return false;
+      }
+      return true;
+    });
     
     // When filtering by 'active', prioritize ACTIVE/PAUSED but still include sold-out items
     // When filtering by 'finished', prioritize SOLD_OUT/SOLD but still include all items
@@ -228,6 +247,12 @@ const Home1LiveDirectSales = () => {
   const getSellerDisplayName = useCallback((directSale: DirectSale) => {
     if (directSale.hidden === true) {
       return t('common.anonymous') || 'Anonyme';
+    }
+
+    // Prioritize company name over personal name
+    const companyName = directSale.owner?.entreprise || directSale.owner?.companyName;
+    if (companyName) {
+      return companyName;
     }
 
     const ownerName = directSale.owner?.firstName && directSale.owner?.lastName
@@ -302,7 +327,7 @@ const Home1LiveDirectSales = () => {
 
   if (loading) {
     return (
-      <div className="modern-direct-sales-section" style={{ padding: '10px 0' }}>
+      <div className="modern-direct-sales-section" style={{ padding: '10px 0 0 0' }}>
         <div className="container-responsive">
           <div className="section-header" style={{ textAlign: 'center', marginBottom: 'clamp(30px, 6vw, 50px)' }}>
             <div style={{
@@ -323,7 +348,7 @@ const Home1LiveDirectSales = () => {
 
   if (error) {
     return (
-      <div className="modern-direct-sales-section" style={{ padding: '10px 0' }}>
+      <div className="modern-direct-sales-section" style={{ padding: '10px 0 0 0' }}>
         <div className="container-responsive">
           <div className="section-header" style={{ textAlign: 'center', marginBottom: 'clamp(30px, 6vw, 50px)' }}>
             <div className="alert alert-warning" style={{
@@ -369,12 +394,20 @@ const Home1LiveDirectSales = () => {
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
-            padding: 40px 16px !important;
+            padding: 15px 16px 0 16px !important;
             transform: none !important;
             transition: none !important;
             position: relative !important;
             zIndex: 10 !important;
             min-height: 200px !important;
+          }
+          
+          .direct-sale-slider {
+            padding-bottom: 0 !important;
+          }
+          
+          .view-all-button-container {
+            margin-top: 0 !important;
           }
           
           .section-header {
@@ -453,7 +486,7 @@ const Home1LiveDirectSales = () => {
         }
       `}</style>
 
-      <div className="modern-direct-sales-section" style={{ padding: '10px 0', background: 'white' }}>
+      <div className="modern-direct-sales-section" style={{ padding: '10px 0 0 0', background: 'white' }}>
         <div className="container-responsive">
           {/* Section Header */}
           <div className="section-header" style={{
@@ -594,7 +627,7 @@ const Home1LiveDirectSales = () => {
                 {...settings}
                 className="swiper direct-sale-slider"
                 style={{
-                  padding: 'clamp(10px, 2vw, 16px) 0 clamp(30px, 4vw, 40px)',
+                  padding: 'clamp(10px, 2vw, 16px) 0 0',
                   overflow: 'visible',
                 }}
               >
@@ -848,7 +881,7 @@ const Home1LiveDirectSales = () => {
                                 width: '32px',
                                 height: '32px',
                                 borderRadius: '50%',
-                                objectFit: 'cover',
+                                objectFit: 'contain',
                               }}
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
@@ -1088,7 +1121,7 @@ const Home1LiveDirectSales = () => {
             className="view-all-button-container"
             style={{
               textAlign: 'center',
-              marginTop: 'clamp(30px, 4vw, 40px)',
+              marginTop: '0',
               opacity: 0,
               transform: 'translateY(30px)',
               animation: 'fadeInUp 0.8s ease-out 0.4s forwards',

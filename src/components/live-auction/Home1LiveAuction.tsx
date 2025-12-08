@@ -42,10 +42,13 @@ interface Auction {
     firstName?: string;
     lastName?: string;
     name?: string;
+    entreprise?: string;
+    companyName?: string;
     profileImage?: { url: string; };
     photoURL?: string;
   };
   status?: string;
+  verifiedOnly?: boolean;
   // --- Added properties to match usage in JSX ---
   quantity?: string | number;
   location?: string;
@@ -359,11 +362,21 @@ const Home1LiveAuction = () => {
           return auction.isPro !== true;
         });
 
+        // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+        const visibleAuctions = nonProAuctions.filter((auction: Auction) => {
+          // If auction is verifiedOnly and user is not verified, hide it
+          if (auction.verifiedOnly === true && !isUserVerified) {
+            return false;
+          }
+          return true;
+        });
+
         // Store all auctions
-        setAllAuctions(nonProAuctions);
+        setAllAuctions(visibleAuctions);
         
         // Apply initial filter (all by default)
-        let filteredAuctions = nonProAuctions;
+        let filteredAuctions = visibleAuctions;
         if (statusFilter === 'active') {
           filteredAuctions = nonProAuctions.filter((auction: Auction) => {
             if (!auction.endingAt) return false;
@@ -398,7 +411,15 @@ const Home1LiveAuction = () => {
   useEffect(() => {
     if (allAuctions.length === 0) return;
 
-    let filtered = [...allAuctions];
+    // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+    const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+    let filtered = allAuctions.filter((auction: Auction) => {
+      // If auction is verifiedOnly and user is not verified, hide it
+      if (auction.verifiedOnly === true && !isUserVerified) {
+        return false;
+      }
+      return true;
+    });
     
     if (statusFilter === 'active') {
       filtered = allAuctions.filter((auction: Auction) => {
@@ -476,6 +497,12 @@ const Home1LiveAuction = () => {
       return t('common.anonymous');
     }
 
+    // Prioritize company name over personal name
+    const companyName = auction.owner?.entreprise || auction.owner?.companyName;
+    if (companyName) {
+      return companyName;
+    }
+
     const ownerName = auction.owner?.firstName && auction.owner?.lastName
       ? `${auction.owner.firstName} ${auction.owner.lastName}`
       : auction.owner?.name;
@@ -504,10 +531,7 @@ const Home1LiveAuction = () => {
       nextEl: ".auction-slider-next",
       prevEl: ".auction-slider-prev",
     },
-    pagination: {
-      el: ".swiper-pagination",
-      clickable: true,
-    },
+    pagination: false,
     breakpoints: {
       280: {
         slidesPerView: 1,
@@ -549,7 +573,7 @@ const Home1LiveAuction = () => {
 
   if (loading) {
     return (
-      <div className="modern-auctions-section" style={{ padding: '10px 0' }}>
+      <div className="modern-auctions-section" style={{ padding: '10px 0 0 0' }}>
         <div className="container-responsive">
           <div className="section-header" style={{ textAlign: 'center', marginBottom: 'clamp(30px, 6vw, 50px)' }}>
             <div style={{
@@ -570,7 +594,7 @@ const Home1LiveAuction = () => {
 
   if (error) {
     return (
-      <div className="modern-auctions-section" style={{ padding: '10px 0' }}>
+      <div className="modern-auctions-section" style={{ padding: '10px 0 0 0' }}>
         <div className="container-responsive">
           <div className="section-header" style={{ textAlign: 'center', marginBottom: 'clamp(30px, 6vw, 50px)' }}>
             <div className="alert alert-warning" style={{
@@ -611,12 +635,20 @@ const Home1LiveAuction = () => {
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
-            padding: 40px 16px !important;
+            padding: 5px 16px 0 16px !important;
             transform: none !important;
             transition: none !important;
             position: relative !important;
             z-index: 10 !important;
             min-height: 200px !important;
+          }
+          
+          .auction-slider {
+            padding-bottom: 0 !important;
+          }
+          
+          .view-all-button-container {
+            margin-top: 0 !important;
           }
           
           .section-header {
@@ -733,7 +765,7 @@ const Home1LiveAuction = () => {
         }
       `}</style>
 
-      <div className="modern-auctions-section" style={{ padding: '10px 0', background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)' }}>
+      <div className="modern-auctions-section" style={{ padding: '10px 0 0 0', background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)' }}>
         <div className="container-responsive">
           {/* Section Header */}
           <div className="section-header" style={{
@@ -866,11 +898,11 @@ const Home1LiveAuction = () => {
           {liveAuctions.length > 0 ? (
             <div className="auction-carousel-container" style={{ position: 'relative' }}>
                     <Swiper
-                      modules={[Navigation, Autoplay, Pagination]}
+                      modules={[Navigation, Autoplay]}
                       {...settings}
                       className="swiper auction-slider"
                       style={{
-                        padding: 'clamp(10px, 2vw, 16px) 0 clamp(30px, 4vw, 40px)',
+                        padding: 'clamp(10px, 2vw, 16px) 0 0',
                         overflow: 'visible',
                       }}
                     >
@@ -1187,7 +1219,7 @@ const Home1LiveAuction = () => {
                                 width: '32px',
                                 height: '32px',
                                 borderRadius: '50%',
-                                objectFit: 'cover',
+                                objectFit: 'contain',
                               }}
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
@@ -1334,10 +1366,6 @@ const Home1LiveAuction = () => {
               </div>
 
               {/* Pagination */}
-              <div className="swiper-pagination" style={{
-                position: 'relative',
-                marginTop: 'clamp(20px, 3vw, 25px)',
-              }}></div>
             </div>
           ) : (
             <div 
@@ -1385,7 +1413,8 @@ const Home1LiveAuction = () => {
             className="view-all-button-container"
             style={{
               textAlign: 'center',
-              marginTop: 'clamp(30px, 4vw, 40px)',
+              marginTop: 'clamp(20px, 3vw, 30px)',
+              marginBottom: 'clamp(20px, 3vw, 30px)',
               opacity: 0,
               transform: 'translateY(30px)',
               animation: 'fadeInUp 0.8s ease-out 0.4s forwards',

@@ -630,7 +630,11 @@ export const Header = () => {
                         </div>
                       );
                     })()}
-                    {!isMobile ? t('common.myAccount') : ""}
+                    {!isMobile ? (
+                      auth?.user?.entreprise || 
+                      auth?.user?.companyName || 
+                      t('common.myAccount')
+                    ) : ""}
                     <svg 
                       width={12} 
                       height={12} 

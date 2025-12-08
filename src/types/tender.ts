@@ -34,6 +34,7 @@ export interface Tender {
   wilaya: string;
   location: string;
   isPro: boolean;
+  verifiedOnly?: boolean;
   minimumPrice?: number;
   awardedTo?: any;
   status: TENDER_STATUS;

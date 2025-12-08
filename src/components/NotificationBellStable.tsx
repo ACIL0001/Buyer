@@ -5,6 +5,10 @@ import useTotalNotifications from '@/hooks/useTotalNotifications';
 import useNotification from '@/hooks/useNotification';
 import { useAdminMessageNotifications } from '@/hooks/useAdminMessageNotifications';
 import { useTranslation } from 'react-i18next';
+import { getSellerUrl } from '@/config';
+import useAuth from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { ChatAPI } from '@/app/api/chat';
 
 interface NotificationBellStableProps {
   variant?: 'header' | 'sidebar';
@@ -16,6 +20,8 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
   const [windowWidth, setWindowWidth] = useState(1024);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
+  const { auth } = useAuth();
+  const router = useRouter();
   
   // Get notification data
   const { totalUnreadCount, refreshAll } = useTotalNotifications();
@@ -122,6 +128,42 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
     try {
       console.log('🔖 Marking notification as read:', notification._id, 'source:', notification.source);
       
+      // Check if this is an order confirmation notification (buyer receives when seller confirms)
+      const isOrderConfirmed = notification.type === 'ORDER' && 
+                                (notification.title?.toLowerCase().includes('commande confirmée') ||
+                                 notification.title?.toLowerCase().includes('order confirmed') ||
+                                 notification.message?.toLowerCase().includes('confirmée') ||
+                                 notification.message?.toLowerCase().includes('confirmed'));
+      
+      // Check if this is an offer accepted notification (seller receives when buyer accepts submission)
+      const isOfferAccepted = notification.type === 'OFFER_ACCEPTED' &&
+                              (notification.title?.toLowerCase().includes('offre acceptée') ||
+                               notification.title?.toLowerCase().includes('offer accepted') ||
+                               notification.message?.toLowerCase().includes('acceptée') ||
+                               notification.message?.toLowerCase().includes('accepted') ||
+                               notification.data?.tenderBid ||
+                               notification.data?.tender);
+      
+      // Check if this is a purchase/bid notification that should redirect to seller app
+      const isDirectSaleOrder = (notification.type === 'ORDER' || 
+                                notification.type === 'NEW_OFFER') &&
+                                !isOrderConfirmed &&
+                                (notification.title?.toLowerCase().includes('commande') ||
+                                notification.title?.toLowerCase().includes('order') ||
+                                 (notification.data?.purchase || notification.data?.directSale));
+      
+      const isTenderBid = notification.type === 'NEW_OFFER' && 
+                          !isOfferAccepted &&
+                          (notification.data?.tender || notification.data?.tenderId || 
+                           notification.message?.toLowerCase().includes('soumission') ||
+                           notification.message?.toLowerCase().includes('appel d\'offres'));
+      
+      const isAuctionBid = notification.type === 'BID_CREATED' ||
+                           (notification.type === 'NEW_OFFER' && 
+                            (notification.data?.auction || notification.data?.auctionId ||
+                             notification.message?.toLowerCase().includes('enchère')));
+
+      // Mark as read first
       if (notification.source === 'general') {
         await markGeneralAsRead(notification._id);
         console.log('✅ General notification marked as read');
@@ -133,6 +175,113 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
       // Refresh all notifications to get updated data
       await refreshAll();
       console.log('🔄 Notifications refreshed after marking as read');
+      
+      // Handle order confirmation - open chat with seller who confirmed the order
+      if (isOrderConfirmed) {
+        const sellerId = notification.data?.sellerId;
+        if (sellerId && auth?.user?._id) {
+          try {
+            console.log('💬 Opening chat with seller who confirmed order:', sellerId);
+            
+            // Get all chats to find existing chat with seller
+            const chatsResponse = await ChatAPI.getChats({
+              id: auth.user._id,
+              from: 'client'
+            });
+            
+            // Find existing chat with seller
+            const existingChat = chatsResponse.data?.find((chat: any) => 
+              chat.users?.some((user: any) => {
+                const userIdStr = user._id?.toString() || user._id;
+                return userIdStr === sellerId?.toString() || userIdStr === sellerId;
+              })
+            );
+            
+            if (existingChat) {
+              // Navigate to chat with existing chat ID
+              console.log('✅ Found existing chat with seller:', existingChat._id);
+              router.push(`/chat?chatId=${existingChat._id}`);
+            } else {
+              // Navigate to chat with seller ID - Chat component will create chat if needed
+              console.log('📝 No existing chat found, opening with seller ID:', sellerId);
+              router.push(`/chat?userId=${sellerId}`);
+            }
+          } catch (chatError) {
+            console.error('❌ Error opening chat with seller:', chatError);
+            // Fallback: navigate to chat page with seller ID
+            router.push(`/chat?userId=${sellerId}`);
+          }
+        } else {
+          // Fallback: navigate to chat page
+          router.push('/chat');
+        }
+        return;
+      }
+      
+      // Handle offer accepted - open chat with tender owner (buyer) who accepted the submission
+      if (isOfferAccepted) {
+        const ownerId = notification.data?.ownerId; // Tender owner (buyer) ID
+        if (ownerId && auth?.user?._id) {
+          try {
+            console.log('💬 Opening chat with tender owner who accepted submission:', ownerId);
+            
+            // Get all chats to find existing chat with tender owner
+            const chatsResponse = await ChatAPI.getChats({
+              id: auth.user._id,
+              from: 'client'
+            });
+            
+            // Find existing chat with tender owner
+            const existingChat = chatsResponse.data?.find((chat: any) => 
+              chat.users?.some((user: any) => {
+                const userIdStr = user._id?.toString() || user._id;
+                return userIdStr === ownerId?.toString() || userIdStr === ownerId;
+              })
+            );
+            
+            if (existingChat) {
+              // Navigate to chat with existing chat ID
+              console.log('✅ Found existing chat with tender owner:', existingChat._id);
+              router.push(`/chat?chatId=${existingChat._id}`);
+            } else {
+              // Navigate to chat with tender owner ID - Chat component will create chat if needed
+              console.log('📝 No existing chat found, opening with tender owner ID:', ownerId);
+              router.push(`/chat?userId=${ownerId}`);
+            }
+          } catch (chatError) {
+            console.error('❌ Error opening chat with tender owner:', chatError);
+            // Fallback: navigate to chat page with tender owner ID
+            router.push(`/chat?userId=${ownerId}`);
+          }
+        } else {
+          // Fallback: navigate to chat page
+          router.push('/chat');
+        }
+        return;
+      }
+      
+      // Redirect to seller app if this is a purchase/bid notification
+      if (isDirectSaleOrder || isTenderBid || isAuctionBid) {
+        const sellerBaseUrl = getSellerUrl();
+        let redirectPath = '/dashboard/app';
+        
+        if (isDirectSaleOrder) {
+          redirectPath = '/dashboard/direct-sales/orders';
+        } else if (isTenderBid || isAuctionBid) {
+          redirectPath = '/dashboard/tender-bids';
+        }
+        
+        const sellerUrl = new URL(redirectPath, sellerBaseUrl);
+        if (auth?.tokens?.accessToken) {
+          sellerUrl.searchParams.append('token', auth.tokens.accessToken);
+          sellerUrl.searchParams.append('refreshToken', auth.tokens.refreshToken || '');
+          sellerUrl.searchParams.append('from', 'buyer');
+        }
+        
+        console.log('🔄 Redirecting to seller app:', sellerUrl.toString());
+        window.location.href = sellerUrl.toString();
+        return;
+      }
     } catch (error) {
       console.error('❌ Error marking notification as read:', error);
     }
@@ -365,7 +514,19 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
                 </span>
               </div>
             ) : (
-              allNotifications.slice(0, 10).map((notification) => (
+              allNotifications.slice(0, 10).map((notification) => {
+                // Check if this is an order/bill notification
+                const isOrderNotification = notification.type === 'ORDER' || 
+                                           notification.type === 'NEW_OFFER' ||
+                                           notification.title?.toLowerCase().includes('commande') ||
+                                           notification.title?.toLowerCase().includes('order');
+                
+                // Extract price from title if it contains DA
+                const priceMatch = notification.title?.match(/([\d,]+\.?\d*)\s*DA/i);
+                const priceAmount = priceMatch ? priceMatch[1] : null;
+                const titleWithoutPrice = priceAmount ? notification.title.replace(/\s*-\s*[\d,]+\.?\d*\s*DA/i, '').trim() : notification.title;
+
+                return (
                 <div
                   key={notification._id}
                   onClick={() => handleMarkAsRead(notification)}
@@ -392,13 +553,38 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{
-                        fontWeight: notification.read ? 400 : 600,
-                        color: '#333',
-                        fontSize: '14px',
-                        marginBottom: '4px',
-                        lineHeight: '1.3'
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        gap: '8px',
+                        marginBottom: '4px'
                       }}>
-                        {notification.title}
+                        <div style={{
+                          fontWeight: notification.read ? 400 : 600,
+                          color: '#333',
+                          fontSize: '14px',
+                          lineHeight: '1.3',
+                          flex: 1,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {titleWithoutPrice}
+                        </div>
+                        {priceAmount && (
+                          <div style={{
+                            background: '#0063b1',
+                            color: 'white',
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0
+                          }}>
+                            {priceAmount} DA
+                          </div>
+                        )}
                       </div>
                       <div style={{
                         color: '#666',
@@ -457,7 +643,8 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
                     </div>
                   </div>
                 </div>
-              ))
+                );
+              })
             )}
           </div>
 

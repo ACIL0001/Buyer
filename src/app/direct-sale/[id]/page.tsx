@@ -9,6 +9,8 @@ import useAuth from "@/hooks/useAuth";
 import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useSnackbar } from 'notistack';
+import { SnackbarProvider } from 'notistack';
 import RequestProvider from "@/contexts/RequestContext";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay, Pagination } from "swiper/modules";
@@ -66,6 +68,7 @@ function DirectSaleDetailContent() {
   const params = useParams();
   const router = useRouter();
   const { isLogged, auth } = useAuth();
+  const { enqueueSnackbar } = useSnackbar();
   const [directSale, setDirectSale] = useState<DirectSale | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -209,7 +212,13 @@ function DirectSaleDetailContent() {
         directSaleId: directSale._id,
         quantity: quantity
       });
-      toast.success("Commande effectuée avec succès!");
+      enqueueSnackbar("Commande effectuée avec succès!", { variant: 'success' });
+      
+      // Refresh the direct sale data to update quantity
+      await fetchDirectSale();
+      
+      // Reset quantity to 1 after successful purchase
+      setQuantity(1);
 
     } catch (err: any) {
       console.error("Error purchasing:", err);
@@ -450,10 +459,6 @@ function DirectSaleDetailContent() {
                 <div className="auction-details-table mb-4">
                   <table className="table">
                     <tbody>
-                      <tr>
-                        <td className="fw-bold">Prix Unitaire</td>
-                        <td><span style={{ color: '#0063b1', fontWeight: '700', fontSize: '20px' }}>{formatPrice(directSale.price)}</span></td>
-                      </tr>
                       {directSale.saleType === 'PRODUCT' && (
                         <tr>
                           <td className="fw-bold">Disponibilité</td>
@@ -468,6 +473,10 @@ function DirectSaleDetailContent() {
                           </td>
                         </tr>
                       )}
+                      <tr>
+                        <td className="fw-bold">Prix Unitaire</td>
+                        <td><span style={{ color: '#0063b1', fontWeight: '700', fontSize: '20px' }}>{formatPrice(directSale.price)}</span></td>
+                      </tr>
                       {directSale.owner && (
                       <tr>
                         <td className="fw-bold">Vendeur</td>
@@ -786,10 +795,12 @@ export default function DirectSaleDetailPage() {
     <>
       <AxiosInterceptor>
         <RequestProvider>
-          <ToastContainer position="top-right" autoClose={5000} />
-          <Header />
-          <DirectSaleDetailContent />
-          <Footer />
+          <SnackbarProvider maxSnack={3}>
+            <ToastContainer position="top-right" autoClose={5000} />
+            <Header />
+            <DirectSaleDetailContent />
+            <Footer />
+          </SnackbarProvider>
         </RequestProvider>
       </AxiosInterceptor>
     </>

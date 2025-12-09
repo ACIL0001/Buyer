@@ -33,7 +33,9 @@ const app = {
   frontendPort: process.env.NODE_ENV === 'development' ? ':3001' : '',
 
   // Seller Application URL - Dynamic based on environment
-  sellerUrl:  'https://mazad-click-seller.vercel.app/',
+  sellerUrl: isProductionEnvironment 
+    ? 'https://mazad-click-seller.vercel.app/'
+    : 'http://localhost:3002/',
   // sellerUrl:  'https://api.mazad.click/seller',
 
   apiKey: '64d2e8b7c3a9f1e5d8b2a4c6e9f0d3a5',

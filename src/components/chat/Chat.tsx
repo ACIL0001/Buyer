@@ -375,6 +375,7 @@ export default function Chat() {
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, chats]);
 
   // Filter chats based on search

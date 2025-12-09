@@ -80,9 +80,14 @@ const nextConfig = {
   },
   
   // Development configuration
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
+  // Development configuration
+  // eslint: {
+  //   ignoreDuringBuilds: false,
+  // },
+
+  // Enable Turbopack compatibility by defining an empty config
+  // This acknowledges we have a custom webpack config but want to proceed
+  turbopack: {},
   
   // Improve error handling
   onDemandEntries: {

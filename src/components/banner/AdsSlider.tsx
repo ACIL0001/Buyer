@@ -140,13 +140,10 @@ const AdsSlider: React.FC = () => {
         }
 
         .ad-image {
-          width: 15%;
-          max-width: 100%;
-          height: auto;
-          max-height: 100%;
-          object-fit: contain;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
           transition: transform 0.5s ease;
-          margin: 0 auto;
           display: block;
         }
 
@@ -255,10 +252,11 @@ const AdsSlider: React.FC = () => {
           }
 
           .ad-image {
-            width: 50% !important;
-            max-width: 80% !important;
-            height: auto !important;
-            max-height: 90% !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
+            max-height: 100% !important;
+            object-fit: cover !important;
           }
           
           .ads-swiper :global(.swiper-button-next),

@@ -123,12 +123,13 @@ const AdsSlider: React.FC = () => {
 
         .ads-swiper {
           width: 100%;
-          height: auto;
+          height: clamp(80px, 8vw, 120px);
+          min-height: clamp(80px, 8vw, 120px);
         }
 
         .ad-slide {
           width: 100%;
-          height: auto;
+          height: 100%;
           position: relative;
           cursor: pointer;
           overflow: hidden;
@@ -140,7 +141,9 @@ const AdsSlider: React.FC = () => {
 
         .ad-image {
           width: 100%;
-          height: auto;
+          height: 100%;
+          object-fit: contain;
+          transition: transform 0.5s ease;
           display: block;
         }
 
@@ -224,35 +227,36 @@ const AdsSlider: React.FC = () => {
         /* Mobile adjustments */
         @media (max-width: 768px) {
           .ads-slider-container {
-             height: auto !important;
-             min-height: auto !important;
+            height: clamp(150px, 20vw, 220px) !important;
+            min-height: clamp(150px, 20vw, 220px) !important;
           }
 
           .ads-swiper {
-            height: auto !important;
-            min-height: auto !important;
+            height: clamp(150px, 20vw, 220px) !important;
+            min-height: clamp(150px, 20vw, 220px) !important;
           }
 
           .ads-swiper :global(.swiper-wrapper) {
-             height: auto !important;
-             min-height: auto !important;
+            height: clamp(150px, 20vw, 220px) !important;
+            min-height: clamp(150px, 20vw, 220px) !important;
           }
 
           .ads-swiper :global(.swiper-slide) {
-             height: auto !important;
-             min-height: auto !important;
+            height: clamp(150px, 20vw, 220px) !important;
+            min-height: clamp(150px, 20vw, 220px) !important;
           }
 
           .ad-slide {
-            height: auto !important;
-            min-height: auto !important;
+            height: clamp(150px, 20vw, 220px) !important;
+            min-height: clamp(150px, 20vw, 220px) !important;
           }
 
           .ad-image {
             width: 100% !important;
             max-width: 100% !important;
-            height: auto !important;
-            max-height: none !important;
+            height: 100% !important;
+            max-height: 100% !important;
+            object-fit: contain !important;
           }
           
           .ads-swiper :global(.swiper-button-next),
@@ -291,9 +295,12 @@ const AdsSlider: React.FC = () => {
             onlyInViewport: true,
           }}
           className="ads-swiper"
-          style={{
-            width: '100%',
-            height: 'auto'
+          style={isMobile ? {
+            height: 'clamp(150px, 20vw, 220px)',
+            minHeight: 'clamp(150px, 20vw, 220px)'
+          } : {
+            height: 'clamp(80px, 8vw, 120px)',
+            minHeight: 'clamp(80px, 8vw, 120px)'
           }}
         >
           {ads.map((ad) => (

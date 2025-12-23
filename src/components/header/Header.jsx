@@ -589,21 +589,22 @@ export const Header = () => {
                           if (url.includes('&') && !url.includes('?')) {
                             url = url.replace('&', '?');
                           }
-                          // Normalize localhost URLs
+                          // Normalize URLs
+                          const baseUrl = app.baseURL.replace(/\/$/, '');
                           if (url.startsWith('http://localhost:3000')) {
-                            return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                            return url.replace('http://localhost:3000', baseUrl);
                           }
                           if (url.startsWith('http://localhost/')) {
-                            return url.replace('http://localhost', app.baseURL.replace(/\/$/, ''));
+                            return url.replace('http://localhost', baseUrl);
                           }
                           if (url.startsWith('/static/')) {
-                            return `${app.baseURL.replace(/\/$/, '')}${url}`;
+                            return `${baseUrl}${url}`;
                           }
                           if (url.startsWith('/')) {
-                            return `${app.baseURL.replace(/\/$/, '')}/static${url}`;
+                            return `${baseUrl}/static${url}`;
                           }
                           if (!url.startsWith('http')) {
-                            return `${app.baseURL.replace(/\/$/, '')}/static/${url}`;
+                            return `${baseUrl}/static/${url}`;
                           }
                           return url;
                         }
@@ -614,20 +615,22 @@ export const Header = () => {
                           // Try fullUrl first
                           if (avatar.fullUrl) {
                             let fullUrl = avatar.fullUrl;
+                            const baseUrl = app.baseURL.replace(/\/$/, '');
                             if (fullUrl.startsWith('http://localhost:3000')) {
-                              fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                              fullUrl = fullUrl.replace('http://localhost:3000', baseUrl);
                             }
                             return fullUrl;
                           }
                           
                           // Try url
                           if (avatar.url) {
+                            const baseUrl = app.baseURL.replace(/\/$/, '');
                             if (avatar.url.startsWith('http')) {
-                              return avatar.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                              return avatar.url.replace('http://localhost:3000', baseUrl);
                             }
                             const path = avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`;
                             const finalPath = path.startsWith('/static/') ? path : `/static${path}`;
-                            return `${app.baseURL.replace(/\/$/, '')}${finalPath}`;
+                            return `${baseUrl}${finalPath}`;
                           }
                           
                           // Try filename

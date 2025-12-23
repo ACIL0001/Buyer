@@ -146,11 +146,12 @@ export default function ProfilePage() {
 
     const getAvatarUrl = (avatar: AvatarData | string): string => {
         if (typeof avatar === 'string') {
+            const baseUrl = API_BASE_URL.replace(/\/$/, '');
             if (avatar.startsWith('http')) {
-                return avatar.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
+                return avatar.replace('http://localhost:3000', baseUrl);
             } else {
                 const cleanPath = avatar.startsWith('/') ? avatar.substring(1) : avatar;
-                return `${API_BASE_URL}/static/${cleanPath}`;
+                return `${baseUrl}/static/${cleanPath}`;
             }
         }
 
@@ -159,11 +160,12 @@ export default function ProfilePage() {
         }
 
         if (avatar?.url) {
+            const baseUrl = API_BASE_URL.replace(/\/$/, '');
             if (avatar.url.startsWith('http')) {
-                return avatar.url.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
+                return avatar.url.replace('http://localhost:3000', baseUrl);
             } else {
                 const cleanUrl = avatar.url.startsWith('/') ? avatar.url.substring(1) : avatar.url;
-                return `${API_BASE_URL}/static/${cleanUrl}`;
+                return `${baseUrl}/static/${cleanUrl}`;
             }
         }
 
@@ -461,16 +463,17 @@ export default function ProfilePage() {
         }
         
         if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+            const baseUrl = API_BASE_URL.replace(/\/$/, '');
             let normalized = cleanUrl
-                .replace(/http:\/\/localhost:3000/g, API_BASE_URL.replace(/\/$/, ''))
-                .replace(/http:\/\/localhost\//g, API_BASE_URL.replace(/\/$/, '') + '/')
-                .replace(/http:\/\/localhost$/g, API_BASE_URL.replace(/\/$/, ''));
+                .replace(/http:\/\/localhost:3000/g, baseUrl)
+                .replace(/http:\/\/localhost\//g, baseUrl + '/')
+                .replace(/http:\/\/localhost$/g, baseUrl);
             
             if (normalized.startsWith('http://localhost')) {
                 try {
                     const urlObj = new URL(cleanUrl);
                     const pathWithQuery = urlObj.pathname + (urlObj.search || '');
-                    normalized = `${API_BASE_URL.replace(/\/$/, '')}${pathWithQuery}`;
+                    normalized = `${baseUrl}${pathWithQuery}`;
                 } catch (e) {
                     console.warn('Failed to parse URL:', cleanUrl);
                 }

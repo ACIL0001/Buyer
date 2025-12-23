@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, memo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { BsBell, BsHammer, BsTrophy, BsExclamationCircle, BsChat } from 'react-icons/bs';
 import useNotification from '@/hooks/useNotification';
 import useTotalNotifications from '@/hooks/useTotalNotifications';
@@ -111,10 +112,14 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
     }
   };
 
+  const router = useRouter();
+
   const handleMarkAsRead = async (notificationId: string) => {
     // Set clicked state for visual feedback
     setClickedNotificationId(notificationId);
     
+    const notification = notifications.find(n => n._id === notificationId);
+
     // Mark as read
     await markAsRead(notificationId);
     
@@ -122,6 +127,12 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
     setTimeout(() => {
       setClickedNotificationId(null);
     }, 300);
+
+    // Redirect to chat if chatId is present
+    if (notification?.data?.chatId) {
+       setIsOpen(false); // Close dropdown
+       router.push(`/dashboard/chat?conversationId=${notification.data.chatId}`);
+    }
   };
 
   const handleMarkAllAsRead = async () => {

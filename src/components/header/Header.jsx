@@ -75,8 +75,7 @@ export const Header = () => {
   const windowRef = useRef(null)
   const headerRef = useRef(null);
 
-  // Get chat-related notifications (including CHAT_CREATED)
-  const { totalUnread: chatTotalUnread } = useChatNotificationsWithGeneral();
+  // Chat notifications are handled by the ChatNotifications component directly
 
   // Add a badge style for reuse
   const badgeStyle = {
@@ -161,6 +160,7 @@ export const Header = () => {
   // Navigation Items
   const navItems = [
     { name: t('navigation.home'), path: "/", matchPaths: ["/"] },
+    { name: "Dashboard", path: "/dashboard", matchPaths: ["/dashboard"] },
     { name: t('navigation.auctions'), path: "/auction-sidebar", matchPaths: ["/auction-sidebar", "/auction-details"] },
     { name: t('navigation.tenders'), path: "/tenders", matchPaths: ["/tenders", "/tender-details"] },
     { name: t('navigation.directSales'), path: "/direct-sale", matchPaths: ["/direct-sale"] },
@@ -265,6 +265,7 @@ export const Header = () => {
 
 
 
+
   // Check for BID_WON notifications on component mount and auth change
   useEffect(() => {
     const checkBidWonNotifications = async () => {
@@ -276,9 +277,12 @@ export const Header = () => {
         // Handle the new response structure: { notifications: [...] }
         const notifications = response.notifications || response || [];
         
-        // Find unread BID_WON notifications
+        // Get locally ignored notifications
+        const ignoredIds = JSON.parse(localStorage.getItem('reviewed_notifications') || '[]');
+        
+        // Find unread BID_WON notifications that haven't been ignored locally
         const bidWonNotification = notifications.find(notif => 
-          notif.type === 'BID_WON' && !notif.isRead
+          notif.type === 'BID_WON' && !notif.isRead && !ignoredIds.includes(notif._id)
         );
         
         if (bidWonNotification) {
@@ -293,6 +297,19 @@ export const Header = () => {
     checkBidWonNotifications();
   }, [isLogged, isReady]);
 
+  // Helper to ignore notification locally
+  const ignoreNotificationLocally = (id) => {
+    try {
+      const ignoredIds = JSON.parse(localStorage.getItem('reviewed_notifications') || '[]');
+      if (!ignoredIds.includes(id)) {
+        ignoredIds.push(id);
+        localStorage.setItem('reviewed_notifications', JSON.stringify(ignoredIds));
+      }
+    } catch (e) {
+      console.error('Error saving to localStorage:', e);
+    }
+  };
+
   // Handle review submission
   const handleReviewSubmit = async (type, comment) => {
     if (!currentBidWonNotification) return;
@@ -301,11 +318,28 @@ export const Header = () => {
     
     try {
       // Get the seller/target user ID from the notification
-      const targetUserId = currentBidWonNotification.senderId || currentBidWonNotification.targetUserId;
+      let targetUserId = null;
+      
+      // Check senderId (could be string or populated object)
+      if (currentBidWonNotification.senderId) {
+        targetUserId = typeof currentBidWonNotification.senderId === 'object' 
+          ? currentBidWonNotification.senderId._id 
+          : currentBidWonNotification.senderId;
+      }
+      
+      // Fallback to targetUserId or sellerId in data
+      if (!targetUserId) {
+        targetUserId = currentBidWonNotification.targetUserId || 
+                       currentBidWonNotification.data?.sellerId;
+      }
       
       if (!targetUserId) {
+        // Log the notification for debugging
+        console.error('Invalid notification structure:', currentBidWonNotification);
         throw new Error('Target user ID not found in notification');
       }
+
+      console.log('Using targetUserId for review:', targetUserId);
 
       // Submit the review
       if (type === 'like') {
@@ -316,6 +350,9 @@ export const Header = () => {
 
       // Mark the notification as read
       await NotificationAPI.markAsRead(currentBidWonNotification._id);
+      
+      // Ignore locally to be safe
+      ignoreNotificationLocally(currentBidWonNotification._id);
 
       // Close modal and reset state
       setIsReviewModalOpen(false);
@@ -323,8 +360,23 @@ export const Header = () => {
       
       console.log(`Successfully submitted ${type} review for user ${targetUserId}`);
     } catch (error) {
-      console.error('Error submitting review:', error);
-      // You can show an error toast here if you have a toast system
+      if (error.response && error.response.status === 400) {
+        // Handle 400 Bad Request (Already reviewed/Self review) quietly
+        console.warn('Review skipped: User likely already reviewed this transaction.');
+        try {
+          ignoreNotificationLocally(currentBidWonNotification._id); // Ignore locally
+          await NotificationAPI.markAsRead(currentBidWonNotification._id);
+          setIsReviewModalOpen(false);
+          setCurrentBidWonNotification(null);
+        } catch (markError) {
+          console.warn('Could not mark notification as read:', markError);
+          // If markAsRead fails, we still have the local ignore
+        }
+      } else {
+        // Only log actual unexpected errors
+        console.error('Error submitting review:', error);
+      }
+      // You can show a toast here if needed
     } finally {
       setIsSubmittingReview(false);
     }
@@ -703,154 +755,131 @@ export const Header = () => {
                     right: 0,
                     background: 'white',
                     borderRadius: '12px',
-                    boxShadow: '0 5px 25px rgba(0,0,0,0.12)',
-                    minWidth: '280px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    width: '220px',
                     zIndex: 9999,
                     overflow: 'hidden',
-                    animation: 'fadeIn 0.25s ease-out'
+                    animation: 'fadeIn 0.2s ease-out'
                   }}>
-                    {/* App Switcher Section */}
+                    {/* User Info Header - Compact */}
                     <div style={{
-                      padding: '20px',
+                      padding: '12px 16px',
                       borderBottom: '1px solid #f0f0f0',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '10px',
-                      background: 'linear-gradient(to right, #f7f9fc, #edf2f7)'
+                      background: '#fafafa'
                     }}>
                       <div style={{
-                        fontSize: '15px',
+                        fontSize: '14px',
                         fontWeight: '600',
                         color: '#333',
-                        marginBottom: '5px',
-                        textAlign: 'center'
+                        marginBottom: '2px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
                       }}>
-                        {t('account.switchToSeller')}
-                      </div>
-                      <div
-                        style={{
-                          cursor: 'pointer',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          background: switchAccount ? 'rgba(0, 99, 177, 0.1)' : 'transparent',
-                          padding: '8px 15px',
-                          borderRadius: '30px',
-                          transition: 'all 0.3s ease',
-                          border: '1px solid #e0e0e0'
-                        }}
-                      >
-                        <ButtonSwitchApp value={switchAccount} onChange={swithAcc}/>
+                        {auth?.user?.entreprise || auth?.user?.companyName || `${auth?.user?.firstName || 'User'} ${auth?.user?.lastName || ''}`.trim()}
                       </div>
                       <div style={{
-                        fontSize: '13px',
+                        fontSize: '12px',
                         color: '#666',
-                        textAlign: 'center',
-                        marginTop: '5px'
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
                       }}>
-                        {switchAccount ? t('account.sellerModeActive') : t('account.currentlyInBuyerMode')}
+                        {auth?.user?.email || 'user@example.com'}
                       </div>
                     </div>
-                    
-                    <Link href="/profile" onClick={() => {
-                      console.log('🔗 Profile link clicked');
-                      console.log('📍 Current pathname:', pathName);
-                      setIsAccountDropdownOpen(false);
-                    }}>
-                      <div style={{
-                        padding: '14px 20px',
-                        color: '#333',
-                        transition: 'all 0.3s ease',
-                        cursor: 'pointer',
-                        borderLeft: pathName === '/profile' ? '3px solid #0063b1' : '3px solid transparent',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px'
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = '#f9f9f9';
-                        e.currentTarget.style.borderLeftColor = '#0063b1';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        if (pathName !== '/profile') {
-                          e.currentTarget.style.borderLeftColor = 'transparent';
-                        }
-                      }}
-                      >
-                        <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M8 8C10.2091 8 12 6.20914 12 4C12 1.79086 10.2091 0 8 0C5.79086 0 4 1.79086 4 4C4 6.20914 5.79086 8 8 8Z" fill="#0063b1"/>
-                          <path d="M8 10C3.58172 10 0 12.6863 0 16H16C16 12.6863 12.4183 10 8 10Z" fill="#0063b1"/>
-                        </svg>
-                        {t('account.myProfile')}
-                      </div>
-                    </Link>
-                    
-                    <Link href="/users" onClick={() => setIsAccountDropdownOpen(false)}>
-                      <div style={{
-                        padding: '14px 20px',
-                        color: '#333',
-                        transition: 'all 0.3s ease',
-                        cursor: 'pointer',
-                        borderLeft: pathName === '/users' ? '3px solid #0063b1' : '3px solid transparent',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px'
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = '#f9f9f9';
-                        e.currentTarget.style.borderLeftColor = '#0063b1';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        if (pathName !== '/users') {
-                          e.currentTarget.style.borderLeftColor = 'transparent';
-                        }
-                      }}
-                      >
-                        <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 14V12.6667C12 11.9594 11.7366 11.2811 11.2678 10.781C10.7989 10.281 10.1667 10 9.5 10H3.5C2.83333 10 2.20139 10.281 1.73223 10.781C1.26339 11.2811 1 11.9594 1 12.6667V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M6.5 7C7.88071 7 9 5.88071 9 4.5C9 3.11929 7.88071 2 6.5 2C5.11929 2 4 3.11929 4 4.5C4 5.88071 5.11929 7 6.5 7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M15 14V12.6667C14.9994 12.0758 14.8044 11.5018 14.4462 11.0357C14.0879 10.5696 13.5866 10.2357 13.03 10.0867" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M10.53 2.08667C11.0879 2.23464 11.5904 2.56882 11.9493 3.03577C12.3081 3.50272 12.5032 4.07789 12.5032 4.67C12.5032 5.26211 12.3081 5.83728 11.9493 6.30423C11.5904 6.77118 11.0879 7.10536 10.53 7.25333" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        {t('account.users')}
-                      </div>
-                    </Link>
-                    
-                    {/* Logout Button */}
+
+                    {/* Menu Items - Compact */}
+                    <div style={{ padding: '4px 0' }}>
+                      {/* Dashboard Link */}
+                      <Link href="/dashboard" onClick={() => setIsAccountDropdownOpen(false)}>
+                        <div style={{
+                          padding: '10px 16px',
+                          color: '#333',
+                          transition: 'all 0.2s ease',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          fontSize: '14px'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f5f5f5';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                        >
+                          <svg width={18} height={18} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                            <rect x="1" y="1" width="6" height="6" rx="1" stroke="#0063b1" strokeWidth="1.5" fill="none"/>
+                            <rect x="9" y="1" width="6" height="6" rx="1" stroke="#0063b1" strokeWidth="1.5" fill="none"/>
+                            <rect x="1" y="9" width="6" height="6" rx="1" stroke="#0063b1" strokeWidth="1.5" fill="none"/>
+                            <rect x="9" y="9" width="6" height="6" rx="1" stroke="#0063b1" strokeWidth="1.5" fill="none"/>
+                          </svg>
+                          <span>Dashboard</span>
+                        </div>
+                      </Link>
+                      
+                      {/* Profile Link */}
+                      <Link href="/profile" onClick={() => setIsAccountDropdownOpen(false)}>
+                        <div style={{
+                          padding: '10px 16px',
+                          color: '#333',
+                          transition: 'all 0.2s ease',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          fontSize: '14px'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f5f5f5';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                        >
+                          <svg width={18} height={18} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                            <path d="M8 8C10.2091 8 12 6.20914 12 4C12 1.79086 10.2091 0 8 0C5.79086 0 4 1.79086 4 4C4 6.20914 5.79086 8 8 8Z" fill="#0063b1"/>
+                            <path d="M8 10C3.58172 10 0 12.6863 0 16H16C16 12.6863 12.4183 10 8 10Z" fill="#0063b1"/>
+                          </svg>
+                          <span>{t('account.myProfile')}</span>
+                        </div>
+                      </Link>
+                    </div>
+
+                    <div style={{ borderTop: '1px solid #f0f0f0', margin: '4px 0' }} />
+
+                    {/* Logout Button - Compact */}
                     <button
                       onClick={handleLogout}
                       style={{
                         width: '100%',
                         textAlign: 'left',
-                        padding: '14px 20px',
+                        padding: '10px 16px',
                         background: 'transparent',
                         border: 'none',
                         color: '#dc3545',
-                        transition: 'all 0.3s ease',
+                        transition: 'all 0.2s ease',
                         cursor: 'pointer',
-                        borderLeft: '3px solid transparent',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '12px',
+                        gap: '10px',
                         fontSize: '14px'
                       }}
                       onMouseOver={(e) => {
                         e.currentTarget.style.backgroundColor = '#fff5f5';
-                        e.currentTarget.style.borderLeftColor = '#dc3545';
                       }}
                       onMouseOut={(e) => {
                         e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.borderLeftColor = 'transparent';
                       }}
                     >
-                      <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg width={18} height={18} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
                         <path d="M6 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V3.33333C2 2.97971 2.14048 2.64057 2.39052 2.39052C2.64057 2.14048 2.97971 2 3.33333 2H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M10.6667 11.3333L14 8L10.6667 4.66667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      {t('account.logout')}
+                      <span>{t('account.logout')}</span>
                     </button>
                   </div>
                 )}

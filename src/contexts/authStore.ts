@@ -29,7 +29,7 @@ export const authStore = create<IAuthStore>((setValues) => ({
 
   set: (auth: Partial<typeof initialState>) => {
     console.log('🔄 Setting auth data:', { hasUser: !!auth.user, hasTokens: !!auth.tokens });
-    
+
     if (auth.user) {
       // Map backend user fields to frontend User type
       auth.user = {
@@ -37,7 +37,9 @@ export const authStore = create<IAuthStore>((setValues) => ({
         displayName: auth.user.firstName,
         type: auth.user.type || 'CLIENT',
         email: auth.user.email || '',
-        photoURL: auth.user.photoURL || '/static/mock-images/avatars/avatar_24.jpg',
+        photoURL: (auth.user.photoURL && !auth.user.photoURL.includes('mock-images'))
+          ? auth.user.photoURL
+          : `https://api.dicebear.com/7.x/avataaars/svg?seed=${auth.user.firstName || 'User'}`,
         firstName: auth.user.firstName || '',
         lastName: auth.user.lastName || '',
         phone: auth.user.phone || '',
@@ -49,14 +51,14 @@ export const authStore = create<IAuthStore>((setValues) => ({
     setValues((state) => {
       const newAuth = { ...state.auth, ...auth };
       const isLogged = !!(newAuth.user && newAuth.tokens?.accessToken);
-      
-      console.log('🎯 Auth state update:', { 
-        hasUser: !!newAuth.user, 
-        hasTokens: !!newAuth.tokens, 
+
+      console.log('🎯 Auth state update:', {
+        hasUser: !!newAuth.user,
+        hasTokens: !!newAuth.tokens,
         hasAccessToken: !!newAuth.tokens?.accessToken,
-        isLogged 
+        isLogged
       });
-      
+
       return { auth: newAuth, isLogged, isReady: true };
     });
 
@@ -66,10 +68,10 @@ export const authStore = create<IAuthStore>((setValues) => ({
         user: auth.user,
         tokens: auth.tokens,
       };
-      
+
       console.log('💾 Storing auth data in localStorage');
       window.localStorage.setItem('auth', JSON.stringify(authData));
-      
+
       // Verify storage
       const stored = window.localStorage.getItem('auth');
       if (stored) {
@@ -104,7 +106,7 @@ export const authStore = create<IAuthStore>((setValues) => ({
       console.log('⚠️ Window is undefined, skipping auth initialization');
       return;
     }
-    
+
     const authentication = window.localStorage.getItem('auth');
     console.log('📦 Auth data from localStorage:', authentication ? 'Found' : 'Not found');
 
@@ -114,34 +116,36 @@ export const authStore = create<IAuthStore>((setValues) => ({
       try {
         const parsed = JSON.parse(authentication);
         console.log('✅ Parsed auth data successfully');
-        
+
         // Validate the stored data structure
         if (parsed.user && parsed.tokens && parsed.tokens.accessToken && parsed.tokens.refreshToken) {
           console.log('🔑 Valid tokens found in storage');
           console.log('🔑 Access token length:', parsed.tokens.accessToken.length);
-          
+
           // Map user data to ensure compatibility
           const mappedUser = {
             ...parsed.user,
             displayName: parsed.user.firstName,
             type: parsed.user.type || 'CLIENT',
             email: parsed.user.email || '',
-            photoURL: parsed.user.photoURL || '/static/mock-images/avatars/avatar_24.jpg',
+            photoURL: (parsed.user.photoURL && !parsed.user.photoURL.includes('mock-images'))
+              ? parsed.user.photoURL
+              : `https://api.dicebear.com/7.x/avataaars/svg?seed=${parsed.user.firstName || 'User'}`,
             firstName: parsed.user.firstName || '',
             lastName: parsed.user.lastName || '',
             phone: parsed.user.phone || '',
             rate: parsed.user.rate || 1,
             avatar: parsed.user.avatar || null,
           } as User;
-          
-          values = { 
-            auth: { 
-              user: mappedUser, 
-              tokens: parsed.tokens 
-            }, 
-            isLogged: true 
+
+          values = {
+            auth: {
+              user: mappedUser,
+              tokens: parsed.tokens
+            },
+            isLogged: true
           };
-          
+
         } else {
           console.log('⚠️ Invalid auth data structure, using initial state');
           values = { auth: initialState, isLogged: false };
@@ -156,14 +160,14 @@ export const authStore = create<IAuthStore>((setValues) => ({
       values = { auth: initialState, isLogged: false };
     }
 
-    console.log('🎯 Setting initial auth values:', { 
+    console.log('🎯 Setting initial auth values:', {
       hasUser: !!values.auth.user,
       hasTokens: !!values.auth.tokens,
       isLogged: values.isLogged
     });
-    
+
     setValues({ ...values, isReady: true });
-    
+
     // If user is logged in, fetch fresh data after initialization
     if (values.isLogged && values.auth.tokens?.accessToken) {
       console.log('🔄 User is logged in, scheduling fresh data fetch...');
@@ -183,10 +187,10 @@ export const authStore = create<IAuthStore>((setValues) => ({
       console.log('🧪 Window undefined');
       return;
     }
-    
+
     const authData = window.localStorage.getItem('auth');
     console.log('🧪 Raw localStorage data:', authData ? 'Found' : 'Not found');
-    
+
     if (authData) {
       try {
         const parsed = JSON.parse(authData);
@@ -206,7 +210,7 @@ export const authStore = create<IAuthStore>((setValues) => ({
   refreshAuthState: () => {
     console.log('🔄 Refreshing auth state...');
     if (typeof window === 'undefined') return;
-    
+
     const authData = window.localStorage.getItem('auth');
     if (authData) {
       try {
@@ -232,10 +236,10 @@ export const authStore = create<IAuthStore>((setValues) => ({
 
   fetchFreshUserData: async () => {
     console.log('🔄 Fetching fresh user data from backend...');
-    
+
     try {
       const currentState = authStore.getState();
-      
+
       if (!currentState.auth.tokens?.accessToken) {
         console.log('⚠️ No access token available, cannot fetch user data');
         return;
@@ -253,18 +257,18 @@ export const authStore = create<IAuthStore>((setValues) => ({
       setValues({ _lastFetchTime: now });
 
       console.log('🌐 Making API call to get current user...');
-      
+
       // Dynamic import to avoid circular dependency
       const { UserAPI } = await import('@/app/api/users');
       const response = await UserAPI.getMe();
-      
+
       console.log('📦 Response received:', response);
       console.log('📦 Response type:', typeof response);
       console.log('📦 Response keys:', response ? Object.keys(response) : 'null/undefined');
-      
+
       // Handle different response formats from your backend
       let userData = null;
-      
+
       if (response && response.success && response.data) {
         // New format: { success: true, data: user, message: "..." }
         console.log('✅ Fresh user data received (new format):', response.data);
@@ -283,25 +287,25 @@ export const authStore = create<IAuthStore>((setValues) => ({
         console.log('🎉 User data refresh completed (keeping current data)!');
         return;
       }
-      
+
       if (userData) {
         const updatedAuth = {
           user: userData,
           tokens: currentState.auth.tokens
         };
-        
+
         console.log('💾 Updating auth store with fresh user data...');
         authStore.getState().set(updatedAuth);
-        
+
         console.log('🎉 User data successfully refreshed from backend!');
       }
     } catch (error: any) {
       console.error('❌ Error fetching fresh user data:', error);
-      
+
       if (error?.response?.status === 401) {
         console.log('🔒 Token expired or unauthorized, clearing auth...');
         authStore.getState().logout();
-        
+
         if (typeof window !== 'undefined' && window.location.pathname !== '/auth/signin') {
           setTimeout(() => {
             window.location.href = '/auth/signin';

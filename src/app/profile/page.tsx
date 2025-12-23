@@ -1025,7 +1025,7 @@ function ProfilePage() {
 
     // Construct avatar source with multiple fallback options
     const getAvatarSrc = () => {
-        if (!auth.user) return "/assets/images/avatar.jpg";
+        if (!auth.user) return `https://api.dicebear.com/7.x/avataaars/svg?seed=User`;
         
         console.log('🖼️ Constructing avatar URL from:', auth.user);
         console.log('🖼️ Avatar object:', auth.user.avatar);
@@ -1069,7 +1069,7 @@ function ProfilePage() {
         
         // Priority 5: fallback
         console.log('📸 Using fallback avatar');
-        return "/assets/images/avatar.jpg";
+        return `https://api.dicebear.com/7.x/avataaars/svg?seed=${auth.user?.firstName || 'User'}`;
     };
     
     const avatarSrc = getAvatarSrc();
@@ -1214,7 +1214,7 @@ function ProfilePage() {
                                                     // Final fallback to default avatar
                                                     console.log('🔄 Using fallback avatar');
                                                     target.onerror = null;
-                                                    target.src = "/assets/images/avatar.jpg";
+                                                    target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${auth.user?.firstName || 'User'}`;
                                                 }}
                                                 onLoad={() => {
                                                     console.log('✅ Avatar loaded successfully');

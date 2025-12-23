@@ -26,7 +26,8 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
   // Get notification data
   const { totalUnreadCount, refreshAll } = useTotalNotifications();
   const { notifications: generalNotifications, markAsRead: markGeneralAsRead, markAllAsRead: markAllGeneralAsRead, loading: generalLoading } = useNotification();
-  const { adminNotifications, markAsRead: markAdminAsRead, loading: adminLoading } = useAdminMessageNotifications();
+  // Admin chat notifications are now handled in the ChatNotifications component
+  // const { adminNotifications, markAsRead: markAdminAsRead, loading: adminLoading } = useAdminMessageNotifications();
 
   const toggleDropdown = () => {
     const newIsOpen = !isOpen;
@@ -67,43 +68,29 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
     };
   }, []);
 
-  // Combine all notifications
+  // Combine all notifications (now only general ones, as admin/chat ones are in chat bell)
   const allNotifications = [
-    ...generalNotifications.map(n => ({ ...n, source: 'general' })),
-    ...adminNotifications.map(n => ({ ...n, source: 'admin' }))
+    ...generalNotifications.map(n => ({ ...n, source: 'general' }))
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   // Debug logging
   useEffect(() => {
     console.log('🔔 NotificationBellStable - Notification counts:', {
       generalNotifications: generalNotifications.length,
-      adminNotifications: adminNotifications.length,
       totalUnreadCount,
       allNotifications: allNotifications.length
     });
     
     // Check for unread notifications specifically
     const unreadGeneral = generalNotifications.filter(n => n.read === false);
-    const unreadAdmin = adminNotifications.filter(n => n.read === false);
     
     console.log('🔔 Unread notifications breakdown:', {
       unreadGeneral: unreadGeneral.length,
-      unreadAdmin: unreadAdmin.length,
-      totalUnread: unreadGeneral.length + unreadAdmin.length
+      totalUnread: unreadGeneral.length
     });
     
     if (generalNotifications.length > 0) {
       console.log('🔔 General notifications details:', generalNotifications.map(n => ({
-        id: n._id,
-        title: n.title,
-        type: n.type,
-        read: n.read,
-        createdAt: n.createdAt
-      })));
-    }
-    
-    if (adminNotifications.length > 0) {
-      console.log('🔔 Admin notifications details:', adminNotifications.map(n => ({
         id: n._id,
         title: n.title,
         type: n.type,
@@ -117,12 +104,10 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
     } else {
       console.log('🔔 No notifications found - checking loading states:', {
         generalLoading,
-        adminLoading,
-        generalNotifications,
-        adminNotifications
+        generalNotifications
       });
     }
-  }, [generalNotifications.length, adminNotifications.length, totalUnreadCount, allNotifications.length, generalLoading, adminLoading]);
+  }, [generalNotifications.length, totalUnreadCount, allNotifications.length, generalLoading]);
 
   const handleMarkAsRead = async (notification: any) => {
     try {
@@ -167,9 +152,6 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
       if (notification.source === 'general') {
         await markGeneralAsRead(notification._id);
         console.log('✅ General notification marked as read');
-      } else if (notification.source === 'admin') {
-        await markAdminAsRead(notification._id);
-        console.log('✅ Admin notification marked as read');
       }
       
       // Refresh all notifications to get updated data
@@ -220,7 +202,15 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
       
       // Handle offer accepted - open chat with tender owner (buyer) who accepted the submission
       if (isOfferAccepted) {
-        const ownerId = notification.data?.ownerId; // Tender owner (buyer) ID
+        const ownerId = notification.data?.ownerId;
+        const chatId = notification.data?.chatId; // Check for direct chatId
+        
+        if (chatId) {
+             console.log('💬 Opening chat directly with chatId:', chatId);
+             router.push(`/chat?chatId=${chatId}`);
+             return;
+        }
+
         if (ownerId && auth?.user?._id) {
           try {
             console.log('💬 Opening chat with tender owner who accepted submission:', ownerId);
@@ -469,7 +459,7 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
           
           {/* Notifications List */}
           <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-            {(generalLoading || adminLoading) ? (
+            {generalLoading ? (
               <div style={{
                 padding: '40px 20px',
                 textAlign: 'center',

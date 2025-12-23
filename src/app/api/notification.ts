@@ -10,12 +10,12 @@ export const NotificationAPI = {
       // Get auth token from authStore
       const { auth } = authStore.getState();
       const token = auth?.tokens?.accessToken;
-      
+
       if (!token) {
         console.warn('No auth token available for getAllNotifications');
         return { notifications: [] };
       }
-      
+
       const response = await axios.get(`${app.baseURL}notification/general`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -44,12 +44,12 @@ export const NotificationAPI = {
       // Get auth token from authStore
       const { auth } = authStore.getState();
       const token = auth?.tokens?.accessToken;
-      
+
       if (!token) {
         console.warn('No auth token available for markAsRead');
         throw new Error('Authentication required');
       }
-      
+
       const response = await axios.put(
         `${app.baseURL}notification/${notificationId}/read`,
         {},
@@ -78,12 +78,12 @@ export const NotificationAPI = {
       // Get auth token from authStore
       const { auth } = authStore.getState();
       const token = auth?.tokens?.accessToken;
-      
+
       if (!token) {
         console.warn('No auth token available for markAllAsRead');
         throw new Error('Authentication required');
       }
-      
+
       const response = await axios.put(
         `${app.baseURL}notification/read-all`,
         {},
@@ -111,12 +111,12 @@ export const NotificationAPI = {
       // Get auth token from authStore
       const { auth } = authStore.getState();
       const token = auth?.tokens?.accessToken;
-      
+
       if (!token) {
         console.warn('No auth token available for getUnreadCount');
         return 0; // Return 0 as fallback
       }
-      
+
       const response = await axios.get(`${app.baseURL}notification/unread-count`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -129,8 +129,12 @@ export const NotificationAPI = {
     } catch (error: unknown) {
       console.error('Error fetching unread count:', error);
       if (axios.isAxiosError(error)) {
-        console.error('Response status:', error.response?.status);
-        console.error('Response data:', error.response?.data);
+        if (error.response) {
+          console.error('Response status:', error.response.status);
+          console.error('Response data:', error.response.data);
+        } else {
+          console.error('Network or other error:', error.message);
+        }
       }
       // Return 0 on error as a fallback
       return 0;
@@ -143,12 +147,12 @@ export const NotificationAPI = {
       // Get auth token from authStore
       const { auth } = authStore.getState();
       const token = auth?.tokens?.accessToken;
-      
+
       if (!token) {
         console.warn('No auth token available for markChatAsRead');
         throw new Error('Authentication required');
       }
-      
+
       const response = await axios.put(
         `${app.baseURL}notification/chat/${chatId}/read`,
         {},

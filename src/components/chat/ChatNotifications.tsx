@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { BiMessage } from 'react-icons/bi';
 import { useChatNotificationsWithGeneral } from '@/hooks/useChatNotificationsWithGeneral';
 import { markNotificationAsRead, markAllNotificationsAsRead } from '@/utils/api';
@@ -39,7 +40,9 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
   }, [initialChatCreatedNotifications, initialChatNotifications]);
   
   // Recalculate totalUnread from local state
-  const chatMessagesUnread = chatNotifications.reduce((total, notification) => total + notification.unread, 0);
+  // Recalculate totalUnread from local state
+  // Since API returns only unread chat notifications, the length is the count
+  const chatMessagesUnread = chatNotifications.length;
   const chatCreatedUnread = chatCreatedNotifications.length;
   const totalUnread = chatMessagesUnread + chatCreatedUnread;
 
@@ -50,7 +53,7 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
   
   // Debug unread notifications specifically
   const unreadChatCreated = chatCreatedNotifications.filter(n => n.read === false);
-  const unreadChatMessages = chatNotifications.filter(n => n.unread > 0);
+  const unreadChatMessages = chatNotifications.filter(n => !n.read);
   
   console.log('💬 Unread chat notifications breakdown:', {
     unreadChatCreated: unreadChatCreated.length,
@@ -58,7 +61,11 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
     totalUnread: totalUnread
   });
 
-  const toggleDropdown = () => {
+  const toggleDropdown = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     const newIsOpen = !isOpen;
     setIsOpen(newIsOpen);
     if (newIsOpen && onOpenChange) {
@@ -105,6 +112,8 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
     }
   }, [isOpen, refresh, onOpenChange]);
 
+  const router = useRouter(); // Initialize router
+
   // Handle marking individual notification as read
   const handleNotificationClick = async (notification: any) => {
     try {
@@ -112,28 +121,18 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
       
       if (notification._id && auth?.tokens?.accessToken) {
         // Optimistically update the UI first
-        // Check if it's a chat-created notification (has type, title, message, read properties)
-        const isChatCreatedNotification = notification.type && notification.title && notification.read !== undefined;
-        const isChatMessageNotification = notification.chatId && notification.unread !== undefined;
+        const isChatCreatedNotification = notification.type === 'CHAT_CREATED';
+        // Message notifications have type MESSAGE_RECEIVED or MESSAGE_ADMIN, or just fall through
+        const isChatMessageNotification = notification.type === 'MESSAGE_RECEIVED' || notification.type === 'MESSAGE_ADMIN' || (!isChatCreatedNotification && notification.chatId);
         
         if (isChatCreatedNotification) {
           // It's a chat-created notification - remove it from the list immediately
           console.log('📝 Removing chat-created notification from list:', notification._id);
           setChatCreatedNotifications(prev => prev.filter(n => n._id !== notification._id));
         } else if (isChatMessageNotification) {
-          // It's a chat message notification - decrement unread count or remove if unread becomes 0
-          console.log('📝 Updating chat message notification unread count:', notification.chatId);
-          setChatNotifications(prev => {
-            const updated = prev.map(n => {
-              if (n.chatId === notification.chatId) {
-                const newUnread = Math.max(0, n.unread - 1);
-                return { ...n, unread: newUnread };
-              }
-              return n;
-            });
-            // Remove notifications with unread count of 0
-            return updated.filter(n => n.unread > 0);
-          });
+          // It's a chat message notification - remove it from the list immediately
+          console.log('📝 Removing chat message notification from list:', notification._id);
+          setChatNotifications(prev => prev.filter(n => n._id !== notification._id));
         }
         
         // Mark as read on server
@@ -148,12 +147,34 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
         });
       }
       
-      // Navigate to chat (you can customize the navigation logic)
-      if (notification.data?.chatId || notification.chatId) {
-        const chatId = notification.data?.chatId || notification.chatId;
-        window.location.href = `/chat?chatId=${chatId}`;
+      // Determine navigation target
+      const chatId = notification.data?.chatId || notification.chatId;
+      console.log('🔗 Redirecting to chat with ID:', chatId);
+      
+      if (chatId) {
+        router.push(`/chat?chatId=${chatId}`);
       } else {
-        window.location.href = '/chat';
+        // Fallback: Try to redirect using senderId if chat ID is missing
+        // This relies on Chat page handling userId param
+        let senderId = null;
+        
+        if (notification.senderId) {
+          if (typeof notification.senderId === 'object' && notification.senderId._id) {
+             senderId = notification.senderId._id;
+          } else if (typeof notification.senderId === 'string') {
+             senderId = notification.senderId;
+          }
+        } else if (notification.data?.senderId) {
+           senderId = notification.data.senderId;
+        }
+
+        if (senderId) {
+          console.log('🔗 Chat ID missing, falling back to sender ID:', senderId);
+          router.push(`/chat?userId=${senderId}`);
+        } else {
+          console.log('⚠️ No chat ID or sender ID found, redirecting to general chat page');
+          router.push('/chat');
+        }
       }
       
       setIsOpen(false);
@@ -171,7 +192,7 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
       
       // Optimistically clear all notifications
       setChatCreatedNotifications([]);
-      setChatNotifications(prev => prev.map(n => ({ ...n, unread: 0 })));
+      setChatNotifications([]);
       
       if (auth?.tokens?.accessToken) {
         await markAllNotificationsAsRead();
@@ -201,6 +222,7 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
   return (
     <div style={{ position: 'relative' }} ref={dropdownRef}>
       <button
+        type="button"
         onClick={toggleDropdown}
         style={{
           display: 'flex',
@@ -417,7 +439,7 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
                     </div>
                     
                     {chatCreatedNotifications.map((notification: any) => {
-                      const userName = notification.data?.senderName || t('chat.unknown');
+                      const userName = notification.senderName || notification.data?.senderName || t('chat.unknown');
                       
                       return (
                         <div 
@@ -545,7 +567,7 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
                     </div>
                     
                     {chatNotifications.map((notification: any) => {
-                      const userName = notification.data?.senderName || t('chat.unknown');
+                      const userName = notification.senderName || notification.data?.senderName || t('chat.unknown');
                       const message = notification.data?.message || t('chat.newMessage');
                       
                       return (

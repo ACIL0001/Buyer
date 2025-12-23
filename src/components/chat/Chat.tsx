@@ -375,7 +375,6 @@ export default function Chat() {
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, chats]);
 
   // Filter chats based on search
@@ -464,8 +463,27 @@ export default function Chat() {
         // Mark message as received globally
         setAllReceivedMessages(prev => new Set([...prev, data._id]))
         
-        // Update chat list to show new message
-        setReget(prev => !prev)
+        // Update chat list optimistically
+        setChats(prevChats => {
+            const chatIndex = prevChats.findIndex(c => c._id === data.idChat);
+            if (chatIndex !== -1) {
+                const updatedChat = { ...prevChats[chatIndex] };
+                updatedChat.lastMessage = data.message;
+                updatedChat.createdAt = data.createdAt || new Date().toISOString(); 
+                
+                if (data.idChat !== currentChatRef.current) {
+                    updatedChat.unreadCount = (updatedChat.unreadCount || 0) + 1;
+                }
+
+                const newChats = [...prevChats];
+                newChats.splice(chatIndex, 1);
+                newChats.unshift(updatedChat);
+                return newChats;
+            } else {
+                setReget(prev => !prev); 
+                return prevChats;
+            }
+        });
         
         // Clean up timeout
         messageTimeoutRef.current.delete(data._id)
@@ -525,8 +543,27 @@ export default function Chat() {
         // Mark message as received globally
         setAllReceivedMessages(prev => new Set([...prev, data._id]))
         
-        // Update chat list to show new message
-        setReget(prev => !prev)
+        // Update chat list optimistically
+        setChats(prevChats => {
+            const chatIndex = prevChats.findIndex(c => c._id === data.idChat);
+            if (chatIndex !== -1) {
+                const updatedChat = { ...prevChats[chatIndex] };
+                updatedChat.lastMessage = data.message;
+                updatedChat.createdAt = data.createdAt || new Date().toISOString();
+                
+                if (data.idChat !== currentChatRef.current) {
+                    updatedChat.unreadCount = (updatedChat.unreadCount || 0) + 1;
+                }
+
+                const newChats = [...prevChats];
+                newChats.splice(chatIndex, 1);
+                newChats.unshift(updatedChat);
+                return newChats;
+            } else {
+                setReget(prev => !prev);
+                return prevChats;
+            }
+        });
         
         // Clean up timeout
         messageTimeoutRef.current.delete(data._id)
@@ -609,7 +646,7 @@ export default function Chat() {
       if (days === 0) {
         return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
       } else if (days === 1) {
-        return 'Hier'
+        return t('chat.yesterday')
       } else if (days < 7) {
         return date.toLocaleDateString('fr-FR', { weekday: 'short' })
       } else {
@@ -634,9 +671,9 @@ export default function Chat() {
       const days = Math.floor(diff / (1000 * 60 * 60 * 24))
       
       if (days === 0) {
-        return "Aujourd'hui"
+        return t('chat.today')
       } else if (days === 1) {
-        return "Hier"
+        return t('chat.yesterday')
       } else if (days < 7) {
         return date.toLocaleDateString('fr-FR', { weekday: 'long' })
       } else {
@@ -694,11 +731,11 @@ export default function Chat() {
           <div className="error-icon">
             <RiMessage3Line />
           </div>
-          <h2>Accès non autorisé</h2>
-          <p>Vous devez être connecté pour accéder aux messages</p>
+          <h2>{t('chat.accessDenied')}</h2>
+          <p>{t('chat.loginRequired')}</p>
           <button className="error-button" onClick={goBack}>
             <BiArrowBack />
-            Retour à l'accueil
+            {t('chat.backToHome')}
           </button>
         </div>
       </div>
@@ -713,8 +750,8 @@ export default function Chat() {
           <BiArrowBack />
         </button>
         <div className="header-content">
-          <h1>Messages</h1>
-          <p>Discutez en temps réel</p>
+          <h1>{t('chat.messages')}</h1>
+          <p>{t('chat.discussRealTime')}</p>
         </div>
         <div className="header-actions">
           <button className="action-button">
@@ -734,7 +771,7 @@ export default function Chat() {
               <BiSearch className="search-icon" />
               <input 
                 type="text" 
-                placeholder="Rechercher une conversation..."
+                placeholder={t('chat.searchConversations')}
                 value={search} 
                 onChange={(e) => setSearch(e.target.value)} 
                 className="search-input-modern"
@@ -748,8 +785,8 @@ export default function Chat() {
                 <div className="empty-icon">
                   <BsChatDots />
                 </div>
-                <h3>Aucune conversation</h3>
-                <p>Commencez une nouvelle conversation</p>
+                <h3>{t('chat.noConversations')}</h3>
+                <p>{t('chat.startNewConversation')}</p>
               </div>
             ) : (
               arr.map((chat) => {
@@ -800,7 +837,7 @@ export default function Chat() {
                         </span>
                       </div>
                       <div className="conversation-preview">
-                        <p>{chat.lastMessage || 'Aucun message'}</p>
+                        <p>{chat.lastMessage || t('chat.noMessage')}</p>
                         {chat.unreadCount && chat.unreadCount > 0 && (
                           <div className="unread-badge">
                             {chat.unreadCount}
@@ -823,8 +860,8 @@ export default function Chat() {
                 <div className="empty-chat-icon">
                   <RiMessage3Line />
                 </div>
-                <h3>Sélectionnez une conversation</h3>
-                <p>Choisissez une conversation pour commencer à discuter</p>
+                <h3>{t('chat.selectConversation')}</h3>
+                <p>{t('chat.chooseConversationToStart')}</p>
               </div>
             </div>
           ) : (
@@ -849,7 +886,7 @@ export default function Chat() {
                   <div className="conversation-details">
                     <h4>{userChat?.firstName} {userChat?.lastName}</h4>
                     <span className="status-text">
-                      {isOnline ? 'En ligne' : 'Hors ligne'}
+                      {isOnline ? t('chat.online') : t('chat.offline')}
                     </span>
                   </div>
                 </div>
@@ -871,15 +908,15 @@ export default function Chat() {
                 {loading ? (
                   <div className="loading-messages">
                     <div className="loading-spinner"></div>
-                    <p>Chargement des messages...</p>
+                    <p>{t('chat.loadingMessages')}</p>
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="empty-messages-modern">
                     <div className="empty-messages-icon">
                       <RiMessage3Line />
                     </div>
-                    <h4>Aucun message</h4>
-                    <p>Envoyez votre premier message</p>
+                    <h4>{t('chat.noMessages')}</h4>
+                    <p>{t('chat.sendFirstMessage')}</p>
                   </div>
                 ) : (
                   <div className="messages-list">
@@ -952,7 +989,7 @@ export default function Chat() {
                       <input 
                         ref={textRef}
                         type="text" 
-                        placeholder="Tapez votre message..."
+                        placeholder={t('chat.typeMessage')}
                         value={text} 
                         onChange={(e) => setText(e.target.value)} 
                         onKeyPress={handleKeyPress}

@@ -1,177 +1,137 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { authStore } from '@/contexts/authStore';
 import { useCreateSocket } from '@/contexts/socket';
 import { getUnreadNotificationCount, getNotifications } from '@/utils/api';
 import { NotificationAPI } from '@/app/api/notification';
-
-interface Notification {
-  _id: string;
-  userId: string;
-  title: string;
-  message: string;
-  type: string;
-  data?: Record<string, unknown>;
-  read: boolean;
-  createdAt: string;
-  updatedAt: string;
-  receiver?: string;
-  reciver?: string;
-}
+import { useNotificationStore, Notification } from '@/contexts/notificationStore';
 
 export default function useNotification() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
+  // Use global store state
+  const {
+    notifications,
+    unreadCount,
+    loading,
+    setNotifications,
+    setUnreadCount,
+    setLoading,
+    markAsRead: markAsReadInStore,
+    markAllAsRead: markAllAsReadInStore,
+    addNotification
+  } = useNotificationStore();
+
   const [error, setError] = useState<string | null>(null);
-  
+
+  // Refs to track if fetches are in progress
+  const isFetchingNotificationsRef = useRef(false);
+  const isFetchingCountRef = useRef(false);
+
   // Call useCreateSocket at the top level
   const socketContext = useCreateSocket();
 
   const fetchNotifications = useCallback(async () => {
+    // Prevent overlapping fetches
+    if (isFetchingNotificationsRef.current) return;
+
     try {
       // Check if user is authenticated before making API call
       const { auth, isLogged } = authStore.getState();
-      console.log('🔍 Auth state check:', { 
-        isLogged, 
-        hasUser: !!auth?.user, 
-        hasTokens: !!auth?.tokens, 
-        hasAccessToken: !!auth?.tokens?.accessToken,
-        userId: auth?.user?._id,
-        tokenLength: auth?.tokens?.accessToken?.length
-      });
-      
+
       if (!isLogged || !auth?.tokens?.accessToken) {
-        console.log('⚠️ User not authenticated, skipping notifications fetch');
-        console.log('💡 Please log in to see notifications');
         setNotifications([]); // Reset notifications
         setUnreadCount(0); // Reset unread count
         return;
       }
-      
-      console.log('✅ User is authenticated, proceeding with notifications fetch');
-      
-      setLoading(true);
-      console.log('📥 Fetching notifications for user:', auth.user?._id);
-      
+
+      isFetchingNotificationsRef.current = true;
+      // Only set loading on initial fetch or empty state
+      if (notifications.length === 0) {
+        setLoading(true);
+      }
+
       try {
         // Use centralized API helper that handles 404s gracefully
         const data = await getNotifications();
         const allNotifications = (data && (data as any).notifications) ? (data as any).notifications : [];
-        
-        console.log('📥 General notifications from API:', allNotifications.length);
-        console.log('📥 Full API response:', data);
-        console.log('📥 Sample notification:', allNotifications[0]);
-        console.log('📥 All general notifications details:', allNotifications.map((n: any) => ({
-          id: n._id,
-          title: n.title,
-          type: n.type,
-          read: n.read,
-          userId: n.userId,
-          senderId: n.senderId,
-          senderName: n.senderName,
-          senderEmail: n.senderEmail,
-          createdAt: n.createdAt
-        })));
-        
-        // Check specifically for offer notifications
-        const offerNotifications = allNotifications.filter((n: any) => 
-          n.type === 'OFFER_ACCEPTED' || n.type === 'OFFER_DECLINED'
-        );
-        console.log('🎯 Offer notifications found:', offerNotifications.length);
-        if (offerNotifications.length > 0) {
-          console.log('🎯 Offer notifications details:', offerNotifications);
-        } else {
-          console.log('❌ No offer notifications found in general notifications');
-          console.log('🔍 Available notification types:', allNotifications.map((n: any) => n.type));
-        }
-        
-        // No need to filter - API already returns only unread general notifications
-        setNotifications(allNotifications);
-        
-        // Update unread count based on the filtered notifications
-        const unreadCount = allNotifications.filter((n: any) => n.read === false).length;
-        setUnreadCount(unreadCount);
-        console.log('📊 Calculated unread count from notifications:', unreadCount);
-        
+
+        // Filter out chat notifications (they should appear in ChatNotifications component)
+        const generalNotifications = allNotifications.filter((notification: any) => {
+          const isChatNotification =
+            notification.type === 'CHAT_CREATED' ||
+            notification.type === 'MESSAGE_RECEIVED' ||
+            notification.type === 'MESSAGE_ADMIN' ||
+            notification.type === 'ADMIN_MESSAGE_SENT';
+
+          const isAdminMessageTitle = notification.title === 'Nouveau message de l\'admin';
+
+          return !(isChatNotification || isAdminMessageTitle);
+        });
+
+        setNotifications(generalNotifications);
+
         setError(null); // Clear any previous errors
       } catch (fetchErr) {
         console.error('❌ Error fetching notifications:', fetchErr);
         setError('Failed to fetch notifications');
-        setNotifications([]); // Reset on error
+        // Don't reset notifications on error, keep old data
       }
     } catch (err) {
       setError('Unexpected error in notifications hook');
       console.error('❌ Unexpected error in fetchNotifications:', err);
     } finally {
       setLoading(false);
+      isFetchingNotificationsRef.current = false;
     }
-  }, []);
+  }, [notifications.length, setNotifications, setUnreadCount, setLoading]);
 
   // Fetch unread count with enhanced error handling
   const fetchUnreadCount = useCallback(async () => {
+    if (isFetchingCountRef.current) return;
+
     try {
       // Check if user is authenticated before making API call
       const { auth, isLogged } = authStore.getState();
       if (!isLogged || !auth?.tokens?.accessToken) {
-        console.log('⚠️ User not authenticated, skipping unread count fetch');
-        console.log('💡 Please log in to see notification count');
         setUnreadCount(0); // Reset unread count
         return;
       }
-      
+
+      isFetchingCountRef.current = true;
       try {
-      const count = await getUnreadNotificationCount();
-        
+        const count = await getUnreadNotificationCount();
+
         // Handle different response structures
         const countData = count?.data ? count.data : (typeof count === 'number' ? count : 0);
-        
+
         // Validate count
         if (typeof countData !== 'number') {
-          console.warn('⚠️ Invalid unread count format:', countData);
-          // If count is not a number, default to 0
           setUnreadCount(0);
           return;
         }
-        
-        console.log('📥 Unread notifications count:', countData);
-      setUnreadCount(countData);
+
+        setUnreadCount(countData);
       } catch (countErr: any) {
         console.error('❌ Error fetching unread count:', countErr);
         // Default to 0 on error
         setUnreadCount(0);
-        
-        // Log detailed error if available
-        if ((countErr as any)?.response) {
-          console.error('ℹ️ Response status:', (countErr as any).response.status);
-          console.error('ℹ️ Response data:', (countErr as any).response.data);
-        }
       }
     } catch (err) {
       console.error('❌ Unexpected error in fetchUnreadCount:', err);
       setUnreadCount(0); // Default to 0 on unexpected error
+    } finally {
+      isFetchingCountRef.current = false;
     }
-  }, []);
+  }, [setUnreadCount]);
 
   // Mark a notification as read with optimistic update and enhanced error handling
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
       const { auth, isLogged } = authStore.getState();
       if (!isLogged || !auth?.tokens?.accessToken) {
-        console.warn('⚠️ User not authenticated, cannot mark notification as read');
         return;
       }
 
-      // Optimistic update
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification._id === notificationId 
-            ? { ...notification, read: true } 
-            : notification
-        )
-      );
-
-      // Update unread count optimistically
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      // Optimistic update via store
+      markAsReadInStore(notificationId);
 
       try {
         const result = await NotificationAPI.markAsRead(notificationId);
@@ -180,44 +140,30 @@ export default function useNotification() {
           throw new Error('Failed to mark notification as read');
         }
 
-        console.log('✅ Notification marked as read successfully');
-        
-        // Refresh notifications to get the latest data from server
-        await fetchNotifications();
-        await fetchUnreadCount();
-        console.log('🔄 Notifications refreshed after marking as read');
+        // Refresh notifications silently to ensure sync
+        fetchUnreadCount();
       } catch (markErr) {
         console.error('❌ Error marking notification as read:', markErr);
-        
-        // Revert optimistic update on error
-        setNotifications(prev => 
-          prev.map(notification => 
-            notification._id === notificationId 
-              ? { ...notification, read: false } 
-              : notification
-          )
-        );
-        setUnreadCount(prev => prev + 1);
+        // Revert could be implemented here if store supports it, 
+        // but typically a re-fetch is safer on error.
+        await fetchNotifications();
+        await fetchUnreadCount();
       }
     } catch (err) {
       console.error('❌ Unexpected error in markAsRead:', err);
     }
-  }, []);
+  }, [markAsReadInStore, fetchNotifications, fetchUnreadCount]);
 
   // Mark all notifications as read
   const markAllAsRead = useCallback(async () => {
     try {
       const { auth, isLogged } = authStore.getState();
       if (!isLogged || !auth?.tokens?.accessToken) {
-        console.warn('⚠️ User not authenticated, cannot mark all notifications as read');
         return;
       }
 
-      // Optimistic update
-      setNotifications(prev => 
-        prev.map(notification => ({ ...notification, read: true }))
-      );
-      setUnreadCount(0);
+      // Optimistic update via store
+      markAllAsReadInStore();
 
       try {
         const result = await NotificationAPI.markAllAsRead();
@@ -226,28 +172,27 @@ export default function useNotification() {
           throw new Error('Failed to mark all notifications as read');
         }
 
-        console.log('✅ All notifications marked as read successfully');
-        
-        // Refresh notifications to get the latest data from server
-        await fetchNotifications();
-        await fetchUnreadCount();
-        console.log('🔄 Notifications refreshed after marking all as read');
+        // Refresh count to be sure
+        fetchUnreadCount();
       } catch (markErr) {
         console.error('❌ Error marking all notifications as read:', markErr);
-        
-        // Revert optimistic update on error
+        // Revert/Refresh on error
         fetchNotifications();
         fetchUnreadCount();
       }
     } catch (err) {
       console.error('❌ Unexpected error in markAllAsRead:', err);
     }
-  }, [fetchNotifications, fetchUnreadCount]);
+  }, [markAllAsReadInStore, fetchNotifications, fetchUnreadCount]);
 
-  // Initial fetch when component mounts
+  // Initial fetch when component mounts - using a ref to prevent double fetch in strict mode
+  const initialFetchDone = useRef(false);
   useEffect(() => {
-    fetchNotifications();
-    fetchUnreadCount();
+    if (!initialFetchDone.current) {
+      fetchNotifications();
+      fetchUnreadCount();
+      initialFetchDone.current = true;
+    }
   }, [fetchNotifications, fetchUnreadCount]);
 
   // Polling for new notifications (every 30 seconds)
@@ -256,44 +201,44 @@ export default function useNotification() {
       fetchNotifications();
       fetchUnreadCount();
     }, 30000);
-    
+
     return () => clearInterval(interval);
   }, [fetchNotifications, fetchUnreadCount]);
 
   // Listen for real-time notifications from socket
   useEffect(() => {
     if (!socketContext?.socket) {
-      console.log('⚠️ Socket not available for notifications');
       return;
     }
 
-    console.log('🔌 Setting up notification socket listeners');
-
     const handleNewNotification = (notification: Notification) => {
-      console.log('📨 New socket notification received for general notifications:', notification);
-      
       // Only process general notifications (non-chat, non-admin)
-      const isChatNotification = 
-        notification.type === 'CHAT_CREATED' || 
+      // Aggressively filter out chat-related notifications
+      // These should ONLY be handled by useChatNotifications or useChatNotificationsWithGeneral
+      const isChatType =
+        notification.type === 'CHAT_CREATED' ||
         notification.type === 'MESSAGE_RECEIVED' ||
-        notification.type === 'MESSAGE_ADMIN';
-      
-      const isAdminMessageTitle = notification.title === 'Nouveau message de l\'admin';
-      const isAdminMessageType = notification.type === 'MESSAGE_ADMIN';
-      const isAdminSender = 
-        notification.data?.senderId === 'admin' ||
-        (notification.data?.sender as any)?._id === 'admin';
-      
-      // Only process general notifications for bell icon
-      if (isChatNotification || isAdminMessageTitle || isAdminMessageType || isAdminSender) {
-        console.log('ℹ️ Notification excluded from general notifications:', {
-          title: notification.title,
-          type: notification.type,
-          reason: isChatNotification ? 'chat notification' : 'admin message'
-        });
+        notification.type === 'MESSAGE_ADMIN' ||
+        notification.type === 'ADMIN_MESSAGE_SENT';
+
+      // Check deeply for chat-related data
+      const hasChatData =
+        (notification as any).chatId ||
+        notification.data?.chatId ||
+        notification.data?.messageId ||
+        notification.data?.isSocket === true;
+
+      const isAdminMessage =
+        notification.title?.includes('Nouveau message de l\'admin') ||
+        notification.type === 'MESSAGE_ADMIN' ||
+        notification.data?.senderId === 'admin';
+
+      // If it looks like a chat message or chat notification, IGNORE IT in the general bell
+      if (isChatType || hasChatData || isAdminMessage) {
+        console.log('🔔 useNotification: Ignoring chat-related notification:', notification._id);
         return;
       }
-      
+
       // Handle both reciver/receiver property names for consistency
       if (notification.receiver && !notification.reciver) {
         notification.reciver = notification.receiver;
@@ -301,36 +246,15 @@ export default function useNotification() {
         notification.receiver = notification.reciver;
       }
 
-      console.log('✅ Adding socket notification to state:', notification);
-      // Add notification to state and increment unread count
-      setNotifications(prev => {
-        // Check if notification already exists to prevent duplicates
-        const exists = prev.some(n => n._id === notification._id);
-        if (exists) {
-          console.log('⚠️ Notification already exists in state, skipping duplicate');
-          return prev;
-        }
-        return [notification, ...prev];
-      });
-      
-      // Increment unread count
-      if (!notification.read) {
-        console.log('📈 Incrementing unread count for socket notification:', notification._id);
-        setUnreadCount(prev => prev + 1);
-      }
+      // Add to store (handles duplicates and unread count)
+      addNotification(notification);
     };
 
     try {
-      // First remove any existing listeners to prevent duplicates
       socketContext.socket.off('notification');
-      
-      // Add new listener
       socketContext.socket.on('notification', handleNewNotification);
-      console.log('✅ Notification socket listeners registered');
 
-      // Clean up function
       return () => {
-        console.log('🧹 Cleaning up notification socket listeners');
         if (socketContext.socket) {
           socketContext.socket.off('notification', handleNewNotification);
         }
@@ -338,11 +262,11 @@ export default function useNotification() {
     } catch (error) {
       console.warn('⚠️ Socket notification listener error:', error);
     }
-  }, [socketContext?.socket]);  // Add socketContext.socket as dependency
+  }, [socketContext?.socket, addNotification]);
 
   return {
-    notifications, // Return all notifications (filtering already done in fetch)
-    unreadCount, // Return unread count from state
+    notifications,
+    unreadCount,
     loading,
     error,
     markAsRead,

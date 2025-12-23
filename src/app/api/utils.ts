@@ -23,7 +23,7 @@ interface ApiResponse<T = any> {
 const getTokenFromStorage = (): string | null => {
   try {
     if (typeof window === 'undefined') return null;
-    
+
     const authData = localStorage.getItem('auth');
     if (authData) {
       const parsed = JSON.parse(authData);
@@ -33,7 +33,7 @@ const getTokenFromStorage = (): string | null => {
         return token;
       }
     }
-    
+
     // Only warn for authenticated endpoints, not auth endpoints
     return null;
   } catch (error) {
@@ -53,13 +53,13 @@ const instance = axios.create({
 instance.interceptors.request.use(
   (config) => {
     const token = getTokenFromStorage();
-    
+
     // Only attach token for non-auth endpoints
-    const isAuthEndpoint = config.url?.includes('auth/signin') || 
-                          config.url?.includes('auth/signup') || 
-                          config.url?.includes('auth/refresh') ||
-                          config.url?.includes('auth/reset-password');
-    
+    const isAuthEndpoint = config.url?.includes('auth/signin') ||
+      config.url?.includes('auth/signup') ||
+      config.url?.includes('auth/refresh') ||
+      config.url?.includes('auth/reset-password');
+
     if (token && !isAuthEndpoint) {
       config.headers = config.headers || {};
       // Ensure proper Bearer format
@@ -69,7 +69,7 @@ instance.interceptors.request.use(
     } else if (!isAuthEndpoint && !token) {
       console.warn('⚠️ No auth token available for request:', config.url);
     }
-    
+
     return config;
   },
   (error) => {
@@ -85,21 +85,21 @@ instance.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
-    
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       console.warn('🔒 401 Unauthorized - Token may be expired');
       originalRequest._retry = true;
-      
+
       // Only redirect if this is NOT a login/signup request, guest message request, or chat-related request
       const isLoginRequest = originalRequest.url?.includes('auth/signin') || originalRequest.url?.includes('auth/signup');
       const isGuestMessageRequest = originalRequest.url?.includes('message/guest-message');
       const isChatRequest = originalRequest.url?.includes('chat/') || originalRequest.url?.includes('message/');
-      
+
       if (!isLoginRequest && !isGuestMessageRequest && !isChatRequest) {
         // Clear auth data on 401 (only for non-login and non-guest requests)
         if (typeof window !== 'undefined') {
           localStorage.removeItem('auth');
-          
+
           // Try to get authStore and logout
           try {
             const { authStore } = await import('@/contexts/authStore');
@@ -107,7 +107,7 @@ instance.interceptors.response.use(
           } catch (e) {
             console.warn('Could not access auth store for logout');
           }
-          
+
           // Redirect to login if not already there
           if (window.location.pathname !== '/auth/login' && window.location.pathname !== '/auth/signin') {
             window.location.href = '/auth/login';
@@ -117,7 +117,7 @@ instance.interceptors.response.use(
         console.log('🔒 Guest message or chat request got 401 - this should not happen, but not redirecting');
       }
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -125,7 +125,7 @@ instance.interceptors.response.use(
 // Enhanced response handler that properly handles different API response structures
 const responseBody = (res: AxiosResponse): ApiResponse => {
   const responseData = res.data;
-  
+
   console.log('🔍 Processing response:', {
     status: res.status,
     dataType: typeof responseData,
@@ -134,16 +134,16 @@ const responseBody = (res: AxiosResponse): ApiResponse => {
     hasData: 'data' in (responseData || {}),
     keys: responseData && typeof responseData === 'object' ? Object.keys(responseData) : []
   });
-  
+
   // Handle different response structures
   if (responseData && typeof responseData === 'object') {
-    
+
     // Case 1: Standard API wrapper with success and data fields
     if ('success' in responseData && 'data' in responseData) {
       console.log('✅ Standard API response format detected');
       return responseData as ApiResponse;
     }
-    
+
     // Case 2: Response has success but data is at root level
     if ('success' in responseData && !('data' in responseData)) {
       console.log('✅ API response with success flag, keeping original structure');
@@ -151,7 +151,7 @@ const responseBody = (res: AxiosResponse): ApiResponse => {
       // return as-is instead of moving to data field
       return responseData as ApiResponse;
     }
-    
+
     // Case 3: Direct array response (common for list endpoints)
     if (Array.isArray(responseData)) {
       console.log('✅ Direct array response detected');
@@ -161,7 +161,7 @@ const responseBody = (res: AxiosResponse): ApiResponse => {
         message: 'Request successful'
       } as ApiResponse;
     }
-    
+
     // Case 4: Object response without wrapper (treat as data)
     if (!('success' in responseData) && !Array.isArray(responseData)) {
       console.log('✅ Direct object response, wrapping in API format');
@@ -171,7 +171,7 @@ const responseBody = (res: AxiosResponse): ApiResponse => {
         message: responseData.message || 'Request successful'
       } as ApiResponse;
     }
-    
+
     // Case 5: Response with data field but no success field
     if ('data' in responseData && !('success' in responseData)) {
       console.log('✅ Response has data field, adding success flag');
@@ -181,7 +181,7 @@ const responseBody = (res: AxiosResponse): ApiResponse => {
       } as ApiResponse;
     }
   }
-  
+
   // Fallback: wrap primitive responses
   console.log('🔄 Fallback: wrapping primitive response');
   return {
@@ -208,18 +208,26 @@ export const requests = {
   post: <T = any>(url: string, body: {}, config = {}, returnFullResponse = false): Promise<ApiResponse<T> | AxiosResponse> => {
     console.log('🌐 POST request to:', url);
     const request = instance.post(url, body, config);
-    
+
     if (returnFullResponse) {
       return request.catch(error => {
-        console.error('❌ POST request failed:', url, error.response?.data || error.message);
+        // Suppress error logging for chat endpoints
+        const isChatEndpoint = url === 'chat' || url === 'chats' || url.includes('chat/');
+        if (!isChatEndpoint) {
+          console.error('❌ POST request failed:', url, error.response?.data || error.message);
+        }
         throw error;
       });
     }
-    
+
     return request
       .then(responseBody)
       .catch(error => {
-        console.error('❌ POST request failed:', url, error.response?.data || error.message);
+        // Suppress error logging for chat endpoints
+        const isChatEndpoint = url === 'chat' || url === 'chats' || url.includes('chat/');
+        if (!isChatEndpoint) {
+          console.error('❌ POST request failed:', url, error.response?.data || error.message);
+        }
         throw error;
       });
   },
@@ -229,7 +237,7 @@ export const requests = {
     if (!formData) {
       throw new Error('FormData is required for postFormData');
     }
-    
+
     return instance.post(url, formData, {
       ...(config || {}),
       headers: {
@@ -237,11 +245,11 @@ export const requests = {
         ...((config && (config as any).headers) ? (config as any).headers : {})
       }
     })
-    .then(responseBody)
-    .catch(error => {
-      console.error('❌ POST FormData request failed:', url, error.response?.data || error.message);
-      throw error;
-    });
+      .then(responseBody)
+      .catch(error => {
+        console.error('❌ POST FormData request failed:', url, error.response?.data || error.message);
+        throw error;
+      });
   },
 
   put: <T = any>(url: string, body: {}, config = {}): Promise<ApiResponse<T>> => {

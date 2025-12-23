@@ -32,7 +32,7 @@ export const ChatAPI = {
   getChats: async (params?: { id: string; from: string }): Promise<ApiResponse<Chat[]>> => {
     try {
       console.log('🔍 ChatAPI.getChats called with params:', params);
-      
+
       if (!params || !params.id) {
         console.error('❌ Missing required parameters: id and from');
         return {
@@ -41,10 +41,10 @@ export const ChatAPI = {
           message: 'Missing required parameters'
         };
       }
-      
+
       // Use the correct endpoint that matches the server implementation
       const endpoint = 'chat/getchats';
-      
+
       try {
         console.log(`📤 Calling POST ${endpoint} with params:`, params);
         const res = await requests.post(endpoint, params);
@@ -59,7 +59,7 @@ export const ChatAPI = {
         } as ApiResponse<Chat[]>;
       } catch (endpointError) {
         console.error(`❌ Endpoint ${endpoint} failed:`, endpointError);
-        
+
         // Return empty array on error instead of trying other endpoints
         const errorMessage = (endpointError && typeof endpointError === 'object' && 'message' in endpointError)
           ? String((endpointError as any).message)
@@ -70,7 +70,7 @@ export const ChatAPI = {
           message: `Failed to fetch chats: ${errorMessage}`
         };
       }
-      
+
     } catch (error: unknown) {
       console.error('❌ ChatAPI error:', error);
       // Return empty array instead of throwing error
@@ -81,12 +81,12 @@ export const ChatAPI = {
       };
     }
   },
-  
+
   // Create a new chat conversation
   createChat: async (chatData: any): Promise<ApiResponse<Chat>> => {
     try {
       console.log('📝 Creating new chat with data:', chatData);
-      
+
       // Try different endpoint variations
       const endpoints = [
         'chat',
@@ -94,7 +94,7 @@ export const ChatAPI = {
         'chat/create',
         'conversations'
       ];
-      
+
       for (const endpoint of endpoints) {
         try {
           console.log(`📤 Trying to create chat at endpoint: ${endpoint}`);
@@ -109,11 +109,11 @@ export const ChatAPI = {
             message: (res as any)?.data?.message,
           } as ApiResponse<Chat>;
         } catch (endpointError) {
-          console.log(`❌ Endpoint ${endpoint} failed:`, endpointError);
+          // Silently continue to next endpoint without logging
           continue;
         }
       }
-      
+
       // If all endpoints fail, create a fallback chat object
       console.log('⚠️ All chat creation endpoints failed, creating fallback chat');
       const fallbackChat: Chat = {
@@ -121,22 +121,21 @@ export const ChatAPI = {
         users: chatData.users,
         createdAt: chatData.createdAt || new Date().toISOString()
       };
-      
+
       return {
         data: fallbackChat,
         success: true,
         message: 'Chat created locally (API endpoints unavailable)'
       };
-      
+
     } catch (error: unknown) {
-      console.error('❌ Error creating chat:', error);
-      // Return fallback chat instead of throwing error
+      // Silent error handling - don't log to console
       const fallbackChat: Chat = {
         _id: `error-chat-${Date.now()}`,
         users: chatData.users || [],
         createdAt: new Date().toISOString()
       };
-      
+
       return {
         data: fallbackChat,
         success: false,
@@ -149,21 +148,21 @@ export const ChatAPI = {
   getGuestChats: async (): Promise<ApiResponse<Chat[]>> => {
     try {
       console.log('🔍 ChatAPI.getGuestChats called');
-      
+
       const endpoint = 'chat/guest-chats';
       const res = await requests.get(endpoint);
       console.log(`✅ Success with GET ${endpoint}:`, res);
-      
+
       if ('success' in res) {
         return res as ApiResponse<Chat[]>;
       }
-      
+
       return {
         success: (res as any)?.status >= 200 && (res as any)?.status < 300,
         data: (res as any)?.data?.data ?? (res as any)?.data ?? [],
         message: (res as any)?.data?.message,
       } as ApiResponse<Chat[]>;
-      
+
     } catch (error: unknown) {
       console.error('❌ ChatAPI.getGuestChats error:', error);
       return {
@@ -178,7 +177,7 @@ export const ChatAPI = {
   findGuestChat: async (name: string, phone: string): Promise<ApiResponse<Chat | null>> => {
     try {
       console.log('🔍 ChatAPI.findGuestChat called with:', { name, phone });
-      
+
       if (!name || !phone) {
         return {
           data: null,
@@ -186,12 +185,12 @@ export const ChatAPI = {
           message: 'Name and phone are required'
         };
       }
-      
+
       // Use direct fetch to bypass authentication for guest endpoints
       // const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/chat/find-guest-chat?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`;
       const url = `${process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL}/chat/find-guest-chat?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`;
       console.log('🔍 Finding guest chat:', url);
-      
+
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -199,7 +198,7 @@ export const ChatAPI = {
           'x-access-key': '64d2e8b7c3a9f1e5d8b2a4c6e9f0d3a5'
         }
       });
-      
+
       if (response.ok) {
         // Check if response has content
         const contentType = response.headers.get('content-type');
@@ -238,7 +237,7 @@ export const ChatAPI = {
           message: 'Guest chat not found'
         };
       }
-      
+
     } catch (error: unknown) {
       console.error('❌ ChatAPI.findGuestChat error:', error);
       return {

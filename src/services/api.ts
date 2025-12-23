@@ -10,9 +10,9 @@ let apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || API_BASE_URL;
 // Defensive check: If we are on the production domain but the API URL is localhost, force production API
 if (typeof window !== 'undefined' &&
     (window.location.hostname === 'mazadclick.vercel.app' || window.location.hostname === 'www.mazadclick.com') &&
-    apiBaseUrl.includes('localhost')) {
+    (apiBaseUrl.includes('localhost') || apiBaseUrl.includes('api.mazad.click'))) {
     apiBaseUrl = 'https://mazadclick-server.onrender.com';
-    console.warn('Forcing production API URL due to environment mismatch');
+    console.warn('Forcing production API URL due to environment mismatch or invalid domain');
 }
 
 const config = {

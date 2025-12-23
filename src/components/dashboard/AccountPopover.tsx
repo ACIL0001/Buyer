@@ -99,7 +99,14 @@ export default function AccountPopover() {
               const raw = avatar.fullUrl || avatar.url || avatar.path || avatar.filename || '';
               if (!raw) return '';
               if (/^https?:\/\//i.test(raw)) {
-                return raw.replace('http://localhost:3000', base);
+                let url = raw;
+                if (url.startsWith('http://localhost:3000')) {
+                  url = url.replace('http://localhost:3000', base);
+                }
+                if (url.startsWith('https://api.mazad.click')) {
+                  url = url.replace('https://api.mazad.click', base);
+                }
+                return url;
               }
               const path = raw.startsWith('/') ? raw : `/${raw}`;
               const finalPath = path.startsWith('/static/') ? path : `/static${path}`;

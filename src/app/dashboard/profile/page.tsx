@@ -466,6 +466,7 @@ export default function ProfilePage() {
             const baseUrl = API_BASE_URL.replace(/\/$/, '');
             let normalized = cleanUrl
                 .replace(/http:\/\/localhost:3000/g, baseUrl)
+                .replace(/https:\/\/api\.mazad\.click/g, baseUrl)
                 .replace(/http:\/\/localhost\//g, baseUrl + '/')
                 .replace(/http:\/\/localhost$/g, baseUrl);
             

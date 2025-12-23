@@ -7,6 +7,7 @@ import NavSection from './NavSection';
 import useNavConfig from './NavConfig';
 import useAuth from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
+import app from '@/config';
 
 const DRAWER_WIDTH = 280;
 
@@ -57,7 +58,19 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
              border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
          }}>
              <Avatar 
-                src={typeof user?.avatar === 'string' ? user?.avatar : (user?.photoURL || '')} 
+                src={(() => {
+                  const raw = typeof user?.avatar === 'string' ? user?.avatar : (user?.photoURL || '');
+                  if (!raw) return '';
+                  const baseUrl = (app.baseURL || '').replace(/\/$/, '');
+                  let url = raw;
+                  if (url.startsWith('http://localhost:3000')) {
+                    url = url.replace('http://localhost:3000', baseUrl);
+                  }
+                  if (url.startsWith('https://api.mazad.click')) {
+                    url = url.replace('https://api.mazad.click', baseUrl);
+                  }
+                  return url;
+                })()} 
                 alt={(user as any)?.entreprise || user?.firstName || 'User'}
                 sx={{
                   width: 48,

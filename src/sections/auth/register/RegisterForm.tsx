@@ -188,16 +188,23 @@ export default function RegisterForm() {
             promoCode: values.promoCode,
         };
 
-        let payload: any = { user: userData };
+        let payload: any = userData;
+        
+        // Log the payload for debugging
+        console.log('📝 Register payload:', { 
+            userData, 
+            hasPhoto: !!values.photo,
+            payloadType: values.photo ? 'FormData' : 'JSON'
+        });
 
         if (values.photo) {
             const formData = new FormData();
             Object.keys(userData).forEach(key => {
                 if (userData[key] !== null && userData[key] !== undefined) {
-                    formData.append(`user[${key}]`, userData[key]);
+                    formData.append(key, userData[key]);
                 }
             });
-            formData.append('user[avatar]', values.photo);
+            formData.append('avatar', values.photo);
             payload = formData;
         }
 
@@ -207,10 +214,14 @@ export default function RegisterForm() {
         router.push(`/otp-verification?phone=${encodeURIComponent(userData.phone)}`);
         
       } catch (error: any) {
-        console.error('Registration error:', error);
+        console.error('Registration error detailed:', error);
+        console.error('Response data:', error?.response?.data);
+        
         let errorMessage = 'Une erreur est survenue lors de l\'inscription.';
         if (error?.response?.data?.message) {
-            errorMessage = error.response.data.message;
+            errorMessage = Array.isArray(error.response.data.message) 
+                ? error.response.data.message.join(', ') // Join array messages
+                : error.response.data.message;
         } else if (error?.message) {
             errorMessage = error.message;
         }

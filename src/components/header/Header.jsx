@@ -887,7 +887,7 @@ export const Header = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        background: '#e0e0e0',
+                        background: 'transparent',
                         border: '1px solid #e0e0e0'
                       }}>
                         {/* Initials as fallback background */}

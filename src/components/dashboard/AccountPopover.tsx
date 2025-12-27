@@ -154,7 +154,7 @@ export default function AccountPopover() {
           sx={{
             width: '100%',
             height: '100%',
-            bgcolor: (theme) => theme.palette.primary.main,
+            bgcolor: 'transparent',
             fontSize: '1.1rem',
             fontWeight: 700,
           }}
@@ -195,7 +195,7 @@ export default function AccountPopover() {
             sx={{ 
               width: 40, 
               height: 40, 
-              bgcolor: 'primary.main',
+              bgcolor: 'transparent',
               fontWeight: 700,
               fontSize: '1rem',
               boxShadow: '0 2px 6px rgba(0,0,0,0.1)'

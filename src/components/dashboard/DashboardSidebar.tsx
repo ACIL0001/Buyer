@@ -145,7 +145,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
                 sx={{
                   width: 48,
                   height: 48,
-                  bgcolor: (theme) => theme.palette.primary.main,
+                  bgcolor: 'transparent',
                   fontSize: '1.25rem',
                   fontWeight: 600,
                   border: (theme) => `2px solid ${theme.palette.background.paper}`,

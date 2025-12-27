@@ -23,7 +23,7 @@ export default function DirectSalePage() {
         <RequestProvider>
           <SnackbarProvider maxSnack={3}>
             <Header />
-            <main className="direct-sale-page" style={{ position: 'relative', zIndex: 1, minHeight: '100vh', paddingTop: '120px', paddingBottom: '80px' }}>
+            <main className="direct-sale-page" style={{ position: 'relative', zIndex: 1, minHeight: '100vh', paddingTop: 'clamp(80px, 10vw, 120px)', paddingBottom: 'clamp(40px, 5vw, 80px)' }}>
               
               {/* Main Content - Sidebar/Grid Component */}
               <MultipurposeDirectSaleSidebar />

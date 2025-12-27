@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useReducer, useState, useEffect, useRef } from "react";
 import useAuth from "@/hooks/useAuth";
 import { authStore } from "@/contexts/authStore";
@@ -51,6 +51,7 @@ function reducer(state, action) {
 
 export const Header = () => {
   const { t } = useTranslation();
+  const router = useRouter();
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [state, dispatch] = useReducer(reducer, initialState);
   const pathName = usePathname();
@@ -154,7 +155,7 @@ export const Header = () => {
 
   const handleLogout = () => {
     authStore.getState().clear();
-    window.location.href = `${getSellerUrl()}login`;
+    router.push('/auth/login');
   };
 
   // Navigation Items
@@ -589,25 +590,21 @@ export const Header = () => {
                           if (url.includes('&') && !url.includes('?')) {
                             url = url.replace('&', '?');
                           }
-                          // Normalize URLs
-                          const baseUrl = app.baseURL.replace(/\/$/, '');
+                          // Normalize localhost URLs
                           if (url.startsWith('http://localhost:3000')) {
-                            return url.replace('http://localhost:3000', baseUrl);
-                          }
-                          if (url.startsWith('https://api.mazad.click')) {
-                            return url.replace('https://api.mazad.click', baseUrl);
+                            return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
                           }
                           if (url.startsWith('http://localhost/')) {
-                            return url.replace('http://localhost', baseUrl);
+                            return url.replace('http://localhost', app.baseURL.replace(/\/$/, ''));
                           }
                           if (url.startsWith('/static/')) {
-                            return `${baseUrl}${url}`;
+                            return `${app.baseURL.replace(/\/$/, '')}${url}`;
                           }
                           if (url.startsWith('/')) {
-                            return `${baseUrl}/static${url}`;
+                            return `${app.baseURL.replace(/\/$/, '')}/static${url}`;
                           }
                           if (!url.startsWith('http')) {
-                            return `${baseUrl}/static/${url}`;
+                            return `${app.baseURL.replace(/\/$/, '')}/static/${url}`;
                           }
                           return url;
                         }
@@ -618,32 +615,20 @@ export const Header = () => {
                           // Try fullUrl first
                           if (avatar.fullUrl) {
                             let fullUrl = avatar.fullUrl;
-                            const baseUrl = app.baseURL.replace(/\/$/, '');
                             if (fullUrl.startsWith('http://localhost:3000')) {
-                              fullUrl = fullUrl.replace('http://localhost:3000', baseUrl);
-                            }
-                            if (fullUrl.startsWith('https://api.mazad.click')) {
-                              fullUrl = fullUrl.replace('https://api.mazad.click', baseUrl);
+                              fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
                             }
                             return fullUrl;
                           }
                           
                           // Try url
                           if (avatar.url) {
-                            const baseUrl = app.baseURL.replace(/\/$/, '');
                             if (avatar.url.startsWith('http')) {
-                              let url = avatar.url;
-                              if (url.startsWith('http://localhost:3000')) {
-                                url = url.replace('http://localhost:3000', baseUrl);
-                              }
-                              if (url.startsWith('https://api.mazad.click')) {
-                                url = url.replace('https://api.mazad.click', baseUrl);
-                              }
-                              return url;
+                              return avatar.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
                             }
                             const path = avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`;
                             const finalPath = path.startsWith('/static/') ? path : `/static${path}`;
-                            return `${baseUrl}${finalPath}`;
+                            return `${app.baseURL.replace(/\/$/, '')}${finalPath}`;
                           }
                           
                           // Try filename
@@ -720,7 +705,7 @@ export const Header = () => {
                   </button>
                 ) : (
                   <button
-                    onClick={() => window.location.href = `${getSellerUrl()}login`}
+                    onClick={() => router.push('/auth/login')}
                     style={{
                       display: 'flex',
                       alignItems: 'center',

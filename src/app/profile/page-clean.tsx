@@ -195,7 +195,7 @@ function ProfilePage() {
       if (error.response?.status === 401) {
         enqueueSnackbar(t("profile.sessionExpired"), { variant: 'error' });
         set({ tokens: undefined, user: undefined });
-        router.push(`${getSellerUrl()}login`);
+        router.push("/auth/login");
       } else {
         const errorMessage = error.response?.data?.message || error.message || t("profile.failedToUpdateProfile");
         enqueueSnackbar(errorMessage, { variant: "error" });
@@ -242,7 +242,7 @@ function ProfilePage() {
       if (error.response?.status === 401) {
         enqueueSnackbar(t("profile.sessionExpired"), { variant: 'error' });
         set({ tokens: undefined, user: undefined });
-        router.push(`${getSellerUrl()}login`);
+        router.push("/auth/login");
       } else {
         const errorMessage = error.message || t("profile.failedToUpdatePassword");
         enqueueSnackbar(errorMessage, { variant: "error" });
@@ -353,7 +353,7 @@ function ProfilePage() {
         <div className="login-prompt">
           <h2>Authentication Required</h2>
           <p>Please log in to access your profile.</p>
-          <button onClick={() => router.push(`${getSellerUrl()}login`)}>Go to Login</button>
+          <button onClick={() => router.push("/auth/login")}>Go to Login</button>
         </div>
       </div>
     );

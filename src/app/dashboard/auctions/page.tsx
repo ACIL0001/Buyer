@@ -30,6 +30,8 @@ import { MdAdd, MdRefresh } from 'react-icons/md';
 import ResponsiveTable from '@/components/Tables/ResponsiveTable';
 import Label from '@/components/Label';
 import useAuth from '@/hooks/useAuth';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import TableSkeleton from '@/components/skeletons/TableSkeleton';
 
 // Types (simplified - in production these would come from a types file)
 enum AUCTION_TYPE {
@@ -65,6 +67,7 @@ export default function AuctionsPage() {
   const router = useRouter();
   const theme = useTheme();
   const { t, i18n } = useTranslation();
+  const queryClient = useQueryClient();
   
   const COLUMNS = [
     { id: 'title', label: t('dashboard.list.columns.title'), alignRight: false, searchable: true, sortable: true },
@@ -77,73 +80,67 @@ export default function AuctionsPage() {
     { id: 'actions', label: t('dashboard.list.columns.actions'), alignRight: true, searchable: false }
   ];
   
-  const [auctions, setAuctions] = useState<Auction[]>([]);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState('endingAt');
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const { isLogged } = useAuth();
+  
+  // Refactored to React Query
+  const { data: auctionsData = [], isLoading: loading } = useQuery({
+    queryKey: ['my-auctions'],
+    queryFn: async () => {
+       const { AuctionsAPI } = await import('@/services/auctions');
+       const response = await AuctionsAPI.getAuctions();
+       if (Array.isArray(response)) return response;
+       if (response?.data && Array.isArray(response.data)) return response.data;
+       return [];
+    },
+    enabled: isLogged,
+    staleTime: Infinity,
+    refetchInterval: 30000, // Poll every 30 seconds
+  });
+
+  const auctions = (auctionsData || []) as Auction[];
+
   const [finishedAuctions, setFinishedAuctions] = useState<Auction[]>([]);
   const [activeAuctions, setActiveAuctions] = useState<Auction[]>([]);
-  const isFetchingRef = useRef(false);
 
+  // Update filtered lists when data changes
   useEffect(() => {
-    if (isLogged) {
-        fetchAuctions();
-        const interval = setInterval(() => {
-            fetchAuctions();
-        }, 30000);
-        return () => clearInterval(interval);
-    }
-  }, [isLogged]);
-  
-
-  const fetchAuctions = async () => {
-    if (isFetchingRef.current) return;
-    
-    // Only set loading on initial load or if we have no auctions
-    if (auctions.length === 0) {
-      setLoading(true);
-    }
-    
-    isFetchingRef.current = true;
-    try {
-      const { AuctionsAPI } = await import('@/services/auctions');
-      const response = await AuctionsAPI.getAuctions();
-      
-      let auctionData: Auction[] = [];
-      if (Array.isArray(response)) {
-        auctionData = response;
-      } else if (response?.data && Array.isArray(response.data)) {
-        auctionData = response.data;
-      }
-      
-      setAuctions(auctionData);
-      
-      // Separate active and finished auctions
+    if (auctions) {
       const now = new Date();
-      const active = auctionData.filter(auction => {
+      const active = auctions.filter(auction => {
         const endTime = new Date(auction.endingAt);
         return endTime > now && auction.status !== BID_STATUS.CLOSED;
       });
-      const finished = auctionData.filter(auction => {
+      const finished = auctions.filter(auction => {
         const endTime = new Date(auction.endingAt);
         return endTime <= now || auction.status === BID_STATUS.CLOSED;
       });
-      
       setActiveAuctions(active);
       setFinishedAuctions(finished);
-    } catch (error) {
-      console.error('Error fetching auctions:', error);
-    } finally {
-      setLoading(false);
-      isFetchingRef.current = false;
     }
+  }, [auctions]);
+
+  // Removed manual effect and fetchAuctions
+  /*
+  const isFetchingRef = useRef(false);
+
+  useEffect(() => {
+    // ...
+  }, [isLogged]);
+
+  const fetchAuctions = async () => {
+    // ...
   };
+  */
+  
+
+  // Removed fetchAuctions definition
 
   const getStatusColor = (status: BID_STATUS): 'info' | 'success' | 'error' | 'default' => {
     switch (status) {
@@ -291,10 +288,11 @@ export default function AuctionsPage() {
                       size="small"
                       variant="contained"
                       color="primary"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // TODO: Handle relaunch
-                      }}
+                        onClick={(e) => {
+                         e.stopPropagation();
+                         queryClient.invalidateQueries({ queryKey: ['my-auctions'] });
+                         // Handle relaunch (future)
+                       }}
                       startIcon={<MdRefresh />}
                     >
                       {t('dashboard.list.relaunch')}
@@ -382,7 +380,11 @@ export default function AuctionsPage() {
         </Stack>
       </Box>
       
-      {getFilteredAuctions() && getFilteredAuctions().length > 0 ? (
+      {loading && (
+        <TableSkeleton rows={5} columns={COLUMNS.length} />
+      )}
+
+      {!loading && getFilteredAuctions() && getFilteredAuctions().length > 0 ? (
         <ResponsiveTable
           data={getFilteredAuctions()}
           columns={COLUMNS}
@@ -402,7 +404,7 @@ export default function AuctionsPage() {
           setSelected={setSelected}
           onRowClick={(row) => router.push(`/dashboard/auctions/${row._id}`)}
         />
-      ) : (
+      ) : !loading && (
         <Stack 
           spacing={3} 
           alignItems="center" 

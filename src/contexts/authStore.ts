@@ -39,7 +39,7 @@ export const authStore = create<IAuthStore>((setValues) => ({
         email: auth.user.email || '',
         photoURL: (auth.user.photoURL && !auth.user.photoURL.includes('mock-images'))
           ? auth.user.photoURL
-          : `https://api.dicebear.com/7.x/avataaars/svg?seed=${auth.user.firstName || 'User'}`,
+          : '/assets/images/avatar.jpg',
         firstName: auth.user.firstName || '',
         lastName: auth.user.lastName || '',
         phone: auth.user.phone || '',
@@ -130,7 +130,7 @@ export const authStore = create<IAuthStore>((setValues) => ({
             email: parsed.user.email || '',
             photoURL: (parsed.user.photoURL && !parsed.user.photoURL.includes('mock-images'))
               ? parsed.user.photoURL
-              : `https://api.dicebear.com/7.x/avataaars/svg?seed=${parsed.user.firstName || 'User'}`,
+              : '/assets/images/avatar.jpg',
             firstName: parsed.user.firstName || '',
             lastName: parsed.user.lastName || '',
             phone: parsed.user.phone || '',
@@ -170,14 +170,28 @@ export const authStore = create<IAuthStore>((setValues) => ({
 
     // If user is logged in, fetch fresh data after initialization
     if (values.isLogged && values.auth.tokens?.accessToken) {
-      console.log('🔄 User is logged in, scheduling fresh data fetch...');
+      console.log('🔄 User is logged in, checking data completeness...');
+
+      // Check if user data looks incomplete (generic name or missing fields)
+      const user = values.auth.user;
+      const isIncomplete = !user?.firstName || user.firstName === 'User' || !user.lastName;
+
+      // If data is suspect, fetch almost immediately. Otherwise, wait a bit.
+      const delay = isIncomplete ? 500 : 2000;
+
+      if (isIncomplete) {
+        console.log('⚠️ User data appears incomplete on init, fetching fresh data quickly...');
+      } else {
+        console.log('✅ User data appears complete, scheduling background refresh...');
+      }
+
       // Give some time for the app to fully initialize
       setTimeout(() => {
         const currentState = authStore.getState();
         if (currentState.isLogged && currentState.auth.tokens?.accessToken) {
           authStore.getState().fetchFreshUserData();
         }
-      }, 2000);
+      }, delay);
     }
   },
 

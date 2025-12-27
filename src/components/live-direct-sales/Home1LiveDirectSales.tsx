@@ -890,7 +890,7 @@ const Home1LiveDirectSales = () => {
                             />
                             {directSale.owner && !directSale.hidden ? (
                               <Link
-                                href={`/users/${directSale.owner._id}`}
+                                href={`/profile/${directSale.owner?._id}`}
                                 style={{
                                   fontSize: '14px',
                                   color: '#8a7e1f',

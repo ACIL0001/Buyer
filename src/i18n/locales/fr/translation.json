@@ -324,7 +324,17 @@
       "certificatesDesc": "Certificats professionnels ou autres documents complémentaires",
       "paymentProof": "Preuve de paiement",
       "paymentProofDesc": "Justificatif de paiement de souscription"
-    }
+    },
+    "addCoverPhoto": "Cliquez pour ajouter une photo de couverture",
+    "addCover": "Ajouter Couverture",
+    "changeCover": "Changer Couverture",
+    "wilaya": "Wilaya",
+    "socialReason": "Raison Sociale",
+    "jobTitle": "Fonction",
+    "secteur": "Secteur",
+    "entity": "Entité",
+    "selectWilaya": "Sélectionner Wilaya",
+    "enterDetails": "Entrez les détails"
   },
   "account": {
     "switchToSeller": "Passer en mode vendeur",

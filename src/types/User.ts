@@ -26,6 +26,15 @@ export default interface User {
   displayName?: string;
   photoURL?: string;
   avatar?: Attachment;
+  coverPhoto?: Attachment;
+  coverPhotoURL?: string;
   isHasIdentity?: boolean;
   isVerified?: boolean | number;
+  birthDate?: string | Date;
+  wilaya?: string;
+  socialReason?: string;
+  jobTitle?: string;
+  entity?: string;
+  promoCode?: string;
+  secteur?: string;
 }

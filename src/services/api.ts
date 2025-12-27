@@ -1,24 +1,11 @@
 import axios from 'axios';
 import { authStore } from '@/contexts/authStore';
 
-import app, { API_BASE_URL } from '@/config';
-
 // Get configuration from environment or use defaults
-// Get configuration from environment or use defaults
-let apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || API_BASE_URL;
-
-// Defensive check: If we are on the production domain but the API URL is localhost, force production API
-if (typeof window !== 'undefined' &&
-    (window.location.hostname === 'mazadclick.vercel.app' || window.location.hostname === 'www.mazadclick.com') &&
-    (apiBaseUrl.includes('localhost') || apiBaseUrl.includes('api.mazad.click'))) {
-    apiBaseUrl = 'https://mazadclick-server.onrender.com';
-    console.warn('Forcing production API URL due to environment mismatch or invalid domain');
-}
-
 const config = {
-    baseURL: apiBaseUrl,
-    apiKey: process.env.NEXT_PUBLIC_API_KEY || app.apiKey,
-    timeout: app.timeout,
+    baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000',
+    apiKey: process.env.NEXT_PUBLIC_API_KEY || '64d2e8b7c3a9f1e5d8b2a4c6e9f0d3a5',
+    timeout: 15000,
 };
 
 const instance = axios.create({

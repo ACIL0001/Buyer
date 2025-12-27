@@ -805,7 +805,7 @@ const MultipurposeDetails2 = () => {
       // Check if user is logged in
       if (!isLogged || !auth.tokens) {
         toast.error("Veuillez vous connecter pour soumettre une offre");
-        router.push(`${getSellerUrl()}login`);
+        router.push('/auth/login');
         return;
       }
 
@@ -1096,7 +1096,7 @@ const MultipurposeDetails2 = () => {
       // Check if user is logged in
       if (!isLogged || !auth.tokens) {
         toast.error("Veuillez vous connecter pour soumettre une offre");
-        router.push(`${getSellerUrl()}login`);
+        router.push('/auth/login');
         return;
       }
 
@@ -1254,7 +1254,7 @@ const MultipurposeDetails2 = () => {
 
     if (!isLogged || !auth.tokens) {
       toast.error("Veuillez vous connecter pour soumettre un avis");
-      router.push(`${getSellerUrl()}login`);
+      router.push('/auth/login');
       return;
     }
 
@@ -2154,7 +2154,7 @@ const MultipurposeDetails2 = () => {
                                     <span>{t('common.anonymous') || 'Anonyme'}</span>
                                   ) : (
                                     <Link
-                                      href={`/users/${safeOwner._id || safeOwner}`}
+                                      href={`/profile/${safeOwner._id || safeOwner}`}
                                       style={{
                                         color: '#0063b1',
                                         textDecoration: 'none',

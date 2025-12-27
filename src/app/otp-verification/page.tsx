@@ -26,8 +26,26 @@ export default function OTPVerification() {
   const searchParams = useSearchParams();
   const { set } = useAuth();
 
-  const phone = searchParams.get("phone") || "";
+  const [phone, setPhone] = useState(searchParams.get("phone") || "");
   const fromBuyer = searchParams.get("fromBuyer");
+
+  useEffect(() => {
+    if (!phone) {
+      if (typeof window !== "undefined") {
+        const storedData = localStorage.getItem("registrationData");
+        if (storedData) {
+          try {
+            const parsed = JSON.parse(storedData);
+            if (parsed.phone) {
+              setPhone(parsed.phone);
+            }
+          } catch (e) {
+            console.error("Error parsing registration data", e);
+          }
+        }
+      }
+    }
+  }, [phone]);
 
   // Animation sequence on mount
   useEffect(() => {
@@ -145,12 +163,12 @@ export default function OTPVerification() {
           
           // Redirect to home page
         setTimeout(() => {
-            router.push("/");
+            router.push("/profile");
           }, 1500);
       } else {
           // If no auth data returned, redirect to login
           setTimeout(() => {
-            router.push(`${getSellerUrl()}login`);
+            router.push("/auth/login");
           }, 2000);
         }
       } else {
@@ -772,8 +790,8 @@ export default function OTPVerification() {
             </Link>
             <nav className="header-nav">
               <Link href="/" className="header-link">Home</Link>
-              <Link href={`${getSellerUrl()}login`} className="header-link">Login</Link>
-              <Link href={`${getSellerUrl()}login`} className="header-link">Register</Link>
+              <Link href="/auth/login" className="header-link">Login</Link>
+              <Link href="/auth/login" className="header-link">Register</Link>
             </nav>
           </div>
         </header>
@@ -909,7 +927,7 @@ export default function OTPVerification() {
                   </button>
                 </div>
 
-                <Link href={`${getSellerUrl()}login`} className="back-link">
+                <Link href="/auth/login" className="back-link">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
                   </svg>

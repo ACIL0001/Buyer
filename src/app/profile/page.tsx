@@ -16,6 +16,9 @@ import { useRouter } from "next/navigation"
 import HistoryPage from "./history/HistoryPage"
 import { useTranslation } from "react-i18next"
 import { authStore } from "@/contexts/authStore"
+import { WILAYAS } from "@/constants/wilayas"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import ProfileSkeleton from "@/components/skeletons/ProfileSkeleton"
 
 const ProfilePageWrapper = () => {
     const [show, setShow] = useState(false)
@@ -38,6 +41,11 @@ interface ProfileFormData {
     email: string
     phone: string
     rate: number
+    wilaya: string
+    secteur: string
+    socialReason: string
+    jobTitle: string
+    entity: string
 }
 
 interface AvatarData {
@@ -56,6 +64,23 @@ const STATIC_URL = app.route;
 const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const DEV_SERVER_PATTERN = new RegExp(escapeRegExp(DEV_SERVER_URL), 'g');
 
+const getImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (url.startsWith('http')) {
+         // Fix localhost without port if appearing (backend bug workaround)
+         if (url.startsWith('http://localhost/')) {
+             return url.replace('http://localhost/', 'http://localhost:3000/');
+         }
+         return url;
+    }
+    // If relative path /static/...
+    if (url.startsWith('/static')) {
+        // API_BASE_URL likely ends with /
+        return `${API_BASE_URL}${url.startsWith('/') ? url.slice(1) : url}`;
+    }
+    return url;
+};
+
 function ProfilePage() {
     const { t } = useTranslation();
     const { auth, isLogged, isReady, initializeAuth, set, fetchFreshUserData } = useAuth();
@@ -67,6 +92,8 @@ function ProfilePage() {
     const [isLoading, setIsLoading] = useState(false);
     const [isPasswordChanging, setIsPasswordChanging] = useState(false);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+    const [isUploadingCover, setIsUploadingCover] = useState(false);
+    const [coverKey, setCoverKey] = useState(Date.now());
     const [avatarKey, setAvatarKey] = useState(Date.now());
     const [activeTab, setActiveTab] = useState("personal-info");
     const [formData, setFormData] = useState<ProfileFormData>({
@@ -75,6 +102,11 @@ function ProfilePage() {
         email: "",
         phone: "",
         rate: 0,
+        wilaya: "",
+        secteur: "",
+        socialReason: "",
+        jobTitle: "",
+        entity: "",
     });
 
     const [passwordData, setPasswordData] = useState({
@@ -84,10 +116,33 @@ function ProfilePage() {
     });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const coverInputRef = useRef<HTMLInputElement>(null);
 
     // Document management state
-    const [identity, setIdentity] = useState<any>(null);
-    const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
+    // Refactored to React Query
+    const queryClient = useQueryClient();
+    const { data: identityData, isLoading: isLoadingDocuments } = useQuery({
+        queryKey: ['identity'],
+        queryFn: async () => {
+            try {
+                const response = await IdentityAPI.getMyIdentity();
+                if (response.success) return response.data || null;
+                return null;
+            } catch (error: any) {
+                // If 404 or just validation error, return null to show "start verification" UI
+                if (error.response?.status === 404) return null;
+                // Otherwise throw to let React Query handle error state (or ignore if you want to mask it)
+                // For now, returning null on error to match previous behavior of "not found" = "clean state"
+                return null;
+            }
+        },
+        enabled: activeTab === 'documents',
+        staleTime: Infinity,
+    });
+    const identity = (identityData || null) as any;
+
+    // Remove: const [identity, setIdentity] = useState<any>(null);
+    // Remove: const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
     const [isUploadingDocument, setIsUploadingDocument] = useState<string | null>(null);
     const [uploadingFile, setUploadingFile] = useState<File | null>(null);
     const documentFileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
@@ -170,6 +225,11 @@ function ProfilePage() {
                 email: auth.user.email || "",
                 phone: auth.user.phone || "",
                 rate: auth.user.rate || 0,
+                wilaya: auth.user.wilaya || "",
+                secteur: auth.user.secteur || "",
+                socialReason: auth.user.socialReason || "",
+                jobTitle: auth.user.jobTitle || "",
+                entity: auth.user.entity || "",
             });
         }
     }, [auth.user]);
@@ -235,6 +295,48 @@ function ProfilePage() {
         }));
     };
 
+    const handleCoverClick = () => {
+        if (coverInputRef.current) {
+            coverInputRef.current.click();
+        }
+    };
+
+    const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file size (e.g., max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            enqueueSnackbar(t("profile.imageTooLarge") || "Image too large (max 5MB)", { variant: "error" });
+            return;
+        }
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            enqueueSnackbar(t("profile.invalidFileType") || "Please upload an image file", { variant: "error" });
+            return;
+        }
+
+        setIsUploadingCover(true);
+        try {
+            const formDataToUpload = new FormData();
+            formDataToUpload.append('cover', file);
+
+            const response = await UserAPI.uploadCover(formDataToUpload);
+
+            if (response.success) {
+                enqueueSnackbar(t("profile.coverUpdated") || "Cover photo updated successfully", { variant: "success" });
+                setCoverKey(Date.now()); // Force refresh
+                await fetchFreshUserData(); // Refresh user data
+            }
+        } catch (error: any) {
+            console.error("Cover upload error:", error);
+            enqueueSnackbar(error.message || t("profile.coverUpdateFailed") || "Failed to update cover photo", { variant: "error" });
+        } finally {
+            setIsUploadingCover(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -267,6 +369,11 @@ function ProfilePage() {
                         email: updatedUser.email || currentUser?.email || '',
                         type: updatedUser.accountType || updatedUser.type || currentUser?.type || 'CLIENT',
                         phone: updatedUser.phone || formData.phone || currentUser?.phone,
+                        wilaya: updatedUser.wilaya || formData.wilaya || currentUser?.wilaya,
+                        secteur: updatedUser.secteur || formData.secteur || currentUser?.secteur,
+                        socialReason: updatedUser.socialReason || formData.socialReason || currentUser?.socialReason,
+                        jobTitle: updatedUser.jobTitle || formData.jobTitle || currentUser?.jobTitle,
+                        entity: updatedUser.entity || formData.entity || currentUser?.entity,
                         avatar: updatedUser.avatar || currentUser?.avatar,
                         rate: currentUser?.rate || 1,
                         isPhoneVerified: (currentUser as any)?.isPhoneVerified,
@@ -299,7 +406,7 @@ function ProfilePage() {
             if (error.response?.status === 401) {
                 enqueueSnackbar(t('profile.sessionExpired') || 'Session expired', { variant: 'error' });
                 set({ tokens: undefined, user: undefined });
-                router.push(`${getSellerUrl()}login`);
+                router.push("/auth/login");
             } else {
                 const errorMessage = error.response?.data?.message || error.message || t('profile.updateFailed') || 'Failed to update profile';
                 enqueueSnackbar(errorMessage, { variant: "error" });
@@ -346,7 +453,7 @@ function ProfilePage() {
             if (error.response?.status === 401) {
                 enqueueSnackbar(t("sessionExpired"), { variant: 'error' });
                 set({ tokens: undefined, user: undefined });
-                router.push(`${getSellerUrl()}login`);
+                router.push("/auth/login");
             } else {
                 const errorMessage = error.message || t("failedToUpdatePassword");
                 enqueueSnackbar(errorMessage, { variant: "error" });
@@ -507,27 +614,7 @@ function ProfilePage() {
     };
 
     // Document management functions
-    const fetchIdentity = async () => {
-        try {
-            setIsLoadingDocuments(true);
-            const response = await IdentityAPI.getMyIdentity();
-            if (response.success) {
-                // Set identity to null if data is null, otherwise set to the data
-                setIdentity(response.data || null);
-            } else {
-                setIdentity(null);
-            }
-        } catch (error: any) {
-            console.error('Error fetching identity:', error);
-            // Don't show error snackbar for timeout or missing identity - it's expected
-            if (error.response?.status !== 404 && !error.message?.includes('timeout')) {
-            enqueueSnackbar('Erreur lors du chargement des documents', { variant: 'error' });
-            }
-            setIdentity(null);
-        } finally {
-            setIsLoadingDocuments(false);
-        }
-    };
+    // fetchIdentity removed in favor of useQuery
 
     const handleFileSelect = (fieldKey: string, file: File) => {
         if (!file) return;
@@ -554,18 +641,18 @@ function ProfilePage() {
         try {
             setIsUploadingDocument(fieldKey);
             
+            const formData = new FormData();
+            formData.append(fieldKey, file);
+
             // If identity doesn't exist, create it with this document
             if (!identity || !identity._id) {
-                const formData = new FormData();
-                formData.append(fieldKey, file);
-                
                 // Create identity with this document (allow incremental uploads)
                 const createResponse: any = await IdentityAPI.create(formData);
                 
                 if (createResponse && (createResponse._id || (createResponse.data && createResponse.data._id))) {
                     enqueueSnackbar('Document sauvegardé avec succès. L\'identité a été créée. Cliquez sur "Soumettre" pour envoyer pour vérification.', { variant: 'success' });
-                    // Refresh identity data to get the newly created identity
-                    await fetchIdentity();
+                    // Invalidating query to refresh data
+                    await queryClient.invalidateQueries({ queryKey: ['identity'] });
                 } else {
                     throw new Error('Failed to create identity with document');
                 }
@@ -574,18 +661,12 @@ function ProfilePage() {
                 const updateResponse = await IdentityAPI.updateDocument(identity._id, fieldKey, file);
                 
                 if (updateResponse && updateResponse.success) {
-                enqueueSnackbar('Document sauvegardé avec succès. Cliquez sur "Soumettre" pour envoyer pour vérification.', { variant: 'success' });
-                // Update local state
-                    const responseData = updateResponse.data as any;
-                setIdentity((prev: any) => prev ? {
-                    ...prev,
-                        [fieldKey]: responseData?.[fieldKey] || (prev as any)[fieldKey]
-                } as any : null);
-                    // Refresh identity data
-                    await fetchIdentity();
-            } else {
+                    enqueueSnackbar('Document sauvegardé avec succès. Cliquez sur "Soumettre" pour envoyer pour vérification.', { variant: 'success' });
+                    // Invalidating query to refresh data
+                    await queryClient.invalidateQueries({ queryKey: ['identity'] });
+                } else {
                     throw new Error(updateResponse?.message || 'Upload failed');
-            }
+                }
             }
         } catch (error: any) {
             console.error('Error uploading document:', error);
@@ -624,12 +705,12 @@ function ProfilePage() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
-    // Load identity when documents tab is active
-    useEffect(() => {
+    // Load identity when documents tab is active - managed by useQuery enabled prop
+    /* useEffect(() => {
         if (activeTab === 'documents' && !identity) {
             fetchIdentity();
         }
-    }, [activeTab]);
+    }, [activeTab]); */
 
     const handleSubmitIdentity = async () => {
         if (!identity || !identity._id) {
@@ -646,7 +727,7 @@ function ProfilePage() {
                     response.message || 'Documents soumis avec succès. En attente de vérification par l\'administrateur.',
                     { variant: 'success' }
                 );
-                await fetchIdentity(); // Refresh to get updated status
+                await queryClient.invalidateQueries({ queryKey: ['identity'] }); // Refresh to get updated status
             } else {
                 throw new Error(response?.message || 'Failed to submit identity');
             }
@@ -917,14 +998,14 @@ function ProfilePage() {
 
                                     try {
                                         setIsSubmittingIdentity(true);
-                                        const response = await IdentityAPI.submitCertification(identity._id);
+                                    const response = await IdentityAPI.submitCertification(identity._id);
                                         
                                         if (response && response.success) {
                                             enqueueSnackbar(
                                                 response.message || 'Documents de certification soumis avec succès. En attente de vérification par l\'administrateur.',
                                                 { variant: 'success' }
                                             );
-                                            await fetchIdentity(); // Refresh to get updated status
+                                            await queryClient.invalidateQueries({ queryKey: ['identity'] }); // Refresh to get updated status
                                         } else {
                                             throw new Error(response?.message || 'Failed to submit certification');
                                         }
@@ -1025,7 +1106,7 @@ function ProfilePage() {
 
     // Construct avatar source with multiple fallback options
     const getAvatarSrc = () => {
-        if (!auth.user) return `https://api.dicebear.com/7.x/avataaars/svg?seed=User`;
+        if (!auth.user) return '/assets/images/avatar.jpg';
         
         console.log('🖼️ Constructing avatar URL from:', auth.user);
         console.log('🖼️ Avatar object:', auth.user.avatar);
@@ -1068,11 +1149,24 @@ function ProfilePage() {
         }
         
         // Priority 5: fallback
-        console.log('📸 Using fallback avatar');
-        return `https://api.dicebear.com/7.x/avataaars/svg?seed=${auth.user?.firstName || 'User'}`;
+        console.log('📸 Using local default avatar');
+        return '/assets/images/avatar.jpg';
     };
     
     const avatarSrc = getAvatarSrc();
+
+    // Show skeleton loading while authenticating
+    if (!isReady) {
+        return (
+            <>
+                <Header />
+                <div style={{ paddingTop: '100px', minHeight: '80vh' }}>
+                    <ProfileSkeleton />
+                </div>
+                <Footer />
+            </>
+        );
+    }
 
     // Show login prompt if not logged in
     if (isReady && !isLogged) {
@@ -1081,7 +1175,7 @@ function ProfilePage() {
                 <div className="login-prompt">
                     <h2>Authentication Required</h2>
                     <p>Please log in to access your profile.</p>
-                    <button onClick={() => router.push(`${getSellerUrl()}login`)}>Go to Login</button>
+                    <button onClick={() => router.push("/auth/login")}>Go to Login</button>
                 </div>
             </div>
         );
@@ -1090,7 +1184,7 @@ function ProfilePage() {
     return (
         <div>
             <Header />
-            <main className="modern-profile-page">
+            <main className="modern-profile-page" style={{ paddingTop: '100px' }}>
                 {/* Animated Background */}
                 <div className="profile-background">
                     <div className="gradient-orb orb-1"></div>
@@ -1099,330 +1193,289 @@ function ProfilePage() {
                 </div>
 
                 {/* Page Header with Title */}
-                <motion.div
-                    className="profile-page-header"
-                    initial={{ opacity: 0, y: -30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                >
-                    <div className="profile-header-content">
-                        <motion.h1
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, delay: 0.2 }}
-                            className="profile-page-title"
-                        >
-                            My Profile
-                        </motion.h1>
-                        <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, delay: 0.4 }}
-                            className="profile-page-subtitle"
-                        >
-                            Manage your profile
-                        </motion.p>
-                    </div>
-                </motion.div>
-
                 <div className="modern-profile-container">
-                    {/* Hero Section - Full Width */}
-                    <motion.div
-                        className="modern-profile-hero"
-                        initial={{ opacity: 0, y: 30 }}
+                    {/* New Profile Cover Section */}
+                    <motion.div 
+                        className="profile-cover-wrapper"
+                        initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.6 }}
+                        transition={{ duration: 0.8 }}
+                        style={{ marginBottom: '1rem', position: 'relative' }}
                     >
-                        <motion.div
-                            className="hero-content"
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.8, delay: 0.8 }}
-                        >
-                            {/* Profile Avatar Card - Centered */}
-                            <motion.div
-                                className="hero-avatar-card"
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.8, delay: 0.9, type: "spring", stiffness: 100 }}
-                                whileHover={{
-                                    scale: 1.02,
-                                    boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)"
+                        {/* Cover Photo */}
+                        <div className="profile-cover-photo" style={{ 
+                            height: '250px', 
+                            width: '100%', 
+                            borderRadius: '16px',
+                            overflow: 'hidden',
+                            position: 'relative',
+                            backgroundColor: '#f3f4f6',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                        }}>
+                            {auth.user?.coverPhotoURL ? (
+                                <>
+                                <img 
+                                    key={coverKey}
+                                    src={`${getImageUrl(auth.user.coverPhotoURL)}${getImageUrl(auth.user.coverPhotoURL)?.includes('?') ? '&' : '?'}t=${coverKey}`} 
+                                    alt="Cover" 
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                />
+                                </>
+                            ) : (
+                                <div 
+                                    onClick={handleCoverClick}
+                                    style={{ 
+                                        width: '100%', 
+                                        height: '100%', 
+                                        background: '#f8fafc', // Very light slate/gray, almost white but distinct from paper
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: '#94a3b8',
+                                        fontSize: '1.2rem',
+                                        fontWeight: 500,
+                                        cursor: 'pointer',
+                                        border: '2px dashed #e2e8f0',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = '#f1f5f9';
+                                        e.currentTarget.style.borderColor = '#cbd5e1';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = '#f8fafc';
+                                        e.currentTarget.style.borderColor = '#e2e8f0';
+                                    }}
+                                >
+                                    <i className="bi bi-camera" style={{ marginRight: '8px', fontSize: '1.5rem' }}></i>
+                                    <span>{t("profile.addCoverPhoto") || "Click to add cover photo"}</span>
+                                </div>
+                            )}
+
+                            <input
+                                type="file"
+                                ref={coverInputRef}
+                                style={{ display: "none" }}
+                                accept="image/*"
+                                onChange={handleCoverChange}
+                            />
+
+                            <motion.button
+                                onClick={handleCoverClick}
+                                disabled={isUploadingCover}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                style={{
+                                    position: 'absolute',
+                                    top: '16px',
+                                    right: '16px',
+                                    background: 'rgba(255, 255, 255, 0.9)',
+                                    backdropFilter: 'blur(8px)',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    padding: '8px 16px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    color: '#1f2937',
+                                    zIndex: 10
                                 }}
                             >
-                                <div className="avatar-container">
-                                    <div className="avatar-wrapper" style={{ position: 'relative' }}>
-                                        <div className="avatar-frame" style={{
-                                            boxShadow: '0 0 0 2px #e5e7eb',
-                                            border: '4px solid #fff',
-                                            background: '#fff',
+                                {isUploadingCover ? (
+                                    <motion.i 
+                                        className="bi bi-arrow-repeat"
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                                    ></motion.i>
+                                ) : (
+                                    <i className="bi bi-camera-fill"></i>
+                                )}
+                                <span>{auth.user?.coverPhotoURL ? (t("profile.changeCover") || "Change Cover") : (t("profile.addCover") || "Add Cover")}</span>
+                            </motion.button>
+                        </div>
+
+                        {/* Profile Bar (Avatar + Info) */}
+                        <div className="profile-info-bar" style={{
+                            display: 'flex',
+                            alignItems: 'flex-end',
+                            padding: '0 20px',
+                            marginTop: '-40px',
+                            position: 'relative',
+                            zIndex: 20
+                        }}>
+                            {/* Avatar */}
+                            <div className="profile-avatar-wrapper" style={{ position: 'relative', marginRight: '24px' }}>
+                                <div style={{
+                                    width: '140px',
+                                    height: '140px',
+                                    borderRadius: '50%',
+                                    border: '4px solid #ffffff',
+                                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                                    background: '#ffffff',
+                                    position: 'relative',
+                                    overflow: 'hidden'
+                                }}>
+                                    <img 
+                                        key={avatarKey}
+                                        src={avatarSrc} 
+                                        alt="Avatar" 
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                        onError={(e) => {
+                                            const target = e.currentTarget;
+                                            if (!target.src.includes('avatar.jpg')) {
+                                                target.src = '/assets/images/avatar.jpg';
+                                            }
+                                        }}
+                                    />
+                                </div>
+
+                                {/* Golden Rating Badge - Restored Position */}
+                                {auth.user?.rate && auth.user.rate > 0 && (
+                                     <motion.div
+                                        initial={{ opacity: 0, scale: 0 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                                        style={{
+                                            position: 'absolute',
+                                            top: '0',
+                                            right: '0',
+                                            transform: 'translate(15%, -15%)',
+                                            zIndex: 25
+                                        }}
+                                     >
+                                         <div style={{
+                                            background: '#ffffff',
+                                            color: '#d97706',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                                             borderRadius: '50%',
-                                            padding: 0,
-                                            overflow: 'hidden'
-                                        }}>
-                                            <img
-                                                key={avatarKey}
-                                                src={avatarSrc}
-                                                alt="Profile"
-                                                style={{ 
-                                                    width: '100%', 
-                                                    height: '100%', 
-                                                    objectFit: 'cover',
-                                                    borderRadius: '50%',
-                                                    display: 'block'
-                                                }}
-                                                loading="lazy"
-                                                onError={(e) => {
-                                                    const target = e.currentTarget as HTMLImageElement;
-                                                    const attemptedUrl = target.src;
-                                                    
-                                                    console.log('🖼️ Image failed to load:', attemptedUrl);
-                                                    
-                                                    // Prevent infinite loop - if already on fallback, stop
-                                                    if (attemptedUrl.includes('/assets/images/avatar.jpg') || attemptedUrl.endsWith('avatar.jpg')) {
-                                                        target.onerror = null;
-                                                        return;
-                                                    }
-                                                    
-                                                    // Try alternative URLs in order
-                                                    let nextUrl: string | null = null;
-                                                    
-                                                    // Try photoURL
-                                                    if (auth.user?.photoURL && !attemptedUrl.includes(auth.user.photoURL)) {
-                                                        nextUrl = auth.user.photoURL.startsWith('http') 
-                                                            ? auth.user.photoURL 
-                                                            : `${API_BASE_URL.replace(/\/$/, '')}${auth.user.photoURL.startsWith('/') ? auth.user.photoURL : '/' + auth.user.photoURL}`;
-                                                    }
-                                                    // Try avatar.url
-                                                    else if (auth.user?.avatar?.url && !attemptedUrl.includes(auth.user.avatar.url)) {
-                                                        nextUrl = auth.user.avatar.url.startsWith('http') 
-                                                            ? auth.user.avatar.url 
-                                                            : `${API_BASE_URL.replace(/\/$/, '')}${auth.user.avatar.url.startsWith('/') ? auth.user.avatar.url : '/static/' + auth.user.avatar.url}`;
-                                                    }
-                                                    // Try avatar.filename
-                                                    else if (auth.user?.avatar?.filename && !attemptedUrl.includes(auth.user.avatar.filename)) {
-                                                        nextUrl = `${API_BASE_URL.replace(/\/$/, '')}/static/${auth.user.avatar.filename}`;
-                                                    }
-                                                    
-                                                    if (nextUrl) {
-                                                        console.log('🔄 Trying alternative URL:', nextUrl);
-                                                        target.onerror = null; // Reset error handler
-                                                        target.src = `${nextUrl}?v=${Date.now()}`;
-                                                        return;
-                                                    }
-                                                    
-                                                    // Final fallback to default avatar
-                                                    console.log('🔄 Using fallback avatar');
-                                                    target.onerror = null;
-                                                    target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${auth.user?.firstName || 'User'}`;
-                                                }}
-                                                onLoad={() => {
-                                                    console.log('✅ Avatar loaded successfully');
-                                                }}
-                                            />
-                                        </div>
-                                        {/* Golden Rating Badge - Outside the image */}
-                                        {auth.user?.rate && auth.user.rate > 0 && (
-                                            <motion.div
-                                                className="rating-badge-avatar"
-                                                initial={{ opacity: 0, scale: 0 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-                                                style={{
-                                                    position: 'absolute',
-                                                    top: '-8px',
-                                                    right: '-8px',
-                                                    background: 'transparent',
-                                                    borderRadius: '50%',
-                                                    width: 'auto',
-                                                    height: 'auto',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    zIndex: 10,
-                                                    cursor: 'default',
-                                                    padding: '4px'
-                                                }}
-                                            >
-                                                <motion.span
-                                                    animate={{
-                                                        scale: [1, 1.05, 1],
-                                                    }}
-                                                    transition={{
-                                                        duration: 2,
-                                                        repeat: Number.POSITIVE_INFINITY,
-                                                        ease: "easeInOut"
-                                                    }}
-                                                    style={{
-                                                        fontSize: '18px',
-                                                        fontWeight: '800',
-                                                        color: '#FFD700',
-                                                        textShadow: '0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3)',
-                                                        letterSpacing: '-0.5px',
-                                                        lineHeight: '1'
-                                                    }}
-                                                >
-                                                    +{Math.round(auth.user.rate)}
-                                                </motion.span>
-                                            </motion.div>
-                                        )}
-                                        <input
-                                            type="file"
-                                            ref={fileInputRef}
-                                            style={{ display: "none" }}
-                                            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                                            onChange={handleAvatarChange}
-                                        />
+                                            width: '32px',
+                                            height: '32px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            border: '2px solid #fff',
+                                            fontSize: '12px',
+                                            fontWeight: '700'
+                                         }}>
+                                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1 }}>
+                                                <i className="bi bi-star-fill" style={{ fontSize: '10px', marginBottom: '1px' }}></i>
+                                                <span>{Math.round(auth.user.rate * 10) / 10}</span>
+                                             </div>
+                                         </div>
+                                     </motion.div>
+                                )}
+                                
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    style={{ display: "none" }}
+                                    accept="image/*"
+                                    onChange={handleAvatarChange}
+                                />
+                                
+                                <motion.button
+                                    onClick={handleAvatarClick}
+                                    disabled={isUploadingAvatar}
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: '6px',
+                                        right: '6px',
+                                        width: '36px',
+                                        height: '36px',
+                                        borderRadius: '50%',
+                                        background: '#4f46e5',
+                                        border: '3px solid #ffffff',
+                                        color: '#ffffff',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                                    }}
+                                >
+                                    {isUploadingAvatar ? (
+                                        <motion.i 
+                                            className="bi bi-arrow-repeat" 
+                                            style={{ fontSize: '16px' }}
+                                            animate={{ rotate: 360 }}
+                                            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                                        ></motion.i>
+                                    ) : (
+                                        <i className="bi bi-camera-fill" style={{ fontSize: '16px' }}></i>
+                                    )}
+                                </motion.button>
+                            </div>
 
-                                        <motion.button
-                                            className="modern-avatar-btn"
-                                            onClick={handleAvatarClick}
-                                            disabled={isUploadingAvatar}
-                                            whileHover={{ scale: 1.1, rotate: 5 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            transition={{ type: "spring", stiffness: 400 }}
-                                            title={isUploadingAvatar ? "Uploading..." : "Change avatar"}
-                                        >
-                                            {isUploadingAvatar ? (
-                                                <motion.div
-                                                    className="loading-spinner"
-                                                    animate={{ rotate: 360 }}
-                                                    transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                                                >
-                                                    <i className="bi bi-arrow-clockwise"></i>
-                                                </motion.div>
-                                            ) : (
-                                                <i className="bi bi-camera-fill"></i>
-                                            )}
-                                        </motion.button>
-                                    </div>
-
-                                    <div className="avatar-info">
-                                        <motion.h3
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.5, delay: 1.1 }}
-                                        >
-                                            {auth.user?.firstName} {auth.user?.lastName || "User"}
-                                        </motion.h3>
-                                        <motion.p
-                                            className="user-email"
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.5, delay: 1.2 }}
-                                        >
-                                            {auth.user?.email}
-                                        </motion.p>
-
-                                        {/* Professional and Verified Badges */}
+                            {/* User Info */}
+                            <div className="user-info-content" style={{ paddingBottom: '0', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <h1 style={{ 
+                                    fontSize: '28px', 
+                                    fontWeight: '800', 
+                                    color: '#111827',
+                                    margin: 0,
+                                    lineHeight: 1.2,
+                                    textShadow: '0 1px 2px rgba(255,255,255,1)'
+                                }}>
+                                    {auth.user?.socialReason || `${auth.user?.firstName} ${auth.user?.lastName}`}
+                                </h1>
+                                
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                    {/* Badges */}
+                                    {auth.user?.type === "PROFESSIONAL" && (
                                         <motion.div
-                                            className="user-badges-container"
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.5, delay: 1.3 }}
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
                                             style={{
-                                                display: 'flex',
-                                                gap: '6px',
-                                                marginTop: '4px',
-                                                flexWrap: 'wrap',
-                                                justifyContent: 'center'
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                                padding: '4px 10px',
+                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                color: 'white',
+                                                borderRadius: '20px',
+                                                fontSize: '12px',
+                                                fontWeight: '600',
+                                                boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)'
                                             }}
                                         >
-                                            {/* Professional Badge */}
-                                            {auth.user?.type === "PROFESSIONAL" && (
-                                                <motion.div
-                                                    className="user-badge professional"
-                                                    initial={{ opacity: 0, scale: 0.8 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    transition={{ duration: 0.3, delay: 1.4 }}
-                                                    style={{
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        gap: '3px',
-                                                        padding: '3px 6px',
-                                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                        color: 'white',
-                                                        borderRadius: '10px',
-                                                        fontSize: '11px',
-                                                        fontWeight: '600',
-                                                        boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)',
-                                                        border: '1px solid rgba(255, 255, 255, 0.2)'
-                                                    }}
-                                                >
-                                                    <i className="bi bi-star-fill" style={{ fontSize: '9px' }}></i>
-                                                    <span>PRO</span>
-                                                </motion.div>
-                                            )}
-
-                                            {/* Verified Badge */}
-                                            {(auth.user as any)?.isVerified && (
-                                                <motion.div
-                                                    className="user-badge verified"
-                                                    initial={{ opacity: 0, scale: 0.8 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    transition={{ duration: 0.3, delay: 1.5 }}
-                                                    style={{
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        gap: '3px',
-                                                        padding: '3px 6px',
-                                                        background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-                                                        color: 'white',
-                                                        borderRadius: '10px',
-                                                        fontSize: '11px',
-                                                        fontWeight: '600',
-                                                        boxShadow: '0 2px 8px rgba(17, 153, 142, 0.3)',
-                                                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                                                        marginRight: '6px'
-                                                    }}
-                                                >
-                                                    <i className="bi bi-check-circle-fill" style={{ fontSize: '9px' }}></i>
-                                                    <span>VERIFIED</span>
-                                                </motion.div>
-                                            )}
-                                            {/* Certified Badge */}
-                                            {(auth.user as any)?.isCertified && (
-                                                <motion.div
-                                                    className="user-badge certified"
-                                                    initial={{ opacity: 0, scale: 0.8 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    transition={{ duration: 0.3, delay: 1.6 }}
-                                                    style={{
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        gap: '3px',
-                                                        padding: '3px 6px',
-                                                        background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
-                                                        color: 'white',
-                                                        borderRadius: '10px',
-                                                        fontSize: '11px',
-                                                        fontWeight: '600',
-                                                        boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
-                                                        border: '1px solid rgba(255, 255, 255, 0.2)'
-                                                    }}
-                                                >
-                                                    <i className="bi bi-award-fill" style={{ fontSize: '9px' }}></i>
-                                                    <span>CERTIFIED</span>
-                                                </motion.div>
-                                            )}
+                                            <i className="bi bi-star-fill" style={{ fontSize: '10px' }}></i>
+                                            <span>PRO</span>
                                         </motion.div>
+                                    )}
+                                    
+                                    {(auth.user as any)?.isVerified && (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                                padding: '4px 10px',
+                                                background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                                                color: 'white',
+                                                borderRadius: '20px',
+                                                fontSize: '12px',
+                                                fontWeight: '600',
+                                                boxShadow: '0 2px 8px rgba(17, 153, 142, 0.3)'
+                                            }}
+                                        >
+                                            <i className="bi bi-check-circle-fill" style={{ fontSize: '10px' }}></i>
+                                            <span>VERIFIED</span>
+                                        </motion.div>
+                                    )}
 
-                                        {/* User Type Badge */}
-                                        {/* {identityStatus === "WAITING" && (
-                                            <motion.div
-                                                className="user-type-badge waiting"
-                                                initial={{ opacity: 0, scale: 0.8 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                transition={{ duration: 0.5, type: "spring", delay: 1.4 }}
-                                            >
-                                                <i className="bi bi-clock"></i>
-                                                <span>Under review</span>
-                                            </motion.div>
-                                        )} */}
-                                    </div>
+                                    
+
                                 </div>
-                            </motion.div>
-                        </motion.div>
+                            </div>
+                        </div>
                     </motion.div>
 
                     {/* Main Content Grid */}
@@ -1692,22 +1745,117 @@ function ProfilePage() {
                                                             />
                                                         </motion.div>
 
+                                                        {/* Wilaya Field - Using Select from Constants */}
                                                         <motion.div
                                                             className="modern-form-field"
                                                             initial={{ opacity: 0, x: -20 }}
                                                             animate={{ opacity: 1, x: 0 }}
                                                             transition={{ duration: 0.5, delay: 0.8 }}
                                                         >
-                                                            <label htmlFor="email">{t("profile.email") || "Email"}</label>
+                                                            <label htmlFor="wilaya">{t("profile.wilaya") || "Wilaya"}</label>
+                                                            <select
+                                                                id="wilaya"
+                                                                name="wilaya"
+                                                                value={formData.wilaya}
+                                                                onChange={(e) => {
+                                                                    const val = e.target.value;
+                                                                    setFormData(prev => ({ ...prev, wilaya: val }));
+                                                                }}
+                                                                disabled={!isEditing}
+                                                                style={{
+                                                                    width: '100%',
+                                                                    padding: '12px 16px',
+                                                                    borderRadius: '12px',
+                                                                    border: '1px solid #e5e7eb',
+                                                                    backgroundColor: isEditing ? '#ffffff' : '#f9fafb',
+                                                                    color: '#1f2937',
+                                                                    fontSize: '14px',
+                                                                    outline: 'none',
+                                                                    transition: 'all 0.2s',
+                                                                    cursor: isEditing ? 'pointer' : 'default',
+                                                                    height: '48px'
+                                                                }}
+                                                            >
+                                                                <option value="">Select Wilaya</option>
+                                                                {WILAYAS.map((w, index) => (
+                                                                    <option key={index} value={w}>{w}</option>
+                                                                ))}
+                                                            </select>
+                                                        </motion.div>
+
+                                                        {/* Social Reason */}
+                                                        <motion.div
+                                                            className="modern-form-field"
+                                                            initial={{ opacity: 0, x: 20 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            transition={{ duration: 0.5, delay: 0.85 }}
+                                                        >
+                                                            <label htmlFor="socialReason">{t("profile.socialReason") || "Social Reason / Enterprise"}</label>
                                                             <input
-                                                                type="email"
-                                                                id="email"
-                                                                name="email"
-                                                                value={formData.email}
+                                                                type="text"
+                                                                id="socialReason"
+                                                                name="socialReason"
+                                                                value={formData.socialReason}
                                                                 onChange={handleInputChange}
                                                                 disabled={!isEditing}
-                                                                required
-                                                                placeholder="Enter your email address"
+                                                                placeholder="Enter enterprise name"
+                                                            />
+                                                        </motion.div>
+
+                                                        {/* Job Title */}
+                                                        <motion.div
+                                                            className="modern-form-field"
+                                                            initial={{ opacity: 0, x: -20 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            transition={{ duration: 0.5, delay: 0.9 }}
+                                                        >
+                                                            <label htmlFor="jobTitle">{t("profile.jobTitle") || "Job Title"}</label>
+                                                            <input
+                                                                type="text"
+                                                                id="jobTitle"
+                                                                name="jobTitle"
+                                                                value={formData.jobTitle}
+                                                                onChange={handleInputChange}
+                                                                disabled={!isEditing}
+                                                                placeholder="Enter job title"
+                                                            />
+                                                        </motion.div>
+
+                                                        {/* Secteur */}
+                                                        <motion.div
+                                                            className="modern-form-field"
+                                                            initial={{ opacity: 0, x: 20 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            transition={{ duration: 0.5, delay: 0.95 }}
+                                                        >
+                                                            <label htmlFor="secteur">{t("profile.secteur") || "Sector"}</label>
+                                                            <input
+                                                                type="text"
+                                                                id="secteur"
+                                                                name="secteur"
+                                                                value={formData.secteur}
+                                                                onChange={handleInputChange}
+                                                                disabled={!isEditing}
+                                                                placeholder="Enter sector"
+                                                            />
+                                                        </motion.div>
+
+                                                        {/* Entity */}
+                                                        <motion.div
+                                                            className="modern-form-field"
+                                                            initial={{ opacity: 0, x: -20 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            transition={{ duration: 0.5, delay: 0.98 }}
+                                                        >
+                                                            <label htmlFor="entity">{t("profile.entity") || "Entity"}</label>
+                                                            <input
+                                                                type="text"
+                                                                id="entity"
+                                                                name="entity"
+                                                                value={formData.entity}
+                                                                onChange={handleInputChange}
+                                                                disabled={!isEditing}
+                                                                placeholder="Enter entity"
                                                             />
                                                         </motion.div>
 

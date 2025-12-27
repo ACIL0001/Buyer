@@ -1176,7 +1176,7 @@ const MultipurposeTenderSidebar = () => {
                             <div className="enhanced-filter-wrapper" style={{
                                 borderRadius: '25px',
                                 boxShadow: '0 15px 40px rgba(0, 0, 0, 0.08)',
-                                padding: '40px',
+                                padding: 'clamp(20px, 4vw, 40px)',
                                 background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
                                 marginBottom: '40px',
                                 border: '1px solid rgba(0, 99, 177, 0.08)',
@@ -1243,7 +1243,7 @@ const MultipurposeTenderSidebar = () => {
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            gap: 'clamp(16px, 3vw, 24px)',
+                                            gap: 'clamp(4px, 2vw, 16px)',
                                             flexWrap: 'nowrap',
                                             marginBottom: '30px',
                                         }}>
@@ -1256,9 +1256,9 @@ const MultipurposeTenderSidebar = () => {
                                                     handleBidTypeChange(BID_TYPE.PRODUCT);
                                                 }}
                                                 style={{
-                                                    padding: '12px 28px',
+                                                    padding: 'clamp(8px, 1.5vw, 12px) clamp(12px, 2vw, 28px)',
                                                     borderRadius: '35px',
-                                                    fontSize: 'clamp(0.85rem, 1.4vw, 1rem)',
+                                                    fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
                                                     fontWeight: '700',
                                                     cursor: 'pointer',
                                                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1270,7 +1270,7 @@ const MultipurposeTenderSidebar = () => {
                                                         : '0 4px 16px rgba(0, 99, 177, 0.25)',
                                                     textTransform: 'uppercase',
                                                     letterSpacing: '0.6px',
-                                                    minWidth: '110px',
+                                                    minWidth: 'auto',
                                                     position: 'relative',
                                                     zIndex: 10,
                                                     opacity: selectedBidType === BID_TYPE.PRODUCT ? 1 : 0.8,
@@ -1280,7 +1280,7 @@ const MultipurposeTenderSidebar = () => {
                                             </button>
                                             
                                             <h2 style={{
-                                                fontSize: 'clamp(1.5rem, 3vw, 2.2rem)',
+                                                fontSize: 'clamp(1rem, 2.5vw, 2.2rem)',
                                                 fontWeight: '900',
                                                 background: 'linear-gradient(135deg, #1e293b 0%, #475569 30%, #64748b 50%, #475569 70%, #1e293b 100%)',
                                                 backgroundSize: '300% auto',
@@ -1290,7 +1290,7 @@ const MultipurposeTenderSidebar = () => {
                                                 textAlign: 'center',
                                                 margin: 0,
                                                 letterSpacing: '-0.5px',
-                                                padding: '0 clamp(24px, 5vw, 40px)',
+                                                padding: '0 clamp(8px, 1.5vw, 40px)',
                                             }}>
                                                 {t('home.categories')}
                                             </h2>
@@ -1304,9 +1304,9 @@ const MultipurposeTenderSidebar = () => {
                                                     handleBidTypeChange(BID_TYPE.SERVICE);
                                                 }}
                                                 style={{
-                                                    padding: '12px 28px',
+                                                    padding: 'clamp(8px, 1.5vw, 12px) clamp(12px, 2vw, 28px)',
                                                     borderRadius: '35px',
-                                                    fontSize: 'clamp(0.85rem, 1.4vw, 1rem)',
+                                                    fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
                                                     fontWeight: '700',
                                                     cursor: 'pointer',
                                                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1318,7 +1318,7 @@ const MultipurposeTenderSidebar = () => {
                                                         : '0 4px 16px rgba(16, 185, 129, 0.25)',
                                                     textTransform: 'uppercase',
                                                     letterSpacing: '0.6px',
-                                                    minWidth: '110px',
+                                                    minWidth: 'auto',
                                                     position: 'relative',
                                                     zIndex: 10,
                                                     opacity: selectedBidType === BID_TYPE.SERVICE ? 1 : 0.8,
@@ -1563,7 +1563,7 @@ const MultipurposeTenderSidebar = () => {
                                         return (
                                             <div
                                                 key={tender._id}
-                                                className={`col-lg-${activeColumn === 2 ? '6' : '4'} col-md-6 item`}
+                                                className={`col-lg-${activeColumn === 2 ? '6' : '4'} col-md-6 col-6 item`}
                                             >
                                                 <div
                                                     className="modern-tender-card tender-card"
@@ -1604,7 +1604,7 @@ const MultipurposeTenderSidebar = () => {
                                                     <div
                                                         className="tender-image"
                                                         style={{
-                                                            height: '240px',
+                                                            height: 'clamp(140px, 30vw, 240px)',
                                                             position: 'relative',
                                                             overflow: 'hidden',
                                                         }}
@@ -1677,15 +1677,15 @@ const MultipurposeTenderSidebar = () => {
                                                         <div
                                                             style={{
                                                                 position: 'absolute',
-                                                                top: '15px',
-                                                                left: '15px',
+                                                                top: '8px',
+                                                                left: '8px',
                                                                 background: 'rgba(255, 255, 255, 0.95)',
                                                                 backdropFilter: 'blur(10px)',
                                                                 color: '#333',
-                                                                padding: '8px 12px',
-                                                                borderRadius: '20px',
-                                                                fontSize: '12px',
-                                                                fontWeight: '600',
+                                                                padding: '4px 8px',
+                                                                borderRadius: '12px',
+                                                                fontSize: '10px',
+                                                                fontWeight: '700',
                                                                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
                                                                 zIndex: 2,
                                                                 border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -1698,91 +1698,53 @@ const MultipurposeTenderSidebar = () => {
                                                         <div
                                                             className="countdown-overlay"
                                                             style={{
-                                                                position: 'absolute',
-                                                                bottom: '0',
-                                                                left: '0',
-                                                                right: '0',
-                                                                background: hasTenderEnded ? 'rgba(0, 0, 0, 0.6)' : 'linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4), transparent)',
-                                                                padding: '20px 15px 15px',
-                                                                color: 'white',
-                                                            }}
+                                                                    position: 'absolute',
+                                                                    bottom: '8px',
+                                                                    left: '50%',
+                                                                    transform: 'translateX(-50%)',
+                                                                    background: 'rgba(255, 255, 255, 0.95)',
+                                                                    backdropFilter: 'blur(4px)',
+                                                                    padding: '4px 8px',
+                                                                    borderRadius: '12px',
+                                                                    color: '#d32f2f',
+                                                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                                    border: '1px solid rgba(0, 0, 0, 0.05)',
+                                                                    zIndex: 2,
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '4px',
+                                                                    fontSize: '10px',
+                                                                    fontWeight: '700',
+                                                                }}
                                                         >
-                                                            <div style={{
-                                                                display: 'flex',
-                                                                justifyContent: 'center',
-                                                                alignItems: 'center',
-                                                                gap: '8px',
-                                                                fontSize: '14px',
-                                                                fontWeight: '600',
-                                                            }}>
-                                                                <div style={{
-                                                                    background: hasTenderEnded ? 'rgba(100, 100, 100, 0.7)' : 'rgba(255, 255, 255, 0.2)',
-                                                                    backdropFilter: 'blur(10px)',
-                                                                    borderRadius: '8px',
-                                                                    padding: '4px 8px',
-                                                                    minWidth: '35px',
-                                                                    textAlign: 'center',
-                                                                }}>
-                                                                    {timer.days || "00"}
-                                                                    <div style={{ fontSize: '10px', opacity: 0.8 }}>j</div>
-                                                                </div>
-                                                                <span style={{ opacity: 0.8 }}>:</span>
-                                                                <div style={{
-                                                                    background: hasTenderEnded ? 'rgba(100, 100, 100, 0.7)' : 'rgba(255, 255, 255, 0.2)',
-                                                                    backdropFilter: 'blur(10px)',
-                                                                    borderRadius: '8px',
-                                                                    padding: '4px 8px',
-                                                                    minWidth: '35px',
-                                                                    textAlign: 'center',
-                                                                }}>
-                                                                    {timer.hours || "00"}
-                                                                    <div style={{ fontSize: '10px', opacity: 0.8 }}>h</div>
-                                                                </div>
-                                                                <span style={{ opacity: 0.8 }}>:</span>
-                                                                <div style={{
-                                                                    background: hasTenderEnded ? 'rgba(100, 100, 100, 0.7)' : 'rgba(255, 255, 255, 0.2)',
-                                                                    backdropFilter: 'blur(10px)',
-                                                                    borderRadius: '8px',
-                                                                    padding: '4px 8px',
-                                                                    minWidth: '35px',
-                                                                    textAlign: 'center',
-                                                                }}>
-                                                                    {timer.minutes || "00"}
-                                                                    <div style={{ fontSize: '10px', opacity: 0.8 }}>m</div>
-                                                                </div>
-                                                                <span style={{ opacity: 0.8 }}>:</span>
-                                                                <div style={{
-                                                                    background: hasTenderEnded ? 'rgba(100, 100, 100, 0.7)' : 'rgba(255, 255, 255, 0.2)',
-                                                                    backdropFilter: 'blur(10px)',
-                                                                    borderRadius: '8px',
-                                                                    padding: '4px 8px',
-                                                                    minWidth: '35px',
-                                                                    textAlign: 'center',
-                                                                }}>
-                                                                    {timer.seconds || "00"}
-                                                                    <div style={{ fontSize: '10px', opacity: 0.8 }}>s</div>
-                                                                </div>
-                                                            </div>
+                                                            <span>{timer.days || "00"}j</span>:
+                                                            <span>{timer.hours || "00"}h</span>:
+                                                            <span>{timer.minutes || "00"}m</span>:
+                                                            <span>{timer.seconds || "00"}s</span>
                                                         </div>
                                                     </div>
 
                                                     {/* Tender Content */}
                                                     <div style={{
-                                                        padding: '25px',
+                                                        padding: 'clamp(10px, 2vw, 25px)',
                                                         flexGrow: 1,
                                                         display: 'flex',
                                                         flexDirection: 'column',
                                                     }}>
                                                         {/* Title */}
                                                         <h3 style={{
-                                                            fontSize: '18px',
+                                                            fontSize: 'clamp(13px, 3vw, 18px)',
                                                             fontWeight: '600',
                                                             color: hasTenderEnded ? '#666' : '#333',
-                                                            marginBottom: '12px',
+                                                            marginBottom: '8px',
                                                             lineHeight: '1.3',
+                                                            display: '-webkit-box',
+                                                            WebkitLineClamp: '2',
+                                                            WebkitBoxOrient: 'vertical',
                                                             overflow: 'hidden',
                                                             textOverflow: 'ellipsis',
-                                                            whiteSpace: 'nowrap',
+                                                            whiteSpace: 'normal',
+                                                            height: '2.6em', // Enforce 2 lines visually
                                                         }}>
                                                             <Link
                                                                 href={hasTenderEnded ? "#" : `/tender-details/${tender._id}`}
@@ -1806,30 +1768,35 @@ const MultipurposeTenderSidebar = () => {
                                                         <div style={{
                                                             display: 'grid',
                                                             gridTemplateColumns: tender?.tenderType === 'SERVICE' ? '1fr' : '1fr 1fr',
-                                                            gap: '6px',
-                                                            marginBottom: '8px',
+                                                            gap: '4px',
+                                                            marginBottom: '6px',
                                                         }}>
                                                             {tender?.tenderType !== 'SERVICE' && (
                                                                 <div style={{
                                                                     background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                                                    borderRadius: '8px',
-                                                                    padding: '4px 8px',
+                                                                    borderRadius: '6px',
+                                                                    padding: '4px 6px',
                                                                     border: '1px solid #e9ecef',
                                                                     borderLeft: '3px solid #27F5CC',
                                                                 }}>
                                                                     <p style={{
-                                                                        fontSize: '10px',
+                                                                        fontSize: '9px', // Reduced for mobile
                                                                         color: hasTenderEnded ? '#888' : '#666',
                                                                         margin: '0 0 2px 0',
                                                                         fontWeight: '600',
+                                                                        whiteSpace: 'nowrap',
+                                                                        overflow: 'hidden',
+                                                                        textOverflow: 'ellipsis',
                                                                     }}>
                                                                         📦 {t('common.quantity')}
                                                                     </p>
                                                                     <p style={{
-                                                                        fontSize: '12px',
+                                                                        fontSize: '11px', // Reduced
                                                                         color: hasTenderEnded ? '#888' : '#333',
                                                                         margin: 0,
                                                                         fontWeight: '500',
+                                                                        overflow: 'hidden',
+                                                                        textOverflow: 'ellipsis',
                                                                     }}>
                                                                         {tender.quantity || t('common.notSpecified')}
                                                                     </p>
@@ -1838,21 +1805,24 @@ const MultipurposeTenderSidebar = () => {
 
                                                             <div style={{
                                                                 background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                                                borderRadius: '8px',
-                                                                padding: '4px 8px',
+                                                                borderRadius: '6px',
+                                                                padding: '4px 6px',
                                                                 border: '1px solid #e9ecef',
                                                                 borderLeft: '3px solid #27F5CC',
                                                             }}>
                                                                 <p style={{
-                                                                    fontSize: '10px',
+                                                                    fontSize: '9px',
                                                                     color: hasTenderEnded ? '#888' : '#666',
                                                                     margin: '0 0 2px 0',
                                                                     fontWeight: '600',
+                                                                    whiteSpace: 'nowrap',
+                                                                    overflow: 'hidden',
+                                                                    textOverflow: 'ellipsis',
                                                                 }}>
                                                                     📍 {t('common.location')}
                                                                 </p>
                                                                 <p style={{
-                                                                    fontSize: '12px',
+                                                                    fontSize: '11px',
                                                                     color: hasTenderEnded ? '#888' : '#333',
                                                                     margin: 0,
                                                                     fontWeight: '500',
@@ -1910,6 +1880,7 @@ const MultipurposeTenderSidebar = () => {
                                                                 display: 'flex',
                                                                 alignItems: 'center',
                                                                 justifyContent: 'center',
+                                                                flexWrap: 'wrap',
                                                                 gap: '4px',
                                                             }}>
                                                                 <div style={{

@@ -10,6 +10,7 @@ import { authStore } from '@/contexts/authStore';
 import { UserAPI } from '@/services/user';
 import { IdentityAPI } from '@/services/identity';
 import app from '@/config';
+import { WILAYAS } from '@/constants/wilayas';
 import './style.css';
 
 interface ProfileFormData {
@@ -18,6 +19,8 @@ interface ProfileFormData {
     email: string;
     phone: string;
     rate: number;
+    wilaya: string;
+    secteur: string;
 }
 
 interface AvatarData {
@@ -48,6 +51,8 @@ export default function ProfilePage() {
         email: '',
         phone: '',
         rate: 0,
+        wilaya: '',
+        secteur: '',
     });
 
     const [passwordData, setPasswordData] = useState({
@@ -136,6 +141,8 @@ export default function ProfilePage() {
                 email: auth.user.email || '',
                 phone: auth.user.phone || '',
                 rate: auth.user.rate || 0,
+                wilaya: auth.user.wilaya || '',
+                secteur: auth.user.secteur || '',
             });
             
             if (auth.user.avatar || (auth.user as any).photoURL) {
@@ -146,12 +153,11 @@ export default function ProfilePage() {
 
     const getAvatarUrl = (avatar: AvatarData | string): string => {
         if (typeof avatar === 'string') {
-            const baseUrl = API_BASE_URL.replace(/\/$/, '');
             if (avatar.startsWith('http')) {
-                return avatar.replace('http://localhost:3000', baseUrl);
+                return avatar.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
             } else {
                 const cleanPath = avatar.startsWith('/') ? avatar.substring(1) : avatar;
-                return `${baseUrl}/static/${cleanPath}`;
+                return `${API_BASE_URL}/static/${cleanPath}`;
             }
         }
 
@@ -160,12 +166,11 @@ export default function ProfilePage() {
         }
 
         if (avatar?.url) {
-            const baseUrl = API_BASE_URL.replace(/\/$/, '');
             if (avatar.url.startsWith('http')) {
-                return avatar.url.replace('http://localhost:3000', baseUrl);
+                return avatar.url.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
             } else {
                 const cleanUrl = avatar.url.startsWith('/') ? avatar.url.substring(1) : avatar.url;
-                return `${baseUrl}/static/${cleanUrl}`;
+                return `${API_BASE_URL}/static/${cleanUrl}`;
             }
         }
 
@@ -173,10 +178,10 @@ export default function ProfilePage() {
             return `${API_BASE_URL}/static/${avatar.filename}`;
         }
 
-        return `https://api.dicebear.com/7.x/avataaars/svg?seed=${auth.user?.firstName || 'User'}`;
+        return '/assets/images/avatar.jpg';
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
@@ -212,6 +217,8 @@ export default function ProfilePage() {
                         email: updatedUser.email || currentUser?.email || '',
                         type: updatedUser.accountType || updatedUser.type || currentUser?.type || 'PROFESSIONAL',
                         phone: updatedUser.phone || formData.phone || currentUser?.phone,
+                        wilaya: updatedUser.wilaya || formData.wilaya || currentUser?.wilaya,
+                        secteur: updatedUser.secteur || formData.secteur || currentUser?.secteur,
                         avatar: updatedUser.avatar || currentUser?.avatar,
                         rate: currentUser?.rate || 1,
                         isPhoneVerified: (updatedUser as any)?.isPhoneVerified ?? (currentUser as any)?.isPhoneVerified,
@@ -463,18 +470,16 @@ export default function ProfilePage() {
         }
         
         if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-            const baseUrl = API_BASE_URL.replace(/\/$/, '');
             let normalized = cleanUrl
-                .replace(/http:\/\/localhost:3000/g, baseUrl)
-                .replace(/https:\/\/api\.mazad\.click/g, baseUrl)
-                .replace(/http:\/\/localhost\//g, baseUrl + '/')
-                .replace(/http:\/\/localhost$/g, baseUrl);
+                .replace(/http:\/\/localhost:3000/g, API_BASE_URL.replace(/\/$/, ''))
+                .replace(/http:\/\/localhost\//g, API_BASE_URL.replace(/\/$/, '') + '/')
+                .replace(/http:\/\/localhost$/g, API_BASE_URL.replace(/\/$/, ''));
             
             if (normalized.startsWith('http://localhost')) {
                 try {
                     const urlObj = new URL(cleanUrl);
                     const pathWithQuery = urlObj.pathname + (urlObj.search || '');
-                    normalized = `${baseUrl}${pathWithQuery}`;
+                    normalized = `${API_BASE_URL.replace(/\/$/, '')}${pathWithQuery}`;
                 } catch (e) {
                     console.warn('Failed to parse URL:', cleanUrl);
                 }
@@ -505,7 +510,7 @@ export default function ProfilePage() {
     };
 
     const getAvatarSrc = () => {
-        if (!auth.user) return `https://api.dicebear.com/7.x/avataaars/svg?seed=User`;
+        if (!auth.user) return '/assets/images/avatar.jpg';
 
         if ((auth.user as any).photoURL && (auth.user as any).photoURL.trim() !== '') {
             const cleanUrl = normalizeUrl((auth.user as any).photoURL);
@@ -539,7 +544,7 @@ export default function ProfilePage() {
             }
         }
 
-        return `https://api.dicebear.com/7.x/avataaars/svg?seed=${auth.user?.firstName || 'User'}`;
+        return '/assets/images/avatar.jpg';
     };
 
     const avatarSrc = getAvatarSrc();
@@ -1214,6 +1219,35 @@ export default function ProfilePage() {
                                                             id="phone"
                                                             name="phone"
                                                             value={formData.phone}
+                                                            onChange={handleInputChange}
+                                                            disabled={!isEditing}
+                                                        />
+                                                    </div>
+
+                                                    <div className="modern-form-field">
+                                                        <label htmlFor="wilaya">Wilaya</label>
+                                                        <select
+                                                            id="wilaya"
+                                                            name="wilaya"
+                                                            value={formData.wilaya}
+                                                            onChange={handleInputChange}
+                                                            disabled={!isEditing}
+                                                            className="modern-select"
+                                                        >
+                                                            <option value="">Sélectionner une wilaya</option>
+                                                            {WILAYAS.map((w) => (
+                                                                <option key={w} value={w}>{w}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="modern-form-field">
+                                                        <label htmlFor="secteur">Secteur</label>
+                                                        <input
+                                                            type="text"
+                                                            id="secteur"
+                                                            name="secteur"
+                                                            value={formData.secteur}
                                                             onChange={handleInputChange}
                                                             disabled={!isEditing}
                                                         />

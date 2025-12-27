@@ -485,7 +485,7 @@ function DirectSaleDetailContent() {
                               <span>Anonyme</span>
                             ) : (
                               <Link
-                                href={`/users/${directSale.owner._id || directSale.owner}`}
+                                href={`/profile/${directSale.owner._id || directSale.owner}`}
                                 style={{
                                   color: '#0063b1',
                                   textDecoration: 'none',

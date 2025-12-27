@@ -512,7 +512,7 @@ const MultipurposeDetails1 = () => {
     // Check if user is logged in
     if (!isLogged || !auth.tokens) {
       toast.error("Veuillez vous connecter pour placer une enchère");
-      router.push(`${getSellerUrl()}login`);
+      router.push('/auth/login');
       return;
     }
 
@@ -722,7 +722,7 @@ const MultipurposeDetails1 = () => {
       // Check if user is logged in
       if (!isLogged || !auth.tokens) {
         toast.error("Veuillez vous connecter pour placer une enchère");
-      router.push(`${getSellerUrl()}login`);
+      router.push('/auth/login');
         return;
       }
 
@@ -859,7 +859,7 @@ const MultipurposeDetails1 = () => {
 
     if (!isLogged || !auth.tokens) {
       toast.error("Veuillez vous connecter pour soumettre un avis");
-      router.push(`${getSellerUrl()}login`);
+      router.push("/auth/login");
       return;
     }
 
@@ -1688,7 +1688,7 @@ const MultipurposeDetails1 = () => {
                                     <span>{t('common.anonymous') || 'Anonyme'}</span>
                                   ) : (
                                     <Link
-                                      href={`/users/${safeOwner._id || safeOwner}`}
+                                      href={`/profile/${safeOwner._id || safeOwner}`}
                                       style={{
                                         color: '#0063b1',
                                         textDecoration: 'none',

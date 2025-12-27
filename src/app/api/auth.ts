@@ -27,16 +27,16 @@ export const AuthAPI = {
   signin: async (credentials: Credentials, returnFullResponse: boolean = true): Promise<AuthResponse> => {
     try {
       console.log('🔐 AuthAPI.signin called with:', { login: credentials.login, hasPassword: !!credentials.password });
-      
+
       const res = await requests.post('auth/signin', credentials, {}, returnFullResponse);
       console.log('🔐 Full axios response:', res);
       console.log('🔐 Response data:', res.data);
-      
-      
+
+
       // Since returnFullResponse = true, we get the full axios response
       // The actual data is in res.data
       const responseData = res.data;
-      
+
       console.log('🔐 AuthAPI.signin response received:', {
         hasUser: !!responseData?.user,
         hasSession: !!responseData?.session,
@@ -87,24 +87,29 @@ export const AuthAPI = {
     }
   },
 
-  signup: async (user: User): Promise<ApiResponse<User>> => {
+  signup: async (user: User | FormData): Promise<ApiResponse<User>> => {
     try {
-      console.log('🔐 AuthAPI.signup called with:', { 
-        firstName: user.firstName, 
-        lastName: user.lastName,
-        email: user.email,
-        phone: user.phone,
-        type: user.type 
-      });
-      
-      const res = await requests.post('auth/signup', user);
+      console.log('🔐 AuthAPI.signup called');
+
+      let res;
+      if (user instanceof FormData) {
+        res = await requests.postFormData('auth/signup', user);
+      } else {
+        console.log('🔐 Signup with JSON data:', {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          type: user.type
+        });
+        res = await requests.post('auth/signup', user);
+      }
       console.log('🔐 AuthAPI.signup response:', {
         success: 'success' in res ? res.success : false,
         hasUser: !!('data' in res ? res.data : res),
         requiresPhoneVerification: 'requiresPhoneVerification' in res ? res.requiresPhoneVerification : false,
         message: 'message' in res ? res.message : 'Response received'
       });
-      
+
       // Ensure we return the correct type
       if ('success' in res) {
         return res as ApiResponse<User>;
@@ -125,14 +130,14 @@ export const AuthAPI = {
   refresh: async (refreshToken: string): Promise<AuthResponse> => {
     try {
       console.log('🔄 AuthAPI.refresh called with token:', refreshToken ? 'present' : 'missing');
-      
+
       // Use the correct field name expected by backend
       const res = await requests.post('auth/refresh', { refresh_token: refreshToken });
       console.log('🔄 AuthAPI.refresh response:', {
         success: 'success' in res ? res.success : false,
         hasTokens: !!('accessToken' in res ? res.accessToken : ('access_token' in res ? res.access_token : undefined))
       });
-      
+
       // Normalize response format
       const normalizedResponse: AuthResponse = {
         user: 'user' in res ? res.user : undefined,

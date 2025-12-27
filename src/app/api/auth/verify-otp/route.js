@@ -16,7 +16,7 @@ export async function POST(request) {
 
     // Call your backend API to verify OTP
     const backendUrl = app.baseURL;
-    const response = await fetch(`${backendUrl}/otp/confirm-phone`, {
+    const response = await fetch(`${backendUrl}otp/confirm-phone`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

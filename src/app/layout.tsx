@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, ReactNode } from "react";
+import { useEffect, ReactNode, useState } from "react";
 import Script from "next/script";
 import "../../public/assets/css/bootstrap-icons.css";
 import "../../public/assets/css/boxicons.min.css";
@@ -32,6 +32,7 @@ import TokenHandler from "@/app/components/TokenHandler";
 import MobileOptimizer from "@/components/common/MobileOptimizer";
 import { usePathname } from "next/navigation";
 import Head from "./head";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function ScrollManager() {
   const pathname = usePathname();
@@ -69,6 +70,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   
   // Custom hook for WOW.js animations
   useWow();
+
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: Infinity,
+      },
+    },
+  }));
 
   // useEffect for initializing authentication state
   useEffect(() => {
@@ -121,28 +130,30 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             alt=""
           />
         </noscript>
-        <MobileOptimizer>
-          <I18nProvider>
-            <LanguageProvider>
-              <AxiosInterceptor>
-                <SocketProvider>
-                  <SnackbarProvider>
-                    <TokenHandler>
-                      <GlobalLoader />
-                      <BidChecker />
-                      <WinnerAnnouncement />
-                      <ScrollManager />
-                      {children}
-                    </TokenHandler>
-                    <ScrollTopBtn />
-                    <FloatingAdminChat />
-                    <FloatingLanguageSwitcher />
-                  </SnackbarProvider>
-                </SocketProvider>
-              </AxiosInterceptor>
-            </LanguageProvider>
-          </I18nProvider>
-        </MobileOptimizer>
+        <QueryClientProvider client={queryClient}>
+          <MobileOptimizer>
+            <I18nProvider>
+              <LanguageProvider>
+                <AxiosInterceptor>
+                  <SocketProvider>
+                    <SnackbarProvider>
+                      <TokenHandler>
+                        <GlobalLoader />
+                        <BidChecker />
+                        <WinnerAnnouncement />
+                        <ScrollManager />
+                        {children}
+                      </TokenHandler>
+                      <ScrollTopBtn />
+                      <FloatingAdminChat />
+                      <FloatingLanguageSwitcher />
+                    </SnackbarProvider>
+                  </SocketProvider>
+                </AxiosInterceptor>
+              </LanguageProvider>
+            </I18nProvider>
+          </MobileOptimizer>
+        </QueryClientProvider>
       </body>
     </html>
   );

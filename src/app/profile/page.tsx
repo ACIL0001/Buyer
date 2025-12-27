@@ -1075,46 +1075,42 @@ function ProfilePage() {
     const normalizeUrl = React.useCallback((url: string): string => {
         if (!url || url.trim() === '') return '';
         
-        // Clean up the URL first - remove trailing slashes and whitespace
         const cleanUrl = url.trim();
-        
-        // If already a full HTTP/HTTPS URL, normalize it
-        if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-            // Replace localhost:3000 or localhost (without port) with API_BASE_URL
-            let normalized = cleanUrl
-                // .replace(/http:\/\/localhost:3000/g, API_BASE_URL.replace(/\/$/, ''))
-                .replace(DEV_SERVER_PATTERN, API_BASE_URL.replace(/\/$/, ''))
-                .replace(/http:\/\/localhost\//g, API_BASE_URL.replace(/\/$/, '') + '/')
-                .replace(/http:\/\/localhost$/g, API_BASE_URL.replace(/\/$/, ''));
-            
-            // If it still doesn't have the correct base, try to fix it
-            if (normalized.startsWith('http://localhost') && !normalized.includes(API_BASE_URL.replace(/^https?:\/\//, '').replace(/\/$/, ''))) {
-                try {
-                    // Extract the path part
+        const apiBase = API_BASE_URL.replace(/\/$/, '');
+
+        // Check if URL is from localhost (various ports)
+        if (cleanUrl.match(/http:\/\/localhost:\d+/) || cleanUrl.startsWith('http://localhost')) {
+            // Extract the path from the localhost URL
+            try {
+                // If it's a full URL, parse it to get the pathname
+                if (cleanUrl.startsWith('http')) {
                     const urlObj = new URL(cleanUrl);
-                    const path = urlObj.pathname;
-                    normalized = `${API_BASE_URL.replace(/\/$/, '')}${path}`;
-                } catch (e) {
-                    // If URL parsing fails, just use the cleaned URL
-                    console.warn('Failed to parse URL:', cleanUrl);
+                    return `${apiBase}${urlObj.pathname}`;
                 }
+            } catch (e) {
+                console.error('Failed to parse URL:', cleanUrl);
             }
-            
-            return normalized;
+            // Fallback for malformed but localhost-containing strings
+            return cleanUrl.replace(/http:\/\/localhost:\d+/, apiBase)
+                          .replace('http://localhost', apiBase);
         }
         
-        // If starts with /static/, prepend API_BASE_URL
+        // If already a full HTTP/HTTPS URL (and not localhost), return it
+        if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+            return cleanUrl;
+        }
+        
+        // Handle relative paths
         if (cleanUrl.startsWith('/static/')) {
-            return `${API_BASE_URL.replace(/\/$/, '')}${cleanUrl}`;
+            return `${apiBase}${cleanUrl}`;
         }
         
-        // If starts with / but not /static/, try /static/
         if (cleanUrl.startsWith('/')) {
-            return `${API_BASE_URL.replace(/\/$/, '')}/static${cleanUrl}`;
+            return `${apiBase}/static${cleanUrl}`;
         }
         
-        // If no leading slash, assume it's a filename and prepend /static/
-        return `${API_BASE_URL.replace(/\/$/, '')}/static/${cleanUrl}`;
+        // If no leading slash, assume it's a filename
+        return `${apiBase}/static/${cleanUrl}`;
     }, []);
 
     // Construct avatar source with multiple fallback options

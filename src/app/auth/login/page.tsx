@@ -90,7 +90,7 @@ export default function Login() {
 
   useEffect(() => {
     if (isLogged) {
-      router.replace('/');
+      router.replace('/profile');
     }
   }, [isLogged, router]);
 

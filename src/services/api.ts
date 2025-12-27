@@ -3,7 +3,7 @@ import { authStore } from '@/contexts/authStore';
 
 // Get configuration from environment or use defaults
 const config = {
-    baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://mazadclick-server.onrender.com',
+    baseURL: process.env.NODE_ENV === 'production' ? 'https://mazadclick-server.onrender.com' : (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'),
     apiKey: process.env.NEXT_PUBLIC_API_KEY || '64d2e8b7c3a9f1e5d8b2a4c6e9f0d3a5',
     timeout: 15000,
 };

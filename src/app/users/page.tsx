@@ -1296,8 +1296,7 @@ export default function UsersPage() {
                                       // Replace localhost:3000 with production API URL if needed (for production builds)
                                       if (process.env.NODE_ENV === 'production') {
                                         const productionBase = app.baseURL.replace(/\/$/, '');
-                                        // normalized = normalized.replace(/http:\/\/localhost:3000/g, 'https://api.mazad.click');
-                                        // normalized = normalized.replace(/https:\/\/localhost:3000/g, 'https://api.mazad.click');
+
                                         normalized = normalized
                                           .replace(DEV_SERVER_REGEX, productionBase)
                                           .replace(DEV_SERVER_SECURE_REGEX, productionBase);

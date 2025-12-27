@@ -126,7 +126,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
               }
             }}
             alt="MazadClick"
-            onClick={() => router.push('http://localhost:3001/')}
+            onClick={() => router.push('https://mazadclick.vercel.app/')}
          />
       </Box>
 

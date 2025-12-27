@@ -158,6 +158,88 @@ export const Header = () => {
     router.push('/auth/login');
   };
 
+  // Helper to get avatar URL
+  const getAvatarUrl = () => {
+    if (!auth?.user) return '';
+
+    // Priority 1: photoURL
+    const photoURL = auth.user?.photoURL;
+    if (photoURL && photoURL.trim() !== '') {
+      let url = photoURL.trim();
+      // Fix malformed query strings
+      if (url.includes('&') && !url.includes('?')) {
+        url = url.replace('&', '?');
+      }
+      // Normalize localhost URLs
+      if (url.startsWith('http://localhost:3000')) {
+        return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+      }
+      if (url.startsWith('http://localhost/')) {
+        return url.replace('http://localhost', app.baseURL.replace(/\/$/, ''));
+      }
+      if (url.startsWith('/static/')) {
+        return `${app.baseURL.replace(/\/$/, '')}${url}`;
+      }
+      if (url.startsWith('/')) {
+        return `${app.baseURL.replace(/\/$/, '')}/static${url}`;
+      }
+      if (!url.startsWith('http')) {
+        return `${app.baseURL.replace(/\/$/, '')}/static/${url}`;
+      }
+      // Handle legacy api.mazad.click URLs
+      if (url.startsWith('https://api.mazad.click')) {
+          return url.replace('https://api.mazad.click', app.baseURL.replace(/\/$/, ''));
+      }
+      return url;
+    }
+
+    // Priority 2: avatar string (from registration)
+    const avatar = auth.user?.avatar;
+    if (typeof avatar === 'string' && avatar.trim() !== '') {
+        let avatarUrl;
+        if (avatar.startsWith('http')) {
+             avatarUrl = avatar
+                .replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''))
+                .replace('https://api.mazad.click', app.baseURL.replace(/\/$/, ''));
+        } else if (avatar.startsWith('/static/')) {
+            avatarUrl = `${app.baseURL.replace(/\/$/, '')}${avatar}`;
+        } else if (avatar.startsWith('/')) {
+            avatarUrl = `${app.baseURL.replace(/\/$/, '')}/static${avatar}`;
+        } else {
+            avatarUrl = `${app.baseURL.replace(/\/$/, '')}/static/${avatar}`;
+        }
+        return avatarUrl;
+    }
+
+    // Priority 3: avatar object
+    if (avatar) {
+      // Try fullUrl first
+      if (avatar.fullUrl) {
+        let fullUrl = avatar.fullUrl;
+        if (fullUrl.startsWith('http://localhost:3000')) {
+          fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+        }
+        return fullUrl;
+      }
+      
+      // Try url
+      if (avatar.url) {
+        if (avatar.url.startsWith('http')) {
+          return avatar.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+        }
+        const path = avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`;
+        const finalPath = path.startsWith('/static/') ? path : `/static${path}`;
+        return `${app.baseURL.replace(/\/$/, '')}${finalPath}`;
+      }
+      
+      // Try filename
+      if (avatar.filename) {
+        return `${app.baseURL.replace(/\/$/, '')}/static/${avatar.filename}`;
+      }
+    }
+    return '';
+  };
+
   // Navigation Items
   const navItems = [
     { name: t('navigation.home'), path: "/", matchPaths: ["/"] },
@@ -789,27 +871,75 @@ export const Header = () => {
                     <div style={{
                       padding: '12px 16px',
                       borderBottom: '1px solid #f0f0f0',
-                      background: '#fafafa'
+                      background: '#fafafa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px'
                     }}>
+                      {/* Avatar */}
                       <div style={{
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#333',
-                        marginBottom: '2px',
-                        whiteSpace: 'nowrap',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis'
+                        flexShrink: 0,
+                        position: 'relative',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#e0e0e0',
+                        border: '1px solid #e0e0e0'
                       }}>
-                        {auth?.user?.entreprise || auth?.user?.companyName || `${auth?.user?.firstName || 'User'} ${auth?.user?.lastName || ''}`.trim()}
+                        {/* Initials as fallback background */}
+                        <span style={{ 
+                            fontSize: '16px', 
+                            fontWeight: 'bold', 
+                            color: '#666',
+                            position: 'absolute',
+                            zIndex: 0
+                        }}>
+                            {((auth?.user?.entreprise || auth?.user?.firstName || 'U')).charAt(0).toUpperCase()}
+                        </span>
+
+                        {getAvatarUrl() && (
+                           <img 
+                             src={getAvatarUrl()} 
+                             alt={auth?.user?.firstName || 'User'}
+                             style={{
+                               width: '100%',
+                               height: '100%',
+                               objectFit: 'cover',
+                               position: 'relative',
+                               zIndex: 1
+                             }}
+                             onError={(e) => {
+                               e.currentTarget.style.display = 'none';
+                             }} 
+                           />
+                        )}
                       </div>
-                      <div style={{
-                        fontSize: '12px',
-                        color: '#666',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis'
-                      }}>
-                        {auth?.user?.email || 'user@example.com'}
+                      
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            color: '#333',
+                            marginBottom: '2px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}>
+                            {auth?.user?.entreprise || auth?.user?.companyName || `${auth?.user?.firstName || 'User'} ${auth?.user?.lastName || ''}`.trim()}
+                          </div>
+                          <div style={{
+                            fontSize: '12px',
+                            color: '#666',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}>
+                            {auth?.user?.email || 'user@example.com'}
+                          </div>
                       </div>
                     </div>
 

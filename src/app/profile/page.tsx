@@ -1095,6 +1095,11 @@ function ProfilePage() {
                           .replace('http://localhost', apiBase);
         }
         
+        // Handle legacy api.mazad.click URLs
+        if (cleanUrl.startsWith('https://api.mazad.click')) {
+            return cleanUrl.replace('https://api.mazad.click', apiBase);
+        }
+        
         // If already a full HTTP/HTTPS URL (and not localhost), return it
         if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
             return cleanUrl;

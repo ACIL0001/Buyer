@@ -614,7 +614,9 @@ export const Header = () => {
                         if (typeof avatar === 'string' && avatar.trim() !== '') {
                             let avatarUrl;
                             if (avatar.startsWith('http')) {
-                                 avatarUrl = avatar.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                                 avatarUrl = avatar
+                                    .replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''))
+                                    .replace('https://api.mazad.click', app.baseURL.replace(/\/$/, ''));
                             } else if (avatar.startsWith('/static/')) {
                                 avatarUrl = `${app.baseURL.replace(/\/$/, '')}${avatar}`;
                             } else if (avatar.startsWith('/')) {

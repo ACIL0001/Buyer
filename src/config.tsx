@@ -1,6 +1,6 @@
 export const DEV_SERVER_URL = 'http://localhost:3000';
 // export const DEV_SERVER_URL = 'http://localhost:3000';
-export const PROD_SERVER_URL = 'https://api.mazad.click';
+export const PROD_SERVER_URL = 'https://mazadclick-server.onrender.com';
 
 export const isProductionEnvironment = process.env.NODE_ENV === 'production';
 export const resolvedServerUrl = process.env.NEXT_PUBLIC_API_BASE_URL || (isProductionEnvironment ? PROD_SERVER_URL : DEV_SERVER_URL);

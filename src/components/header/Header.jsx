@@ -606,6 +606,10 @@ export const Header = () => {
                           if (!url.startsWith('http')) {
                             return `${app.baseURL.replace(/\/$/, '')}/static/${url}`;
                           }
+                          // Handle legacy api.mazad.click URLs
+                          if (url.startsWith('https://api.mazad.click')) {
+                              return url.replace('https://api.mazad.click', app.baseURL.replace(/\/$/, ''));
+                          }
                           return url;
                         }
 

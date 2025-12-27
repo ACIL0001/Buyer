@@ -49,6 +49,9 @@ const instance = axios.create({
   withCredentials: true,
 });
 
+// Debug: Log the axios instance baseURL to help diagnose configuration issues
+console.log('🌐 API Utils axios baseURL:', app.baseURL);
+
 // Add request interceptor to automatically attach auth token
 instance.interceptors.request.use(
   (config) => {

@@ -8,6 +8,16 @@ const resolvedServerUrlWithSlash = resolvedServerUrl.endsWith('/')
   ? resolvedServerUrl
   : `${resolvedServerUrl}/`;
 
+// Debug: Log resolved URL to help diagnose configuration issues
+if (typeof window !== 'undefined') {
+  console.log('🔧 API URL Configuration:', {
+    nodeEnv: process.env.NODE_ENV,
+    isProduction: isProductionEnvironment,
+    resolvedUrl: resolvedServerUrl,
+    envVar: process.env.NEXT_PUBLIC_API_BASE_URL || '(not set)'
+  });
+}
+
 const app = {
   name: 'MazadClick',
   pole: 'NotEasy',

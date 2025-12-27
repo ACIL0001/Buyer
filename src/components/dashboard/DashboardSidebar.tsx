@@ -10,6 +10,89 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 const DRAWER_WIDTH = 280;
 
+// ... other imports
+import app from '@/config';
+
+// ... (previous imports)
+
+// Helper function to get avatar URL (reused from Header/Profile)
+const getAvatarUrl = (user: any) => {
+    if (!user) return '';
+
+    // Priority 1: photoURL
+    const photoURL = user?.photoURL;
+    if (photoURL && photoURL.trim() !== '') {
+        let url = photoURL.trim();
+        if (url.includes('&') && !url.includes('?')) {
+            url = url.replace('&', '?');
+        }
+        if (url.startsWith('http://localhost:3000')) {
+            return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+        }
+        if (url.startsWith('http://localhost/')) {
+            return url.replace('http://localhost', app.baseURL.replace(/\/$/, ''));
+        }
+        if (url.startsWith('/static/')) {
+            return `${app.baseURL.replace(/\/$/, '')}${url}`;
+        }
+        if (url.startsWith('/')) {
+            return `${app.baseURL.replace(/\/$/, '')}/static${url}`;
+        }
+        if (!url.startsWith('http')) {
+            return `${app.baseURL.replace(/\/$/, '')}/static/${url}`;
+        }
+        // Handle legacy api.mazad.click URLs in photoURL
+        if (url.startsWith('https://api.mazad.click')) {
+            return url.replace('https://api.mazad.click', app.baseURL.replace(/\/$/, ''));
+        }
+        return url;
+    }
+
+    // Priority 2: avatar string (from registration)
+    const avatar = user?.avatar;
+    if (typeof avatar === 'string' && avatar.trim() !== '') {
+        let avatarUrl;
+        if (avatar.startsWith('http')) {
+                avatarUrl = avatar
+                .replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''))
+                .replace('https://api.mazad.click', app.baseURL.replace(/\/$/, ''));
+        } else if (avatar.startsWith('/static/')) {
+            avatarUrl = `${app.baseURL.replace(/\/$/, '')}${avatar}`;
+        } else if (avatar.startsWith('/')) {
+            avatarUrl = `${app.baseURL.replace(/\/$/, '')}/static${avatar}`;
+        } else {
+            avatarUrl = `${app.baseURL.replace(/\/$/, '')}/static/${avatar}`;
+        }
+        return avatarUrl;
+    }
+
+    // Priority 3: avatar object
+    if (avatar) {
+        if (avatar.fullUrl) {
+        let fullUrl = avatar.fullUrl;
+        if (fullUrl.startsWith('http://localhost:3000')) {
+            fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+        }
+        return fullUrl;
+        }
+        
+        if (avatar.url) {
+        if (avatar.url.startsWith('http')) {
+            return avatar.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+        }
+        const path = avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`;
+        const finalPath = path.startsWith('/static/') ? path : `/static${path}`;
+        return `${app.baseURL.replace(/\/$/, '')}${finalPath}`;
+        }
+        
+        if (avatar.filename) {
+        return `${app.baseURL.replace(/\/$/, '')}/static/${avatar.filename}`;
+        }
+    }
+
+    return '';
+};
+
 export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { isOpenSidebar: boolean, onCloseSidebar: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -57,7 +140,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
              border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
          }}>
              <Avatar 
-                src={typeof user?.avatar === 'string' ? user?.avatar : (user?.photoURL || '')} 
+                src={getAvatarUrl(user)} 
                 alt={(user as any)?.entreprise || user?.firstName || 'User'}
                 sx={{
                   width: 48,

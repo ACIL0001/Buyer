@@ -1120,6 +1120,15 @@ function ProfilePage() {
         console.log('🖼️ Constructing avatar URL from:', auth.user);
         console.log('🖼️ Avatar object:', auth.user.avatar);
         console.log('🖼️ photoURL:', auth.user.photoURL);
+        // Priority 0: avatar string (from registration)
+        const avatarAny = auth.user.avatar as any;
+        if (typeof avatarAny === 'string' && avatarAny.trim() !== '') {
+             const avatarUrl = normalizeUrl(avatarAny);
+             if (avatarUrl && !avatarUrl.includes('mock-images')) {
+                 console.log('📸 Using avatar string:', avatarUrl);
+                 return `${avatarUrl}?v=${avatarKey}`;
+             }
+        }
         
         // Priority 1: photoURL (direct from backend)
         if (auth.user.photoURL && auth.user.photoURL.trim() !== "") {
@@ -1150,7 +1159,17 @@ function ProfilePage() {
         
         // Priority 4: avatar.filename
         if (auth.user.avatar?.filename) {
-            const avatarUrl = normalizeUrl(auth.user.avatar.filename);
+            // Check if filename is a full URL or needs prepending
+            const filename = auth.user.avatar.filename;
+            let avatarUrl;
+            
+            if (filename.startsWith('http') || filename.startsWith('/')) {
+                 avatarUrl = normalizeUrl(filename);
+            } else {
+                 // Assume it's a static file if just a filename
+                 avatarUrl = `${API_BASE_URL}/static/${filename}`;
+            }
+
             if (avatarUrl && !avatarUrl.includes('mock-images')) {
                 console.log('📸 Using avatar.filename:', avatarUrl);
                 return `${avatarUrl}?v=${avatarKey}`;

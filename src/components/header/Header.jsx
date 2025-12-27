@@ -609,8 +609,24 @@ export const Header = () => {
                           return url;
                         }
 
-                        // Priority 2: avatar object
+                        // Priority 2: avatar string (from registration)
                         const avatar = auth.user?.avatar;
+                        if (typeof avatar === 'string' && avatar.trim() !== '') {
+                            let avatarUrl;
+                            if (avatar.startsWith('http')) {
+                                 avatarUrl = avatar.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+                            } else if (avatar.startsWith('/static/')) {
+                                avatarUrl = `${app.baseURL.replace(/\/$/, '')}${avatar}`;
+                            } else if (avatar.startsWith('/')) {
+                                avatarUrl = `${app.baseURL.replace(/\/$/, '')}/static${avatar}`;
+                            } else {
+                                avatarUrl = `${app.baseURL.replace(/\/$/, '')}/static/${avatar}`;
+                            }
+                            return avatarUrl;
+                        }
+
+                        // Priority 3: avatar object
+
                         if (avatar) {
                           // Try fullUrl first
                           if (avatar.fullUrl) {

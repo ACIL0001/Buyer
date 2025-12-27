@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npx next dev -p 3001",
-    "build": "npx next build",
+    "build": "npx next build --webpack",
     "start": "npx next start -p 3001",
     "lint": "npx next lint",
     "build:css": "postcss src/app/globals.css -o public/assets/css/tailwind.css",

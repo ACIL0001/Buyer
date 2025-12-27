@@ -79,10 +79,7 @@ const nextConfig = {
     optimizeCss: true,
   },
   
-  // Development configuration
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
+
   
   // Improve error handling
   onDemandEntries: {

@@ -19,6 +19,7 @@ import { authStore } from "@/contexts/authStore"
 import { WILAYAS } from "@/constants/wilayas"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import ProfileSkeleton from "@/components/skeletons/ProfileSkeleton"
+import VerificationPopup from "@/components/VerificationPopup"
 
 const ProfilePageWrapper = () => {
     const [show, setShow] = useState(false)
@@ -148,6 +149,7 @@ function ProfilePage() {
     const documentFileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
     const [activeUpgradeSection, setActiveUpgradeSection] = useState<'verified' | 'certified' | null>(null);
     const [isSubmittingIdentity, setIsSubmittingIdentity] = useState(false);
+    const [showVerificationPopup, setShowVerificationPopup] = useState(false);
 
     // Document field configurations
     const requiredDocuments = [
@@ -233,6 +235,17 @@ function ProfilePage() {
             });
         }
     }, [auth.user]);
+
+    // Check for first-login verification popup flag
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const shouldShowPopup = localStorage.getItem('showVerificationPopup');
+            if (shouldShowPopup === 'true') {
+                setShowVerificationPopup(true);
+                localStorage.removeItem('showVerificationPopup');
+            }
+        }
+    }, []);
 
     const getAvatarUrl = (avatar: AvatarData | string): string => {
         if (typeof avatar === 'string') {
@@ -2294,6 +2307,17 @@ function ProfilePage() {
                 </div>
             </main>
             <Footer />
+            
+            {/* First-login verification popup */}
+            {showVerificationPopup && (
+                <VerificationPopup
+                    onClose={() => setShowVerificationPopup(false)}
+                    onContinue={() => {
+                        setShowVerificationPopup(false);
+                        setActiveTab('documents');
+                    }}
+                />
+            )}
         </div>
     );
 }

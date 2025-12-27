@@ -155,14 +155,19 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           console.log('🔐 Storing auth data:', authData);
           authStore.getState().set(authData);
 
+          // Set first login flag for new users (not verified/certified)
+          if (!user.isVerified && !user.isCertified && !user.isHasIdentity) {
+            localStorage.setItem('showVerificationPopup', 'true');
+          }
+
           // Fetch fresh user data in background to ensure we have the full profile
           // We don't await this to speed up the UI feedback
           authStore.getState().fetchFreshUserData().catch(e => {
             console.error('⚠️ Failed to fetch fresh user data on login:', e);
           });
 
-          // Redirect to home/dashboard
-          console.log('🔐 Login successful, redirecting to home');
+          // Redirect to profile
+          console.log('🔐 Login successful, redirecting to profile');
           router.replace('/profile');
           
           if (onSuccess) {

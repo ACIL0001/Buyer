@@ -173,12 +173,26 @@ export default function RegisterForm() {
         }
 
       try {
+        // Format phone to Algerian international format (+213...)
+        const formatPhoneNumber = (phone: string): string => {
+          let cleaned = phone.replace(/\s/g, '');
+          // If starts with 0, replace with +213
+          if (cleaned.startsWith('0')) {
+            return '+213' + cleaned.substring(1);
+          }
+          // If doesn't have country code, add it
+          if (!cleaned.startsWith('+')) {
+            return '+213' + cleaned;
+          }
+          return cleaned;
+        };
+
         const userData: any = {
             firstName: values.firstName,
             lastName: values.lastName,
             email: values.email,
             password: values.password,
-            phone: values.phone.replace(/\s/g, ''),
+            phone: formatPhoneNumber(values.phone),
             type: CLIENT_TYPE.CLIENT,
             birthDate: values.birthDate,
             wilaya: values.wilaya,

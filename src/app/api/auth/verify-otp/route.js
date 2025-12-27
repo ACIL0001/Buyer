@@ -16,18 +16,34 @@ export async function POST(request) {
 
     // Call your backend API to verify OTP
     const backendUrl = app.baseURL;
+    // Format phone number: remove +213 and ensure it starts with 0
+    let formattedPhone = phone;
+    if (formattedPhone.startsWith('+213')) {
+      formattedPhone = '0' + formattedPhone.slice(4);
+    }
+
     const response = await fetch(`${backendUrl}otp/confirm-phone`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ 
-        phone: phone,
+        phone: formattedPhone,
+
         code: otp 
       })
     });
     
-    const data = await response.json();
+    // Safely attempt to parse JSON
+    let data;
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      console.error('Backend returned non-JSON response:', text);
+      throw new Error(`Backend returned status ${response.status} with non-JSON body`);
+    }
     
     if (response.ok) {
       return NextResponse.json({
@@ -48,7 +64,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('OTP verification error:', error);
     return NextResponse.json(
-      { success: false, message: 'Server error during OTP verification' }, 
+      { success: false, message: error.message || 'Server error during OTP verification' }, 
       { status: 500 }
     );
   }

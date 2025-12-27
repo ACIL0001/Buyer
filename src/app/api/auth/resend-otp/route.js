@@ -16,12 +16,18 @@ export async function POST(request) {
 
     // Call your backend API to resend OTP
     const backendUrl = app.baseURL;
+    // Format phone number: remove +213 and ensure it starts with 0
+    let formattedPhone = phone;
+    if (formattedPhone.startsWith('+213')) {
+      formattedPhone = '0' + formattedPhone.slice(4);
+    }
+
     const response = await fetch(`${backendUrl}otp/resend/confirm-phone`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ phone: phone })
+      body: JSON.stringify({ phone: formattedPhone })
     });
     
     if (response.ok) {

@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server';
 import app from '@/config';
 
+const backendUrl = app.baseURL;
+
 export async function POST(request) {
   try {
     const { phone, otp } = await request.json();

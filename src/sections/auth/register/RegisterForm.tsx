@@ -173,10 +173,9 @@ export default function RegisterForm() {
         }
 
       try {
-        // Format phone to Algerian international format (+213...)
-        // Keep phone number as is (local format)
+        // Send phone number exactly as entered (e.g. 055...)
         const formatPhoneNumber = (phone: string): string => {
-          return phone.replace(/\s/g, '');
+          return phone.replace(/\s/g, ''); // Just remove spaces
         };
 
         const userData: any = {

@@ -82,50 +82,6 @@
     "minutesAbbr": "m",
     "secondsAbbr": "s"
   },
-  "dashboard": {
-    "quickActions": "Quick Actions",
-    "performance": "Performance",
-    "offersOverview": "Offers & Submissions Overview",
-    "financialOverview": "Financial Overview",
-    "stats": {
-      "totalAuctions": "Total Auctions",
-      "activeAuctions": "Active Auctions",
-      "totalTenders": "Total Tenders",
-      "activeTenders": "Active Tenders",
-      "totalSales": "Total Sales",
-      "activeSales": "Active Sales",
-      "totalOffers": "Total Offers",
-      "pendingOffers": "Pending Offers",
-      "tenderSubmissions": "Tender Submissions",
-      "pendingTenderSubmissions": "Pending Tender Submissions",
-      "totalEarnings": "Total Earnings",
-      "averagePrice": "Average Price",
-      "totalViews": "Total Views",
-      "conversionRate": "Conversion Rate"
-    },
-    "navigation": {
-      "dashboard": "Dashboard",
-      "newTender": "New Tender",
-      "myTenders": "My Tenders",
-      "createAuction": "Create Auction",
-      "auctions": "Auctions",
-      "allAuctions": "All Auctions",
-      "myAuctions": "My Auctions",
-      "offers": "Offers",
-      "tenders": "Tenders",
-      "receivedBids": "Received Bids",
-      "createSale": "Create Sale",
-      "mySales": "My Sales",
-      "directSales": "Direct Sales",
-      "orders": "Orders",
-      "chat": "Chat"
-    },
-    "list": {
-      "columns": {
-        "actions": "Actions"
-      }
-    }
-  },
   "navigation": {
     "home": "Home",
     "dashboard": "Dashboard",

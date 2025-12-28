@@ -21,7 +21,7 @@ const getImageUrl = (url?: string) => {
          }
          return url;
     }
-    if (url.startsWith('/static')) {
+    if (url.startsWith('/static') || url.startsWith('static/')) {
         const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
         return `${baseURL}${url.startsWith('/') ? url.slice(1) : url}`;
     }
@@ -41,6 +41,7 @@ interface User {
   avatar?: string | { url?: string; filename?: string; fullUrl?: string };
   photoURL?: string;
   coverPhotoURL?: string;
+  coverPhoto?: string | { url?: string; filename?: string; fullUrl?: string };
   type: USER_TYPE;
   role?: string;
   rating: number;
@@ -141,6 +142,24 @@ export default function PublicProfilePage() {
         return '/assets/images/avatar.jpg';
     };
 
+    const getCoverPhotoSrc = () => {
+        if (!user) return undefined;
+
+        // Priority 1: coverPhotoURL (string)
+        if (user.coverPhotoURL && user.coverPhotoURL.trim() !== "") {
+            const cleanUrl = getImageUrl(user.coverPhotoURL);
+             if (cleanUrl) return cleanUrl; 
+        }
+
+        // Priority 2: coverPhoto (object)
+        if (user.coverPhoto && typeof user.coverPhoto === 'object') {
+             if (user.coverPhoto.fullUrl) return getImageUrl(user.coverPhoto.fullUrl);
+             if (user.coverPhoto.url) return getImageUrl(user.coverPhoto.url);
+        }
+        
+        return undefined;
+    };
+
     if (isLoading) {
         return (
              <div className="modern-profile-page" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -214,11 +233,16 @@ export default function PublicProfilePage() {
                             backgroundColor: '#f3f4f6',
                             boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
                         }}>
-                            {user.coverPhotoURL ? (
+                            {getCoverPhotoSrc() ? (
                                 <img 
-                                    src={getImageUrl(user.coverPhotoURL)}
+                                    src={getCoverPhotoSrc()}
                                     alt="Cover" 
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                    onError={(e) => {
+                                        const target = e.currentTarget;
+                                        target.style.display = 'none';
+                                        target.parentElement!.style.background = 'linear-gradient(135deg, #e0e7ff 0%, #fae8ff 100%)';
+                                    }}
                                 />
                             ) : (
                                 <div style={{ 
@@ -292,7 +316,7 @@ export default function PublicProfilePage() {
                             </div>
 
                             {/* User Info Text */}
-                            <div style={{ paddingBottom: '10px', flex: 1 }}>
+                            <div style={{ paddingBottom: '30px', flex: 1 }}>
                                 <h1 style={{ 
                                     fontSize: '28px', 
                                     fontWeight: '800', 

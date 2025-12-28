@@ -17,18 +17,13 @@ const RootStyle = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  justifyContent: 'center',
+  justifyContent: 'flex-start',
   position: 'relative',
   background: theme.palette.common.white,
   padding: theme.spacing(3, 0),
+  paddingTop: '80px',
   '@media (max-width: 599px)': {
-    padding: '32px 0 8px',
-  },
-  '@media (min-width: 600px) and (max-width: 959px)': {
-    padding: '36px 0 8px',
-  },
-  '@media (min-width: 960px)': {
-    padding: '48px 0 8px',
+    paddingTop: '60px',
   },
 }));
 
@@ -51,8 +46,8 @@ const GlassContainer = styled(Box)(({ theme }) => ({
   paddingTop: '16px',
   position: 'relative',
   zIndex: 10,
-  maxWidth: '460px',
-  width: 'auto',
+  maxWidth: '560px',
+  width: '100%',
   margin: theme.spacing(2),
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(2.5),
@@ -69,13 +64,13 @@ const GlassContainer = styled(Box)(({ theme }) => ({
     padding: theme.spacing(3.5),
     margin: theme.spacing(2),
     borderRadius: '26px',
-    maxWidth: '440px',
+    maxWidth: '520px',
   },
   '@media (min-width: 768px)': {
     padding: theme.spacing(4),
     margin: theme.spacing(2.5),
     borderRadius: '30px',
-    maxWidth: '460px',
+    maxWidth: '560px',
   },
 }));
 

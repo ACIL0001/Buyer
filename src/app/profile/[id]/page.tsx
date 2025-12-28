@@ -15,23 +15,21 @@ import UserActivitiesSection from "@/components/profile/UserActivitiesSection";
 // Helper for image URLs
 const getImageUrl = (url?: string) => {
     if (!url) return undefined;
-    
-    // Handle Absolute URLs
-    if (url.startsWith('http')) {
-        // Fix: Rewrite localhost URLs to use the production app.baseURL
-        if (url.includes('localhost')) {
-             try {
-                const urlObj = new URL(url);
-                // Only rewrite if it's a static asset path
-                if (urlObj.pathname.startsWith('/static')) {
-                     const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
-                     const relativePath = urlObj.pathname.startsWith('/') ? urlObj.pathname.slice(1) : urlObj.pathname;
-                     return `${baseURL}${relativePath}${urlObj.search}`;
-                }
-             } catch (e) {
-                 console.error("Error parsing URL in getImageUrl:", e);
-             }
+
+    // Hard fix for localhost:3000 URLs to point to production
+    if (url.includes('localhost:3000')) {
+        const prodBase = 'https://mazadclick-server.onrender.com/'
+        const parts = url.split('localhost:3000');
+        if (parts.length > 1) {
+            let path = parts[1];
+            if (path.startsWith('/')) path = path.substring(1);
+            return `${prodBase}${path}`;
         }
+    }
+    
+    // Handle Absolute URLs (General)
+    if (url.startsWith('http')) {
+        // If it's already an http url and not localhost (caught above), return as is
         return url;
     }
 

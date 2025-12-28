@@ -792,8 +792,7 @@ export const Header = () => {
                     {!isMobile ? (
                       auth?.user?.entreprise || 
                       auth?.user?.companyName || 
-                      (auth?.user?.firstName ? `${auth?.user?.firstName} ${auth?.user?.lastName || ''}`.trim() : null) ||
-                      t('common.myAccount')
+                      'User'
                     ) : ""}
                     <svg 
                       width={12} 

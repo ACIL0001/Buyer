@@ -888,9 +888,13 @@
     "financialOverview": "Financial Overview",
     "navigation": {
       "home": "Home",
+      "dashboard": "Dashboard",
       "auctions": "Auctions",
+      "allAuctions": "All Auctions",
+      "myAuctions": "My Auctions",
       "tenders": "Tenders",
       "directSales": "Direct Sales",
+      "orders": "Orders",
       "profile": "Profile",
       "settings": "Settings",
       "chat": "Chat",
@@ -898,7 +902,9 @@
       "myTenders": "My Tenders",
       "createAuction": "Create Auction",
       "createSale": "Create Sale",
-      "mySales": "My Sales"
+      "mySales": "My Sales",
+      "offers": "Offers",
+      "receivedBids": "Received Bids"
     },
     "stats": {
       "totalSales": "Total Sales",

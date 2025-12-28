@@ -12,6 +12,7 @@ const DRAWER_WIDTH = 280;
 
 // ... other imports
 import app from '@/config';
+import { CLIENT_TYPE } from '@/types/User';
 
 // ... (previous imports)
 
@@ -168,20 +169,22 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
                      >
                          {(user as any)?.socialReason || (user as any)?.entreprise || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User'}
                      </Typography>
-                     <Chip 
-                       label="PRO" 
-                       size="small" 
-                       sx={{ 
-                         height: 20,
-                         fontSize: '0.65rem',
-                         fontWeight: 700,
-                         bgcolor: (theme) => theme.palette.primary.main,
-                         color: 'white',
-                         '& .MuiChip-label': {
-                           px: 1,
-                         }
-                       }} 
-                     />
+                     {user?.type === CLIENT_TYPE.PROFESSIONAL && (
+                       <Chip 
+                         label="PRO" 
+                         size="small" 
+                         sx={{ 
+                           height: 20,
+                           fontSize: '0.65rem',
+                           fontWeight: 700,
+                           bgcolor: (theme) => theme.palette.primary.main,
+                           color: 'white',
+                           '& .MuiChip-label': {
+                             px: 1,
+                           }
+                         }} 
+                       />
+                     )}
                  </Box>
                  <Typography 
                    variant="body2" 

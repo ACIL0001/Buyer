@@ -633,30 +633,22 @@ export const Header = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '10px',
-                      background: isAccountDropdownOpen ? '#0063b1' : 'linear-gradient(45deg, #0063b1, #0078d7)',
-                      border: 'none',
+                      background: 'transparent',
+                      border: '1px solid #e0e0e0',
                       borderRadius: '30px',
                       padding: isMobile ? '8px 12px' : isTablet ? '9px 16px' : '10px 20px',
-                      color: 'white',
+                      color: '#333',
                       fontSize: isMobile ? '13px' : isTablet ? '14px' : '15px',
                       fontWeight: '600',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
-                      boxShadow: isAccountDropdownOpen 
-                        ? '0 4px 15px rgba(0, 99, 177, 0.5)' 
-                        : '0 3px 10px rgba(0, 99, 177, 0.3)'
+                      boxShadow: 'none'
                     }}
                     onMouseOver={(e) => {
-                      if (!isAccountDropdownOpen) {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 6px 15px rgba(0, 99, 177, 0.4)';
-                      }
+                      e.currentTarget.style.backgroundColor = '#f5f5f5';
                     }}
                     onMouseOut={(e) => {
-                      if (!isAccountDropdownOpen) {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 3px 10px rgba(0, 99, 177, 0.3)';
-                      }
+                      e.currentTarget.style.backgroundColor = 'transparent';
                     }}
                   >
                     {(() => {
@@ -760,8 +752,8 @@ export const Header = () => {
                           {/* SVG fallback - rendered only if no avatar */}
                           {!avatarUrl && (
                             <svg width={isMobile ? 14 : 16} height={isMobile ? 14 : 16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', zIndex: 0 }}>
-                              <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" fill="white" />
-                              <path d="M8 9C5.79086 9 4 10.7909 4 13C4 13.5523 4.44772 14 5 14H11C11.5523 14 12 13.5523 12 13C12 10.7909 10.2091 9 8 9Z" fill="white" />
+                              <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" fill="#666" />
+                              <path d="M8 9C5.79086 9 4 10.7909 4 13C4 13.5523 4.44772 14 5 14H11C11.5523 14 12 13.5523 12 13C12 10.7909 10.2091 9 8 9Z" fill="#666" />
                             </svg>
                           )}
                           {/* Profile picture - rendered on top if available */}
@@ -774,7 +766,7 @@ export const Header = () => {
                                 height: '100%',
                                 borderRadius: '50%',
                                 objectFit: 'cover',
-                                border: '2px solid rgba(255, 255, 255, 0.3)',
+                                border: '2px solid transparent',
                                 position: 'absolute',
                                 top: 0,
                                 left: 0,
@@ -805,7 +797,7 @@ export const Header = () => {
                         opacity: 0.8
                       }}
                     >
-                      <path d="M2.5 4.5L6 8L9.5 4.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M2.5 4.5L6 8L9.5 4.5" stroke="#333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </button>
                 ) : (

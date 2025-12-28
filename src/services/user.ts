@@ -9,6 +9,7 @@ export const UserAPI = {
     setAvatar: (avatar: any): Promise<any> => requests.post('users/me/avatar', avatar),
     uploadAvatar: (formData: FormData): Promise<any> => requests.post('users/me/avatar', formData),
     updateProfile: (data: any): Promise<any> => requests.put('users/me', data),
+    uploadCover: (formData: FormData): Promise<any> => requests.post('users/me/cover', formData),
     setPhone: (data: any): Promise<any> => requests.post('user/update/phone', data), // { tel, code }
     changePassword: (credentials: any) => requests.post(`users/change-password`, credentials),
     identity: (form: FormData): Promise<any> => requests.post('identities', form),

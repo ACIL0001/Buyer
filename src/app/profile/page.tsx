@@ -1383,8 +1383,15 @@ function ProfilePage() {
                                 {auth.user?.rate && auth.user.rate > 0 && (
                                      <motion.div
                                         initial={{ opacity: 0, scale: 0 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+                                        animate={{ 
+                                            opacity: 1, 
+                                            scale: 1,
+                                            boxShadow: ["0 0 0 0 rgba(245, 158, 11, 0.7)", "0 0 0 8px rgba(245, 158, 11, 0)"] 
+                                        }}
+                                        transition={{ 
+                                            boxShadow: { duration: 2, repeat: Number.POSITIVE_INFINITY },
+                                            default: { duration: 0.5 }
+                                        }}
                                         style={{
                                             position: 'absolute',
                                             top: '0',
@@ -1395,7 +1402,7 @@ function ProfilePage() {
                                      >
                                          <div style={{
                                             background: '#ffffff',
-                                            color: '#d97706',
+                                            color: '#f59e0b',
                                             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                                             borderRadius: '50%',
                                             width: '32px',
@@ -1409,7 +1416,7 @@ function ProfilePage() {
                                          }}>
                                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1 }}>
                                                 <i className="bi bi-star-fill" style={{ fontSize: '10px', marginBottom: '1px' }}></i>
-                                                <span>{Math.round(auth.user.rate * 10) / 10}</span>
+                                                <span>+{Math.round(auth.user.rate * 10) / 10}</span>
                                              </div>
                                          </div>
                                      </motion.div>
@@ -1459,7 +1466,7 @@ function ProfilePage() {
                             </div>
 
                             {/* User Info */}
-                            <div className="user-info-content" style={{ paddingBottom: '50px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div className="user-info-content" style={{ paddingBottom: '25px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                 <h1 style={{ 
                                     fontSize: '28px', 
                                     fontWeight: '800', 

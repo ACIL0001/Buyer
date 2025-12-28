@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +12,7 @@ import { IdentityAPI } from '@/services/identity';
 import app from '@/config';
 import { WILAYAS } from '@/constants/wilayas';
 import './style.css';
+import ImageCropper from '@/components/common/ImageCropper';
 
 interface ProfileFormData {
     firstName: string;
@@ -70,6 +71,14 @@ export default function ProfilePage() {
     const [uploadingFile, setUploadingFile] = useState<File | null>(null);
     const documentFileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
     const [activeUpgradeSection, setActiveUpgradeSection] = useState<'verified' | 'certified' | null>(null);
+
+    // Image Cropping State
+    const [showCropper, setShowCropper] = useState(false);
+    const [cropImage, setCropImage] = useState<string | null>(null);
+    const [cropType, setCropType] = useState<'avatar' | 'cover'>('avatar');
+    const coverInputRef = useRef<HTMLInputElement>(null);
+    const [isUploadingCover, setIsUploadingCover] = useState(false);
+    const [coverKey, setCoverKey] = useState(Date.now());
 
     // Document field configurations
     const requiredDocuments = [
@@ -148,8 +157,82 @@ export default function ProfilePage() {
             if (auth.user.avatar || (auth.user as any).photoURL) {
                 setAvatarKey(Date.now());
             }
+            if ((auth.user as any).coverPhoto) {
+                setCoverKey(Date.now());
+            }
         }
     }, [auth.user]);
+
+    const readFile = (file: File): Promise<string> => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.addEventListener('load', () => resolve(reader.result as string), false);
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const handleCropSave = async (croppedBlob: Blob) => {
+        setShowCropper(false);
+        const fileName = cropType === 'avatar' ? 'avatar.jpg' : 'cover.jpg';
+        const file = new File([croppedBlob], fileName, { type: 'image/jpeg' });
+        
+        const formData = new FormData();
+        formData.append(cropType === 'avatar' ? 'avatar' : 'cover', file);
+
+        try {
+            if (cropType === 'avatar') {
+                setIsUploadingAvatar(true);
+                const response = await UserAPI.uploadAvatar(formData);
+                handleUploadResponse(response, 'avatar');
+            } else {
+                setIsUploadingCover(true);
+                const response = await UserAPI.uploadCover(formData);
+                handleUploadResponse(response, 'cover');
+            }
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || error.message || `Échec du téléchargement de ${cropType === 'avatar' ? 'l\'avatar' : 'la couverture'}`;
+            enqueueSnackbar(errorMessage, { variant: 'error' });
+        } finally {
+            if (cropType === 'avatar') {
+                setIsUploadingAvatar(false);
+            } else {
+                setIsUploadingCover(false);
+            }
+        }
+    };
+
+    const handleUploadResponse = (response: any, type: 'avatar' | 'cover') => {
+        if (response && (response.success || response.user || response.data)) {
+            const updatedUser = response.user || response.data || response;
+            const currentUser = auth.user;
+            
+            const mergedUser: any = { ...currentUser };
+            
+            if (updatedUser) {
+                Object.keys(updatedUser).forEach(key => {
+                    const value = (updatedUser as any)[key];
+                    if (value !== undefined && value !== null) {
+                        mergedUser[key] = value;
+                    }
+                });
+            }
+
+            set({
+                user: mergedUser,
+                tokens: auth.tokens,
+            });
+
+            if (type === 'avatar') {
+                setAvatarKey(Date.now());
+                enqueueSnackbar('Photo de profil mise à jour avec succès', { variant: 'success' });
+            } else {
+                setCoverKey(Date.now());
+                enqueueSnackbar('Photo de couverture mise à jour avec succès', { variant: 'success' });
+            }
+        } else {
+            enqueueSnackbar(`Échec de la mise à jour de ${type === 'avatar' ? 'la photo de profil' : 'la couverture'}`, { variant: 'error' });
+        }
+    };
 
     const getAvatarUrl = (avatar: AvatarData | string): string => {
         if (typeof avatar === 'string') {
@@ -297,65 +380,45 @@ export default function ProfilePage() {
         }
     };
 
-    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleCoverClick = () => {
+        if (coverInputRef.current) {
+            coverInputRef.current.click();
+        }
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover') => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         const maxSize = 5 * 1024 * 1024;
         if (file.size > maxSize) {
             enqueueSnackbar('Fichier trop volumineux. Veuillez sélectionner une image plus petite que 5MB', { variant: 'error' });
-            if (fileInputRef.current) fileInputRef.current.value = '';
+            e.target.value = '';
             return;
         }
 
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
         if (!allowedTypes.includes(file.type)) {
             enqueueSnackbar('Veuillez sélectionner un fichier image valide (JPEG, PNG, GIF, WebP)', { variant: 'error' });
+            e.target.value = '';
             return;
         }
 
-        setIsUploadingAvatar(true);
-
         try {
-            const formDataToUpload = new FormData();
-            formDataToUpload.append('avatar', file);
-            const response = await UserAPI.uploadAvatar(formDataToUpload);
-
-            if (response && (response.success || response.user || response.data)) {
-                if (fileInputRef.current) fileInputRef.current.value = '';
-
-                const updatedUser = response.user || response.data || response;
-                const currentUser = auth.user;
-                
-                const mergedUser: any = { ...currentUser };
-                
-                if (updatedUser) {
-                    Object.keys(updatedUser).forEach(key => {
-                        const value = (updatedUser as any)[key];
-                        if (value !== undefined && value !== null) {
-                            mergedUser[key] = value;
-                        }
-                    });
-                }
-
-                set({
-                    user: mergedUser,
-                    tokens: auth.tokens,
-                });
-
-                setAvatarKey(Date.now());
-                enqueueSnackbar(response.message || 'Avatar mis à jour avec succès', { variant: 'success' });
-            } else {
-                enqueueSnackbar(response?.message || 'Échec du téléchargement de l\'avatar', { variant: 'error' });
-            }
-        } catch (error: any) {
-            const errorMessage = error.response?.data?.message || error.message || 'Échec du téléchargement de l\'avatar';
-            enqueueSnackbar(errorMessage, { variant: 'error' });
-        } finally {
-            setIsUploadingAvatar(false);
-            if (fileInputRef.current) fileInputRef.current.value = '';
+            const imageDataUrl = await readFile(file);
+            setCropImage(imageDataUrl);
+            setCropType(type);
+            setShowCropper(true);
+        } catch (error) {
+            console.error(error);
+            enqueueSnackbar('Erreur lors de la lecture du fichier', { variant: 'error' });
         }
+        
+        e.target.value = '';
     };
+
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => handleFileChange(e, 'avatar');
+    const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => handleFileChange(e, 'cover');
 
     // Document management functions
     const fetchIdentity = async () => {
@@ -547,8 +610,31 @@ export default function ProfilePage() {
         return '/assets/images/avatar.jpg';
     };
 
+    const getCoverSrc = () => {
+        if (!auth.user) return null;
+        const cover = (auth.user as any).coverPhoto;
+        
+        if (!cover) return null;
+
+        if (cover.fullUrl && cover.fullUrl.trim() !== '') {
+            return appendCacheBuster(normalizeUrl(cover.fullUrl));
+        }
+        
+        if (cover.url && cover.url.trim() !== '') {
+            return appendCacheBuster(normalizeUrl(cover.url));
+        }
+        
+        if (cover.filename && cover.filename.trim() !== '') {
+            return appendCacheBuster(normalizeUrl(cover.filename));
+        }
+
+        return null;
+    };
+
     const avatarSrc = getAvatarSrc();
+    const coverSrc = getCoverSrc();
     const [stableAvatarSrc, setStableAvatarSrc] = useState<string>('');
+    const [stableCoverSrc, setStableCoverSrc] = useState<string | null>(null);
     const [isSubmittingIdentity, setIsSubmittingIdentity] = useState(false);
 
     useEffect(() => {
@@ -556,6 +642,14 @@ export default function ProfilePage() {
             setStableAvatarSrc(avatarSrc);
         }
     }, [avatarSrc, auth.user?.avatar, (auth.user as any)?.photoURL]);
+
+    useEffect(() => {
+        if (coverSrc) {
+            setStableCoverSrc(coverSrc);
+        } else {
+            setStableCoverSrc(null);
+        }
+    }, [coverSrc, (auth.user as any)?.coverPhoto]);
 
     if (isReady && !isLogged) {
         return (
@@ -873,10 +967,66 @@ export default function ProfilePage() {
     return (
         <main className="modern-profile-page">
             {/* Animated Background */}
+            {/* Animated Background or Cover Photo */}
             <div className="profile-background">
-                <div className="gradient-orb orb-1"></div>
-                <div className="gradient-orb orb-2"></div>
-                <div className="gradient-orb orb-3"></div>
+                {stableCoverSrc ? (
+                    <img 
+                        src={stableCoverSrc} 
+                        alt="Couverture" 
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0
+                        }}
+                    />
+                ) : (
+                    <>
+                        <div className="gradient-orb orb-1"></div>
+                        <div className="gradient-orb orb-2"></div>
+                        <div className="gradient-orb orb-3"></div>
+                    </>
+                )}
+                
+                {/* Cover Photo Edit Button */}
+                <div 
+                    style={{
+                        position: 'absolute',
+                        top: '20px',
+                        right: '20px',
+                        zIndex: 10
+                    }}
+                >
+                    <input
+                        type="file"
+                        ref={coverInputRef}
+                        style={{ display: 'none' }}
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                        onChange={handleCoverChange}
+                    />
+                    <motion.button
+                        className="modern-btn modern-btn-outline"
+                        style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            color: 'white'
+                        }}
+                        onClick={handleCoverClick}
+                        whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.3)' }}
+                        whileTap={{ scale: 0.95 }}
+                        disabled={isUploadingCover}
+                    >
+                        {isUploadingCover ? (
+                            <div className="modern-spinner-sm" style={{borderColor: 'white', borderTopColor: 'transparent'}}></div>
+                        ) : (
+                            <i className="bi bi-camera-fill" style={{ marginRight: '8px' }}></i>
+                        )}
+                        {stableCoverSrc ? 'Modifier la couverture' : 'Ajouter une couverture'}
+                    </motion.button>
+                </div>
             </div>
 
             {/* Page Header with Title */}
@@ -1423,6 +1573,19 @@ export default function ProfilePage() {
                     </motion.div>
                 </div>
             </div>
+            
+            {/* Image Cropper Modal */}
+            <AnimatePresence>
+                {showCropper && cropImage && (
+                    <ImageCropper
+                        imageSrc={cropImage}
+                        aspectRatio={cropType === 'avatar' ? 1 : 16 / 9}
+                        cropShape={cropType === 'avatar' ? 'round' : 'rect'}
+                        onCancel={() => setShowCropper(false)}
+                        onCropComplete={handleCropSave}
+                    />
+                )}
+            </AnimatePresence>
         </main>
     );
 }

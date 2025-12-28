@@ -58,7 +58,7 @@ const useNavConfig = () => {
       icon: getIcon(MdGavel),
       children: [
         {
-          title: t('dashboard.navigation.allAuctions', 'All Auctions'),
+          title: t('dashboard.navigation.myAuctions', 'My Auctions'),
           path: '/dashboard/auctions',
           icon: getIcon(MdList),
         },

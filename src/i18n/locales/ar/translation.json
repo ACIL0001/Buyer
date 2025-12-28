@@ -109,6 +109,11 @@
     "chat": "الدردشة",
     "logout": "تسجيل الخروج"
   },
+  "dashboard": {
+    "navigation": {
+      "myAuctions": "مزاداتي"
+    }
+  },
   "auth": {
     "login": "تسجيل الدخول",
     "register": "التسجيل",

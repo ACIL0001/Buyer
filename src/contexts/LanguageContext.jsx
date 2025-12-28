@@ -14,7 +14,7 @@ export const useLanguage = () => {
 
 export const LanguageProvider = ({ children }) => {
   const [isRTL, setIsRTL] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [languageChanged, setLanguageChanged] = useState(0);
   const [i18nReady, setI18nReady] = useState(false);
   const [i18n, setI18n] = useState(null);
@@ -51,7 +51,7 @@ export const LanguageProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('i18nextLng') || 'en';
+    const savedLanguage = localStorage.getItem('i18nextLng') || 'fr';
     const languageConfig = languages[savedLanguage] || languages.en;
     
     setCurrentLanguage(savedLanguage);

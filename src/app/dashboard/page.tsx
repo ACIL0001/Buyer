@@ -426,7 +426,7 @@ export default function DashboardPage() {
     return (
         <Container maxWidth="xl" sx={{ py: 4 }}>
             {/* Quick Actions Section */}
-            <SectionHeader icon={MdRocketLaunch} title={t('dashboard.quickActions', 'Quick Actions - Auctions, Tenders & Direct Sales')} />
+            <SectionHeader icon={MdRocketLaunch} title={t('dashboard.quickActions')} />
             
             <Grid container spacing={3} sx={{ mb: 6 }}>
                 {QUICK_ACTIONS.map((action, index) => (
@@ -439,7 +439,7 @@ export default function DashboardPage() {
             </Grid>
 
             {/* Performance Section */}
-            <SectionHeader icon={MdTrendingUp} title={t('dashboard.performance', 'Auctions, Tenders & Direct Sales Performance')} />
+            <SectionHeader icon={MdTrendingUp} title={t('dashboard.performance')} />
             
             <Grid container spacing={3} sx={{ mb: 6 }}>
                 {STATS_PERFORMANCE.map((stat, index) => (
@@ -452,7 +452,7 @@ export default function DashboardPage() {
             </Grid>
 
             {/* Offers & Submissions Section */}
-            <SectionHeader icon={MdEmail} title={t('dashboard.offersOverview', 'Offers & Submissions Overview')} />
+            <SectionHeader icon={MdEmail} title={t('dashboard.offersOverview')} />
             
             <Grid container spacing={3} sx={{ mb: 6 }}>
                 {STATS_OFFERS.map((stat, index) => (
@@ -465,7 +465,7 @@ export default function DashboardPage() {
             </Grid>
 
             {/* Financial Section */}
-            <SectionHeader icon={MdMonetizationOn} title={t('dashboard.financialOverview', 'Financial Overview')} />
+            <SectionHeader icon={MdMonetizationOn} title={t('dashboard.financialOverview')} />
             
             <Grid container spacing={3}>
                 {STATS_FINANCE.map((stat, index) => (

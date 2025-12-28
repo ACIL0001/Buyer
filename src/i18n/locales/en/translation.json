@@ -82,6 +82,49 @@
     "minutesAbbr": "m",
     "secondsAbbr": "s"
   },
+  "dashboard": {
+    "quickActions": "Quick Actions",
+    "performance": "Performance",
+    "offersOverview": "Offers & Submissions Overview",
+    "financialOverview": "Financial Overview",
+    "stats": {
+      "totalAuctions": "Total Auctions",
+      "activeAuctions": "Active Auctions",
+      "totalTenders": "Total Tenders",
+      "activeTenders": "Active Tenders",
+      "totalSales": "Total Sales",
+      "activeSales": "Active Sales",
+      "totalOffers": "Total Offers",
+      "pendingOffers": "Pending Offers",
+      "tenderSubmissions": "Tender Submissions",
+      "pendingTenderSubmissions": "Pending Tender Submissions",
+      "totalEarnings": "Total Earnings",
+      "averagePrice": "Average Price",
+      "totalViews": "Total Views",
+      "conversionRate": "Conversion Rate"
+    },
+    "navigation": {
+      "dashboard": "Dashboard",
+      "newTender": "New Tender",
+      "myTenders": "My Tenders",
+      "createAuction": "Create Auction",
+      "auctions": "Auctions",
+      "allAuctions": "All Auctions",
+      "offers": "Offers",
+      "tenders": "Tenders",
+      "receivedBids": "Received Bids",
+      "createSale": "Create Sale",
+      "mySales": "My Sales",
+      "directSales": "Direct Sales",
+      "orders": "Orders",
+      "chat": "Chat"
+    },
+    "list": {
+      "columns": {
+        "actions": "Actions"
+      }
+    }
+  },
   "navigation": {
     "home": "Home",
     "dashboard": "Dashboard",
@@ -1154,7 +1197,16 @@
       "placeRequired": "Place is required",
       "wilayaRequired": "Wilaya is required",
       "quantityRequired": "Quantity is required"
-    }
+    },
+    "reservePrice": "Reserve Price",
+    "reservePriceHelp": "The minimum price you accept",
+    "settings": "Settings",
+    "hiddenListing": "Hidden Listing",
+    "hiddenDesc": "Your listing will not appear in search results or category pages",
+    "proOnly": "Pro Members Only",
+    "proOnlyDesc": "Only professional members can view and bid on this auction",
+    "verifiedOnly": "Verified Members Only",
+    "verifiedOnlyDesc": "Only verified members can participate in this auction"
   },
   "createTender": {
     "title": "Create New Tender",

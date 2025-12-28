@@ -20,6 +20,7 @@ import { WILAYAS } from "@/constants/wilayas"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import ProfileSkeleton from "@/components/skeletons/ProfileSkeleton"
 import VerificationPopup from "@/components/VerificationPopup"
+import UserActivitiesSection from "@/components/profile/UserActivitiesSection"
 
 const ProfilePageWrapper = () => {
     const [show, setShow] = useState(false)
@@ -96,7 +97,7 @@ function ProfilePage() {
     const [isUploadingCover, setIsUploadingCover] = useState(false);
     const [coverKey, setCoverKey] = useState(Date.now());
     const [avatarKey, setAvatarKey] = useState(Date.now());
-    const [activeTab, setActiveTab] = useState("personal-info");
+    const [activeTab, setActiveTab] = useState("activities");
     const [formData, setFormData] = useState<ProfileFormData>({
         firstName: "",
         lastName: "",
@@ -1659,6 +1660,7 @@ function ProfilePage() {
                             {/* Tab Navigation */}
                             <div className="modern-tab-nav">
                                 {[
+                                    { id: "activities", icon: "bi-activity", label: t("profile.tabs.myActivities") || "Mes Activités" },
                                     { id: "personal-info", icon: "bi-person-circle", label: t("profile.tabs.personalInfo") || "Personal information" },
                                     { id: "security", icon: "bi-shield-lock-fill", label: t("profile.tabs.security") || "Security" },
                                     { id: "documents", icon: "bi-file-earmark-text-fill", label: t("profile.tabs.documents") || "Documents" },
@@ -1691,6 +1693,21 @@ function ProfilePage() {
                             {/* Tab Content */}
                             <div className="modern-tab-content">
                                 <AnimatePresence mode="wait">
+                                    {/* Activities Tab */}
+                                    {/* Activities Tab */}
+                                    {activeTab === "activities" && (
+                                        <motion.div
+                                            key="activities"
+                                            className="modern-tab-content"
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.6, type: "spring" }}
+                                        >
+                                            <UserActivitiesSection userId={auth.user?._id || (auth.user as any)?.id || ''} />
+                                        </motion.div>
+                                    )}
+
                                     {/* Personal Info Tab */}
                                     {activeTab === "personal-info" && (
                                         <motion.div

@@ -6,11 +6,11 @@ import Header from "@/components/header/Header";
 import Footer from "@/components/footer/Footer";
 import app, { DEV_SERVER_URL } from "@/config";
 import { UserAPI, USER_TYPE } from "@/app/api/users";
-import { requests } from '@/app/api/utils';
 import { motion, AnimatePresence } from "framer-motion";
 import "../modern-styles.css";
 import useAuth from '@/hooks/useAuth';
 import { useTranslation } from "react-i18next";
+import UserActivitiesSection from "@/components/profile/UserActivitiesSection";
 
 // Helper for image URLs
 const getImageUrl = (url?: string) => {
@@ -71,16 +71,6 @@ export default function PublicProfilePage() {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("activities");
-    const [userActivities, setUserActivities] = useState<{
-        auctions: any[];
-        tenders: any[];
-        directSales: any[];
-    }>({
-        auctions: [],
-        tenders: [],
-        directSales: []
-    });
-    const [activitiesLoading, setActivitiesLoading] = useState(false);
 
     const userId = params?.id as string;
 
@@ -123,60 +113,12 @@ export default function PublicProfilePage() {
         }
     }, [userId]);
 
-    // Fetch User Activities
-    const fetchUserActivities = useCallback(async () => {
-        if (!userId) return;
-        
-        try {
-            setActivitiesLoading(true);
-            const [auctionsRes, tendersRes, directSalesRes] = await Promise.allSettled([
-                requests.get('bid').catch(() => ({ data: [] })),
-                requests.get('tender').catch(() => ({ data: [] })),
-                requests.get('direct-sale').catch(() => ({ data: [] }))
-            ]);
-
-            const extractData = (res: any) => {
-                if (res.status !== 'fulfilled') return [];
-                const value = res.value;
-                if (Array.isArray(value)) return value;
-                if (value?.data && Array.isArray(value.data)) return value.data;
-                return [];
-            };
-
-            const allAuctions = extractData(auctionsRes);
-            const allTenders = extractData(tendersRes);
-            const allDirectSales = extractData(directSalesRes);
-
-            // Filter by owner
-            const filterByOwner = (items: any[]) => items.filter((item: any) => {
-                const ownerId = item.owner?._id?.toString() || 
-                               item.owner?._id || 
-                               item.owner?.toString() || 
-                               item.owner || 
-                               item.ownerId?.toString() || 
-                               item.ownerId;
-                return ownerId === userId.toString();
-            });
-
-            setUserActivities({
-                auctions: filterByOwner(allAuctions),
-                tenders: filterByOwner(allTenders),
-                directSales: filterByOwner(allDirectSales)
-            });
-        } catch (error) {
-            console.error("Error fetching activities:", error);
-        } finally {
-            setActivitiesLoading(false);
-        }
-    }, [userId]);
-
     useEffect(() => {
         initializeAuth();
         if (userId) {
             fetchUserDetails();
-            fetchUserActivities();
         }
-    }, [userId, initializeAuth, fetchUserDetails, fetchUserActivities]);
+    }, [userId, initializeAuth, fetchUserDetails]);
 
     // Get Avatar Src Logic from ProfilePage to match
     const getAvatarSrc = () => {
@@ -442,111 +384,7 @@ export default function PublicProfilePage() {
                                         exit={{ opacity: 0, y: -10 }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div style={{ display: 'grid', gap: '2rem' }}>
-                                            {/* Auctions */}
-                                            {userActivities.auctions.length > 0 && (
-                                                <section>
-                                                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem', color: '#1f2937' }}>
-                                                        <i className="bi bi-hammer me-2" style={{ color: '#3b82f6' }}></i>
-                                                        Auctions ({userActivities.auctions.length})
-                                                    </h3>
-                                                    <div className="modern-content-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                                                        {userActivities.auctions.map((auction) => {
-                                                             let thumbUrl = "/assets/images/logo-white.png";
-                                                             if (auction.thumbs?.[0]?.url) {
-                                                                 thumbUrl = getImageUrl(auction.thumbs[0].url) || thumbUrl;
-                                                             }
-
-                                                             return (
-                                                                <div key={auction._id} className="modern-status-card" style={{ padding: 0, cursor: 'pointer' }} onClick={() => router.push(`/auction-details/${auction._id}`)}>
-                                                                    <div style={{ height: '180px', position: 'relative', overflow: 'hidden' }}>
-                                                                        <img src={thumbUrl} alt={auction.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                                        <div className={`status-badge ${auction.status === 'ACTIVE' ? 'success' : 'secondary'}`} style={{
-                                                                            position: 'absolute',
-                                                                            top: '10px',
-                                                                            right: '10px',
-                                                                            padding: '4px 10px',
-                                                                            borderRadius: '20px',
-                                                                            background: auction.status === 'ACTIVE' ? 'rgba(34, 197, 94, 0.9)' : 'rgba(107, 114, 128, 0.9)',
-                                                                            color: 'white',
-                                                                            fontSize: '12px',
-                                                                            fontWeight: 600
-                                                                        }}>
-                                                                            {auction.status}
-                                                                        </div>
-                                                                    </div>
-                                                                    <div style={{ padding: '1rem' }}>
-                                                                        <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#111827' }}>{auction.title}</h4>
-                                                                        <p style={{ color: '#3b82f6', fontWeight: 700, fontSize: '1.1rem' }}>{auction.currentPrice || auction.startingPrice} DZD</p>
-                                                                    </div>
-                                                                </div>
-                                                             );
-                                                        })}
-                                                    </div>
-                                                </section>
-                                            )}
-
-                                            {/* Tenders */}
-                                            {userActivities.tenders.length > 0 && (
-                                                <section>
-                                                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem', color: '#1f2937' }}>
-                                                        <i className="bi bi-file-text me-2" style={{ color: '#10b981' }}></i>
-                                                        Tenders ({userActivities.tenders.length})
-                                                    </h3>
-                                                    <div className="modern-content-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                                                        {userActivities.tenders.map((tender) => (
-                                                            <div key={tender._id} className="modern-status-card" style={{ padding: '1.5rem', cursor: 'pointer' }} onClick={() => router.push(`/tender-details/${tender._id}`)}>
-                                                                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                                                                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', fontSize: '1.5rem' }}>
-                                                                        <i className="bi bi-file-text"></i>
-                                                                    </div>
-                                                                    <span style={{ fontSize: '12px', color: '#6b7280', background: '#f3f4f6', padding: '2px 8px', borderRadius: '10px' }}>{new Date(tender.createdAt).toLocaleDateString()}</span>
-                                                                </div>
-                                                                <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#111827' }}>{tender.title}</h4>
-                                                                <p style={{ fontSize: '0.9rem', color: '#6b7280', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{tender.description}</p>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </section>
-                                            )}
-
-                                             {/* Direct Sales */}
-                                             {userActivities.directSales.length > 0 && (
-                                                <section>
-                                                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem', color: '#1f2937' }}>
-                                                        <i className="bi bi-bag-check me-2" style={{ color: '#f59e0b' }}></i>
-                                                        Direct Sales ({userActivities.directSales.length})
-                                                    </h3>
-                                                    <div className="modern-content-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                                                        {userActivities.directSales.map((sale) => {
-                                                             let thumbUrl = "/assets/images/logo-white.png";
-                                                             // Adjust based on direct sale data structure
-                                                             const img = sale.images?.[0] || sale.image;
-                                                             if (img) thumbUrl = getImageUrl(img) || thumbUrl;
-
-                                                             return (
-                                                                <div key={sale._id} className="modern-status-card" style={{ padding: 0, cursor: 'pointer' }} onClick={() => router.push(`/direct-sale/${sale._id}`)}>
-                                                                    <div style={{ height: '180px', position: 'relative', overflow: 'hidden' }}>
-                                                                        <img src={thumbUrl} alt={sale.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                                    </div>
-                                                                    <div style={{ padding: '1rem' }}>
-                                                                        <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#111827' }}>{sale.title}</h4>
-                                                                        <p style={{ color: '#f59e0b', fontWeight: 700, fontSize: '1.1rem' }}>{sale.price} DZD</p>
-                                                                    </div>
-                                                                </div>
-                                                             );
-                                                        })}
-                                                    </div>
-                                                </section>
-                                            )}
-
-                                            {userActivities.auctions.length === 0 && userActivities.tenders.length === 0 && userActivities.directSales.length === 0 && !activitiesLoading && (
-                                                <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
-                                                    <i className="bi bi-inbox" style={{ fontSize: '2.5rem', marginBottom: '1rem', display: 'block' }}></i>
-                                                    <p>No activities found for this user.</p>
-                                                </div>
-                                            )}
-                                        </div>
+                                        <UserActivitiesSection userId={userId} />
                                     </motion.div>
                                 )}
 

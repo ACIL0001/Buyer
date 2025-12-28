@@ -90,7 +90,8 @@ const TenderCard = ({ tender }: TenderCardProps) => {
 
   const isTenderOwner = (tender: Tender) => {
     if (!isLogged || !auth.user?._id) return false;
-    return tender.owner?._id === auth.user._id || tender.owner === auth.user._id;
+    const ownerId = typeof tender.owner === 'string' ? tender.owner : tender.owner?._id;
+    return ownerId === auth.user._id;
   };
 
   const navigateWithScroll = (url: string) => {

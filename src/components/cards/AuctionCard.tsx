@@ -101,7 +101,8 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
 
   const isAuctionOwner = (auction: Auction) => {
     if (!isLogged || !auth.user?._id) return false;
-    return auction.owner?._id === auth.user._id || auction.owner === auth.user._id || auction.seller?._id === auth.user._id;
+    const ownerId = typeof auction.owner === 'string' ? auction.owner : auction.owner?._id;
+    return ownerId === auth.user._id || auction.seller?._id === auth.user._id;
   };
 
   const navigateWithScroll = (url: string) => {
@@ -112,9 +113,10 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
   const isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30 && parseInt(timer.days) === 0;
 
   // Determine the display name for the auction owner
-  const ownerName = auction.owner?.firstName && auction.owner?.lastName
-    ? `${auction.owner.firstName} ${auction.owner.lastName}`.trim()
-    : auction.owner?.name;
+  const ownerObject = typeof auction.owner === 'object' ? auction.owner : null;
+  const ownerName = ownerObject?.firstName && ownerObject?.lastName
+    ? `${ownerObject.firstName} ${ownerObject.lastName}`.trim()
+    : ownerObject?.name;
   const sellerName = auction.seller?.name;
   const displayName = ownerName || sellerName || t('liveAuction.seller');
 
@@ -395,7 +397,7 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
           marginTop: 'auto'
         }}>
           <img
-            src={auction.owner?.photoURL || DEFAULT_PROFILE_IMAGE}
+            src={ownerObject?.photoURL || ownerObject?.profileImage?.url || DEFAULT_PROFILE_IMAGE}
             alt={displayName}
             style={{
               width: '28px',

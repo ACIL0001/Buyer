@@ -21,9 +21,9 @@ const RootStyle = styled('div')(({ theme }) => ({
   position: 'relative',
   background: theme.palette.common.white,
   padding: theme.spacing(3, 0),
-  paddingTop: '80px',
+  paddingTop: '40px',
   '@media (max-width: 599px)': {
-    paddingTop: '60px',
+    paddingTop: '20px',
   },
 }));
 
@@ -100,7 +100,7 @@ export default function Login() {
           width: '100%',
           display: 'flex',
           justifyContent: 'center',
-          mb: { xs: 1.5, sm: 2.5 },
+          mb: { xs: 1, sm: 2 },
         }}
       >
         <NextLink href="/" passHref>
@@ -111,8 +111,6 @@ export default function Login() {
               height: 'auto',
               maxHeight: '70px',
               maxWidth: '180px',
-              // Responsive sizes via style or className if needed, but style is safer here
-              // Emulating the sx responsive logic manually since img isn't MUI
             }}
             className="w-auto h-12 sm:h-16 md:h-[70px] max-w-[130px] sm:max-w-[160px] md:max-w-[180px]"
           />
@@ -125,7 +123,7 @@ export default function Login() {
           variant="h3" 
           gutterBottom 
           sx={{ 
-            mb: 2, 
+            mb: 1.5, 
             textAlign: 'center', 
             fontWeight: 800,
             background: `linear-gradient(135deg, #0063b1 0%, #00a3e0 100%)`,
@@ -134,10 +132,10 @@ export default function Login() {
             WebkitTextFillColor: 'transparent',
             letterSpacing: '-0.02em',
             fontSize: {
-              xs: '1.4rem',
-              sm: '1.6rem',
-              md: '1.9rem',
-              lg: '2.3rem',
+              xs: '1.25rem',
+              sm: '1.45rem',
+              md: '1.75rem',
+              lg: '2.0rem',
             },
           }}
         >

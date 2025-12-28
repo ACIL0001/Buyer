@@ -15,16 +15,32 @@ import UserActivitiesSection from "@/components/profile/UserActivitiesSection";
 // Helper for image URLs
 const getImageUrl = (url?: string) => {
     if (!url) return undefined;
+    
+    // Handle Absolute URLs
     if (url.startsWith('http')) {
-         if (url.startsWith('http://localhost/')) {
-             return url.replace('http://localhost/', 'http://localhost:3000/');
-         }
-         return url;
+        // Fix: Rewrite localhost URLs to use the production app.baseURL
+        if (url.includes('localhost')) {
+             try {
+                const urlObj = new URL(url);
+                // Only rewrite if it's a static asset path
+                if (urlObj.pathname.startsWith('/static')) {
+                     const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
+                     const relativePath = urlObj.pathname.startsWith('/') ? urlObj.pathname.slice(1) : urlObj.pathname;
+                     return `${baseURL}${relativePath}${urlObj.search}`;
+                }
+             } catch (e) {
+                 console.error("Error parsing URL in getImageUrl:", e);
+             }
+        }
+        return url;
     }
+
+    // Handle Relative Paths
     if (url.startsWith('/static') || url.startsWith('static/')) {
         const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
         return `${baseURL}${url.startsWith('/') ? url.slice(1) : url}`;
     }
+    
     return url;
 };
 
@@ -316,7 +332,7 @@ export default function PublicProfilePage() {
                             </div>
 
                             {/* User Info Text */}
-                            <div style={{ paddingBottom: '30px', flex: 1 }}>
+                            <div style={{ paddingBottom: '50px', flex: 1 }}>
                                 <h1 style={{ 
                                     fontSize: '28px', 
                                     fontWeight: '800', 

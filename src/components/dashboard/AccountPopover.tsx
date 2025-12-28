@@ -127,7 +127,7 @@ export default function AccountPopover() {
     return '';
   };
 
-  const userDisplayName = (auth?.user as any)?.entreprise || `${auth?.user?.firstName || t('common.user')} ${auth?.user?.lastName || ''}`.trim();
+  const userDisplayName = (auth?.user as any)?.socialReason || (auth?.user as any)?.entreprise || `${auth?.user?.firstName || t('common.user')} ${auth?.user?.lastName || ''}`.trim();
   const userEmail = auth?.user?.email || 'user@example.com';
   const avatarUrl = getAvatarUrl();
   const userInitial = (auth?.user?.firstName?.[0] || 'U').toUpperCase();

@@ -790,6 +790,7 @@ export const Header = () => {
                       );
                     })()}
                     {!isMobile ? (
+                      auth?.user?.socialReason ||
                       auth?.user?.entreprise || 
                       auth?.user?.companyName || 
                       'User'

@@ -166,7 +166,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
                          whiteSpace: 'nowrap',
                        }}
                      >
-                         {(user as any)?.entreprise || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User'}
+                         {(user as any)?.socialReason || (user as any)?.entreprise || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'User'}
                      </Typography>
                      <Chip 
                        label="PRO" 

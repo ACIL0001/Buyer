@@ -123,7 +123,7 @@ export default function Login() {
           variant="h3" 
           gutterBottom 
           sx={{ 
-            mb: 1.5, 
+            mb: 3, 
             textAlign: 'center', 
             fontWeight: 800,
             background: `linear-gradient(135deg, #0063b1 0%, #00a3e0 100%)`,

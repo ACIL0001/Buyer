@@ -82,50 +82,6 @@
     "minutesAbbr": "m",
     "secondsAbbr": "s"
   },
-  "dashboard": {
-    "quickActions": "Actions Rapides",
-    "performance": "Performance",
-    "offersOverview": "Aperçu des Offres",
-    "financialOverview": "Aperçu Financier",
-    "stats": {
-      "totalAuctions": "Total Enchères",
-      "activeAuctions": "Enchères Actives",
-      "totalTenders": "Total Appels d'Offres",
-      "activeTenders": "Appels d'Offres Actifs",
-      "totalSales": "Total Ventes",
-      "activeSales": "Ventes Actives",
-      "totalOffers": "Total Offres",
-      "pendingOffers": "Offres en Attente",
-      "tenderSubmissions": "Soumissions envoyées",
-      "pendingTenderSubmissions": "Soumissions en attente",
-      "totalEarnings": "Gains Totaux",
-      "averagePrice": "Prix Moyen",
-      "totalViews": "Vues Totales",
-      "conversionRate": "Taux de Conversion"
-    },
-    "navigation": {
-      "dashboard": "Tableau de Bord",
-      "newTender": "Nouvel Appel d'Offres",
-      "myTenders": "Mes Appels d'Offres",
-      "createAuction": "Créer une Enchère",
-      "auctions": "Enchères",
-      "allAuctions": "Toutes les Enchères",
-      "myAuctions": "Mes Enchères",
-      "offers": "Offres",
-      "tenders": "Appels d'Offres",
-      "receivedBids": "Offres Reçues",
-      "createSale": "Créer une Vente",
-      "mySales": "Mes Ventes",
-      "directSales": "Ventes Directes",
-      "orders": "Commandes",
-      "chat": "Messagerie"
-    },
-    "list": {
-      "columns": {
-        "actions": "Actions"
-      }
-    }
-  },
   "createAuction": {
     "title": "Créer une Enchère",
     "subtitle": "Créez une nouvelle annonce et atteignez des milliers d'acheteurs.",
@@ -1138,18 +1094,24 @@
     "offersOverview": "Aperçu des Offres & Soumissions",
     "financialOverview": "Aperçu Financier",
     "navigation": {
+      "dashboard": "Tableau de Bord",
       "home": "Accueil",
       "auctions": "Enchères",
+      "allAuctions": "Toutes les Enchères",
+      "myAuctions": "Mes Enchères",
       "tenders": "Appels d'offres",
       "directSales": "Ventes Directes",
       "profile": "Profil",
       "settings": "Paramètres",
-      "chat": "Chat",
+      "chat": "Messagerie",
       "newTender": "Nouvel Appel d'Offres",
       "myTenders": "Mes Appels d'Offres",
       "createAuction": "Créer une Enchère",
       "createSale": "Créer une Vente",
-      "mySales": "Mes Ventes"
+      "mySales": "Mes Ventes",
+      "offers": "Offres",
+      "receivedBids": "Offres Reçues",
+      "orders": "Commandes"
     },
     "stats": {
       "totalSales": "Total des Ventes",

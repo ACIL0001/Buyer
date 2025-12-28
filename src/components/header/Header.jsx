@@ -747,6 +747,7 @@ export const Header = () => {
                       const avatarUrl = getAvatarUrl();
                       
                       return (
+                        <div style={{
                           width: isMobile ? '20px' : '24px',
                           height: isMobile ? '20px' : '24px',
                           borderRadius: '50%',

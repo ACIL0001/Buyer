@@ -68,6 +68,18 @@ const DEV_SERVER_PATTERN = new RegExp(escapeRegExp(DEV_SERVER_URL), 'g');
 
 const getImageUrl = (url?: string) => {
     if (!url) return undefined;
+
+    // Hard fix for localhost:3000 URLs to point to production
+    if (url.includes('localhost:3000')) {
+        const prodBase = 'https://mazadclick-server.onrender.com/'
+        const parts = url.split('localhost:3000');
+        if (parts.length > 1) {
+            let path = parts[1];
+            if (path.startsWith('/')) path = path.substring(1);
+            return `${prodBase}${path}`;
+        }
+    }
+
     if (url.startsWith('http')) {
          // Fix localhost without port if appearing (backend bug workaround)
          if (url.startsWith('http://localhost/')) {
@@ -1447,7 +1459,7 @@ function ProfilePage() {
                             </div>
 
                             {/* User Info */}
-                            <div className="user-info-content" style={{ paddingBottom: '0', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div className="user-info-content" style={{ paddingBottom: '50px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                 <h1 style={{ 
                                     fontSize: '28px', 
                                     fontWeight: '800', 

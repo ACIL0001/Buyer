@@ -5,9 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { AuctionsAPI } from "@/app/api/auctions";
 import { TendersAPI } from "@/app/api/tenders";
 import { DirectSaleAPI } from "@/app/api/direct-sale";
-import AuctionCard, { Auction } from '../cards/AuctionCard';
-import TenderCard, { Tender } from '../cards/TenderCard';
-import DirectSaleCard, { DirectSale } from '../cards/DirectSaleCard';
+import { Auction } from '@/types/auction';
+import { Tender } from '@/types/tender';
+import { DirectSale } from '@/types/direct-sale';
+import AuctionCard from '../cards/AuctionCard';
+import TenderCard from '../cards/TenderCard';
+import DirectSaleCard from '../cards/DirectSaleCard';
 import { CircularProgress, Box, Typography, Tabs, Tab } from '@mui/material';
 
 interface UserActivitiesSectionProps {

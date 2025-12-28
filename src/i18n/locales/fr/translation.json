@@ -318,8 +318,10 @@
       "security": "Sécurité",
       "documents": "Documents",
       "notifications": "Notifications",
-      "history": "Historique des offres"
+      "history": "Historique des offres",
+      "myActivities": "Mes Activités"
     },
+    "noActivities": "Aucune activité récente",
     "personalInfo": "Informations personnelles",
     "personalInfoDesc": "Gérez vos informations personnelles et les détails de votre profil",
     "updateSuccess": "Profil mis à jour avec succès",
@@ -594,7 +596,7 @@
     "inProgress": "En cours",
     "bidNow": "Enchérir maintenant",
     "professionalAuctions": "Enchères Professionnelles Disponibles",
-    "professionalMessage": "Si vous devez changer votre compte en professionnel, allez dans le tableau de bord du vendeur et mettez à jour votre compte. Une fois mis à jour, vous aurez accès aux enchères professionnelles."
+    "submitBid": "Enchérir"
   },
   "professionalAuctions": {
     "title": "Enchères Professionnelles",
@@ -873,7 +875,8 @@
     "noTendersDescription": "Revenez plus tard pour voir les nouveaux appels d'offres",
     "comeBackLater": "Revenez plus tard pour voir les nouveaux appels d'offres",
     "viewAll": "Voir tous les appels d'offres",
-    "tenderTitle": "Tender Title"
+    "tenderTitle": "Tender Title",
+    "viewDetails": "Voir les détails"
   },
   "liveDirectSales": {
     "title": "Ventes Directes",
@@ -893,7 +896,8 @@
     "noDirectSalesDescription": "Revenez plus tard pour voir les nouvelles ventes directes",
     "comeBackLater": "Revenez plus tard pour voir les nouvelles ventes directes",
     "viewAll": "Voir toutes les ventes directes",
-    "noTitle": "Sans titre"
+    "noTitle": "Sans titre",
+    "buyNow": "Acheter maintenant"
   },
   "tenders": {
     "searchPlaceholder": "Rechercher une soumission...",

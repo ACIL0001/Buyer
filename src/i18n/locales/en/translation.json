@@ -244,8 +244,10 @@
       "security": "Security",
       "documents": "Documents",
       "notifications": "Notifications",
-      "history": "Offer History"
+      "history": "Offer History",
+      "myActivities": "My Activities"
     },
+    "noActivities": "No recent activity",
     "personalInfo": "Personal Information",
     "personalInfoDesc": "Manage your personal information and profile details",
     "updateSuccess": "Profile updated successfully",
@@ -782,7 +784,9 @@
     "noActiveAuctions": "No active auctions",
     "noAuctionsDescription": "Come back later to see new auctions",
     "comeBackLater": "Come back later to see new auctions",
-    "viewAll": "View all auctions"
+    "viewAll": "View all auctions",
+    "submitBid": "Bid",
+    "currentPrice": "Price"
   },
   "liveTenders": {
     "title": "Tenders",
@@ -799,7 +803,8 @@
     "noTendersDescription": "Come back later to see new tenders",
     "comeBackLater": "Come back later to see new tenders",
     "viewAll": "View all tenders",
-    "tenderTitle": "Tender Title"
+    "tenderTitle": "Tender Title",
+    "viewDetails": "View Details"
   },
   "liveDirectSales": {
     "title": "Direct Sales",
@@ -819,7 +824,8 @@
     "noDirectSalesDescription": "Come back later to see new direct sales",
     "comeBackLater": "Come back later to see new direct sales",
     "viewAll": "View all direct sales",
-    "noTitle": "Untitled"
+    "noTitle": "Untitled",
+    "buyNow": "Buy Now"
   },
   "tenders": {
     "searchPlaceholder": "Search for a tender...",

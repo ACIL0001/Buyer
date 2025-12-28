@@ -237,8 +237,10 @@
       "security": "الأمان",
       "documents": "المستندات",
       "notifications": "الإشعارات",
-      "history": "تاريخ العروض"
+      "history": "تاريخ العروض",
+      "myActivities": "نشاطاتي"
     },
+    "noActivities": "لا توجد أنشطة حديثة",
     "personalInfo": "المعلومات الشخصية",
     "personalInfoDesc": "إدارة معلوماتك الشخصية وتفاصيل ملفك الشخصي",
     "updateSuccess": "تم تحديث الملف الشخصي بنجاح",
@@ -840,7 +842,8 @@
     "noTendersDescription": "عد لاحقاً لرؤية طلبات العروض الجديدة",
     "comeBackLater": "عد لاحقاً لرؤية طلبات العروض الجديدة",
     "viewAll": "عرض جميع طلبات العروض",
-    "tenderTitle": "عنوان طلب العروض"
+    "tenderTitle": "عنوان طلب العروض",
+    "viewDetails": "عرض التفاصيل"
   },
   "liveDirectSales": {
     "title": "المبيعات المباشرة",
@@ -860,7 +863,8 @@
     "noDirectSalesDescription": "عد لاحقاً لرؤية المبيعات المباشرة الجديدة",
     "comeBackLater": "عد لاحقاً لرؤية المبيعات المباشرة الجديدة",
     "viewAll": "عرض جميع المبيعات المباشرة",
-    "noTitle": "بدون عنوان"
+    "noTitle": "بدون عنوان",
+    "buyNow": "اشتري الآن"
   },
   "tenders": {
     "searchPlaceholder": "البحث عن طلب عروض...",

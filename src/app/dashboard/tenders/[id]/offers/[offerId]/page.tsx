@@ -96,7 +96,7 @@ export default function OfferDetailPage() {
   const handleAcceptOffer = async () => {
     try {
       setProcessing(true);
-      await OffersAPI.acceptOffer(offerId);
+      await TendersAPI.acceptTenderBid(offerId);
       enqueueSnackbar('Offre acceptée avec succès', { variant: 'success' });
       fetchData(); // Refresh data
     } catch (error) {
@@ -110,7 +110,7 @@ export default function OfferDetailPage() {
   const handleRejectOffer = async () => {
     try {
         setProcessing(true);
-        await OffersAPI.rejectOffer(offerId);
+        await TendersAPI.rejectTenderBid(offerId);
         enqueueSnackbar('Offre rejetée', { variant: 'info' });
         fetchData();
     } catch (error) {

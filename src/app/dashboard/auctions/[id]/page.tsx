@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Box,
   Card,
@@ -413,23 +414,25 @@ export default function AuctionDetailPage() {
                       }
                     }}
                   >
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                      <Avatar src={participant.avatar} alt={participant.name}>{participant.name.charAt(0)}</Avatar>
-                      <Box flex={1}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{participant.name}</Typography>
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                            <Typography variant="body2" color="text.secondary">
-                                Offre: {participant.bidAmount?.toFixed(2) || '0.00'} DA
-                            </Typography>
-                            {participant.user?.phone && (
-                                <Chip label={participant.user.phone} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
-                            )}
+                      <Link href={`/profile/${participant.user?._id}`} style={{ textDecoration: 'none', color: 'inherit', width: '100%' }}>
+                        <Stack direction="row" alignItems="center" spacing={2}>
+                          <Avatar src={participant.avatar} alt={participant.name}>{participant.name.charAt(0)}</Avatar>
+                          <Box flex={1}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{participant.name}</Typography>
+                            <Stack direction="row" alignItems="center" spacing={1}>
+                                <Typography variant="body2" color="text.secondary">
+                                    Offre: {participant.bidAmount?.toFixed(2) || '0.00'} DA
+                                </Typography>
+                                {participant.user?.phone && (
+                                    <Chip label={participant.user.phone} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
+                                )}
+                            </Stack>
+                          </Box>
+                          <Box textAlign="right">
+                            <Typography variant="caption" color="text.secondary">{formatDate(participant.bidDate)}</Typography>
+                          </Box>
                         </Stack>
-                      </Box>
-                      <Box textAlign="right">
-                        <Typography variant="caption" color="text.secondary">{formatDate(participant.bidDate)}</Typography>
-                      </Box>
-                    </Stack>
+                      </Link>
                   </Paper>
                 ))}
               </Stack>

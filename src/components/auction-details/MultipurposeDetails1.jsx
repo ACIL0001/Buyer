@@ -571,7 +571,7 @@ const MultipurposeDetails1 = () => {
     const payload = {
       price: finalBidAmount,
       user: auth.user._id,
-      owner: auth.user._id, // This should be the bidder's ID, not the auction owner's ID
+      owner: safeOwner._id || safeOwner, // This should be the AUCTION OWNER'S ID, not the bidder's ID
     };
 
     console.log("[MultipurposeDetails1] Sending offer payload:", payload);
@@ -579,6 +579,12 @@ const MultipurposeDetails1 = () => {
     // Validate required fields
     if (!payload.user) {
       toast.error("Utilisateur non valide. Veuillez vous reconnecter.");
+      return;
+    }
+
+    if (!payload.owner) {
+      console.error("[MultipurposeDetails1] Missing owner ID:", safeOwner);
+      toast.error("Données de l'enchère incomplètes. Veuillez actualiser la page.");
       return;
     }
 
@@ -758,7 +764,7 @@ const MultipurposeDetails1 = () => {
       const bidPayload = {
         price: Math.floor(suggestedBid),
         user: auth.user._id,
-        owner: auth.user._id,
+        owner: similarAuction.owner?._id || similarAuction.owner,
       };
       
       console.log("[MultipurposeDetails1] Sending similar auction bid:", bidPayload);

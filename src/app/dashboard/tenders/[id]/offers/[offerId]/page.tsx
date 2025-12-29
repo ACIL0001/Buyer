@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Box,
   Card,
@@ -304,30 +305,56 @@ export default function OfferDetailPage() {
                     <MdPerson /> Soumissionnaire
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
-                
-                <Stack spacing={3} alignItems="center" textAlign="center">
-                    <Avatar 
-                        src={offer.user?.avatar?.url || offer.bidder?.avatar?.url} 
-                        alt={offer.user?.firstName || offer.bidder?.firstName}
-                        sx={{ width: 80, height: 80, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: `2px solid ${theme.palette.primary.light}` }}
-                    >
-                        {(offer.user?.firstName || offer.bidder?.firstName)?.[0]}
-                    </Avatar>
-                    <Box>
-                        <Typography variant="h6" fontWeight="bold">
-                            {offer.user?.firstName || offer.bidder?.firstName} {offer.user?.lastName || offer.bidder?.lastName}
+                {offer?.user?._id ? (
+                  <Link href={`/profile/${offer?.user?._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <Stack direction="row" alignItems="center" spacing={2} sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}>
+                      <Avatar 
+                        src={offer?.user?.avatar?.path ? `https://mazadclick-server.onrender.com/static/uploads/${offer.user.avatar.path}` : ''} 
+                        alt={offer?.user?.firstName}
+                        sx={{ width: 56, height: 56 }}
+                      >
+                        {offer?.user?.firstName?.charAt(0)}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600}>
+                          {offer?.user?.firstName} {offer?.user?.lastName}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                            {offer.user?.email || offer.bidder?.email}
-                        </Typography>
-                        <Chip 
-                            label={offer.user?.phone || offer.bidder?.phone || offer.phone || 'Tél non disponible'} 
-                            size="small" 
-                            variant="outlined" 
-                            sx={{ mt: 1 }} 
-                        />
-                    </Box>
-                </Stack>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Typography variant="body2" color="text.secondary">
+                             {offer?.user?.email}
+                          </Typography>
+                          {offer?.user?.phone && (
+                            <Chip label={offer.user.phone} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
+                          )}
+                        </Stack>
+                      </Box>
+                    </Stack>
+                  </Link>
+                ) : (
+                  <Stack spacing={3} alignItems="center" textAlign="center">
+                      <Avatar 
+                          src={offer.user?.avatar?.url || offer.bidder?.avatar?.url} 
+                          alt={offer.user?.firstName || offer.bidder?.firstName}
+                          sx={{ width: 80, height: 80, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: `2px solid ${theme.palette.primary.light}` }}
+                      >
+                          {(offer.user?.firstName || offer.bidder?.firstName)?.[0]}
+                      </Avatar>
+                      <Box>
+                          <Typography variant="h6" fontWeight="bold">
+                              {offer.user?.firstName || offer.bidder?.firstName} {offer.user?.lastName || offer.bidder?.lastName}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                              {offer.user?.email || offer.bidder?.email}
+                          </Typography>
+                          <Chip 
+                              label={offer.user?.phone || offer.bidder?.phone || offer.phone || 'Tél non disponible'} 
+                              size="small" 
+                              variant="outlined" 
+                              sx={{ mt: 1 }} 
+                          />
+                      </Box>
+                  </Stack>
+                )}
             </Card>
 
             <Card 

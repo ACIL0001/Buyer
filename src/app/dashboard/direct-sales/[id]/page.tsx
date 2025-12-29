@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Box,
   Card,
@@ -261,22 +262,24 @@ export default function DirectSaleDetailPage() {
                                         <TableRow key={purchase._id} hover>
                                              <TableCell>
                                                 <Stack direction="row" alignItems="center" spacing={2}>
-                                                    <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.light }}>
-                                                        {purchase.buyer?.firstName?.charAt(0) || <MdPerson />}
-                                                    </Avatar>
-                                                    <Box>
-                                                        <Typography variant="subtitle2">
-                                                            {purchase.buyer?.firstName} {purchase.buyer?.lastName}
-                                                        </Typography>
-                                                        {purchase.buyer?.email && (
-                                                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                                                                {purchase.buyer?.email}
+                                                    <Link href={`/profile/${purchase.buyer?._id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                                        <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.light }}>
+                                                            {purchase.buyer?.firstName?.charAt(0) || <MdPerson />}
+                                                        </Avatar>
+                                                        <Box>
+                                                            <Typography variant="subtitle2" sx={{ '&:hover': { textDecoration: 'underline' } }}>
+                                                                {purchase.buyer?.firstName} {purchase.buyer?.lastName}
                                                             </Typography>
-                                                        )}
-                                                        {purchase.buyer?.phone && (
-                                                             <Chip label={purchase.buyer.phone} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem', mt: 0.5 }} />
-                                                        )}
-                                                    </Box>
+                                                            {purchase.buyer?.email && (
+                                                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                                                                    {purchase.buyer?.email}
+                                                                </Typography>
+                                                            )}
+                                                            {purchase.buyer?.phone && (
+                                                                <Chip label={purchase.buyer.phone} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem', mt: 0.5 }} />
+                                                            )}
+                                                        </Box>
+                                                    </Link>
                                                 </Stack>
                                              </TableCell>
                                              <TableCell align="right">{purchase.quantity}</TableCell>

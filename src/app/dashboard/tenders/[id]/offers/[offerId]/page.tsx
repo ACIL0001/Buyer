@@ -305,26 +305,26 @@ export default function OfferDetailPage() {
                     <MdPerson /> Soumissionnaire
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
-                {offer?.user?._id ? (
-                  <Link href={`/profile/${offer?.user?._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                {(offer?.user?._id || offer?.bidder?._id) ? (
+                  <Link href={`/profile/${offer?.user?._id || offer?.bidder?._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}>
                       <Avatar 
-                        src={offer?.user?.avatar?.path ? `https://mazadclick-server.onrender.com/static/uploads/${offer.user.avatar.path}` : ''} 
-                        alt={offer?.user?.firstName}
+                        src={(offer?.user?.avatar?.path || offer?.bidder?.avatar?.path) ? `https://mazadclick-server.onrender.com/static/uploads/${offer?.user?.avatar?.path || offer?.bidder?.avatar?.path}` : ''} 
+                        alt={offer?.user?.firstName || offer?.bidder?.firstName}
                         sx={{ width: 56, height: 56 }}
                       >
-                        {offer?.user?.firstName?.charAt(0)}
+                        {(offer?.user?.firstName || offer?.bidder?.firstName)?.charAt(0)}
                       </Avatar>
                       <Box>
                         <Typography variant="subtitle1" fontWeight={600}>
-                          {offer?.user?.firstName} {offer?.user?.lastName}
+                          {offer?.user?.firstName || offer?.bidder?.firstName} {offer?.user?.lastName || offer?.bidder?.lastName}
                         </Typography>
                         <Stack direction="row" alignItems="center" spacing={1}>
                           <Typography variant="body2" color="text.secondary">
-                             {offer?.user?.email}
+                             {offer?.user?.email || offer?.bidder?.email}
                           </Typography>
-                          {offer?.user?.phone && (
-                            <Chip label={offer.user.phone} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
+                          {(offer?.user?.phone || offer?.bidder?.phone) && (
+                            <Chip label={offer?.user?.phone || offer?.bidder?.phone} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
                           )}
                         </Stack>
                       </Box>

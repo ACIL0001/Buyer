@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Typography, Grid, Card, CardContent, Paper, Box, Button } from '@mui/material';
+import { Container, Typography, Card, CardContent, Paper, Box, Button, Grid2 } from '@mui/material';
 import { Phone, Email, QuestionMark, LiveHelp, Support, ContactSupport } from '@mui/icons-material';
 import Link from 'next/link';
 
@@ -31,9 +31,9 @@ export default function SupportCenterPage() {
         </Typography>
       </Box>
       
-      <Grid container spacing={4} sx={{ mb: 6 }}>
+      <Grid2 container spacing={4} sx={{ mb: 6 }}>
         {/* Phone Support */}
-        <Grid item xs={12} md={4}>
+        <Grid2 size={{ xs: 12, md: 4 }}>
           <Card 
             sx={{ 
               height: '100%',
@@ -61,10 +61,10 @@ export default function SupportCenterPage() {
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
         
         {/* Email Support */}
-        <Grid item xs={12} md={4}>
+        <Grid2 size={{ xs: 12, md: 4 }}>
           <Card 
             sx={{ 
               height: '100%',
@@ -92,10 +92,10 @@ export default function SupportCenterPage() {
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid2>
         
         {/* FAQ */}
-        <Grid item xs={12} md={4}>
+        <Grid2 size={{ xs: 12, md: 4 }}>
           <Card 
             sx={{ 
               height: '100%',
@@ -128,8 +128,8 @@ export default function SupportCenterPage() {
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       {/* FAQ Section */}
       <Paper elevation={3} sx={{ p: 4, mt: 6, borderRadius: 2 }}>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useCreateSocket } from '@/contexts/socket';
+import { useSnackbar } from '@/contexts/snackbarContext';
 import app from '@/config';
 
 interface GeneralNotification {
@@ -17,32 +18,32 @@ interface GeneralNotification {
 // Helper function to format dates
 function formatDate(dateString: string): string {
   if (!dateString) return '';
-  
+
   const date = new Date(dateString);
   const now = new Date();
-  
+
   // Check if invalid date
   if (isNaN(date.getTime())) return dateString;
-  
+
   // Today - show time only
   if (date.toDateString() === now.toDateString()) {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
-  
+
   // Yesterday
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
   if (date.toDateString() === yesterday.toDateString()) {
     return 'Hier';
   }
-  
+
   // This week - show day name
   const sixDaysAgo = new Date(now);
   sixDaysAgo.setDate(sixDaysAgo.getDate() - 6);
   if (date > sixDaysAgo) {
     return date.toLocaleDateString([], { weekday: 'short' });
   }
-  
+
   // Older - show date
   return date.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: '2-digit' });
 }
@@ -51,9 +52,10 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<GeneralNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // CORRECTED: Call the socket hook at the top level
   const socketContext = useCreateSocket();
+  const { showSnackbar } = useSnackbar();
 
   // Fetch notifications from API
   const fetchNotifications = useCallback(async () => {
@@ -72,28 +74,28 @@ export function useNotifications() {
       const userId = user._id;
       const token = tokens.accessToken;
       console.log('Hook: Found auth', { userId, hasToken: !!token });
-      
+
       // Fetch notifications from backend (general)
       const response = await fetch(`${app.baseURL}notification/general`, {
         method: 'GET',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
           'x-access-key': process.env.NEXT_PUBLIC_KEY_API_BYUER as string,
         },
       });
-      
+
       console.log('Hook: API response status:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.log('Hook: API error:', errorText);
         throw new Error(`Failed to fetch notifications: ${response.status} ${errorText}`);
       }
-      
+
       const data = await response.json();
       console.log('Hook: Received data:', data);
-      
+
       const formattedNotifications = (data.notifications || []).map((notification: GeneralNotification) => ({
         ...notification,
         formattedDate: formatDate(notification.createdAt)
@@ -121,35 +123,38 @@ export function useNotifications() {
     }
 
     const socket = socketContext.socket;
-    
+
     const handleNotification = (data: Record<string, unknown>) => {
       console.log('Socket notification received:', data);
-      
+
       if (data && data._id && data.title && data.message) {
         const formattedNotification = {
           ...data,
           formattedDate: formatDate(data.createdAt ? new Date(data.createdAt as string).toISOString() : new Date().toISOString())
         } as GeneralNotification & { formattedDate: string };
-        
+
         setNotifications(prev => {
           const exists = prev.some(notif => notif._id === data._id);
           if (exists) return prev;
-          
+
           return [formattedNotification, ...prev];
         });
-        
+
+        // Show Snackbar Toast
+        showSnackbar(data.title as string, { variant: 'info' });
+
         console.log('✅ Real-time: Added notification directly from socket:', formattedNotification);
       } else {
         console.log('⚠️ Socket notification incomplete - waiting for complete data:', data);
       }
     };
-    
+
     socket.on('notification', handleNotification);
-    
+
     return () => {
       socket.off('notification', handleNotification);
     };
-  }, [socketContext]);
+  }, [socketContext, showSnackbar]);
 
   const unreadCount = notifications.filter(notification => !notification.read).length;
 
@@ -158,21 +163,21 @@ export function useNotifications() {
     try {
       const auth = typeof window !== 'undefined' ? window.localStorage.getItem('auth') : null;
       if (!auth) return;
-      
+
       const { tokens } = JSON.parse(auth);
       const token = tokens.accessToken;
-      
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification._id === notificationId 
-            ? { ...notification, read: true } 
+
+      setNotifications(prev =>
+        prev.map(notification =>
+          notification._id === notificationId
+            ? { ...notification, read: true }
             : notification
         )
       );
-      
+
       await fetch(`/api/notifications/${notificationId}/read`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         }
@@ -182,13 +187,13 @@ export function useNotifications() {
     }
   }, []);
 
-  return { 
-    notifications, 
-    unreadCount, 
-    loading, 
-    error, 
+  return {
+    notifications,
+    unreadCount,
+    loading,
+    error,
     refresh: fetchNotifications,
-    markAsRead 
+    markAsRead
   };
 }
 

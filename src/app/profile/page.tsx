@@ -69,9 +69,9 @@ const DEV_SERVER_PATTERN = new RegExp(escapeRegExp(DEV_SERVER_URL), 'g');
 const getImageUrl = (url?: string) => {
     if (!url) return undefined;
 
-    // Hard fix for localhost:3000 URLs to point to production
+    // Handle localhost URLs - convert to production URL
     if (url.includes('localhost:3000')) {
-        const prodBase = 'https://mazadclick-server.onrender.com/'
+        const prodBase = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
         const parts = url.split('localhost:3000');
         if (parts.length > 1) {
             let path = parts[1];
@@ -83,7 +83,7 @@ const getImageUrl = (url?: string) => {
     if (url.startsWith('http')) {
          // Fix localhost without port if appearing (backend bug workaround)
          if (url.startsWith('http://localhost/')) {
-             return url.replace('http://localhost/', 'http://localhost:3000/');
+             return url.replace('http://localhost/', `${app.baseURL.endsWith('/') ? app.baseURL : app.baseURL + '/'}`);
          }
          return url;
     }

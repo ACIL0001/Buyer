@@ -68,6 +68,17 @@ const getDirectSaleImageUrl = (directSale: DirectSale) => {
   return DEFAULT_DIRECT_SALE_IMAGE;
 };
 
+// Helper function to ensure URL is absolute (prefixed with API base URL)
+const getAbsoluteUrl = (url?: string): string => {
+  if (!url) return DEFAULT_PROFILE_IMAGE;
+  // Already an absolute URL
+  if (url.startsWith('http')) return url;
+  // Relative URL - prefix with API base URL
+  const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
+  const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+  return `${baseURL}${cleanUrl}`;
+};
+
 const Home1LiveDirectSales = () => {
   const { t } = useTranslation();
   const router = useRouter();
@@ -875,7 +886,7 @@ const Home1LiveDirectSales = () => {
                             marginBottom: 'clamp(10px, 2vw, 14px)',
                           }}>
                             <img
-                              src={directSale.owner?.avatar?.url || directSale.owner?.photoURL || DEFAULT_PROFILE_IMAGE}
+                              src={getAbsoluteUrl(directSale.owner?.avatar?.url || directSale.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
                               alt={displayName}
                               style={{
                                 width: '32px',

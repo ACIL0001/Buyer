@@ -431,6 +431,13 @@
   },
   "chat": {
     "title": "Chat",
+    "discussRealTime": "Discutez en temps réel",
+    "chooseConversationToStart": "Choisissez une conversation pour commencer",
+    "noMessage": "Aucun message",
+    "startNewConversation": "Commencer une nouvelle conversation",
+    "accessDenied": "Accès refusé",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
     "messages": "Messages",
     "conversations": "Conversations",
     "newMessage": "Nouveau message",

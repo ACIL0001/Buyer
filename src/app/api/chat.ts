@@ -1,10 +1,8 @@
 import { requests } from './utils';
+import app from '@/config';
 
-// const DEFAULT_API_URL = 'http://localhost:3000';
-const DEFAULT_API_URL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://mazadclick-server.onrender.com'
-    : 'http://localhost:3000';
+// Use central config for API URL
+const DEFAULT_API_URL = app.baseURL.replace(/\/$/, '');
 
 interface Chat {
   id?: string;

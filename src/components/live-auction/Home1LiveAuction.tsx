@@ -106,6 +106,17 @@ export function calculateTimeRemaining(endDate: string): Timer {
   };
 }
 
+// Helper function to ensure URL is absolute (prefixed with API base URL)
+const getAbsoluteUrl = (url?: string): string => {
+  if (!url) return DEFAULT_PROFILE_IMAGE;
+  // Already an absolute URL
+  if (url.startsWith('http')) return url;
+  // Relative URL - prefix with API base URL
+  const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
+  const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+  return `${baseURL}${cleanUrl}`;
+};
+
 // Helper function to get the correct image URL
 const getAuctionImageUrl = (auction: Auction) => {
   console.log('🎯 ===== AUCTION IMAGE URL PROCESSING =====');
@@ -1213,7 +1224,7 @@ const Home1LiveAuction = () => {
                             marginBottom: 'clamp(10px, 2vw, 14px)',
                           }}>
                             <img
-                              src={auction.owner?.photoURL || DEFAULT_PROFILE_IMAGE}
+                              src={getAbsoluteUrl(auction.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
                               alt={displayName}
                               style={{
                                 width: '32px',

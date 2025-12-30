@@ -24,6 +24,7 @@ import { OffersAPI } from '@/services/offers';
 import useAuth from '@/hooks/useAuth';
 import { useSnackbar } from 'notistack';
 import { MdArrowBack, MdCheckCircle, MdCancel, MdAttachMoney, MdSchedule, MdPerson } from 'react-icons/md';
+import app from '@/config';
 
 export default function OfferDetailPage() {
   const params = useParams();
@@ -144,6 +145,14 @@ export default function OfferDetailPage() {
 
   const isOwner = (tender.owner?._id || tender.owner) == auth?.user?._id;
   const evaluationType = tender.evaluationType || 'MOINS_DISANT';
+
+  // Helper function to get avatar URL
+  const getAvatarUrl = () => {
+    const avatarPath = offer?.user?.avatar?.path || offer?.bidder?.avatar?.path;
+    if (!avatarPath) return '';
+    const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
+    return `${baseURL}static/uploads/${avatarPath}`;
+  };
 
   return (
     <Container maxWidth="xl" sx={{ mt: 3, mb: 10 }}>
@@ -309,7 +318,7 @@ export default function OfferDetailPage() {
                   <Link href={`/profile/${offer?.user?._id || offer?.bidder?._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}>
                       <Avatar 
-                        src={(offer?.user?.avatar?.path || offer?.bidder?.avatar?.path) ? `https://mazadclick-server.onrender.com/static/uploads/${offer?.user?.avatar?.path || offer?.bidder?.avatar?.path}` : ''} 
+                        src={getAvatarUrl()} 
                         alt={offer?.user?.firstName || offer?.bidder?.firstName}
                         sx={{ width: 56, height: 56 }}
                       >

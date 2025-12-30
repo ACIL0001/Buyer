@@ -152,7 +152,7 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
       console.log('🔗 Redirecting to chat with ID:', chatId);
       
       if (chatId) {
-        router.push(`/chat?chatId=${chatId}`);
+        router.push(`/dashboard/chat?chatId=${chatId}`);
       } else {
         // Fallback: Try to redirect using senderId if chat ID is missing
         // This relies on Chat page handling userId param
@@ -170,10 +170,10 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
 
         if (senderId) {
           console.log('🔗 Chat ID missing, falling back to sender ID:', senderId);
-          router.push(`/chat?userId=${senderId}`);
+          router.push(`/dashboard/chat?userId=${senderId}`);
         } else {
           console.log('⚠️ No chat ID or sender ID found, redirecting to general chat page');
-          router.push('/chat');
+          router.push('/dashboard/chat');
         }
       }
       
@@ -666,7 +666,7 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
             background: 'linear-gradient(to right, #f8f9fa, #ffffff)'
           }}>
             <Link 
-              href="/chat"
+              href="/dashboard/chat"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',

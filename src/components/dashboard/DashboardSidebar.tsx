@@ -11,7 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 const DRAWER_WIDTH = 280;
 
 // ... other imports
-import app from '@/config';
+import app, { getFrontendUrl } from '@/config';
 import { CLIENT_TYPE } from '@/types/User';
 
 // ... (previous imports)
@@ -127,7 +127,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
               }
             }}
             alt="MazadClick"
-            onClick={() => router.push('https://mazadclick.vercel.app/')}
+            onClick={() => router.push(getFrontendUrl())}
          />
       </Box>
 

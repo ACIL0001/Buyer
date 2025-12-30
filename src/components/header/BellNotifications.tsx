@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useRef } from 'react';
 import { BiBell } from 'react-icons/bi';
 import useNotifications from '@/hooks/useNotifications';
+import { useRouter } from 'next/navigation';
 
 interface BellNotificationsProps {
   variant?: 'header' | 'sidebar';
@@ -12,6 +13,7 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
   const [windowWidth, setWindowWidth] = useState(1024);
   const { notifications, unreadCount, loading, refresh, markAsRead } = useNotifications();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   console.log('BellNotifications: notifications count:', notifications.length);
   console.log('BellNotifications: unreadCount:', unreadCount);
@@ -65,19 +67,139 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
     }
   }, [isOpen, onOpenChange]); // Remove refresh dependency to prevent excessive API calls
 
+  const handleNotificationClick = (notification: any) => {
+    console.log('🔔 Notification clicked:', notification);
+    
+    // 1. Mark as read if not already
+    if (!notification.read) {
+      markAsRead(notification._id);
+    }
+    
+    // 2. Close dropdown
+    setIsOpen(false);
+    
+    // 3. Redirect logic based on type and data
+    const { type, data } = notification;
+    
+    // Helper to safely get IDs
+    const getChatId = () => data?.chatId || data?.chat?._id;
+    const getBidId = () => data?.bid?._id || data?.bidId || (data?.bid && typeof data.bid === 'string' ? data.bid : null);
+    const getTenderId = () => data?.tender?._id || data?.tenderId || (data?.tender && typeof data.tender === 'string' ? data.tender : null);
+    const getDirectSaleId = () => data?.directSale?._id || data?.directSaleId || (data?.directSale && typeof data.directSale === 'string' ? data.directSale : null);
+
+    // CHAT REDIRECTION
+    // If we have a chat ID, that's usually the best place to go for chat/offer/order related stuff
+    const chatId = getChatId();
+    if (chatId && (
+        type === 'CHAT_CREATED' || 
+        type === 'MESSAGE_RECEIVED' || 
+        type === 'BID_WON' || 
+        type === 'ITEM_SOLD' || 
+        type === 'OFFER_ACCEPTED' || 
+        type === 'ORDER' || 
+        type === 'ORDER_RECEIVED'
+    )) {
+      console.log('🚀 Redirecting to chat:', chatId);
+      router.push(`/dashboard/chat?chatId=${chatId}`);
+      return;
+    }
+
+    // SPECIFIC TYPE REDIRECTION
+    switch (type) {
+      // Auctions
+      case 'BID_CREATED':
+      case 'NEW_OFFER': // On Bid
+      case 'BID_OUTBID':
+      case 'AUCTION_LOST':
+      case 'AUCTION_ENDING_SOON':
+        const bidId = getBidId() || (data && data._id);
+        if (bidId) {
+          console.log('🚀 Redirecting to auction:', bidId);
+          router.push(`/auctions/details/${bidId}`);
+          return;
+        }
+        // Fallback for new offer on tender
+        const tenderIdForOffer = getTenderId();
+        if (tenderIdForOffer) {
+            console.log('🚀 Redirecting to tender (from offer):', tenderIdForOffer);
+            router.push(`/tenders/details/${tenderIdForOffer}`);
+            return;
+        }
+        break;
+
+      // Tenders
+      case 'TENDER_CREATED':
+        // For creation, data might be the tender itself object
+        const tId = getTenderId() || (data && data._id); 
+        if (tId) {
+          console.log('🚀 Redirecting to tender:', tId);
+          router.push(`/tenders/details/${tId}`);
+          return;
+        }
+        break;
+
+      // Direct Sales
+      case 'DIRECT_SALE_CREATED':
+        // For creation, data might be the direct sale itself object
+        const dsId = getDirectSaleId() || (data && data._id);
+        if (dsId) {
+          console.log('🚀 Redirecting to direct sale:', dsId);
+          router.push(`/direct-sales/details/${dsId}`);
+          return;
+        }
+        break;
+        
+      case 'ORDER':
+      case 'ORDER_RECEIVED':
+        // If no chatId, go to direct sale details
+        const dsOrderId = getDirectSaleId();
+        if (dsOrderId) {
+             console.log('🚀 Redirecting to direct sale order:', dsOrderId);
+             router.push(`/direct-sales/details/${dsOrderId}`);
+             return;
+        }
+        break;
+    }
+
+    // GENERIC FALLBACK based on available data
+    if (getChatId()) {
+      router.push(`/dashboard/chat?chatId=${getChatId()}`);
+    } else if (getBidId()) {
+      router.push(`/auctions/details/${getBidId()}`);
+    } else if (getTenderId()) {
+      router.push(`/tenders/details/${getTenderId()}`);
+    } else if (getDirectSaleId()) {
+      router.push(`/direct-sales/details/${getDirectSaleId()}`);
+    } else {
+      console.log('❓ No redirection target found for notification:', notification);
+      // Optional: go to notifications page or profile if you have one
+    }
+  };
+
   // Get notification icon based on type
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'BID_WON':
+      case 'AUCTION_WON':
         return '🏆';
       case 'CHAT_CREATED':
+      case 'MESSAGE_RECEIVED':
         return '💬';
       case 'BID_CREATED':
-        return '🔨';
+      case 'TENDER_CREATED':
+      case 'DIRECT_SALE_CREATED':
+        return '🆕';
       case 'NEW_OFFER':
+      case 'ORDER_RECEIVED':
         return '💰';
       case 'BID_ENDED':
+      case 'AUCTION_LOST':
         return '⏰';
+      case 'OFFER_ACCEPTED':
+      case 'ORDER':
+        return '✅';
+      case 'OFFER_DECLINED':
+        return '❌';
       default:
         return '📢';
     }
@@ -284,7 +406,7 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
               notifications.slice(0, 10).map((notification) => (
                 <div
                   key={notification._id}
-                  onClick={() => markAsRead(notification._id)}
+                  onClick={() => handleNotificationClick(notification)}
                   style={{
                     padding: '12px 15px',
                     borderBottom: '1px solid #f8f9fa',

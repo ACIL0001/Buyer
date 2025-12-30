@@ -346,6 +346,14 @@
     "viewAll": "View All"
   },
   "chat": {
+    "title": "Chat",
+    "discussRealTime": "Discuss in real time",
+    "chooseConversationToStart": "Choose a conversation to start",
+    "noMessage": "No message",
+    "startNewConversation": "Start a new conversation",
+    "accessDenied": "Access Denied",
+    "today": "Today",
+    "yesterday": "Yesterday",
     "limitedAccess": "Limited Access",
     "loginRequired": "Please log in to use the chat",
     "backToHome": "Back to Home",

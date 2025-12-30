@@ -16,9 +16,9 @@ import UserActivitiesSection from "@/components/profile/UserActivitiesSection";
 const getImageUrl = (url?: string) => {
     if (!url) return undefined;
 
-    // Hard fix for localhost:3000 URLs to point to production
+    // Handle localhost URLs - convert to production URL
     if (url.includes('localhost:3000')) {
-        const prodBase = 'https://mazadclick-server.onrender.com/'
+        const prodBase = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
         const parts = url.split('localhost:3000');
         if (parts.length > 1) {
             let path = parts[1];

@@ -79,6 +79,9 @@ const nextConfig = {
     optimizeCss: true,
   },
   
+  // Turbopack config (empty config to silence Next.js 16 warning about webpack config)
+  turbopack: {},
+  
 
   
   // Improve error handling

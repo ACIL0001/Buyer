@@ -148,130 +148,92 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
                             (notification.data?.auction || notification.data?.auctionId ||
                              notification.message?.toLowerCase().includes('enchère')));
 
-      // Mark as read first
-      if (notification.source === 'general') {
-        await markGeneralAsRead(notification._id);
-        console.log('✅ General notification marked as read');
-      }
-      
-      // Refresh all notifications to get updated data
-      await refreshAll();
-      console.log('🔄 Notifications refreshed after marking as read');
-      
-      // Handle order confirmation - open chat with seller who confirmed the order
-      if (isOrderConfirmed) {
-        const sellerId = notification.data?.sellerId;
-        if (sellerId && auth?.user?._id) {
-          try {
-            console.log('💬 Opening chat with seller who confirmed order:', sellerId);
-            
-            // Get all chats to find existing chat with seller
-            const chatsResponse = await ChatAPI.getChats({
-              id: auth.user._id,
-              from: 'client'
-            });
-            
-            // Find existing chat with seller
-            const existingChat = chatsResponse.data?.find((chat: any) => 
-              chat.users?.some((user: any) => {
-                const userIdStr = user._id?.toString() || user._id;
-                return userIdStr === sellerId?.toString() || userIdStr === sellerId;
-              })
-            );
-            
-            if (existingChat) {
-              // Navigate to chat with existing chat ID
-              console.log('✅ Found existing chat with seller:', existingChat._id);
-              router.push(`/chat?chatId=${existingChat._id}`);
-            } else {
-              // Navigate to chat with seller ID - Chat component will create chat if needed
-              console.log('📝 No existing chat found, opening with seller ID:', sellerId);
-              router.push(`/chat?userId=${sellerId}`);
-            }
-          } catch (chatError) {
-            console.error('❌ Error opening chat with seller:', chatError);
-            // Fallback: navigate to chat page with seller ID
-            router.push(`/chat?userId=${sellerId}`);
-          }
-        } else {
-          // Fallback: navigate to chat page
-          router.push('/chat');
-        }
+      // 1. DIRECT SALE ORDER (Buyer received an order OR Seller received an order)
+      if (isDirectSaleOrder) {
+        console.log('🔄 Redirecting to Direct Sales Orders');
+        // If specific order ID is available, we could pass it, but standard page is fine
+        router.push('/dashboard/direct-sales/orders');
         return;
       }
-      
-      // Handle offer accepted - open chat with tender owner (buyer) who accepted the submission
-      if (isOfferAccepted) {
-        const ownerId = notification.data?.ownerId;
-        const chatId = notification.data?.chatId; // Check for direct chatId
-        
-        if (chatId) {
-             console.log('💬 Opening chat directly with chatId:', chatId);
-             router.push(`/chat?chatId=${chatId}`);
-             return;
-        }
 
-        if (ownerId && auth?.user?._id) {
-          try {
-            console.log('💬 Opening chat with tender owner who accepted submission:', ownerId);
-            
-            // Get all chats to find existing chat with tender owner
-            const chatsResponse = await ChatAPI.getChats({
-              id: auth.user._id,
-              from: 'client'
-            });
-            
-            // Find existing chat with tender owner
-            const existingChat = chatsResponse.data?.find((chat: any) => 
-              chat.users?.some((user: any) => {
-                const userIdStr = user._id?.toString() || user._id;
-                return userIdStr === ownerId?.toString() || userIdStr === ownerId;
-              })
-            );
-            
-            if (existingChat) {
-              // Navigate to chat with existing chat ID
-              console.log('✅ Found existing chat with tender owner:', existingChat._id);
-              router.push(`/chat?chatId=${existingChat._id}`);
-            } else {
-              // Navigate to chat with tender owner ID - Chat component will create chat if needed
-              console.log('📝 No existing chat found, opening with tender owner ID:', ownerId);
-              router.push(`/chat?userId=${ownerId}`);
-            }
-          } catch (chatError) {
-            console.error('❌ Error opening chat with tender owner:', chatError);
-            // Fallback: navigate to chat page with tender owner ID
-            router.push(`/chat?userId=${ownerId}`);
+      // 2. TENDER BIDS (Seller received a bid on their tender)
+      if (isTenderBid) {
+        console.log('🔄 Redirecting to Tender Bids');
+        router.push('/dashboard/tender-bids');
+        return;
+      }
+
+      // 3. AUCTION BIDS (Seller received a bid on their auction)
+      if (isAuctionBid) {
+         console.log('🔄 Redirecting to Auctions');
+         // Usually managing auctions happens in /dashboard/auctions
+         router.push('/dashboard/auctions');
+         return;
+      }
+
+      // 4. OFFER ACCEPTED (Bidder's offer was accepted)
+      if (isOfferAccepted) {
+          // If it was a tender offer
+          if (notification.data?.tender || notification.data?.tenderId) {
+             console.log('🔄 Redirecting to My Tender Bids (Accepted)');
+             // Assuming filter tab logic handles "my bids" vs "received bids"
+             router.push('/dashboard/tender-bids'); 
+             return;
           }
-        } else {
-          // Fallback: navigate to chat page
-          router.push('/chat');
-        }
+          // If it was a direct sale offer (less common flow defined here but just in case)
+          console.log('🔄 Redirecting to Orders for accepted offer');
+          router.push('/dashboard/direct-sales/orders');
+          return;
+      }
+
+      // 5. NEW ITEMS CREATED (Public Notifications)
+      // Redirect to the public details page for the item
+      if (notification.type === 'TENDER_CREATED') {
+          const id = notification.data?._id || notification.data?.id || notification.data?.tenderId;
+          if (id) {
+             router.push(`/tenders/details/${id}`);
+             return;
+          }
+      }
+      if (notification.type === 'AUCTION_CREATED') {
+          const id = notification.data?._id || notification.data?.id || notification.data?.auctionId;
+          if (id) {
+             router.push(`/auctions/details/${id}`);
+             return;
+          }
+      }
+      if (notification.type === 'DIRECT_SALE_CREATED') {
+          const id = notification.data?._id || notification.data?.id || notification.data?.directSaleId;
+          if (id) {
+             router.push(`/direct-sales/details/${id}`);
+             return;
+          }
+      }
+
+      // 6. ORDER CONFIRMED (Buyer receives confirmation)
+      if (isOrderConfirmed) {
+        // ... (Existing chat logic can remain or be simplified)
+        // User asked to redirect to "that commande page". 
+        // We will prioritize the Orders page if no chat actions are specifically desired, 
+        // BUT the existing code prioritized chat. 
+        // Let's stick to the User Request: "redirect ot that offre or commande page"
+        console.log('🔄 Redirecting to My Purchases (Confirmed Order)');
+        // In the Orders page, there is a tab for "Made" (Purchases)
+        router.push('/dashboard/direct-sales/orders'); 
         return;
       }
       
-      // Redirect to seller app if this is a purchase/bid notification
-      if (isDirectSaleOrder || isTenderBid || isAuctionBid) {
-        const sellerBaseUrl = getSellerUrl();
-        let redirectPath = '/dashboard/app';
-        
-        if (isDirectSaleOrder) {
-          redirectPath = '/dashboard/direct-sales/orders';
-        } else if (isTenderBid || isAuctionBid) {
-          redirectPath = '/dashboard/tender-bids';
-        }
-        
-        const sellerUrl = new URL(redirectPath, sellerBaseUrl);
-        if (auth?.tokens?.accessToken) {
-          sellerUrl.searchParams.append('token', auth.tokens.accessToken);
-          sellerUrl.searchParams.append('refreshToken', auth.tokens.refreshToken || '');
-          sellerUrl.searchParams.append('from', 'buyer');
-        }
-        
-        console.log('🔄 Redirecting to seller app:', sellerUrl.toString());
-        window.location.href = sellerUrl.toString();
-        return;
+      // Fallback for Chat/Messages (if any remain here, though simpler now)
+      if (notification.type === 'MESSAGE_RECEIVED' || notification.type === 'MESSAGE_ADMIN' || notification.type === 'CHAT_CREATED') {
+           const chatId = notification.data?.chatId || notification.chatId;
+           if (chatId) {
+               router.push(`/dashboard/chat?chatId=${chatId}`);
+           } else {
+               router.push('/dashboard/chat');
+           }
+           return;
       }
+
     } catch (error) {
       console.error('❌ Error marking notification as read:', error);
     }

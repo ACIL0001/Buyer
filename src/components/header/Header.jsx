@@ -15,7 +15,7 @@ import ReviewModal from '@/components/ReviewModal';
 import { ReviewAPI } from '@/app/api/review';
 import { NotificationAPI } from '@/app/api/notification';
 import { useTranslation } from 'react-i18next';
-import { getSellerUrl } from '@/config';
+import { getSellerUrl, getFrontendUrl } from '@/config';
 import app from '@/config';
 
 const initialState = {
@@ -520,7 +520,7 @@ export const Header = () => {
             display: 'flex',
             alignItems: 'center'
           }}>
-            <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
+            <Link href={getFrontendUrl()} style={{ display: 'flex', alignItems: 'center' }}>
               <div style={{
                 position: 'relative',
                 display: 'flex',

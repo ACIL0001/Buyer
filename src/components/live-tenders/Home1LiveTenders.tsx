@@ -59,6 +59,17 @@ export function calculateTimeRemaining(endDate: string): Timer {
   };
 }
 
+// Helper function to ensure URL is absolute (prefixed with API base URL)
+const getAbsoluteUrl = (url?: string): string => {
+  if (!url) return DEFAULT_PROFILE_IMAGE;
+  // Already an absolute URL
+  if (url.startsWith('http')) return url;
+  // Relative URL - prefix with API base URL
+  const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
+  const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+  return `${baseURL}${cleanUrl}`;
+};
+
 // Helper function to get the correct tender image URL
 const getTenderImageUrl = (tender: Tender) => {
   console.log('🎯 ===== TENDER IMAGE URL PROCESSING =====');
@@ -1106,7 +1117,7 @@ const Home1LiveTenders = () => {
                             marginBottom: 'clamp(10px, 2vw, 14px)',
                           }}>
                             <img
-                              src={tender.owner?.photoURL || DEFAULT_PROFILE_IMAGE}
+                              src={getAbsoluteUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
                               alt={displayName}
                               style={{
                                 width: '32px',

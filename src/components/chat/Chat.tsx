@@ -19,6 +19,9 @@ interface User {
   firstName: string
   lastName: string
   avatar?: string
+  socialReason?: string
+  entreprise?: string
+  companyName?: string
   [key: string]: any
 }
 
@@ -831,7 +834,7 @@ export default function Chat() {
                     </div>
                     <div className="conversation-content">
                       <div className="conversation-header">
-                        <h4>{otherUser.firstName} {otherUser.lastName}</h4>
+                        <h4>{otherUser.socialReason || otherUser.entreprise || otherUser.companyName || `${otherUser.firstName} ${otherUser.lastName}`}</h4>
                         <span className="conversation-time">
                           {chat.createdAt ? formatTime(chat.createdAt) : ''}
                         </span>
@@ -884,7 +887,7 @@ export default function Chat() {
                     <div className={`online-status-small ${isOnline ? 'online' : 'offline'}`}></div>
                   </div>
                   <div className="conversation-details">
-                    <h4>{userChat?.firstName} {userChat?.lastName}</h4>
+                    <h4>{userChat?.socialReason || userChat?.entreprise || userChat?.companyName || `${userChat?.firstName} ${userChat?.lastName}`}</h4>
                     <span className="status-text">
                       {isOnline ? t('chat.online') : t('chat.offline')}
                     </span>

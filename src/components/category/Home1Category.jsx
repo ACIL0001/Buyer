@@ -320,7 +320,7 @@ const Home1Category = () => {
             try { await fetch(`${app.baseURL}category/tree`, { method: 'HEAD' }); } catch {}
           };
           const testDirectImageAccess = async () => {
-            const testUrl = 'https://mazadclick-server.onrender.com/static/1760437753581-5334461.jpg';
+            const testUrl = `${app.baseURL}static/1760437753581-5334461.jpg`;
             try { await fetch(testUrl, { method: 'HEAD' }); } catch {}
           };
           testServerPaths();

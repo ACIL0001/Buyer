@@ -1,12 +1,9 @@
+'use client';
+
 import React from 'react';
-import { Container, Typography, Card, CardContent, Paper, Box, Button, Grid2 } from '@mui/material';
+import { Container, Typography, Card, CardContent, Paper, Box, Button, Stack } from '@mui/material';
 import { Phone, Email, QuestionMark, LiveHelp, Support, ContactSupport } from '@mui/icons-material';
 import Link from 'next/link';
-
-export const metadata = {
-  title: 'Centre de Support - MazadClick',
-  description: 'Centre d\'assistance et support client MazadClick',
-};
 
 export default function SupportCenterPage() {
   return (
@@ -31,9 +28,17 @@ export default function SupportCenterPage() {
         </Typography>
       </Box>
       
-      <Grid2 container spacing={4} sx={{ mb: 6 }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: 4, 
+          mb: 6,
+          justifyContent: 'center'
+        }}
+      >
         {/* Phone Support */}
-        <Grid2 size={{ xs: 12, md: 4 }}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 32px)' }, minWidth: { xs: '100%', md: '280px' } }}>
           <Card 
             sx={{ 
               height: '100%',
@@ -61,10 +66,10 @@ export default function SupportCenterPage() {
               </Typography>
             </CardContent>
           </Card>
-        </Grid2>
+        </Box>
         
         {/* Email Support */}
-        <Grid2 size={{ xs: 12, md: 4 }}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 32px)' }, minWidth: { xs: '100%', md: '280px' } }}>
           <Card 
             sx={{ 
               height: '100%',
@@ -92,10 +97,10 @@ export default function SupportCenterPage() {
               </Typography>
             </CardContent>
           </Card>
-        </Grid2>
+        </Box>
         
         {/* FAQ */}
-        <Grid2 size={{ xs: 12, md: 4 }}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(33.333% - 32px)' }, minWidth: { xs: '100%', md: '280px' } }}>
           <Card 
             sx={{ 
               height: '100%',
@@ -128,8 +133,8 @@ export default function SupportCenterPage() {
               </Typography>
             </CardContent>
           </Card>
-        </Grid2>
-      </Grid2>
+        </Box>
+      </Box>
 
       {/* FAQ Section */}
       <Paper elevation={3} sx={{ p: 4, mt: 6, borderRadius: 2 }}>

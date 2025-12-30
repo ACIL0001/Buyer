@@ -6,7 +6,7 @@
     "dev": "npx next dev -p 3001",
     "build": "npx next build --webpack",
     "start": "npx next start -p 3001",
-    "lint": "npx next lint",
+    "lint": "next lint .",
     "build:css": "postcss src/app/globals.css -o public/assets/css/tailwind.css",
     "clean": "rm -rf .next && rm -rf node_modules/.cache",
     "clean:install": "rm -rf .next && rm -rf node_modules && npm install",

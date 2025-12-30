@@ -667,7 +667,8 @@ const Home1Category = () => {
     const name = category.name;
     const isHovered = hoveredCategory === id;
     const isExpanded = expandedCategories[id];
-    const hasSubcategories = hasChildren(category);
+    // const hasSubcategories = hasChildren(category);
+    const hasSubcategories = false; // Disable subcategories display in the carousel filter
     
     // Debug image error state
     console.log('🔍 Category render debug:', {

@@ -3,6 +3,12 @@ export interface Terms {
   _id: string;
   title: string;
   content: string;
+  attachment?: {
+    _id: string;
+    url: string;
+    filename: string;
+    mimetype: string;
+  };
   version: string;
   createdBy: string;
   updatedBy?: string;

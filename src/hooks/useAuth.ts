@@ -6,7 +6,7 @@ const useAuth = () => {
 
   useEffect(() => {
     console.log('🎣 useAuth hook mounting...');
-    
+
     const unsubscribe = authStore.subscribe((newState) => {
       console.log('🔄 Auth store state changed in useAuth:', {
         isReady: newState.isReady,
@@ -42,15 +42,17 @@ const useAuth = () => {
       userFirstName: state.auth?.user?.firstName,
       tokenLength: state.auth?.tokens?.accessToken?.length
     });
-    
+
     // Test token storage
     authStore.getState().testTokenStorage();
-    
+
     return state;
   };
 
   return {
     auth: state.auth,
+    user: state.auth?.user,
+    tokens: state.auth?.tokens,
     isLogged: state.isLogged,
     isReady: state.isReady,
     set: state.set,

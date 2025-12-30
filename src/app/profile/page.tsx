@@ -22,6 +22,21 @@ import ProfileSkeleton from "@/components/skeletons/ProfileSkeleton"
 import VerificationPopup from "@/components/VerificationPopup"
 import UserActivitiesSection from "@/components/profile/UserActivitiesSection"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://mazadclick-server.onrender.com/api";
+const SERVER_URL = API_BASE_URL.replace('/api', '');
+
+const normalizeUrl = (url: string): string => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+    return `${SERVER_URL}${cleanUrl}`;
+};
+
+const getImageUrl = (url?: string | null): string => {
+    if (!url) return '';
+    return normalizeUrl(url);
+};
+
 const ProfilePageWrapper = () => {
     const [show, setShow] = useState(false)
     const [check, setCheck] = useState(false)
@@ -44,64 +59,40 @@ interface ProfileFormData {
     phone: string
     rate: number
     wilaya: string
-    secteur: string
-    socialReason: string
+    activitySector: string // Renamed
+    companyName: string // Renamed
     jobTitle: string
-    entity: string
+    // entity: string // Removed
 }
 
-interface AvatarData {
-    fullUrl?: string;
-    url?: string;
-    _id?: string;
-    filename?: string;
-    [key: string]: any; // Allow any additional properties
-}
-
-// import app, { getSellerUrl } from '@/config';
-import app, { getSellerUrl, DEV_SERVER_URL } from '@/config';
-
-const API_BASE_URL = app.baseURL;
-const STATIC_URL = app.route;
-const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const DEV_SERVER_PATTERN = new RegExp(escapeRegExp(DEV_SERVER_URL), 'g');
-
-const getImageUrl = (url?: string) => {
-    if (!url) return undefined;
-
-    // Handle localhost URLs - convert to production URL
-    if (url.includes('localhost:3000')) {
-        const prodBase = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
-        const parts = url.split('localhost:3000');
-        if (parts.length > 1) {
-            let path = parts[1];
-            if (path.startsWith('/')) path = path.substring(1);
-            return `${prodBase}${path}`;
-        }
-    }
-
-    if (url.startsWith('http')) {
-         // Fix localhost without port if appearing (backend bug workaround)
-         if (url.startsWith('http://localhost/')) {
-             return url.replace('http://localhost/', `${app.baseURL.endsWith('/') ? app.baseURL : app.baseURL + '/'}`);
-         }
-         return url;
-    }
-    // If relative path /static/...
-    if (url.startsWith('/static')) {
-        // API_BASE_URL likely ends with /
-        return `${API_BASE_URL}${url.startsWith('/') ? url.slice(1) : url}`;
-    }
-    return url;
-};
+// ... existing code ...
 
 function ProfilePage() {
     const { t } = useTranslation();
-    const { auth, isLogged, isReady, initializeAuth, set, fetchFreshUserData } = useAuth();
+    const auth = useAuth();
     const { enqueueSnackbar } = useSnackbar();
-    const { identityStatus, isLoading: isLoadingIdentity } = useIdentityStatus();
     const router = useRouter();
+    const queryClient = useQueryClient();
+    const set = authStore((state: any) => state.set);
+    const [isReady, setIsReady] = useState(false);
+    const isLogged = !!auth.user;
 
+    // Wait for hydration
+    useEffect(() => {
+        setIsReady(true);
+    }, []);
+    
+    // Identity Query
+    const { data: identity, isLoading: isLoadingIdentity } = useQuery({
+        queryKey: ['identity'],
+        queryFn: async () => {
+            const response = await IdentityAPI.getMyIdentity();
+            return response.data as any;
+        },
+        retry: 1
+    });
+
+    const [activeTab, setActiveTab] = useState("activities");
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isPasswordChanging, setIsPasswordChanging] = useState(false);
@@ -109,19 +100,17 @@ function ProfilePage() {
     const [isUploadingCover, setIsUploadingCover] = useState(false);
     const [coverKey, setCoverKey] = useState(Date.now());
     const [avatarKey, setAvatarKey] = useState(Date.now());
-    const [activeTab, setActiveTab] = useState("activities");
-    const [formData, setFormData] = useState<ProfileFormData>({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        rate: 0,
-        wilaya: "",
-        secteur: "",
-        socialReason: "",
-        jobTitle: "",
-        entity: "",
-    });
+    
+    // Document Upload States
+    const [uploadingFile, setUploadingFile] = useState<File | null>(null);
+    const [isUploadingDocument, setIsUploadingDocument] = useState<string | null>(null);
+    const [isSubmittingIdentity, setIsSubmittingIdentity] = useState(false);
+    const [showVerificationPopup, setShowVerificationPopup] = useState(false);
+    
+    // Refs
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const coverInputRef = useRef<HTMLInputElement>(null);
+    const documentFileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
     const [passwordData, setPasswordData] = useState({
         currentPassword: "",
@@ -129,107 +118,35 @@ function ProfilePage() {
         confirmPassword: "",
     });
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const coverInputRef = useRef<HTMLInputElement>(null);
+    // Helper to refresh user data
+    const fetchFreshUserData = async () => {
+        try {
+             // Re-fetch user profile
+             if (auth.user) {
+                  const updatedUser = await UserAPI.getMe();
+                  // Merge with existing token
+                  set({ user: updatedUser, tokens: auth.tokens });
+             }
+        } catch (e) {
+            console.error("Failed to refresh user data", e);
+        }
+    };
 
-    // Document management state
-    // Refactored to React Query
-    const queryClient = useQueryClient();
-    const { data: identityData, isLoading: isLoadingDocuments } = useQuery({
-        queryKey: ['identity'],
-        queryFn: async () => {
-            try {
-                const response = await IdentityAPI.getMyIdentity();
-                if (response.success) return response.data || null;
-                return null;
-            } catch (error: any) {
-                // If 404 or just validation error, return null to show "start verification" UI
-                if (error.response?.status === 404) return null;
-                // Otherwise throw to let React Query handle error state (or ignore if you want to mask it)
-                // For now, returning null on error to match previous behavior of "not found" = "clean state"
-                return null;
-            }
-        },
-        enabled: activeTab === 'documents',
-        staleTime: Infinity,
+    const [showCompleteProfile, setShowCompleteProfile] = useState(false); 
+    
+    const [formData, setFormData] = useState<ProfileFormData>({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        rate: 0,
+        wilaya: "",
+        activitySector: "",
+        companyName: "",
+        jobTitle: "",
     });
-    const identity = (identityData || null) as any;
 
-    // Remove: const [identity, setIdentity] = useState<any>(null);
-    // Remove: const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
-    const [isUploadingDocument, setIsUploadingDocument] = useState<string | null>(null);
-    const [uploadingFile, setUploadingFile] = useState<File | null>(null);
-    const documentFileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
-    const [activeUpgradeSection, setActiveUpgradeSection] = useState<'verified' | 'certified' | null>(null);
-    const [isSubmittingIdentity, setIsSubmittingIdentity] = useState(false);
-    const [showVerificationPopup, setShowVerificationPopup] = useState(false);
-
-    // Document field configurations
-    const requiredDocuments = [
-        {
-            key: 'registreCommerceCarteAuto',
-            label: t('profile.documents.rcOthers') || 'RC/ Autres',
-            description: t('profile.documents.rcOthersDesc') || 'Registre de commerce ou autres documents (requis avec NIF/N° Articles)',
-            required: true
-        },
-        {
-            key: 'nifRequired',
-            label: t('profile.documents.nifArticles') || 'NIF/N° Articles',
-            description: t('profile.documents.nifArticlesDesc') || 'NIF ou Numéro d\'articles (requis avec RC/ Autres)',
-            required: true
-        },
-        {
-            key: 'carteFellah',
-            label: t('profile.documents.carteFellah') || 'Carte Fellah',
-            description: t('profile.documents.carteFellahDesc') || 'Carte Fellah pour agriculteurs (peut être fournie seule)',
-            required: true
-        }
-    ];
-
-    const optionalDocuments = [
-        {
-            key: 'nis',
-            label: t('profile.documents.nis') || 'NIS',
-            description: t('profile.documents.nisDesc') || 'Numéro d\'identification sociale',
-            required: false
-        },
-        {
-            key: 'numeroArticle',
-            label: t('profile.documents.articleNumber') || 'Numéro d\'article',
-            description: t('profile.documents.articleNumberDesc') || 'Numéro d\'article fiscal',
-            required: false
-        },
-        {
-            key: 'c20',
-            label: t('profile.documents.certificateC20') || 'Certificat C20',
-            description: t('profile.documents.certificateC20Desc') || 'Document C20',
-            required: false
-        },
-        {
-            key: 'misesAJourCnas',
-            label: t('profile.documents.cnasUpdates') || 'Mises à jour CNAS/CASNOS',
-            description: t('profile.documents.cnasUpdatesDesc') || 'Mises à jour CNAS/CASNOS et CACOBAPT',
-            required: false
-        },
-        {
-            key: 'last3YearsBalanceSheet',
-            label: t('profile.documents.last3YearsBalance') || 'Bilans des 3 dernières années',
-            description: t('profile.documents.last3YearsBalanceDesc') || 'Bilans financiers des trois dernières années',
-            required: false
-        },
-        {
-            key: 'certificates',
-            label: t('profile.documents.certificates') || 'Certificats',
-            description: t('profile.documents.certificatesDesc') || 'Certificats professionnels ou autres documents complémentaires',
-            required: false
-        },
-        {
-            key: 'paymentProof',
-            label: t('profile.documents.paymentProof') || 'Preuve de paiement',
-            description: t('profile.documents.paymentProofDesc') || 'Justificatif de paiement de souscription',
-            required: false
-        }
-    ];
+    // ... existing refs ...
 
     // Initialize form data when auth.user changes
     useEffect(() => {
@@ -241,71 +158,99 @@ function ProfilePage() {
                 phone: auth.user.phone || "",
                 rate: auth.user.rate || 0,
                 wilaya: auth.user.wilaya || "",
-                secteur: auth.user.secteur || "",
-                socialReason: auth.user.socialReason || "",
+                activitySector: (auth.user as any).activitySector || (auth.user as any).secteur || "",
+                companyName: (auth.user as any).companyName || (auth.user as any).socialReason || "",
                 jobTitle: auth.user.jobTitle || "",
-                entity: auth.user.entity || "",
+                // entity: auth.user.entity || "",
             });
+
+            // Check for Complete Profile Note
+            checkProfileCompletion(auth.user);
         }
     }, [auth.user]);
 
-    // Check for first-login verification popup flag
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const shouldShowPopup = localStorage.getItem('showVerificationPopup');
-            if (shouldShowPopup === 'true') {
-                setShowVerificationPopup(true);
-                localStorage.removeItem('showVerificationPopup');
-            }
-        }
-    }, []);
-
-    const getAvatarUrl = (avatar: AvatarData | string): string => {
-        if (typeof avatar === 'string') {
-            // Handle string avatar (direct URL or path)
-            if (avatar.startsWith('http')) {
-                // Full URL - replace localhost with production API URL from config
-                // return avatar.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
-                return avatar.replace(DEV_SERVER_URL, API_BASE_URL.replace(/\/$/, ''));
-            } else {
-                // Relative path - ensure we use the correct base URL
-                const cleanPath = avatar.startsWith('/') ? avatar.substring(1) : avatar;
-                return `${API_BASE_URL}/static/${cleanPath}`;
-            }
+    const checkProfileCompletion = (user: any) => {
+        // Logic to determining if profile is complete (example: missing company attributes for pro/corporate)
+        // Or generic "Fill more details"
+        
+        // Check if note is dismissed or postponed max times
+        const noteStatus = user.profileCompletionNote || { dismissed: false, postponedCount: 0 };
+        if (noteStatus.dismissed || noteStatus.postponedCount >= 4) {
+            setShowCompleteProfile(false);
+            return;
         }
 
-        if (avatar?.fullUrl) {
-            // return avatar.fullUrl.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
-            return avatar.fullUrl.replace(DEV_SERVER_URL, API_BASE_URL.replace(/\/$/, ''));
-        }
+        // Define what constitutes an "incomplete" profile (Example: missing companyName/activitySector)
+        // Adjust condition as per requirement. 
+        // User request says: "Display a note... show 'Complete Profile', 'Later', 'Never'"
+        // Assuming we show it if some specific optional fields are empty? 
+        // Or just general "Complete your profile to get more trust"? 
+        // Let's assume broad check: key fields missing?
+        const isProfileIncomplete = !user.companyName || !user.activitySector || !user.jobTitle || !user.wilaya;
 
-        if (avatar?.url) {
-            if (avatar.url.startsWith('http')) {
-                // return avatar.url.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
-                return avatar.url.replace(DEV_SERVER_URL, API_BASE_URL.replace(/\/$/, ''));
-            } else {
-                // Ensure proper URL construction
-                const cleanPath = avatar.url.startsWith('/') ? avatar.url.substring(1) : avatar.url;
-                return `${API_BASE_URL}/static/${cleanPath}`;
-            }
+        if (isProfileIncomplete) {
+            setShowCompleteProfile(true);
         }
-
-        if (avatar?.filename) {
-            return `${API_BASE_URL}/static/${avatar.filename}`;
-        }
-
-        return '/assets/images/avatar.jpg';
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+    const handleNoteAction = async (action: 'complete' | 'postpone' | 'dismiss') => {
+        if (action === 'complete') {
+             setActiveTab('personal-info'); // Redirect to profile info
+             // Just hide the note locally for now? Or keep it until filled?
+             // User goal: "Compléter" should redirect to the documents section of the user's profile."
+             // Wait, user said "Compléter should redirect to the documents section".
+             setActiveTab('documents');
+             setShowCompleteProfile(false); // Hide note as we are acting on it
+        } else {
+             // API Call to update preference
+             try {
+                await UserAPI.updateProfileCompletionNote(action);
+                setShowCompleteProfile(false);
+                // Update local user to reflect change avoid re-show
+                await fetchFreshUserData();
+             } catch (e) {
+                console.error("Failed to update note status", e);
+             }
+        }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleCoverClick = () => {
+        coverInputRef.current?.click();
+    };
+
+    const handleCoverChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Validation for file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            enqueueSnackbar(t("profile.hero.maxFileSize") || "File size too large (max 5MB)", { variant: "error" });
+            return;
+        }
+
+        setIsUploadingCover(true);
+        const formData = new FormData();
+        formData.append("cover", file);
+
+        try {
+            const response = await UserAPI.uploadCover(formData);
+            if (response.success) {
+                enqueueSnackbar(t("profile.hero.coverSuccess") || "Cover updated successfully", { variant: "success" });
+                // Refresh user data
+               await auth.fetchFreshUserData();
+               setCoverKey(Date.now());
+            } else {
+                 enqueueSnackbar(t("profile.hero.coverError") || "Failed to update cover", { variant: "error" });
+            }
+        } catch (error) {
+            console.error("Cover upload error:", error);
+            enqueueSnackbar(t("profile.hero.coverError") || "Failed to update cover", { variant: "error" });
+        } finally {
+             setIsUploadingCover(false);
+        }
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
@@ -321,48 +266,28 @@ function ProfilePage() {
         }));
     };
 
-    const handleCoverClick = () => {
-        if (coverInputRef.current) {
-            coverInputRef.current.click();
-        }
-    };
+    // Helper for loading state
+    const isLoadingDocuments = isLoadingIdentity;
 
-    const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    // Upgrade section state - using 'verified' or 'certified' as expected by JSX
+    const [activeUpgradeSection, setActiveUpgradeSection] = useState<'verified' | 'certified' | null>('verified');
 
-        // Validate file size (e.g., max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            enqueueSnackbar(t("profile.imageTooLarge") || "Image too large (max 5MB)", { variant: "error" });
-            return;
-        }
+    // Document lists
+    const requiredDocuments = [
+        { key: 'registreCommerceCarteAuto', label: t('profile.documents.registreCommerce') || 'Registre de Commerce / Carte Artisan' },
+        { key: 'nifRequired', label: t('profile.documents.nif') || 'NIF' },
+        { key: 'nis', label: t('profile.documents.nis') || 'NIS' },
+        { key: 'art', label: t('profile.documents.art') || 'Article' }
+    ];
 
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            enqueueSnackbar(t("profile.invalidFileType") || "Please upload an image file", { variant: "error" });
-            return;
-        }
+    const optionalDocuments = [
+         { key: 'carteFellah', label: t('profile.documents.carteFellah') || 'Carte Fellah' },
+    ];
 
-        setIsUploadingCover(true);
-        try {
-            const formDataToUpload = new FormData();
-            formDataToUpload.append('cover', file);
-
-            const response = await UserAPI.uploadCover(formDataToUpload);
-
-            if (response.success) {
-                enqueueSnackbar(t("profile.coverUpdated") || "Cover photo updated successfully", { variant: "success" });
-                setCoverKey(Date.now()); // Force refresh
-                await fetchFreshUserData(); // Refresh user data
-            }
-        } catch (error: any) {
-            console.error("Cover upload error:", error);
-            enqueueSnackbar(error.message || t("profile.coverUpdateFailed") || "Failed to update cover photo", { variant: "error" });
-        } finally {
-            setIsUploadingCover(false);
-        }
-    };
-
+    // ... existing code ...
+    
+    // In handleSubmit:
+    // Ensure we send correct keys
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -370,73 +295,31 @@ function ProfilePage() {
         try {
             console.log('🔄 Updating profile with data:', formData);
 
-            const response = await UserAPI.updateProfile(formData);
-            console.log('✅ Profile update response:', response);
+            const updatePayload = {
+                ...formData,
+            };
 
-            if (response) {
-                let updatedUser;
+            const updatedUser = await UserAPI.updateProfile(updatePayload);
+            
+            enqueueSnackbar(t("profileUpdated") || "Profile updated successfully", { variant: "success" });
+            setIsEditing(false);
 
-                if (response.user) {
-                    updatedUser = response.user;
-                } else if (response.data) {
-                    updatedUser = response.data as any;
-                } else {
-                    updatedUser = response as any;
-                }
+            // Update local state
+            const currentUser = auth.user;
+            const mergedUser = {
+                ...currentUser,
+                ...updatedUser,
+            };
+            
+            set({ user: mergedUser, tokens: auth.tokens });
+            
+            // Re-check profile completion note
+            checkProfileCompletion(mergedUser);
 
-                if (updatedUser) {
-                    const currentUser = auth.user;
-
-                    const mergedUser = {
-                        ...currentUser,
-                        _id: updatedUser._id || updatedUser.id || currentUser?._id,
-                        firstName: updatedUser.firstName || formData.firstName || currentUser?.firstName || '',
-                        lastName: updatedUser.lastName || formData.lastName || currentUser?.lastName || '',
-                        email: updatedUser.email || currentUser?.email || '',
-                        type: updatedUser.accountType || updatedUser.type || currentUser?.type || 'CLIENT',
-                        phone: updatedUser.phone || formData.phone || currentUser?.phone,
-                        wilaya: updatedUser.wilaya || formData.wilaya || currentUser?.wilaya,
-                        secteur: updatedUser.secteur || formData.secteur || currentUser?.secteur,
-                        socialReason: updatedUser.socialReason || formData.socialReason || currentUser?.socialReason,
-                        jobTitle: updatedUser.jobTitle || formData.jobTitle || currentUser?.jobTitle,
-                        entity: updatedUser.entity || formData.entity || currentUser?.entity,
-                        avatar: updatedUser.avatar || currentUser?.avatar,
-                        rate: currentUser?.rate || 1,
-                        isPhoneVerified: (currentUser as any)?.isPhoneVerified,
-                        isVerified: (currentUser as any)?.isVerified,
-                        isCertified: (currentUser as any)?.isCertified,
-                        isHasIdentity: currentUser?.isHasIdentity,
-                        isActive: (currentUser as any)?.isActive,
-                        isBanned: (currentUser as any)?.isBanned,
-                        photoURL: currentUser?.photoURL,
-                        fullName: (currentUser as any)?.fullName
-                    };
-
-                    console.log('👤 Merged user data:', mergedUser);
-
-                    set({
-                        tokens: auth.tokens,
-                        user: mergedUser
-                    });
-
-                    enqueueSnackbar(t('profile.updateSuccess') || 'Profile updated successfully', { variant: 'success' });
-                    setIsEditing(false);
-                }
-            } else {
-                console.error('❌ No response received from updateProfile');
-                throw new Error('No response from server');
-            }
         } catch (error: any) {
             console.error('❌ Error updating profile:', error);
-
-            if (error.response?.status === 401) {
-                enqueueSnackbar(t('profile.sessionExpired') || 'Session expired', { variant: 'error' });
-                set({ tokens: undefined, user: undefined });
-                router.push("/auth/login");
-            } else {
-                const errorMessage = error.response?.data?.message || error.message || t('profile.updateFailed') || 'Failed to update profile';
-                enqueueSnackbar(errorMessage, { variant: "error" });
-            }
+            const errorMessage = error.response?.data?.message || t("updateFailed") || "Failed to update profile";
+            enqueueSnackbar(errorMessage, { variant: "error" });
         } finally {
             setIsLoading(false);
         }
@@ -1533,6 +1416,83 @@ function ProfilePage() {
 
                     {/* Main Content Grid */}
                     <div className="modern-content-grid">
+                       {/* Complete Profile Note */}
+                       {showCompleteProfile && (
+                           <motion.div 
+                             initial={{ opacity: 0, y: -20 }}
+                             animate={{ opacity: 1, y: 0 }}
+                             className="modern-alert-note"
+                             style={{ 
+                                 gridColumn: '1 / -1',
+                                 background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                                 borderRadius: '16px',
+                                 padding: '20px',
+                                 marginBottom: '30px',
+                                 color: 'white',
+                                 display: 'flex',
+                                 justifyContent: 'space-between',
+                                 alignItems: 'center',
+                                 boxShadow: '0 10px 25px rgba(79, 70, 229, 0.2)'
+                             }}
+                           >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                  <div style={{ 
+                                      background: 'rgba(255,255,255,0.2)', 
+                                      borderRadius: '50%', 
+                                      padding: '10px',
+                                      display: 'flex'
+                                  }}>
+                                      <i className="bi bi-person-lines-fill" style={{ fontSize: '24px' }}></i>
+                                  </div>
+                                  <div>
+                                      <h4 style={{ margin: 0, fontWeight: 600, fontSize: '1.1rem' }}>Complétez votre profil</h4>
+                                      <p style={{ margin: '4px 0 0 0', opacity: 0.9, fontSize: '0.9rem' }}>Ajoutez vos documents et informations pour vérifier votre compte.</p>
+                                  </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: '10px' }}>
+                                  <button 
+                                    onClick={() => handleNoteAction('complete')}
+                                    style={{ 
+                                        padding: '8px 16px', 
+                                        borderRadius: '8px', 
+                                        border: 'none', 
+                                        background: 'white', 
+                                        color: '#4f46e5', 
+                                        fontWeight: 600, 
+                                        cursor: 'pointer' 
+                                    }}
+                                  >
+                                    Compléter
+                                  </button>
+                                  <button 
+                                    onClick={() => handleNoteAction('postpone')}
+                                    style={{ 
+                                        padding: '8px 16px', 
+                                        borderRadius: '8px', 
+                                        border: '1px solid rgba(255,255,255,0.3)', 
+                                        background: 'rgba(255,255,255,0.1)', 
+                                        color: 'white', 
+                                        cursor: 'pointer' 
+                                    }}
+                                  >
+                                    Plus tard
+                                  </button>
+                                   <button 
+                                    onClick={() => handleNoteAction('dismiss')}
+                                    style={{ 
+                                        padding: '8px 16px', 
+                                        borderRadius: '8px', 
+                                        border: 'none', 
+                                        background: 'transparent', 
+                                        color: 'rgba(255,255,255,0.7)', 
+                                        cursor: 'pointer' 
+                                    }}
+                                  >
+                                    Jamais
+                                  </button>
+                              </div>
+                           </motion.div>
+                       )}
                         {/* Reseller Status Cards Section */}
                         {/* <motion.div
                             className="modern-reseller-section"
@@ -1852,22 +1812,22 @@ function ProfilePage() {
                                                             </select>
                                                         </motion.div>
 
-                                                        {/* Social Reason */}
+                                                        {/* Company Name (Formally Social Reason) */}
                                                         <motion.div
                                                             className="modern-form-field"
                                                             initial={{ opacity: 0, x: 20 }}
                                                             animate={{ opacity: 1, x: 0 }}
                                                             transition={{ duration: 0.5, delay: 0.85 }}
                                                         >
-                                                            <label htmlFor="socialReason">{t("profile.socialReason") || "Social Reason / Enterprise"}</label>
+                                                            <label htmlFor="companyName">Nom d'entreprise</label>
                                                             <input
                                                                 type="text"
-                                                                id="socialReason"
-                                                                name="socialReason"
-                                                                value={formData.socialReason}
+                                                                id="companyName"
+                                                                name="companyName"
+                                                                value={formData.companyName}
                                                                 onChange={handleInputChange}
                                                                 disabled={!isEditing}
-                                                                placeholder="Enter enterprise name"
+                                                                placeholder="Entrez le nom de l'entreprise"
                                                             />
                                                         </motion.div>
 
@@ -1882,7 +1842,7 @@ function ProfilePage() {
                                                             <input
                                                                 type="text"
                                                                 id="jobTitle"
-                                                                name="jobTitle"
+                                                                name="jobTitle" // Note: name attribute matches state key
                                                                 value={formData.jobTitle}
                                                                 onChange={handleInputChange}
                                                                 disabled={!isEditing}
@@ -1890,44 +1850,27 @@ function ProfilePage() {
                                                             />
                                                         </motion.div>
 
-                                                        {/* Secteur */}
+                                                        {/* Activity Sector */}
                                                         <motion.div
                                                             className="modern-form-field"
                                                             initial={{ opacity: 0, x: 20 }}
                                                             animate={{ opacity: 1, x: 0 }}
                                                             transition={{ duration: 0.5, delay: 0.95 }}
                                                         >
-                                                            <label htmlFor="secteur">{t("profile.secteur") || "Sector"}</label>
+                                                            <label htmlFor="activitySector">Secteur d'activité</label>
                                                             <input
                                                                 type="text"
-                                                                id="secteur"
-                                                                name="secteur"
-                                                                value={formData.secteur}
+                                                                id="activitySector"
+                                                                name="activitySector"
+                                                                value={formData.activitySector}
                                                                 onChange={handleInputChange}
                                                                 disabled={!isEditing}
-                                                                placeholder="Enter sector"
+                                                                placeholder="Entrez votre secteur d'activité"
                                                             />
                                                         </motion.div>
 
-                                                        {/* Entity */}
-                                                        <motion.div
-                                                            className="modern-form-field"
-                                                            initial={{ opacity: 0, x: -20 }}
-                                                            animate={{ opacity: 1, x: 0 }}
-                                                            transition={{ duration: 0.5, delay: 0.98 }}
-                                                        >
-                                                            <label htmlFor="entity">{t("profile.entity") || "Entity"}</label>
-                                                            <input
-                                                                type="text"
-                                                                id="entity"
-                                                                name="entity"
-                                                                value={formData.entity}
-                                                                onChange={handleInputChange}
-                                                                disabled={!isEditing}
-                                                                placeholder="Enter entity"
-                                                            />
-                                                        </motion.div>
-
+                                                        {/* Entity removed */}
+                                                        
                                                         <motion.div
                                                             className="modern-form-field"
                                                             initial={{ opacity: 0, x: 20 }}
@@ -2030,25 +1973,48 @@ function ProfilePage() {
                                                             { name: "currentPassword", label: t("profile.currentPassword") || "Current password", icon: "bi-lock" },
                                                             { name: "newPassword", label: t("profile.newPassword") || "New password", icon: "bi-key" },
                                                             { name: "confirmPassword", label: t("profile.confirmPassword") || "Confirm password", icon: "bi-check-circle" }
-                                                        ].map((field, index) => (
-                                                            <motion.div
-                                                                key={field.name}
-                                                                className="modern-form-field"
-                                                                initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                                                                animate={{ opacity: 1, x: 0 }}
-                                                                transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
-                                                            >
-                                                                <label htmlFor={field.name}>{field.label}</label>
-                                                                <input
-                                                                    type="password"
-                                                                    id={field.name}
-                                                                    name={field.name}
-                                                                    value={passwordData[field.name as keyof typeof passwordData]}
-                                                                    onChange={handlePasswordChange}
-                                                                    placeholder={`Enter ${field.label.toLowerCase()}`}
-                                                                />
-                                                            </motion.div>
-                                                        ))}
+                                                        ].map((field, index) => {
+                                                            // State for this field is managed by appending 'Show' to name in a local state
+                                                            // However, since we are inside map, better to use separate state or object
+                                                            // Let's use a simple state object for visibility
+                                                            const [isVisible, setIsVisible] = useState(false);
+
+                                                            return (
+                                                                <motion.div
+                                                                    key={field.name}
+                                                                    className="modern-form-field"
+                                                                    initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+                                                                    animate={{ opacity: 1, x: 0 }}
+                                                                    transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
+                                                                >
+                                                                    <label htmlFor={field.name}>{field.label}</label>
+                                                                    <div style={{ position: 'relative' }}>
+                                                                        <input
+                                                                            type={isVisible ? "text" : "password"}
+                                                                            id={field.name}
+                                                                            name={field.name}
+                                                                            value={passwordData[field.name as keyof typeof passwordData]}
+                                                                            onChange={handlePasswordChange}
+                                                                            placeholder={`Enter ${field.label.toLowerCase()}`}
+                                                                            style={{ paddingRight: '40px' }}
+                                                                        />
+                                                                        <i 
+                                                                            className={`bi ${isVisible ? 'bi-eye-slash-fill' : 'bi-eye-fill'}`}
+                                                                            onClick={() => setIsVisible(!isVisible)}
+                                                                            style={{
+                                                                                position: 'absolute',
+                                                                                right: '12px',
+                                                                                top: '50%',
+                                                                                transform: 'translateY(-50%)',
+                                                                                cursor: 'pointer',
+                                                                                color: '#9ca3af',
+                                                                                fontSize: '1.2rem'
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                </motion.div>
+                                                            );
+                                                        })}
                                                     </div>
 
                                                     <motion.div

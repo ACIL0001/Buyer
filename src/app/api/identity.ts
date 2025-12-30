@@ -1,16 +1,18 @@
 import { requests } from './utils';
 
-interface Identity {
-  id: string;
+export interface Identity {
+  id?: string;
+  _id?: string; // MongoDB ID
   type: string;
-  number: string;
+  number?: string;
   userId: string;
   status: string;
   createdAt: string;
   updatedAt: string;
+  [key: string]: any; // Allow dynamic properties for documents and flexible schema
 }
 
-interface ApiResponse<T> {
+export interface ApiResponse<T> {
   data: T;
   message?: string;
   success: boolean;
@@ -83,23 +85,23 @@ export const IdentityAPI = {
   createResellerIdentity: async (formData: FormData): Promise<ApiResponse<Identity>> => {
     try {
       console.log('🆔 === CREATE RESELLER IDENTITY ===');
-      
+
       if (!formData) {
         throw new Error('FormData is required for reseller identity creation');
       }
-      
+
       // Check if identityCard file exists in FormData
-      const hasIdentityCard = Array.from(formData.entries()).some(([key, value]) => 
+      const hasIdentityCard = Array.from(formData.entries()).some(([key, value]) =>
         key === 'identityCard' && value instanceof File
       );
-      
+
       if (!hasIdentityCard) {
         console.error('❌ No identityCard file found in FormData');
         throw new Error('identityCard file is required');
       }
-      
+
       console.log('✅ identityCard file validated');
-      
+
       // Use the postFormData method from requests
       const res = await requests.postFormData('identities/reseller', formData);
       if ('success' in res) {

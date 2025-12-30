@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { CategoryAPI } from '../api/category';
 import { AuctionsAPI } from '../api/auctions';
 import { TendersAPI } from '../api/tenders';
+import { DirectSaleAPI } from '../api/direct-sale';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
@@ -38,16 +39,27 @@ interface Auction {
   startingPrice?: number;
   endingAt?: string;
   thumbs?: Array<{ url: string }>;
+  images?: string[];
+  image?: string;
   owner?: {
+    _id: string;
     firstName?: string;
     lastName?: string;
     name?: string;
     avatar?: { url: string };
+    photoURL?: string;
+    entreprise?: string;
+    companyName?: string;
+    username?: string;
   };
   productCategory?: {
     _id: string;
     name: string;
   };
+  status?: string;
+  location?: string;
+  wilaya?: string;
+  quantity?: number;
 }
 
 interface Tender {
@@ -57,15 +69,99 @@ interface Tender {
   startingPrice?: number;
   endingAt?: string;
   thumbs?: Array<{ url: string }>;
+  images?: string[];
+  image?: string;
+  attachments?: Array<{ url: string; path?: string }>;
   owner?: {
+    _id: string;
     firstName?: string;
     lastName?: string;
     name?: string;
     avatar?: { url: string };
+    photoURL?: string;
+    entreprise?: string;
+    companyName?: string;
+    username?: string;
   };
   productCategory?: {
     _id: string;
     name: string;
+  };
+  tenderType?: 'PRODUCT' | 'SERVICE';
+  status?: string;
+  location?: string;
+  wilaya?: string;
+  quantity?: number;
+}
+
+interface DirectSale {
+  _id: string;
+  title: string;
+  description: string;
+  price: number;
+  quantity: number;
+  soldQuantity?: number;
+  saleType: 'PRODUCT' | 'SERVICE';
+  type?: 'PRODUCT' | 'SERVICE'; 
+  thumbs?: Array<{ url: string }>;
+  images?: string[];
+  owner?: {
+    _id: string;
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    avatar?: { url: string };
+    photoURL?: string;
+    entreprise?: string;
+    companyName?: string;
+    username?: string;
+  };
+  productCategory?: {
+    _id: string;
+    name: string;
+  };
+  status?: string;
+  location?: string;
+  wilaya?: string;
+  place?: string;
+  address?: string;
+  hidden?: boolean;
+}
+
+interface Timer {
+  days: string;
+  hours: string;
+  minutes: string;
+  seconds: string;
+  hasEnded: boolean;
+}
+
+// Helper function to calculate time remaining
+function calculateTimeRemaining(endDate: string): Timer {
+  const total = Date.parse(endDate) - Date.now();
+  const hasEnded = total <= 0;
+
+  if (hasEnded) {
+    return {
+      days: "00",
+      hours: "00",
+      minutes: "00",
+      seconds: "00",
+      hasEnded: true
+    };
+  }
+
+  const seconds = Math.floor((total / 1000) % 60);
+  const minutes = Math.floor((total / 1000 / 60) % 60);
+  const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+  const days = Math.floor(total / (1000 * 60 * 60 * 24));
+
+  return {
+    days: days.toString().padStart(2, '0'),
+    hours: hours.toString().padStart(2, '0'),
+    minutes: minutes.toString().padStart(2, '0'),
+    seconds: seconds.toString().padStart(2, '0'),
+    hasEnded: false
   };
 }
 
@@ -76,18 +172,29 @@ export default function CategoryClient() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const [tenders, setTenders] = useState<Tender[]>([]);
+  const [allDirectSales, setAllDirectSales] = useState<DirectSale[]>([]);
+  
+  const [categoryTenders, setCategoryTenders] = useState<Tender[]>([]);
+  const [categoryDirectSales, setCategoryDirectSales] = useState<DirectSale[]>([]);
+
   const [filteredAuctions, setFilteredAuctions] = useState<Auction[]>([]);
+  const [filteredTenders, setFilteredTenders] = useState<Tender[]>([]);
+  const [filteredDirectSales, setFilteredDirectSales] = useState<DirectSale[]>([]);
+  
   const [loading, setLoading] = useState(true);
-  const [auctionsLoading, setAuctionsLoading] = useState(false);
+  const [itemsLoading, setItemsLoading] = useState(false); // Renamed from auctionsLoading
   const [error, setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
   const [expandedCategories, setExpandedCategories] = useState<{[key: string]: boolean}>({});
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'categories' | 'auctions'>('categories');
+  const [viewMode, setViewMode] = useState<'categories' | 'auctions'>('categories'); // We keep 'auctions' as the "Item View" mode name for now
   const [filterType, setFilterType] = useState<'ALL' | 'PRODUCT' | 'SERVICE'>('ALL');
-  const [searchResults, setSearchResults] = useState<{ categories: Category[], auctions: Auction[], tenders: Tender[] }>({ categories: [], auctions: [], tenders: [] });
+    const [activeTab, setActiveTab] = useState<'auctions' | 'tenders' | 'directSales'>('auctions'); // New Tab State
+  const [timers, setTimers] = useState<{ [key: string]: Timer }>({});
+  
+  const [searchResults, setSearchResults] = useState<{ categories: Category[], auctions: Auction[], tenders: Tender[], directSales: DirectSale[] }>({ categories: [], auctions: [], tenders: [], directSales: [] });
   const [showSearchResults, setShowSearchResults] = useState(false);
   const DEFAULT_CATEGORY_IMAGE = "/assets/images/logo-white.png";
   const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
@@ -201,20 +308,32 @@ export default function CategoryClient() {
   }, []);
 
   useEffect(() => {
-    const fetchAuctions = async () => {
+    const fetchCategoryItems = async () => {
       if (!selectedCategory) {
         setAuctions([]);
         setFilteredAuctions([]);
+        setFilteredTenders([]);
+        setFilteredDirectSales([]);
         return;
       }
       try {
-        setAuctionsLoading(true);
-        const response = await AuctionsAPI.getAuctions();
-        if (response && Array.isArray(response)) {
-          const selectedCategoryObj = findCategoryById(categories, selectedCategory);
-          if (selectedCategoryObj) {
-            const allCategoryIds = getAllSubcategoryIds(selectedCategoryObj);
-            const categoryAuctions = response.filter(auction => {
+        setItemsLoading(true);
+        
+        // 1. Fetch Auctions
+        const auctionRes = await AuctionsAPI.getAuctions();
+        
+        // 2. Fetch Direct Sales (from allDirectSales state filtered later, no API call needed here)
+
+        const selectedCategoryObj = findCategoryById(categories, selectedCategory);
+        let allCategoryIds: string[] = [selectedCategory];
+        
+        if (selectedCategoryObj) {
+           allCategoryIds = getAllSubcategoryIds(selectedCategoryObj);
+        }
+        
+        // Filter Auctions (Always fetched per category)
+        if (auctionRes && Array.isArray(auctionRes)) {
+            const categoryAuctions = auctionRes.filter(auction => {
               if (auction.productCategory && auction.productCategory._id) {
                 return allCategoryIds.includes(auction.productCategory._id);
               }
@@ -222,29 +341,53 @@ export default function CategoryClient() {
             });
             setAuctions(categoryAuctions);
             setFilteredAuctions(categoryAuctions);
-          } else {
-            const categoryAuctions = response.filter(auction => 
-              auction.productCategory && auction.productCategory._id === selectedCategory
-            );
-            setAuctions(categoryAuctions);
-            setFilteredAuctions(categoryAuctions);
-          }
         } else {
-          setAuctions([]);
-          setFilteredAuctions([]);
+             setAuctions([]);
+             setFilteredAuctions([]);
         }
+
+        // Filter Direct Sales (from allDirectSales state)
+        if (allDirectSales && allDirectSales.length > 0) {
+            const categoryDS = allDirectSales.filter(sale => {
+                if (sale.productCategory && sale.productCategory._id) {
+                    return allCategoryIds.includes(sale.productCategory._id);
+                }
+                return false;
+            });
+            setCategoryDirectSales(categoryDS);
+            setFilteredDirectSales(categoryDS);
+        } else {
+            setCategoryDirectSales([]);
+            setFilteredDirectSales([]);
+        }
+
+        // Filter Tenders (from tenders state)
+        if (tenders && tenders.length > 0) {
+            const categoryT = tenders.filter(tender => {
+                if (tender.productCategory && tender.productCategory._id) {
+                    return allCategoryIds.includes(tender.productCategory._id);
+                }
+                return false;
+            });
+            setCategoryTenders(categoryT);
+            setFilteredTenders(categoryT);
+        } else {
+            setCategoryTenders([]);
+            setFilteredTenders([]);
+        }
+
       } catch (error) {
-        console.error("Error fetching auctions:", error);
+        console.error("Error fetching category items:", error);
         setAuctions([]);
         setFilteredAuctions([]);
       } finally {
-        setAuctionsLoading(false);
+        setItemsLoading(false);
       }
     };
     if (categories.length > 0 && selectedCategory) {
-      fetchAuctions();
+      fetchCategoryItems();
     }
-  }, [selectedCategory, categories]);
+  }, [selectedCategory, categories, tenders, allDirectSales]);
 
   const hasChildren = (category: Category) => {
     return category.children && category.children.length > 0;
@@ -270,6 +413,9 @@ export default function CategoryClient() {
     setSelectedCategoryName('');
     setAuctions([]);
     setFilteredAuctions([]);
+    setFilteredTenders([]);
+    setFilteredDirectSales([]);
+    setActiveTab('auctions'); // Reset tab
   };
 
   // Filter categories by type
@@ -297,62 +443,111 @@ export default function CategoryClient() {
     return filtered;
   }, [categories, filterType, searchTerm, showSearchResults]);
 
-  // Fetch tenders
+  // Fetch tenders and direct sales on mount
   useEffect(() => {
-    const fetchTenders = async () => {
+    const fetchData = async () => {
       try {
-        const response = await TendersAPI.getActiveTenders();
-        const tendersData = response?.data || response || [];
+        const [tendersRes, directSalesRes] = await Promise.all([
+          TendersAPI.getActiveTenders(),
+          DirectSaleAPI.getDirectSales()
+        ]);
+        
+        const tendersData = tendersRes?.data || tendersRes || [];
         setTenders(Array.isArray(tendersData) ? tendersData : []);
+
+        const directSalesData = (directSalesRes as any)?.data || directSalesRes || [];
+        setAllDirectSales(Array.isArray(directSalesData) ? directSalesData : []);
       } catch (error) {
-        console.error('Error fetching tenders:', error);
+        console.error('Error fetching data:', error);
       }
     };
-    fetchTenders();
+    fetchData();
   }, []);
 
-  // Search functionality for categories, auctions, and tenders
+  // Timer update effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newTimers: { [key: string]: Timer } = {};
+
+      // Update auction timers
+      auctions.forEach(auction => {
+        if (auction.endingAt) {
+          newTimers[auction._id] = calculateTimeRemaining(auction.endingAt);
+        }
+      });
+
+      // Update tender timers
+      tenders.forEach(tender => {
+        if (tender.endingAt) {
+          newTimers[tender._id] = calculateTimeRemaining(tender.endingAt);
+        }
+      });
+
+      setTimers(newTimers);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [auctions, tenders]);
+
+  // Search functionality for categories, auctions, tenders, and direct sales
   useEffect(() => {
     if (!searchTerm.trim()) {
-      setSearchResults({ categories: [], auctions: [], tenders: [] });
+      setSearchResults({ categories: [], auctions: [], tenders: [], directSales: [] });
       setShowSearchResults(false);
+      
+      // Restore category-filtered views
       setFilteredAuctions(auctions);
+      setFilteredTenders(categoryTenders);
+      setFilteredDirectSales(categoryDirectSales);
       return;
     }
 
     const searchLower = searchTerm.toLowerCase().trim();
     
     // Search categories
-    const filteredCategories = categories.filter((category: Category) => {
+    const resultsCategories = categories.filter((category: Category) => {
       const name = (category.name || '').toLowerCase();
       const description = (category.description || '').toLowerCase();
       return name.includes(searchLower) || description.includes(searchLower);
     });
 
-    // Search auctions
-    const filteredAuctions = auctions.filter((auction: Auction) => {
+    // Search auctions (Only within loaded category auctions)
+    const resultsAuctions = auctions.filter((auction: Auction) => {
       const title = (auction.title || '').toLowerCase();
       const description = (auction.description || '').toLowerCase();
       return title.includes(searchLower) || description.includes(searchLower);
     });
 
-    // Search tenders
-    const filteredTenders = tenders.filter((tender: Tender) => {
+    // Search tenders (Global search)
+    const resultsTenders = tenders.filter((tender: Tender) => {
       const title = (tender.title || '').toLowerCase();
       const description = (tender.description || '').toLowerCase();
       return title.includes(searchLower) || description.includes(searchLower);
     });
 
-    setSearchResults({
-      categories: filteredCategories,
-      auctions: filteredAuctions,
-      tenders: filteredTenders
+    // Search direct sales (Global search)
+    const resultsDirectSales = allDirectSales.filter((sale: DirectSale) => {
+      const title = (sale.title || '').toLowerCase();
+      const description = (sale.description || '').toLowerCase();
+      return title.includes(searchLower) || description.includes(searchLower);
     });
-    setShowSearchResults(true);
-    setFilteredAuctions(filteredAuctions);
-  }, [searchTerm, categories, auctions, tenders]);
 
-  const handleSearchSelect = (item: Category | Auction | Tender, type: 'category' | 'auction' | 'tender') => {
+    setSearchResults({
+      categories: resultsCategories,
+      auctions: resultsAuctions,
+      tenders: resultsTenders,
+      directSales: resultsDirectSales
+    });
+    
+    setShowSearchResults(true);
+    
+    // Update filtered lists for the current view
+    setFilteredAuctions(resultsAuctions);
+    setFilteredTenders(resultsTenders);
+    setFilteredDirectSales(resultsDirectSales);
+  }, [searchTerm, categories, auctions, tenders, allDirectSales, categoryTenders, categoryDirectSales]);
+
+  const handleSearchSelect = (item: Category | Auction | Tender | DirectSale, type: 'category' | 'auction' | 'tender' | 'directSale') => {
     setSearchTerm('');
     setShowSearchResults(false);
     
@@ -367,6 +562,9 @@ export default function CategoryClient() {
     } else if (type === 'tender') {
       const tender = item as Tender;
       navigateWithTop(`/tender-details/${tender._id}`);
+    } else if (type === 'directSale') {
+      const sale = item as DirectSale;
+      navigateWithTop(`/direct-sale-details/${sale._id}`);
     }
   };
 
@@ -715,27 +913,35 @@ export default function CategoryClient() {
   };
 
   const renderAuctionCard = (auction: Auction) => {
+    const timer = timers[auction._id] || { days: "00", hours: "00", minutes: "00", seconds: "00", hasEnded: false };
+    const isEnded = !!timer.hasEnded;
+    const isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30 && !isEnded;
+
     return (
       <div
         key={auction._id}
         style={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          borderRadius: '20px',
+          background: 'white',
+          borderRadius: '16px',
           overflow: 'hidden',
-          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.08)',
+          border: '1px solid rgba(0, 0, 0, 0.05)',
           transition: 'all 0.3s ease',
-          cursor: 'pointer',
+          cursor: isEnded ? 'default' : 'pointer',
+          opacity: isEnded ? 0.8 : 1,
+          position: 'relative',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-8px)';
-          e.currentTarget.style.boxShadow = '0 20px 40px rgba(59, 130, 246, 0.15)';
+           if (!isEnded) {
+             e.currentTarget.style.transform = 'translateY(-8px)';
+             e.currentTarget.style.boxShadow = '0 20px 40px rgba(59, 130, 246, 0.15)';
+           }
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+            if (!isEnded) {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.08)';
+            }
         }}
         onClick={() => navigateWithTop(`/auction-details/${auction._id}`)}
       >
@@ -743,42 +949,19 @@ export default function CategoryClient() {
           height: '200px',
           position: 'relative',
           overflow: 'hidden',
+          background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
         }}>
           <img
             src={(() => {
               if (auction.thumbs && auction.thumbs.length > 0 && auction.thumbs[0].url) {
                 const url = auction.thumbs[0].url;
-                // If the URL already starts with http, use it as is
-                if (url.startsWith('http')) {
-                  return url;
-                } else if (url.startsWith('/static/')) {
-                  const finalUrl = `${app.baseURL}${url.substring(1)}`;
-                  console.log('🎯 CATEGORY PAGE AUCTION IMAGE:', {
-                    originalUrl: url,
-                    finalUrl: finalUrl,
-                    auctionId: auction._id,
-                    auctionTitle: auction.title
-                  });
-                  return finalUrl;
-                } else if (url.startsWith('/')) {
-                  const finalUrl = `${app.baseURL}${url.substring(1)}`;
-                  console.log('🎯 CATEGORY PAGE AUCTION IMAGE:', {
-                    originalUrl: url,
-                    finalUrl: finalUrl,
-                    auctionId: auction._id,
-                    auctionTitle: auction.title
-                  });
-                  return finalUrl;
-                } else {
-                  const finalUrl = `${app.baseURL}${url}`;
-                  console.log('🎯 CATEGORY PAGE AUCTION IMAGE:', {
-                    originalUrl: url,
-                    finalUrl: finalUrl,
-                    auctionId: auction._id,
-                    auctionTitle: auction.title
-                  });
-                  return finalUrl;
-                }
+                if (url.startsWith('http')) return url;
+                return `${app.baseURL}${url.startsWith('/') ? url.substring(1) : url}`;
+              }
+              if (auction.images && auction.images.length > 0) {
+                 const url = auction.images[0];
+                 if (url.startsWith('http')) return url;
+                 return `${app.baseURL}${url.startsWith('/') ? url.substring(1) : url}`;
               }
               return DEFAULT_AUCTION_IMAGE;
             })()}
@@ -787,208 +970,500 @@ export default function CategoryClient() {
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              transition: 'transform 0.4s ease',
             }}
-            crossOrigin="use-credentials"
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             onError={(e) => {
-              console.log('❌ Auction image failed to load:', auction.title, e.currentTarget.src);
               e.currentTarget.src = DEFAULT_AUCTION_IMAGE;
             }}
           />
+          
+          {/* Timer Overlay */}
           <div style={{
             position: 'absolute',
             top: '12px',
-            left: '12px',
-            background: 'linear-gradient(90deg, #3b82f6, #1d4ed8)',
+            right: '12px',
+            background: isEnded
+              ? 'rgba(0,0,0,0.6)'
+              : (isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'linear-gradient(45deg, #0063b1, #00a3e0)'),
             color: 'white',
             padding: '6px 12px',
             borderRadius: '20px',
             fontSize: '12px',
             fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+            backdropFilter: 'blur(4px)',
           }}>
-            <div style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              background: '#fff',
-              animation: 'pulse 2s ease-in-out infinite',
-            }}></div>
-            {t('category.live')}
+            {isEnded ? (
+               <span>{t('common.finished')}</span>
+            ) : (
+                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                  <span>{timer.days}d</span>
+                  <span>:</span>
+                  <span>{timer.hours}h</span>
+                  <span>:</span>
+                  <span>{timer.minutes}m</span>
+                  <span>:</span>
+                  <span>{timer.seconds}s</span>
+                </div>
+            )}
           </div>
+
           <div style={{
             position: 'absolute',
             top: '12px',
-            right: '12px',
-            background: 'rgba(0, 0, 0, 0.7)',
-            color: 'white',
-            padding: '4px 8px',
-            borderRadius: '12px',
-            fontSize: '10px',
-            fontWeight: '500',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
+            left: '12px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            color: '#0063b1',
+            padding: '6px 12px',
+            borderRadius: '20px',
+            fontSize: '11px',
+            fontWeight: '700',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
           }}>
-            {auction.productCategory?.name}
+            {auction.productCategory?.name || t('common.auction')}
           </div>
         </div>
+
         <div style={{ padding: '20px' }}>
           <h3 style={{
-            fontSize: '18px',
+            fontSize: '16px',
             fontWeight: '600',
             color: '#1e293b',
             marginBottom: '12px',
-            lineHeight: '1.3',
+            lineHeight: '1.4',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            height: '44px',
           }}>
             {auction.title}
           </h3>
+
+           {/* Location and Quantity */}
+           <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+             {(auction.location || auction.wilaya) && (
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '4px', 
+                    fontSize: '12px', 
+                    color: '#64748b',
+                    background: '#f1f5f9',
+                    padding: '4px 8px',
+                    borderRadius: '6px'
+                }}>
+                    <span>📍</span>
+                    <span>{auction.location || auction.wilaya}</span>
+                </div>
+             )}
+              {auction.quantity && (
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '4px', 
+                    fontSize: '12px', 
+                    color: '#64748b',
+                    background: '#f1f5f9',
+                    padding: '4px 8px',
+                    borderRadius: '6px'
+                }}>
+                    <span>📦</span>
+                    <span>{auction.quantity}</span>
+                </div>
+             )}
+           </div>
+
           <div style={{
             background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
             borderRadius: '12px',
-            padding: '16px',
+            padding: '12px 16px',
             marginBottom: '16px',
             border: '1px solid #e2e8f0',
-          }}>
-            <p style={{
-              fontSize: '12px',
-              color: '#64748b',
-              margin: '0 0 4px 0',
-              fontWeight: '500',
-            }}>
-              {t('category.currentBid')}
-            </p>
-            <p style={{
-              fontSize: '20px',
-              fontWeight: '700',
-              margin: 0,
-              background: 'linear-gradient(90deg, #3b82f6, #1d4ed8)',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}>
-              {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()} DA
-            </p>
-          </div>
-          <div style={{
             display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            gap: '12px',
-            marginBottom: '16px',
           }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #f1f5f9, #e2e8f0)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
-              border: '2px solid white',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-            }}>
-              <img
-                src={(() => {
-                  if (auction.owner?.avatar?.url) {
-                    const url = auction.owner.avatar.url;
-                    // If the URL already starts with http, use it as is
-                    if (url.startsWith('http')) {
-                      return url;
-                    } else if (url.startsWith('/static/')) {
-                      const finalUrl = `${app.baseURL}${url.substring(1)}`;
-                      console.log('🎯 CATEGORY PAGE USER AVATAR:', {
-                        originalUrl: url,
-                        finalUrl: finalUrl,
-                        auctionId: auction._id,
-                        ownerName: auction.owner?.firstName || auction.owner?.name
-                      });
-                      return finalUrl;
-                    } else if (url.startsWith('/')) {
-                      const finalUrl = `${app.baseURL}${url.substring(1)}`;
-                      console.log('🎯 CATEGORY PAGE USER AVATAR:', {
-                        originalUrl: url,
-                        finalUrl: finalUrl,
-                        auctionId: auction._id,
-                        ownerName: auction.owner?.firstName || auction.owner?.name
-                      });
-                      return finalUrl;
-                    } else {
-                      const finalUrl = `${app.baseURL}${url}`;
-                      console.log('🎯 CATEGORY PAGE USER AVATAR:', {
-                        originalUrl: url,
-                        finalUrl: finalUrl,
-                        auctionId: auction._id,
-                        ownerName: auction.owner?.firstName || auction.owner?.name
-                      });
-                      return finalUrl;
-                    }
-                  }
-                  return '/assets/images/avatar.jpg';
-                })()}
-                alt="Owner"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                }}
-                crossOrigin="use-credentials"
-                onError={(e) => {
-                  console.log('❌ Owner avatar failed to load:', e.currentTarget.src);
-                  e.currentTarget.src = '/assets/images/avatar.jpg';
-                }}
-              />
-            </div>
             <div>
-              <p style={{
-                fontSize: '14px',
+                <p style={{
+                fontSize: '11px',
                 color: '#64748b',
+                margin: '0 0 2px 0',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                }}>
+                {t('category.currentBid')}
+                </p>
+                <p style={{
+                fontSize: '18px',
+                fontWeight: '700',
                 margin: 0,
-                fontWeight: '500',
-              }}>
-                {auction.owner?.firstName && auction.owner?.lastName
-                  ? `${auction.owner.firstName} ${auction.owner.lastName}`
-                  : auction.owner?.name || 'Anonymous'}
-              </p>
+                color: '#0063b1',
+                }}>
+                {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()} DA
+                </p>
             </div>
           </div>
-          <button
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+              }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  border: '2px solid #fff',
+                  boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                }}>
+                  <img
+                    src={auction.owner?.avatar?.url ? (auction.owner.avatar.url.startsWith('http') ? auction.owner.avatar.url : `${app.baseURL}${auction.owner.avatar.url.startsWith('/') ? auction.owner.avatar.url.substring(1) : auction.owner.avatar.url}`) : '/assets/images/avatar.jpg'}
+                    alt="Owner"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => { e.currentTarget.src = '/assets/images/avatar.jpg'; }}
+                  />
+                </div>
+                <div>
+                   <p style={{ fontSize: '12px', fontWeight: '600', color: '#333', margin: 0 }}>
+                     {auction.owner?.firstName ? `${auction.owner.firstName} ${auction.owner.lastName || ''}` : (auction.owner?.name || 'Anonymous')}
+                   </p>
+                </div>
+              </div>
+          </div>
+          
+           <button
             style={{
               width: '100%',
-              padding: '12px 20px',
-              background: 'linear-gradient(90deg, #3b82f6, #1d4ed8)',
+              marginTop: '16px',
+              padding: '10px 20px',
+              background: isEnded ? '#cbd5e1' : 'linear-gradient(90deg, #3b82f6, #1d4ed8)',
               color: 'white',
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: '10px',
               fontWeight: '600',
               fontSize: '14px',
-              cursor: 'pointer',
+              cursor: isEnded ? 'default' : 'pointer',
               transition: 'all 0.3s ease',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(90deg, #1d4ed8, #3b82f6)';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(90deg, #3b82f6, #1d4ed8)';
-              e.currentTarget.style.transform = 'translateY(0)';
+              opacity: isEnded ? 0.8 : 1,
             }}
           >
-            {t('category.placeBid')}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
-            </svg>
+            {isEnded ? t('common.finished') : t('category.placeBid')}
+            {!isEnded && (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
+                </svg>
+            )}
           </button>
         </div>
       </div>
     );
+  };
+
+  const renderTenderCard = (tender: Tender) => {
+      const timer = timers[tender._id] || { days: "00", hours: "00", minutes: "00", seconds: "00", hasEnded: false };
+      const isEnded = !!timer.hasEnded;
+      const isService = tender.tenderType === 'SERVICE' || tender.productCategory?.name === 'Services'; // Fallback check
+
+      return (
+        <div
+          key={tender._id}
+          style={{
+            background: 'white',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.08)',
+            border: '1px solid rgba(0, 0, 0, 0.05)',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer',
+            position: 'relative',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-6px)';
+            e.currentTarget.style.boxShadow = '0 20px 40px rgba(79, 70, 229, 0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.08)';
+          }}
+          onClick={() => navigateWithTop(`/tender-details/${tender._id}`)}
+        >
+           <div style={{
+            height: '180px',
+            position: 'relative',
+            overflow: 'hidden',
+            background: '#e0e7ff',
+           }}>
+             <img
+                src={(() => {
+                  if (tender.thumbs && tender.thumbs.length > 0 && tender.thumbs[0].url) {
+                    const url = tender.thumbs[0].url;
+                    if (url.startsWith('http')) return url;
+                    return `${app.baseURL}${url.startsWith('/') ? url.substring(1) : url}`;
+                  }
+                  if (tender.images && tender.images.length > 0) {
+                     const url = tender.images[0];
+                     if (url.startsWith('http')) return url;
+                     return `${app.baseURL}${url.startsWith('/') ? url.substring(1) : url}`;
+                  }
+                  return DEFAULT_AUCTION_IMAGE; // Use common default or distinct one
+                })()}
+                alt={tender.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => { e.currentTarget.src = DEFAULT_AUCTION_IMAGE; }}
+             />
+
+             {/* Type Badge */}
+             <div style={{
+                position: 'absolute',
+                top: '12px',
+                left: '12px',
+                background: isService ? '#10b981' : '#4f46e5',
+                color: 'white',
+                padding: '4px 10px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+             }}>
+                {isService ? (t('common.service') || 'Service') : (t('common.product') || 'Produit')}
+             </div>
+
+             {/* Timer Overlay */}
+             <div style={{
+                position: 'absolute',
+                bottom: '10px',
+                right: '10px',
+                background: isEnded ? 'rgba(0,0,0,0.7)' : 'rgba(79, 70, 229, 0.9)',
+                color: 'white',
+                padding: '6px 12px',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: '600',
+                backdropFilter: 'blur(4px)',
+             }}>
+                 {isEnded ? (
+                    <span>{t('common.finished')}</span>
+                 ) : (
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                        <span>{timer.days}d</span>:<span>{timer.hours}h</span>:<span>{timer.minutes}m</span>
+                    </div>
+                 )}
+             </div>
+           </div>
+
+          <div style={{ padding: '20px' }}>
+            <h3 style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              color: '#1e293b',
+              marginBottom: '10px',
+              lineHeight: '1.4',
+              height: '44px',
+              overflow: 'hidden',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+            }}>
+              {tender.title}
+            </h3>
+            
+             <div style={{ marginBottom: '16px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+               <span style={{ fontSize: '12px', color: '#64748b', background: '#f8fafc', padding: '4px 8px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                 {tender.productCategory?.name}
+               </span>
+               <span style={{ fontSize: '12px', color: '#64748b', background: '#f8fafc', padding: '4px 8px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                 📍 {tender.location || tender.wilaya || t('common.notSpecified')}
+               </span>
+             </div>
+
+             {/* Owner Info */}
+             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                 <img
+                    src={tender.owner?.avatar?.url ? (tender.owner.avatar.url.startsWith('http') ? tender.owner.avatar.url : `${app.baseURL}${tender.owner.avatar.url.startsWith('/') ? tender.owner.avatar.url.substring(1) : tender.owner.avatar.url}`) : '/assets/images/avatar.jpg'}
+                    alt="Owner"
+                    style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
+                    onError={(e) => { e.currentTarget.src = '/assets/images/avatar.jpg'; }}
+                  />
+                  <div style={{ fontSize: '13px', color: '#475569', fontWeight: '500' }}>
+                    {tender.owner?.entreprise || tender.owner?.companyName || (tender.owner?.firstName ? `${tender.owner.firstName} ${tender.owner.lastName}` : 'Tender Owner')}
+                  </div>
+             </div>
+
+            <button
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: isEnded ? '#cbd5e1' : '#4f46e5',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                fontWeight: '600',
+                cursor: isEnded ? 'default' : 'pointer',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => !isEnded && (e.currentTarget.style.background = '#4338ca')}
+              onMouseLeave={(e) => !isEnded && (e.currentTarget.style.background = '#4f46e5')}
+            >
+              {isEnded ? t('common.closed') : (t('common.viewDetails') || 'Voir les détails')}
+            </button>
+          </div>
+        </div>
+      );
+  };
+
+  const renderDirectSaleCard = (sale: DirectSale) => {
+      const isSoldOut = sale.status === 'SOLD_OUT' || (sale.quantity <= (sale.soldQuantity || 0));
+
+      return (
+        <div
+          key={sale._id}
+          style={{
+            background: 'white',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.08)',
+            border: '1px solid rgba(0, 0, 0, 0.05)',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer',
+            opacity: isSoldOut ? 0.8 : 1,
+            position: 'relative',
+            filter: isSoldOut ? 'grayscale(0.8)' : 'none',
+          }}
+          onClick={() => navigateWithTop(`/direct-sale-details/${sale._id}`)}
+          onMouseEnter={(e) => {
+             if (!isSoldOut) {
+                e.currentTarget.style.transform = 'translateY(-6px)';
+                e.currentTarget.style.boxShadow = '0 20px 40px rgba(16, 185, 129, 0.15)';
+             }
+          }}
+          onMouseLeave={(e) => {
+             if (!isSoldOut) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.08)';
+             }
+          }}
+        >
+          <div style={{
+            height: '200px',
+            position: 'relative',
+            overflow: 'hidden',
+            background: '#ecfdf5',
+          }}>
+             <img
+                src={sale.thumbs && sale.thumbs.length > 0 ? (sale.thumbs[0].url.startsWith('http') ? sale.thumbs[0].url : `${app.baseURL}/static/${sale.thumbs[0].url}`) : DEFAULT_AUCTION_IMAGE}
+                alt={sale.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => { e.currentTarget.src = DEFAULT_AUCTION_IMAGE; }}
+             />
+             
+             {/* Type Badge */}
+             <div style={{
+                position: 'absolute',
+                top: '12px',
+                left: '12px',
+                background: sale.saleType === 'SERVICE' ? '#3b82f6' : '#10b981',
+                color: 'white',
+                padding: '4px 10px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+             }}>
+                {sale.saleType === 'SERVICE' ? (t('common.service') || 'Service') : (t('common.product') || 'Produit')}
+             </div>
+
+             {isSoldOut && (
+                 <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontWeight: '800',
+                    fontSize: '18px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px'
+                 }}>
+                    {t('common.soldOut') || 'VENDU'}
+                 </div>
+             )}
+          </div>
+          <div style={{ padding: '20px' }}>
+            <h3 style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              color: '#1e293b',
+              marginBottom: '8px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
+              {sale.title}
+            </h3>
+
+             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', fontSize: '12px', color: '#64748b' }}>
+                 {sale.location && <span>📍 {sale.location}</span>}
+                 {!sale.location && sale.wilaya && <span>📍 {sale.wilaya}</span>}
+                 {sale.quantity > 0 && <span>📦 {sale.quantity}</span>}
+             </div>
+
+            <p style={{
+              fontSize: '20px',
+              fontWeight: '700',
+              color: '#059669',
+              margin: '0 0 16px 0',
+            }}>
+              {Number(sale.price).toLocaleString()} DA
+            </p>
+
+            {/* Owner/Store Info */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
+                <img
+                    src={sale.owner?.avatar?.url ? (sale.owner.avatar.url.startsWith('http') ? sale.owner.avatar.url : `${app.baseURL}${sale.owner.avatar.url.startsWith('/') ? sale.owner.avatar.url.substring(1) : sale.owner.avatar.url}`) : '/assets/images/avatar.jpg'}
+                    alt="Owner"
+                    style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }}
+                    onError={(e) => { e.currentTarget.src = '/assets/images/avatar.jpg'; }}
+                />
+                <div style={{ fontSize: '12px', color: '#475569', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {sale.owner?.username || sale.owner?.name || 'Seller'}
+                </div>
+            </div>
+
+             <button
+              style={{
+                width: '100%',
+                padding: '10px',
+                background: isSoldOut ? '#94a3b8' : '#059669',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontWeight: '600',
+                cursor: isSoldOut ? 'default' : 'pointer',
+                transition: 'all 0.3s ease',
+              }}
+              disabled={isSoldOut}
+            >
+              {isSoldOut ? (t('common.soldOut') || 'Épuisé') : (t('common.buyNow') || 'Acheter')}
+            </button>
+          </div>
+        </div>
+      );
   };
 
   if (loading) {
@@ -1185,7 +1660,7 @@ export default function CategoryClient() {
           </div>
 
           {/* Search Results Dropdown */}
-          {showSearchResults && (searchResults.categories.length > 0 || searchResults.auctions.length > 0 || searchResults.tenders.length > 0) && (
+          {showSearchResults && (searchResults.categories.length > 0 || searchResults.auctions.length > 0 || searchResults.tenders.length > 0 || searchResults.directSales.length > 0) && (
             <div style={{
               position: 'absolute',
               top: '100%',
@@ -1277,6 +1752,33 @@ export default function CategoryClient() {
                       }}
                     >
                       <div style={{ fontWeight: 600, color: '#1e293b' }}>{tender.title}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {searchResults.directSales.length > 0 && (
+                <div style={{ padding: '12px', borderTop: (searchResults.categories.length > 0 || searchResults.auctions.length > 0 || searchResults.tenders.length > 0) ? '1px solid #e2e8f0' : 'none' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {t('category.searchDirectSales') || 'Ventes Directes'}
+                  </div>
+                  {searchResults.directSales.slice(0, 5).map((sale) => (
+                    <div
+                      key={sale._id}
+                      onClick={() => handleSearchSelect(sale, 'directSale')}
+                      style={{
+                        padding: '12px',
+                        cursor: 'pointer',
+                        borderRadius: '8px',
+                        transition: 'all 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#f1f5f9';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                    >
+                      <div style={{ fontWeight: 600, color: '#1e293b' }}>{sale.title}</div>
                     </div>
                   ))}
                 </div>
@@ -1401,6 +1903,60 @@ export default function CategoryClient() {
           </div>
         )}
 
+        {/* Tabs for Item View */}
+        {viewMode === 'auctions' && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '30px', flexWrap: 'wrap' }}>
+                <button 
+                   onClick={() => setActiveTab('auctions')}
+                   style={{
+                       padding: '10px 24px',
+                       borderRadius: '20px',
+                       border: 'none',
+                       background: activeTab === 'auctions' ? '#0063b1' : '#e2e8f0',
+                       color: activeTab === 'auctions' ? 'white' : '#64748b',
+                       fontWeight: '600',
+                       cursor: 'pointer',
+                       transition: 'all 0.3s ease',
+                       boxShadow: activeTab === 'auctions' ? '0 4px 12px rgba(0,99,177,0.3)' : 'none'
+                   }}
+                >
+                   {t('common.auctions') || 'Enchères'} ({filteredAuctions.length})
+                </button>
+                <button 
+                   onClick={() => setActiveTab('tenders')}
+                   style={{
+                       padding: '10px 24px',
+                       borderRadius: '20px',
+                       border: 'none',
+                       background: activeTab === 'tenders' ? '#4f46e5' : '#e2e8f0',
+                       color: activeTab === 'tenders' ? 'white' : '#64748b',
+                       fontWeight: '600',
+                       cursor: 'pointer',
+                       transition: 'all 0.3s ease',
+                       boxShadow: activeTab === 'tenders' ? '0 4px 12px rgba(79, 70, 229, 0.3)' : 'none'
+                   }}
+                >
+                   {t('common.tenders') || 'Appels d\'offres'} ({filteredTenders.length})
+                </button>
+                <button 
+                   onClick={() => setActiveTab('directSales')}
+                   style={{
+                       padding: '10px 24px',
+                       borderRadius: '20px',
+                       border: 'none',
+                       background: activeTab === 'directSales' ? '#059669' : '#e2e8f0',
+                       color: activeTab === 'directSales' ? 'white' : '#64748b',
+                       fontWeight: '600',
+                       cursor: 'pointer',
+                       transition: 'all 0.3s ease',
+                       boxShadow: activeTab === 'directSales' ? '0 4px 12px rgba(5, 150, 105, 0.3)' : 'none'
+                   }}
+                >
+                   {t('common.directSales') || 'Ventes Directes'} ({filteredDirectSales.length})
+                </button>
+            </div>
+        )}
+
         {/* Back Button for Auctions View */}
         {viewMode === 'auctions' && (
           <div style={{ marginBottom: '30px', textAlign: 'center' }}>
@@ -1456,7 +2012,7 @@ export default function CategoryClient() {
           </div>
         ) : (
           <div>
-            {auctionsLoading ? (
+            {itemsLoading ? (
               <div style={{ 
                 display: 'flex', 
                 justifyContent: 'center', 
@@ -1472,33 +2028,68 @@ export default function CategoryClient() {
                   animation: 'spin 1s linear infinite' 
                 }} />
               </div>
-            ) : filteredAuctions.length > 0 ? (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-                gap: '24px',
-                maxWidth: '1400px',
-                margin: '0 auto',
-              }}>
-                {filteredAuctions.map(renderAuctionCard)}
-              </div>
             ) : (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: '60px 20px',
-                background: 'rgba(255, 255, 255, 0.9)',
-                borderRadius: '16px',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(0, 99, 177, 0.1)',
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.6 }}>🔍</div>
-                <h3 style={{ color: '#0063b1', marginBottom: '10px', fontSize: '20px', fontWeight: '600' }}>
-                  {t('category.noAuctionsFound')}
-                </h3>
-                <p style={{ color: '#64748b', fontSize: '14px' }}>
-                  {searchTerm ? t('category.noAuctionsMatchSearch') : t('category.noAuctionsInCategory')}
-                </p>
-              </div>
+                <>
+                    {activeTab === 'auctions' && (
+                        filteredAuctions.length > 0 ? (
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                                gap: '24px',
+                                maxWidth: '1400px',
+                                margin: '0 auto',
+                            }}>
+                                {filteredAuctions.map(renderAuctionCard)}
+                            </div>
+                        ) : (
+                             // Empty State for Auctions
+                             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(255,255,255,0.9)', borderRadius: '16px', border: '1px solid rgba(0,99,177,0.1)' }}>
+                                <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.6 }}>🔍</div>
+                                <h3 style={{ color: '#0063b1', marginBottom: '10px', fontSize: '20px', fontWeight: '600' }}>{t('category.noAuctionsFound')}</h3>
+                             </div>
+                        )
+                    )}
+
+                    {activeTab === 'tenders' && (
+                        filteredTenders.length > 0 ? (
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                                gap: '24px',
+                                maxWidth: '1400px',
+                                margin: '0 auto',
+                            }}>
+                                {filteredTenders.map(renderTenderCard)}
+                            </div>
+                        ) : (
+                            // Empty State for Tenders
+                             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(255,255,255,0.9)', borderRadius: '16px', border: '1px solid rgba(0,99,177,0.1)' }}>
+                                <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.6 }}>📋</div>
+                                <h3 style={{ color: '#4f46e5', marginBottom: '10px', fontSize: '20px', fontWeight: '600' }}>{t('category.noTendersFound') || "No tenders found"}</h3>
+                             </div>
+                        )
+                    )}
+
+                    {activeTab === 'directSales' && (
+                        filteredDirectSales.length > 0 ? (
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                                gap: '24px',
+                                maxWidth: '1400px',
+                                margin: '0 auto',
+                            }}>
+                                {filteredDirectSales.map(renderDirectSaleCard)}
+                            </div>
+                        ) : (
+                            // Empty State for Direct Sales
+                             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(255,255,255,0.9)', borderRadius: '16px', border: '1px solid rgba(0,99,177,0.1)' }}>
+                                <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.6 }}>🏷️</div>
+                                <h3 style={{ color: '#059669', marginBottom: '10px', fontSize: '20px', fontWeight: '600' }}>{t('category.noDirectSalesFound') || "No direct sales found"}</h3>
+                             </div>
+                        )
+                    )}
+                </>
             )}
           </div>
         )}

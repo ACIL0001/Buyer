@@ -314,12 +314,21 @@ interface User {
   createdAt?: string;
   updatedAt?: string;
   wilaya?: string;
-  secteur?: string;
-  socialReason?: string;
+  activitySector?: string; // Renamed from secteur
+  companyName?: string; // Renamed from socialReason
   jobTitle?: string;
-  entity?: string;
+  // entity?: string; // Removed
   coverPhoto?: any;
   coverPhotoURL?: string;
+  loginCount?: number;
+  profileCompletionNote?: {
+    dismissed: boolean;
+    postponedCount: number;
+  };
+  // Deprecated fields for backward compatibility if needed
+  secteur?: string;
+  socialReason?: string;
+  entity?: string;
 }
 
 interface ApiResponse<T> {
@@ -397,7 +406,7 @@ export const UserAPI = {
 
     try {
       // Filter out undefined values and only allow certain fields
-      const allowedFields: Array<keyof User> = ['firstName', 'lastName', 'phone', 'wilaya', 'secteur', 'socialReason', 'jobTitle', 'entity'];
+      const allowedFields: Array<keyof User> = ['firstName', 'lastName', 'phone', 'wilaya', 'activitySector', 'companyName', 'jobTitle', 'secteur', 'socialReason']; // Added new fields, kept old for safe transition
       const filteredData: Partial<User> = {};
 
       for (const field of allowedFields) {
@@ -799,6 +808,39 @@ export const UserAPI = {
 
   updateMe: async (data: any): Promise<ApiResponse<User>> => {
     return UserAPI.updateProfile(data);
+  },
+
+  // Update profile completion note status
+  updateProfileCompletionNote: async (action: 'postpone' | 'dismiss'): Promise<ApiResponse<User>> => {
+    console.log(`📝 === UPDATE PROFILE COMPLETION NOTE: ${action} ===`);
+
+    const token = getAuthToken();
+    if (!token) return Promise.reject(new Error('No authentication token available'));
+
+    try {
+      const endpoint = 'users/me/profile-completion-note';
+      const data = { action };
+
+      let response;
+      if (requests && typeof requests.put === 'function') {
+        response = await requests.put(endpoint, data);
+      } else {
+        response = await safePut(endpoint, data);
+      }
+
+      if (response.success && (response.user || response.data)) {
+        return {
+          success: true,
+          user: response.user || response.data,
+          data: response.user || response.data,
+          message: response.message
+        };
+      }
+      throw new Error(response.message || 'Failed to update note status');
+    } catch (error: any) {
+      console.error('❌ Update note status failed:', error);
+      throw error;
+    }
   },
 
   findById: async (id: string): Promise<ApiResponse<User>> => {

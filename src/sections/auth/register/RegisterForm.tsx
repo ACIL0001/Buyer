@@ -8,6 +8,7 @@ import { CategoryAPI } from '../../../app/api/category';
 import { authStore } from '../../../contexts/authStore';
 import { styled, useTheme } from '@mui/material/styles';
 import { WILAYAS } from '../../../constants/wilayas';
+import * as mammoth from 'mammoth';
 // material
 import {
   Stack,
@@ -99,27 +100,137 @@ const TermsAgreementBox = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(1),
 }));
 
+const DocumentPage = styled('div')(({ theme }) => ({
+  backgroundColor: '#ffffff',
+  width: '100%',
+  // maxWidth: '210mm', // Removed A4 constraint to fill modal
+  minHeight: '50vh', // Reduced constraint
+  padding: theme.spacing(3), // Reduced padding from 20mm
+  // boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)', // Optional: remove shadow if filling space
+  margin: '0 auto',
+  color: '#000000',
+  fontFamily: '"Times New Roman", Times, serif',
+  fontSize: '12pt',
+  lineHeight: 1.6,
+  overflowWrap: 'break-word',
+  '& h1': { fontSize: '24pt', fontWeight: 'bold', marginBottom: '24pt', textAlign: 'center' },
+  '& h2': { fontSize: '18pt', fontWeight: 'bold', marginTop: '18pt', marginBottom: '12pt', borderBottom: '1px solid #eee', paddingBottom: '4px' },
+  '& h3': { fontSize: '14pt', fontWeight: 'bold', marginTop: '14pt', marginBottom: '10pt' },
+  '& p': { marginBottom: '12pt', textAlign: 'justify' },
+  '& ul, & ol': { marginBottom: '12pt', paddingLeft: '24pt' },
+  '& li': { marginBottom: '6pt' },
+  [theme.breakpoints.down('md')]: {
+    padding: theme.spacing(2),
+  },
+}));
+// Import config to get base URL
+import app from '../../../config';
+
+const getFullUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url;
+    // Remove leading slash from url if present to avoid double slash if baseURL has one
+    const cleanPath = url.startsWith('/') ? url.substring(1) : url;
+    const cleanBase = app.route.endsWith('/') ? app.route : `${app.route}/`;
+    return `${cleanBase}${cleanPath}`;
+};
+
 // Terms Modal Component
-function TermsModal({ open, onClose, termsContent, isLoading }: { 
+function TermsModal({ open, onClose, termsContent, termsAttachment, isLoading }: { 
   open: boolean; 
   onClose: () => void; 
   termsContent: string;
+  termsAttachment?: { url: string; mimetype: string };
   isLoading: boolean;
 }) {
+  const [docxContent, setDocxContent] = useState<string>('');
+  const [isConverting, setIsConverting] = useState(false);
+
+  useEffect(() => {
+    if (open && termsAttachment && (termsAttachment.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
+        setIsConverting(true);
+        fetch(getFullUrl(termsAttachment.url))
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => mammoth.convertToHtml({ arrayBuffer }))
+            .then(result => {
+                setDocxContent(result.value);
+                setIsConverting(false);
+            })
+            .catch(error => {
+                console.error("Error converting DOCX:", error);
+                setIsConverting(false);
+            });
+    }
+  }, [open, termsAttachment]);
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Termes et Conditions d'Utilisation</DialogTitle>
-      <DialogContent dividers>
-        {isLoading ? (
-          <Box display="flex" justifyContent="center" p={3}>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="lg" 
+      fullWidth 
+      scroll="paper"
+      PaperProps={{
+        sx: { minHeight: '80vh' }
+      }}
+    >
+      <DialogTitle sx={{ borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        Contrat & Termes
+        <Typography variant="caption" sx={{ color: 'text.secondary' }}>Format Document</Typography>
+      </DialogTitle>
+      <DialogContent sx={{ p: 0, bgcolor: '#f0f2f5', display: 'flex', flexDirection: 'column' }}>
+        {isLoading || isConverting ? (
+          <Box display="flex" justifyContent="center" alignItems="center" flexGrow={1} minHeight={400}>
             <CircularProgress />
           </Box>
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: termsContent || '<p>Pas de termes disponibles.</p>' }} />
+          <Box sx={{ p: { xs: 2, md: 4 }, overflowY: 'auto', flexGrow: 1 }}>
+             {termsAttachment ? (
+                <Box sx={{ width: '100%', height: '80vh', bgcolor: 'white' }}>
+                     {termsAttachment.mimetype === 'application/pdf' ? (
+                        <iframe 
+                            src={getFullUrl(termsAttachment.url)} 
+                            width="100%" 
+                            height="100%" 
+                            style={{ border: 'none' }}
+                            title="Terms PDF"
+                        />
+                    ) : termsAttachment.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ? (
+                        <Box sx={{ p: 2, bgcolor: 'white', minHeight: '100%' }}>
+                            <DocumentPage dangerouslySetInnerHTML={{ __html: docxContent }} />
+                        </Box>
+                    ) : (   
+                         // Fallback for doc/docx
+                         <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100%" p={3} textAlign="center">
+                            <Typography variant="h6" gutterBottom>
+                                Document disponible en téléchargement
+                            </Typography>
+                             <Typography variant="body2" color="text.secondary" paragraph>
+                                Cet aperçu n'est pas disponible pour ce type de fichier ({termsAttachment.mimetype.split('/').pop()}).
+                                Veuillez télécharger le fichier pour le consulter.
+                            </Typography>
+                            <Button 
+                                variant="contained" 
+                                color="primary"
+                                href={getFullUrl(termsAttachment.url)}
+                                target="_blank"
+                                download
+                            >
+                                Télécharger le Document
+                            </Button>
+                         </Box>
+                    )}
+                </Box>
+             ) : (
+                <DocumentPage dangerouslySetInnerHTML={{ __html: termsContent || '<div style="text-align: center; padding-top: 50px; color: #666;">Pas de termes disponibles.</div>' }} />
+             )}
+          </Box>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Fermer</Button>
+      <DialogActions sx={{ borderTop: '1px solid #e0e0e0', p: 2 }}>
+        <Button onClick={onClose} variant="contained" color="primary">
+          J'ai lu et j'accepte
+        </Button>
       </DialogActions>
     </Dialog>
   );
@@ -132,6 +243,7 @@ export default function RegisterForm() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [termsContent, setTermsContent] = useState('');
+  const [termsAttachment, setTermsAttachment] = useState<{ url: string; mimetype: string } | undefined>(undefined);
   const [isLoadingTerms, setIsLoadingTerms] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
@@ -187,9 +299,10 @@ export default function RegisterForm() {
             type: CLIENT_TYPE.CLIENT,
             birthDate: values.birthDate,
             wilaya: values.wilaya,
-            socialReason: values.socialReason,
+            companyName: values.socialReason, // Mapped to new backend field
+            // socialReason: values.socialReason, // Deprecated/Removed from backend
             jobTitle: values.jobTitle,
-            entity: values.entity,
+            // entity: values.entity, // Removed
             promoCode: values.promoCode,
         };
 
@@ -252,16 +365,40 @@ export default function RegisterForm() {
       if (!termsContent) {
           setIsLoadingTerms(true);
           try {
-              const latestTerms: any = await TermsAPI.getLatest();
-              if (latestTerms && latestTerms.content) {
-                  setTermsContent(latestTerms.content);
+              const latestResponse: any = await TermsAPI.getLatest();
+              let content = '';
+              let attachment = undefined;
+
+              if (latestResponse?.success && latestResponse?.data) {
+                  content = latestResponse.data.content;
+                  if (latestResponse.data.attachment) {
+                      attachment = latestResponse.data.attachment;
+                  }
+              } else if (latestResponse?.content) {
+                  // Legacy/Direct match
+                  content = latestResponse.content;
+                   if (latestResponse.attachment) {
+                      attachment = latestResponse.attachment;
+                  }
               } else {
-                  // Fallback
-                  const publicTermsList: any = await TermsAPI.getPublic();
-                  if (publicTermsList && publicTermsList.length > 0) {
-                      setTermsContent(publicTermsList[0].content);
+                  // Fallback to public
+                  const publicResponse: any = await TermsAPI.getPublic();
+                   if (publicResponse?.success && Array.isArray(publicResponse?.data) && publicResponse.data.length > 0) {
+                      content = publicResponse.data[0].content;
+                       if (publicResponse.data[0].attachment) {
+                          attachment = publicResponse.data[0].attachment;
+                      }
+                  } else if (Array.isArray(publicResponse) && publicResponse.length > 0) {
+                      content = publicResponse[0].content;
+                      if (publicResponse[0].attachment) {
+                          attachment = publicResponse[0].attachment;
+                      }
                   }
               }
+              
+              setTermsContent(content);
+              setTermsAttachment(attachment);
+
           } catch (error) {
               console.error("Failed to load terms", error);
           } finally {
@@ -408,25 +545,17 @@ export default function RegisterForm() {
             Informations Professionnelles (Pour Entreprises)
           </Typography>
           <Grid container spacing={1}>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, sm: 12 }}>
                 <StyledTextField
                     fullWidth
-                    label="Raison Sociale"
+                    label="Nom d'entreprise"
                     {...getFieldProps('socialReason')}
                     error={Boolean(touched.socialReason && errors.socialReason)}
                     helperText={touched.socialReason && errors.socialReason}
                 />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-                <StyledTextField
-                    fullWidth
-                    label="Entité"
-                    {...getFieldProps('entity')}
-                    error={Boolean(touched.entity && errors.entity)}
-                    helperText={touched.entity && errors.entity}
-                />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            {/* Entity field removed */}
+            <Grid size={{ xs: 12, sm: 12 }}>
                 <StyledTextField
                     fullWidth
                     label="Poste"
@@ -496,6 +625,7 @@ export default function RegisterForm() {
         open={termsModalOpen}
         onClose={() => setTermsModalOpen(false)}
         termsContent={termsContent}
+        termsAttachment={termsAttachment}
         isLoading={isLoadingTerms}
       />
     </FormikProvider>

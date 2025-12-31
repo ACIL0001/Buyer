@@ -13,6 +13,7 @@ import app from '@/config';
 import { WILAYAS } from '@/constants/wilayas';
 import './style.css';
 import ImageCropper from '@/components/common/ImageCropper';
+import { normalizeImageUrl } from '@/utils/url';
 
 interface ProfileFormData {
     firstName: string;
@@ -234,35 +235,7 @@ export default function ProfilePage() {
         }
     };
 
-    const getAvatarUrl = (avatar: AvatarData | string): string => {
-        if (typeof avatar === 'string') {
-            if (avatar.startsWith('http')) {
-                return avatar.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
-            } else {
-                const cleanPath = avatar.startsWith('/') ? avatar.substring(1) : avatar;
-                return `${API_BASE_URL}/static/${cleanPath}`;
-            }
-        }
 
-        if (avatar?.fullUrl) {
-            return avatar.fullUrl.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
-        }
-
-        if (avatar?.url) {
-            if (avatar.url.startsWith('http')) {
-                return avatar.url.replace('http://localhost:3000', API_BASE_URL.replace(/\/$/, ''));
-            } else {
-                const cleanUrl = avatar.url.startsWith('/') ? avatar.url.substring(1) : avatar.url;
-                return `${API_BASE_URL}/static/${cleanUrl}`;
-            }
-        }
-
-        if (avatar?.filename) {
-            return `${API_BASE_URL}/static/${avatar.filename}`;
-        }
-
-        return '/assets/images/avatar.jpg';
-    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -496,12 +469,9 @@ export default function ProfilePage() {
 
     const getDocumentUrl = (document: any): string => {
         if (!document) return '';
-        if (document.fullUrl) return document.fullUrl;
-        if (document.url) {
-            if (document.url.startsWith('http')) return document.url;
-            const cleanUrl = document.url.startsWith('/') ? document.url.substring(1) : document.url;
-            return `${API_BASE_URL}${cleanUrl}`;
-        }
+        if (document.fullUrl) return normalizeImageUrl(document.fullUrl);
+        if (document.url) return normalizeImageUrl(document.url);
+        if (document.filename) return normalizeImageUrl(document.filename);
         return '';
     };
 
@@ -524,49 +494,7 @@ export default function ProfilePage() {
         }
     }, [activeTab]);
 
-    const normalizeUrl = React.useCallback((url: string): string => {
-        if (!url || url.trim() === '') return '';
-        let cleanUrl = url.trim();
-        
-        if (cleanUrl.includes('&') && !cleanUrl.includes('?')) {
-            cleanUrl = cleanUrl.replace('&', '?');
-        }
-        
-        if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-            let normalized = cleanUrl;
-            
-            // Handle localhost URLs by replacing with API_BASE_URL
-            if (cleanUrl.includes('localhost')) {
-                const apiBase = API_BASE_URL.replace(/\/$/, '');
-                normalized = cleanUrl
-                    .replace(/http:\/\/localhost:3000/g, apiBase)
-                    .replace(/http:\/\/localhost\:\d+/g, apiBase)
-                    .replace(/http:\/\/localhost/g, apiBase);
-            }
-            
-            if (normalized.startsWith('http://localhost')) {
-                try {
-                    const urlObj = new URL(cleanUrl);
-                    const pathWithQuery = urlObj.pathname + (urlObj.search || '');
-                    normalized = `${API_BASE_URL.replace(/\/$/, '')}${pathWithQuery}`;
-                } catch (e) {
-                    console.warn('Failed to parse URL:', cleanUrl);
-                }
-            }
-            
-            return normalized;
-        }
-        
-        if (cleanUrl.startsWith('/static/')) {
-            return `${API_BASE_URL.replace(/\/$/, '')}${cleanUrl}`;
-        }
-        
-        if (cleanUrl.startsWith('/')) {
-            return `${API_BASE_URL.replace(/\/$/, '')}/static${cleanUrl}`;
-        }
-        
-        return `${API_BASE_URL.replace(/\/$/, '')}/static/${cleanUrl}`;
-    }, []);
+
 
     const appendCacheBuster = (url: string) => {
         if (!url) return url;
@@ -582,7 +510,7 @@ export default function ProfilePage() {
         if (!auth.user) return '/assets/images/avatar.jpg';
 
         if ((auth.user as any).photoURL && (auth.user as any).photoURL.trim() !== '') {
-            const cleanUrl = normalizeUrl((auth.user as any).photoURL);
+            const cleanUrl = normalizeImageUrl((auth.user as any).photoURL);
             if (cleanUrl && !cleanUrl.includes('mock-images')) {
                 return appendCacheBuster(cleanUrl);
             }
@@ -592,21 +520,21 @@ export default function ProfilePage() {
             const avatar = auth.user.avatar as any;
             
             if (avatar.fullUrl && avatar.fullUrl.trim() !== '') {
-                const cleanUrl = normalizeUrl(avatar.fullUrl);
+                const cleanUrl = normalizeImageUrl(avatar.fullUrl);
                 if (cleanUrl && !cleanUrl.includes('mock-images')) {
                     return appendCacheBuster(cleanUrl);
                 }
             }
             
             if (avatar.url && avatar.url.trim() !== '') {
-                const cleanUrl = normalizeUrl(avatar.url);
+                const cleanUrl = normalizeImageUrl(avatar.url);
                 if (cleanUrl && !cleanUrl.includes('mock-images')) {
                     return appendCacheBuster(cleanUrl);
                 }
             }
             
             if (avatar.filename && avatar.filename.trim() !== '') {
-                const cleanUrl = normalizeUrl(avatar.filename);
+                const cleanUrl = normalizeImageUrl(avatar.filename);
                 if (cleanUrl && !cleanUrl.includes('mock-images')) {
                     return appendCacheBuster(cleanUrl);
                 }
@@ -623,15 +551,15 @@ export default function ProfilePage() {
         if (!cover) return null;
 
         if (cover.fullUrl && cover.fullUrl.trim() !== '') {
-            return appendCacheBuster(normalizeUrl(cover.fullUrl));
+            return appendCacheBuster(normalizeImageUrl(cover.fullUrl));
         }
         
         if (cover.url && cover.url.trim() !== '') {
-            return appendCacheBuster(normalizeUrl(cover.url));
+            return appendCacheBuster(normalizeImageUrl(cover.url));
         }
         
         if (cover.filename && cover.filename.trim() !== '') {
-            return appendCacheBuster(normalizeUrl(cover.filename));
+            return appendCacheBuster(normalizeImageUrl(cover.filename));
         }
 
         return null;

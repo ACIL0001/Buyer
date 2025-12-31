@@ -19,6 +19,7 @@ import SocketProvider from "@/contexts/socket";
 import { useCreateSocket } from '@/contexts/socket';
 import { getSellerUrl } from '@/config';
 import app from '@/config';
+import { normalizeImageUrl } from '@/utils/url';
 import { CategoryAPI } from '@/app/api/category';
 import { AuctionsAPI } from '@/app/api/auctions';
 import { TendersAPI } from '@/app/api/tenders';
@@ -151,39 +152,8 @@ export default function Home() {
 
   // Helper function to get category image URL
   const getCategoryImageUrl = (category: any): string => {
-    // Check if category has thumb with url (matching working implementation)
-    if (category.thumb && category.thumb.url) {
-      const imageUrl = category.thumb.url;
-      
-      // If it's already a full URL, return it as-is
-      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-        // Replace localhost:3000 with current baseURL if needed
-        if (imageUrl.includes('localhost:3000')) {
-          const baseURL = app.baseURL || 'https://mazadclick-server.onrender.com/';
-          return imageUrl.replace('http://localhost:3000', baseURL.replace(/\/$/, ''));
-        }
-        return imageUrl;
-      }
-      
-      // Handle /static/ paths by removing leading slash and prepending baseURL
-      if (imageUrl.startsWith('/static/')) {
-        const baseURL = app.baseURL || 'https://mazadclick-server.onrender.com/';
-        return `${baseURL}${imageUrl.substring(1)}`;
-      }
-      
-      // Handle other paths starting with /
-      if (imageUrl.startsWith('/')) {
-        const baseURL = app.baseURL || 'https://mazadclick-server.onrender.com/'
-        return `${baseURL}${imageUrl.substring(1)}`;
-      }
-      
-      // Handle paths without leading slash
-      const baseURL = app.baseURL || 'https://mazadclick-server.onrender.com/';
-      return `${baseURL}${imageUrl}`;
-    }
-    
-    // Fallback: try other possible fields
-    const imageUrl = category.thumb?.fullUrl || 
+    const imageUrl = category.thumb?.url || 
+                     category.thumb?.fullUrl || 
                      category.image || 
                      category.thumbnail || 
                      category.photo || 
@@ -193,26 +163,7 @@ export default function Home() {
       return '/assets/images/cat.avif'; // Fallback image
     }
 
-    // If it's already a full URL, return it as-is
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      if (imageUrl.includes('localhost:3000')) {
-        const baseURL = app.baseURL || 'https://mazadclick-server.onrender.com/';
-        return imageUrl.replace('http://localhost:3000', baseURL.replace(/\/$/, ''));
-      }
-      return imageUrl;
-    }
-
-    // Handle relative paths
-    const baseURL = app.baseURL || 'https://mazadclick-server.onrender.com/';
-    if (imageUrl.startsWith('/static/')) {
-      return `${baseURL}${imageUrl.substring(1)}`;
-    }
-    
-    if (imageUrl.startsWith('/')) {
-      return `${baseURL}${imageUrl.substring(1)}`;
-    }
-    
-    return `${baseURL}${imageUrl}`;
+    return normalizeImageUrl(imageUrl);
   };
 
   // Category search functions

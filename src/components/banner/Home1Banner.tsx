@@ -10,6 +10,7 @@ import { TendersAPI } from '@/app/api/tenders';
 import { DirectSaleAPI } from '@/app/api/direct-sale';
 import { useRouter } from 'next/navigation';
 import app from '@/config';
+import { normalizeImageUrl } from '@/utils/url';
 import { FaShoppingBag, FaHandshake } from 'react-icons/fa';
 import "swiper/css";
 import "swiper/css/navigation";
@@ -260,34 +261,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
   const getCategoryImageUrl = (category: any): string => {
     // Check if category has thumb with url (matching working implementation)
-    if (category.thumb && category.thumb.url) {
-      const imageUrl = category.thumb.url;
-      
-      // If it's already a full URL, return it as-is
-      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-        // Replace localhost:3000 with current baseURL if needed
-        if (imageUrl.includes('localhost:3000')) {
-          return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-        }
-        return imageUrl;
-      }
-      
-      // Handle /static/ paths by removing leading slash and prepending baseURL
-      if (imageUrl.startsWith('/static/')) {
-        return `${app.baseURL}${imageUrl.substring(1)}`;
-      }
-      
-      // Handle other paths starting with /
-      if (imageUrl.startsWith('/')) {
-        return `${app.baseURL}${imageUrl.substring(1)}`;
-      }
-      
-      // Handle paths without leading slash
-      return `${app.baseURL}${imageUrl}`;
-    }
-    
-    // Fallback: try other possible fields
-    const imageUrl = category.thumb?.fullUrl || 
+    const imageUrl = category.thumb?.url || 
+                     category.thumb?.fullUrl || 
                      category.image || 
                      category.thumbnail || 
                      category.photo || 
@@ -297,24 +272,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
       return '/assets/images/cat.avif'; // Fallback image
     }
 
-    // If it's already a full URL, return it as-is
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      if (imageUrl.includes('localhost:3000')) {
-        return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-      }
-      return imageUrl;
-    }
-
-    // Handle relative paths
-    if (imageUrl.startsWith('/static/')) {
-      return `${app.baseURL}${imageUrl.substring(1)}`;
-    }
-    
-    if (imageUrl.startsWith('/')) {
-      return `${app.baseURL}${imageUrl.substring(1)}`;
-    }
-    
-    return `${app.baseURL}${imageUrl}`;
+    return normalizeImageUrl(imageUrl);
   };
 
   const navigateToCategory = (category: any, event: React.MouseEvent) => {

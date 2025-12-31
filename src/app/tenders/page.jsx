@@ -16,6 +16,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import useAuth from '@/hooks/useAuth';
+import { normalizeImageUrl } from '@/utils/url';
 
 // Define BID_TYPE enum to match server definition
 const BID_TYPE = {
@@ -27,11 +28,9 @@ const BID_TYPE = {
 const DEFAULT_TENDER_IMAGE = "/assets/images/logo-white.png";
 const DEFAULT_PROFILE_IMAGE = "/assets/images/avatar.jpg";
 // Use server baseURL for default category image with multiple fallback options
+// Use server baseURL for default category image with multiple fallback options
 const getDefaultCategoryImage = () => {
-    const baseURL = app.baseURL.replace(/\/$/, '');
-    // Try common default category image paths on the server
-    // If server image doesn't exist, use a data URI placeholder
-    return `${baseURL}/static/default-category.png`;
+    return normalizeImageUrl('/static/default-category.png');
 };
 
 // Timer interface
@@ -189,21 +188,7 @@ const MultipurposeTenderSidebar = () => {
             return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
         }
 
-        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-            if (imageUrl.includes('localhost:3000')) {
-                return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-            }
-            return imageUrl;
-        }
-
-        const cleanUrl = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
-        const baseURL = app.baseURL.replace(/\/$/, '');
-        
-        if (cleanUrl.includes('static/') || cleanUrl.startsWith('static/')) {
-            return `${baseURL}/${cleanUrl}`;
-        }
-        
-        return `${baseURL}/static/${cleanUrl}`;
+        return normalizeImageUrl(imageUrl);
     };
 
     // Render categories in circular format
@@ -387,37 +372,7 @@ const MultipurposeTenderSidebar = () => {
                         <img
                             src={(() => {
                               if (category.thumb && category.thumb.url) {
-                                const imageUrl = category.thumb.url;
-                                if (imageUrl.startsWith('http')) {
-                                  return imageUrl;
-                                } else if (imageUrl.startsWith('/static/')) {
-                                  const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                  console.log('🎯 TENDERS PAGE CATEGORY IMAGE:', {
-                                    originalUrl: imageUrl,
-                                    finalUrl: finalUrl,
-                                    categoryId: category._id,
-                                    categoryName: category.name
-                                  });
-                                  return finalUrl;
-                                } else if (imageUrl.startsWith('/')) {
-                                  const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                  console.log('🎯 TENDERS PAGE CATEGORY IMAGE:', {
-                                    originalUrl: imageUrl,
-                                    finalUrl: finalUrl,
-                                    categoryId: category._id,
-                                    categoryName: category.name
-                                  });
-                                  return finalUrl;
-                                } else {
-                                  const finalUrl = `${app.baseURL}${imageUrl}`;
-                                  console.log('🎯 TENDERS PAGE CATEGORY IMAGE:', {
-                                    originalUrl: imageUrl,
-                                    finalUrl: finalUrl,
-                                    categoryId: category._id,
-                                    categoryName: category.name
-                                  });
-                                  return finalUrl;
-                                }
+                                return normalizeImageUrl(category.thumb.url);
                               }
                               return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
                             })()}
@@ -1641,18 +1596,7 @@ const MultipurposeTenderSidebar = () => {
                                                                     }
                                                                     
                                                                     if (imageUrl) {
-                                                                        if (imageUrl.startsWith('http')) {
-                                                                            return imageUrl;
-                                                                        } else if (imageUrl.startsWith('/static/')) {
-                                                                            const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                                                            return finalUrl;
-                                                                        } else if (imageUrl.startsWith('/')) {
-                                                                            const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                                                            return finalUrl;
-                                                                        } else {
-                                                                            const finalUrl = `${app.baseURL}${imageUrl}`;
-                                                                            return finalUrl;
-                                                                        }
+                                                                        return normalizeImageUrl(imageUrl);
                                                                     }
                                                                     
                                                                     return DEFAULT_TENDER_IMAGE;
@@ -1915,7 +1859,7 @@ const MultipurposeTenderSidebar = () => {
                                                             marginBottom: '16px',
                                                         }}>
                                                             <img
-                                                                src={tender.owner?.photoURL || DEFAULT_PROFILE_IMAGE}
+                                                                src={normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
                                                                 alt={displayName}
                                                                 style={{
                                                                     width: '32px',

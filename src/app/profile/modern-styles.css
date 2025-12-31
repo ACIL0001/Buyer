@@ -2091,8 +2091,8 @@
 .modern-document-section-title {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.7rem;
+  gap: 0.5rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1f2937;
   margin: 0;
@@ -2119,9 +2119,9 @@
 }
 
 .modern-document-section-badge {
-  padding: 0.25rem 0.5rem;
+  padding: 0.4rem 0.75rem;
   border-radius: 12px;
-  font-size: 0.55rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -2133,8 +2133,8 @@
 
 .modern-document-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.4rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
   margin-top: 0;
   width: 100%;
 }
@@ -2142,8 +2142,8 @@
 .modern-document-card {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
-  border-radius: 8px;
-  padding: 0.5rem;
+  border-radius: 12px;
+  padding: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -2197,9 +2197,9 @@
 }
 
 .modern-document-icon {
-  width: 22px;
-  height: 28px;
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2229,7 +2229,7 @@
 }
 
 .modern-document-icon i {
-  font-size: 0.8rem;
+  font-size: 1.2rem;
 }
 
 .modern-document-info {
@@ -2237,13 +2237,13 @@
 }
 
 .modern-document-title {
-  font-size: 0.65rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #1f2937;
-  margin: 0 0 0.1rem 0;
+  margin: 0 0 0.25rem 0;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.4rem;
   letter-spacing: -0.025em;
 }
 

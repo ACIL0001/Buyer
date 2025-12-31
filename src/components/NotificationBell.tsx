@@ -137,6 +137,14 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
         // Cast notification.data as any for flexible property access
         const data = notification.data as any;
 
+        // DEBUG: Log the entire notification to understand its structure
+        console.log('📢 NOTIFICATION DEBUG:', {
+            type: notification.type,
+            title: notification.title,
+            message: notification.message,
+            data: data
+        });
+
         // 1. PUBLIC CREATION NOTIFICATIONS (Prioritize these - for newly created items)
         if (notification.type === 'TENDER_CREATED') {
             const id = data?._id || data?.id || data?.tenderId;
@@ -165,31 +173,49 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
 
         // 2. CHAT REDIRECTION
         if (data?.chatId) {
+            console.log('🚀 Redirecting to Chat:', data.chatId);
             router.push(`/dashboard/chat?conversationId=${data.chatId}`);
             return; 
         }
 
         // 3. SELLER NOTIFICATIONS - Redirect to dashboard management pages with "received" tab
         
+        const titleLower = notification.title?.toLowerCase() || '';
+        const messageLower = notification.message?.toLowerCase() || '';
+        
+        console.log('🔍 Checking seller notifications:', {
+            titleLower,
+            messageLower,
+            type: notification.type,
+            hasCommande: titleLower.includes('commande') || messageLower.includes('commande'),
+            hasNouvelle: titleLower.includes('nouvelle'),
+            hasConfirmee: titleLower.includes('confirmée') || titleLower.includes('confirmed')
+        });
+
         // Check if user is receiving offers/bids on THEIR items
         const isSellerReceivingTenderBid = notification.type === 'NEW_OFFER' && 
                                            (data?.tender || data?.tenderId || 
-                                            notification.message?.toLowerCase().includes('soumission') ||
-                                            notification.message?.toLowerCase().includes('appel d\'offres'));
+                                            messageLower.includes('soumission') ||
+                                            messageLower.includes('appel d\'offres'));
         
         const isSellerReceivingAuctionBid = notification.type === 'BID_CREATED' ||
                                             (notification.type === 'NEW_OFFER' && 
                                              (data?.auction || data?.auctionId ||
-                                              notification.message?.toLowerCase().includes('enchère')));
+                                              messageLower.includes('enchère')));
         
-        // Seller receiving a new order (nouvelle commande) - NOT a confirmation for buyer
-        const isSellerReceivingDirectSaleOrder = (notification.type === 'ORDER' || notification.type === 'NEW_OFFER') &&
-                                                  !(notification.title?.toLowerCase().includes('confirmée') || 
-                                                    notification.title?.toLowerCase().includes('confirmed')) &&
-                                                  (notification.title?.toLowerCase().includes('commande') || 
-                                                   notification.title?.toLowerCase().includes('nouvelle') ||
-                                                   notification.title?.toLowerCase().includes('order') ||
-                                                   (data?.purchase || data?.directSale));
+        // Seller receiving a new order (nouvelle commande)
+        // Check title for "nouvelle" AND "commande" OR check if it's an ORDER type without "confirmée"
+        const isSellerReceivingDirectSaleOrder = (
+            (titleLower.includes('nouvelle') && titleLower.includes('commande')) ||
+            (notification.type === 'ORDER' && !titleLower.includes('confirmée') && !titleLower.includes('confirmed')) ||
+            (notification.type === 'NEW_OFFER' && (titleLower.includes('commande') || messageLower.includes('commande')))
+        );
+
+        console.log('🎯 Seller notification checks:', {
+            isSellerReceivingTenderBid,
+            isSellerReceivingAuctionBid,
+            isSellerReceivingDirectSaleOrder
+        });
 
         // Redirect sellers to their dashboard "received" tab to manage incoming offers/orders
         if (isSellerReceivingTenderBid) {
@@ -205,7 +231,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
         }
 
         if (isSellerReceivingDirectSaleOrder) {
-             console.log('🔄 Redirecting to Direct Sales Orders Dashboard (Received Tab) - Nouvelle Commande');
+             console.log('✅ REDIRECTING: Direct Sales Orders Dashboard (Received Tab) - Nouvelle Commande');
              router.push('/dashboard/direct-sales/orders?tab=received');
              return;
         }
@@ -237,17 +263,19 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
 
         // 5. ORDER CONFIRMED - Buyer receives confirmation
         const isOrderConfirmed = notification.type === 'ORDER' && 
-                                  (notification.title?.toLowerCase().includes('confirmée') ||
-                                   notification.title?.toLowerCase().includes('confirmed'));
+                                  (titleLower.includes('confirmée') ||
+                                   titleLower.includes('confirmed'));
         
         if (isOrderConfirmed) {
             console.log('🔄 Redirecting to My Purchases');
             router.push('/dashboard/direct-sales/orders'); 
             return;
         }
+
+        console.log('⚠️ No redirect condition matched for this notification');
         
     } catch (e) {
-        console.error("Error handling notification redirection", e);
+        console.error("❌ Error handling notification redirection", e);
     }
   };
 

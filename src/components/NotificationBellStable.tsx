@@ -151,29 +151,33 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
                                            (notification.data?.auction || notification.data?.auctionId ||
                                             notification.message?.toLowerCase().includes('enchère')));
       
+      // Seller receiving a new order (nouvelle commande) - NOT a confirmation for buyer
       const isSellerReceivingDirectSaleOrder = (notification.type === 'ORDER' || notification.type === 'NEW_OFFER') &&
+                                                !(notification.title?.toLowerCase().includes('confirmée') || 
+                                                  notification.title?.toLowerCase().includes('confirmed')) &&
                                                 (notification.title?.toLowerCase().includes('commande') || 
+                                                 notification.title?.toLowerCase().includes('nouvelle') ||
                                                  notification.title?.toLowerCase().includes('order') ||
                                                  (notification.data?.purchase || notification.data?.directSale));
 
       // 1. TENDER BIDS - Seller received a bid on their tender
       if (isSellerReceivingTenderBid) {
-        console.log('🔄 Redirecting to Tender Bids Dashboard');
-        router.push('/dashboard/tender-bids');
+        console.log('🔄 Redirecting to Tender Bids Dashboard (Received Tab)');
+        router.push('/dashboard/tender-bids?tab=received');
         return;
       }
 
       // 2. AUCTION BIDS - Seller received a bid on their auction
       if (isSellerReceivingAuctionBid) {
-         console.log('🔄 Redirecting to Auction Offers Dashboard');
-         router.push('/dashboard/offers');
+         console.log('🔄 Redirecting to Auction Offers Dashboard (Received Tab)');
+         router.push('/dashboard/offers?tab=received');
          return;
       }
 
       // 3. DIRECT SALE ORDER - Seller received an order
       if (isSellerReceivingDirectSaleOrder) {
-        console.log('🔄 Redirecting to Direct Sales Orders Dashboard');
-        router.push('/dashboard/direct-sales/orders');
+        console.log('🔄 Redirecting to Direct Sales Orders Dashboard (Received Tab) - Nouvelle Commande');
+        router.push('/dashboard/direct-sales/orders?tab=received');
         return;
       }
 

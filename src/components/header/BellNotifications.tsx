@@ -140,26 +140,30 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
                                          (data?.auction || data?.auctionId ||
                                           notification.message?.toLowerCase().includes('enchère')));
     
+    // Seller receiving a new order (nouvelle commande) - NOT a confirmation for buyer
     const isSellerReceivingDirectSaleOrder = (type === 'ORDER' || type === 'NEW_OFFER') &&
+                                              !(notification.title?.toLowerCase().includes('confirmée') || 
+                                                notification.title?.toLowerCase().includes('confirmed')) &&
                                               (notification.title?.toLowerCase().includes('commande') || 
+                                               notification.title?.toLowerCase().includes('nouvelle') ||
                                                notification.title?.toLowerCase().includes('order') ||
                                                (data?.purchase || data?.directSale));
 
     if (isSellerReceivingTenderBid) {
-        console.log('🔄 Redirecting to Tender Bids Dashboard');
-        router.push('/dashboard/tender-bids');
+        console.log('🔄 Redirecting to Tender Bids Dashboard (Received Tab)');
+        router.push('/dashboard/tender-bids?tab=received');
         return;
     }
 
     if (isSellerReceivingAuctionBid) {
-        console.log('🔄 Redirecting to Auction Offers Dashboard');
-        router.push('/dashboard/offers');
+        console.log('🔄 Redirecting to Auction Offers Dashboard (Received Tab)');
+        router.push('/dashboard/offers?tab=received');
         return;
     }
 
     if (isSellerReceivingDirectSaleOrder) {
-        console.log('🔄 Redirecting to Direct Sales Orders Dashboard');
-        router.push('/dashboard/direct-sales/orders');
+        console.log('🔄 Redirecting to Direct Sales Orders Dashboard (Received Tab) - Nouvelle Commande');
+        router.push('/dashboard/direct-sales/orders?tab=received');
         return;
     }
 

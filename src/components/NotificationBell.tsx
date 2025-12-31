@@ -169,7 +169,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
             return; 
         }
 
-        // 3. SELLER NOTIFICATIONS - Redirect to dashboard management pages
+        // 3. SELLER NOTIFICATIONS - Redirect to dashboard management pages with "received" tab
         
         // Check if user is receiving offers/bids on THEIR items
         const isSellerReceivingTenderBid = notification.type === 'NEW_OFFER' && 
@@ -182,27 +182,31 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
                                              (data?.auction || data?.auctionId ||
                                               notification.message?.toLowerCase().includes('enchère')));
         
+        // Seller receiving a new order (nouvelle commande) - NOT a confirmation for buyer
         const isSellerReceivingDirectSaleOrder = (notification.type === 'ORDER' || notification.type === 'NEW_OFFER') &&
+                                                  !(notification.title?.toLowerCase().includes('confirmée') || 
+                                                    notification.title?.toLowerCase().includes('confirmed')) &&
                                                   (notification.title?.toLowerCase().includes('commande') || 
+                                                   notification.title?.toLowerCase().includes('nouvelle') ||
                                                    notification.title?.toLowerCase().includes('order') ||
                                                    (data?.purchase || data?.directSale));
 
-        // Redirect sellers to their dashboard to manage offers/orders
+        // Redirect sellers to their dashboard "received" tab to manage incoming offers/orders
         if (isSellerReceivingTenderBid) {
-             console.log('🔄 Redirecting to Tender Bids Dashboard');
-             router.push('/dashboard/tender-bids');
+             console.log('🔄 Redirecting to Tender Bids Dashboard (Received Tab)');
+             router.push('/dashboard/tender-bids?tab=received');
              return;
         }
 
         if (isSellerReceivingAuctionBid) {
-             console.log('🔄 Redirecting to Auction Offers Dashboard');
-             router.push('/dashboard/offers');
+             console.log('🔄 Redirecting to Auction Offers Dashboard (Received Tab)');
+             router.push('/dashboard/offers?tab=received');
              return;
         }
 
         if (isSellerReceivingDirectSaleOrder) {
-             console.log('🔄 Redirecting to Direct Sales Orders Dashboard');
-             router.push('/dashboard/direct-sales/orders');
+             console.log('🔄 Redirecting to Direct Sales Orders Dashboard (Received Tab) - Nouvelle Commande');
+             router.push('/dashboard/direct-sales/orders?tab=received');
              return;
         }
 

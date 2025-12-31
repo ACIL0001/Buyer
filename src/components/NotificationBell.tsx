@@ -194,12 +194,14 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
 
         // Check if user is receiving offers/bids on THEIR items
         // IMPORTANT: Exclude CREATED types which should go to details pages above
-        const isSellerReceivingTenderBid = notification.type === 'NEW_OFFER' &&
+        const isSellerReceivingTenderBid = !titleLower.includes('créée') &&
+                                           notification.type === 'NEW_OFFER' &&
                                            (data?.tender || data?.tenderId || 
                                             messageLower.includes('soumission') ||
                                             messageLower.includes('appel d\'offres'));
         
-        const isSellerReceivingAuctionBid = (notification.type === 'BID_CREATED' ||
+        const isSellerReceivingAuctionBid = !titleLower.includes('créée') &&
+                                            (notification.type === 'BID_CREATED' ||
                                             (notification.type === 'NEW_OFFER' && 
                                              (data?.auction || data?.auctionId ||
                                               messageLower.includes('enchère'))));

@@ -150,15 +150,17 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
     });
 
     // Check if seller is receiving offers/bids on THEIR items
-    const isSellerReceivingTenderBid = type === 'NEW_OFFER' && 
+    const isSellerReceivingTenderBid = !titleLower.includes('créée') &&
+                                       type === 'NEW_OFFER' && 
                                        (data?.tender || data?.tenderId || 
-                                        notification.message?.toLowerCase().includes('soumission') ||
-                                        notification.message?.toLowerCase().includes('appel d\'offres'));
+                                        messageLower.includes('soumission') ||
+                                        messageLower.includes('appel d\'offres'));
     
-    const isSellerReceivingAuctionBid = type === 'BID_CREATED' ||
+    const isSellerReceivingAuctionBid = !titleLower.includes('créée') &&
+                                        (type === 'BID_CREATED' ||
                                         (type === 'NEW_OFFER' && 
                                          (data?.auction || data?.auctionId ||
-                                          notification.message?.toLowerCase().includes('enchère')));
+                                          messageLower.includes('enchère'))));
     
     // Seller receiving a new order (nouvelle commande) - exclude "créée" notifications
     const isSellerReceivingDirectSaleOrder = (

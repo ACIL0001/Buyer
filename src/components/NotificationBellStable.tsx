@@ -141,24 +141,27 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
       }
 
       // Check notification types for seller receiving offers/bids
-      const isSellerReceivingTenderBid = notification.type === 'NEW_OFFER' && 
-                                         (notification.data?.tender || notification.data?.tenderId || 
-                                          notification.message?.toLowerCase().includes('soumission') ||
-                                          notification.message?.toLowerCase().includes('appel d\'offres'));
+      const titleLower = notification.title?.toLowerCase() || '';
+      const messageLower = notification.message?.toLowerCase() || '';
       
-      const isSellerReceivingAuctionBid = notification.type === 'BID_CREATED' ||
+      const isSellerReceivingTenderBid = !titleLower.includes('créée') &&
+                                         notification.type === 'NEW_OFFER' && 
+                                         (notification.data?.tender || notification.data?.tenderId || 
+                                          messageLower.includes('soumission') ||
+                                          messageLower.includes('appel d\'offres'));
+      
+      const isSellerReceivingAuctionBid = !titleLower.includes('créée') &&
+                                          (notification.type === 'BID_CREATED' ||
                                           (notification.type === 'NEW_OFFER' && 
                                            (notification.data?.auction || notification.data?.auctionId ||
-                                            notification.message?.toLowerCase().includes('enchère')));
+                                            messageLower.includes('enchère'))));
       
-      // Seller receiving a new order (nouvelle commande) - NOT a confirmation for buyer
-      const isSellerReceivingDirectSaleOrder = (notification.type === 'ORDER' || notification.type === 'NEW_OFFER') &&
-                                                !(notification.title?.toLowerCase().includes('confirmée') || 
-                                                  notification.title?.toLowerCase().includes('confirmed')) &&
-                                                (notification.title?.toLowerCase().includes('commande') || 
-                                                 notification.title?.toLowerCase().includes('nouvelle') ||
-                                                 notification.title?.toLowerCase().includes('order') ||
-                                                 (notification.data?.purchase || notification.data?.directSale));
+      // Seller receiving a new order (nouvelle commande) - exclude "créée" notifications
+      const isSellerReceivingDirectSaleOrder = (
+          (titleLower.includes('nouvelle') && titleLower.includes('commande') && !titleLower.includes('créée')) ||
+          (notification.type === 'ORDER' && !titleLower.includes('confirmée') && !titleLower.includes('confirmed')) ||
+          (notification.type === 'NEW_OFFER' && (titleLower.includes('commande') || messageLower.includes('commande')))
+      );
 
       // 1. TENDER BIDS - Seller received a bid on their tender
       if (isSellerReceivingTenderBid) {

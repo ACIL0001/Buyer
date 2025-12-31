@@ -126,6 +126,9 @@
     "registerSuccess": "Registration successful",
     "logoutSuccess": "Logout successful"
   },
+  "settings": {
+    "title": "Settings"
+  },
   "auction": {
     "title": "Auction",
     "auctions": "Auctions",
@@ -1066,6 +1069,9 @@
         "lastName": "Last Name",
         "email": "Email",
         "phone": "Phone",
+        "jobTitle": "Job Title",
+        "secteur": "Activity Sector",
+        "companyName": "Company Name",
         "edit": "Edit",
         "save": "Save",
         "cancel": "Cancel",
@@ -1082,6 +1088,22 @@
         "passwordMismatch": "Passwords do not match",
         "passwordShort": "Password is too short",
         "successUpdate": "Password updated successfully"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "subtitle": "Manage your notification preferences",
+        "email": {
+          "title": "Email notifications",
+          "desc": "Receive email notifications"
+        },
+        "auction": {
+          "title": "New auction alerts",
+          "desc": "Receive alerts for new auctions"
+        },
+        "bid": {
+          "title": "Bid updates",
+          "desc": "Receive updates about bids"
+        }
       },
       "documents": {
         "verificationTitle": "Mandatory Documents for Verification",

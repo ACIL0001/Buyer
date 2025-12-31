@@ -271,8 +271,8 @@ export default function SettingsPage() {
                                                         <i className="bi bi-person-circle"></i>
                                                     </div>
                                                     <div className="header-text">
-                                                        <h2>{t("profile.personalInfo") || "Personal info"}</h2>
-                                                        <p>{t("profile.personalInfoDesc") || "Manage your personal information and profile details"}</p>
+                                                        <h2>{t("profile.personalInfo.title") || "Personal Information"}</h2>
+                                                        <p>{t("profile.personalInfo.subtitle") || "Manage your personal information and profile details"}</p>
                                                     </div>
                                                 </div>
                                                 <motion.button
@@ -289,7 +289,7 @@ export default function SettingsPage() {
                                             <form onSubmit={handleSubmit} className="modern-profile-form">
                                                 <div className="modern-form-grid">
                                                     <div className="modern-form-field">
-                                                        <label htmlFor="firstName">{t("profile.firstName") || "First name"}</label>
+                                                        <label htmlFor="firstName">{t("profile.personalInfo.firstName") || "First name"}</label>
                                                         <input
                                                             type="text"
                                                             id="firstName"
@@ -342,7 +342,7 @@ export default function SettingsPage() {
                                                     </div>
 
                                                     <div className="modern-form-field">
-                                                        <label htmlFor="companyName">Nom d'entreprise</label>
+                                                        <label htmlFor="companyName">{t("profile.personalInfo.companyName") || "Company Name"}</label>
                                                         <input
                                                             type="text"
                                                             id="companyName"
@@ -354,7 +354,7 @@ export default function SettingsPage() {
                                                     </div>
 
                                                     <div className="modern-form-field">
-                                                        <label htmlFor="jobTitle">{t("profile.jobTitle") || "Job Title"}</label>
+                                                        <label htmlFor="jobTitle">{t("profile.personalInfo.jobTitle") || "Job Title"}</label>
                                                         <input
                                                             type="text"
                                                             id="jobTitle"
@@ -366,7 +366,7 @@ export default function SettingsPage() {
                                                     </div>
 
                                                     <div className="modern-form-field">
-                                                        <label htmlFor="activitySector">Secteur d'activité</label>
+                                                        <label htmlFor="activitySector">{t("profile.personalInfo.secteur") || "Activity Sector"}</label>
                                                         <input
                                                             type="text"
                                                             id="activitySector"
@@ -378,7 +378,7 @@ export default function SettingsPage() {
                                                     </div>
 
                                                     <div className="modern-form-field">
-                                                        <label htmlFor="phone">{t("profile.phone") || "Phone"}</label>
+                                                        <label htmlFor="phone">{t("profile.personalInfo.phone") || "Phone"}</label>
                                                         <input
                                                             type="tel"
                                                             id="phone"
@@ -440,8 +440,8 @@ export default function SettingsPage() {
                                                         <i className="bi bi-shield-lock-fill"></i>
                                                     </div>
                                                     <div className="header-text">
-                                                        <h2>Security</h2>
-                                                        <p>Update your password and security settings</p>
+                                                        <h2>{t("profile.security.title") || "Security"}</h2>
+                                                        <p>{t("profile.security.subtitle") || "Update your password and security settings"}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -510,8 +510,8 @@ export default function SettingsPage() {
                                                         <i className="bi bi-bell-fill"></i>
                                                     </div>
                                                     <div className="header-text">
-                                                        <h2 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Notifications</h2>
-                                                        <p style={{ fontSize: '0.75rem' }}>Manage your notification preferences</p>
+                                                        <h2 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>{t("profile.notifications.title") || "Notifications"}</h2>
+                                                        <p style={{ fontSize: '0.75rem' }}>{t("profile.notifications.subtitle") || "Manage your notification preferences"}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -520,22 +520,22 @@ export default function SettingsPage() {
                                                 {[
                                                     {
                                                         icon: "bi-envelope-heart",
-                                                        title: "Email notifications",
-                                                        desc: "Receive email notifications",
+                                                        title: t("profile.notifications.email.title") || "Email notifications",
+                                                        desc: t("profile.notifications.email.desc") || "Receive email notifications",
                                                         color: "primary",
                                                         gradient: "linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)"
                                                     },
                                                     {
                                                         icon: "bi-bell-fill",
-                                                        title: "New auction alerts",
-                                                        desc: "Receive alerts for new auctions",
+                                                        title: t("profile.notifications.auction.title") || "New auction alerts",
+                                                        desc: t("profile.notifications.auction.desc") || "Receive alerts for new auctions",
                                                         color: "success",
                                                         gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)"
                                                     },
                                                     {
                                                         icon: "bi-heart-pulse",
-                                                        title: "Bid updates",
-                                                        desc: "Receive updates about bids",
+                                                        title: t("profile.notifications.bid.title") || "Bid updates",
+                                                        desc: t("profile.notifications.bid.desc") || "Receive updates about bids",
                                                         color: "warning",
                                                         gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
                                                     }

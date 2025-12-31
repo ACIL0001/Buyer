@@ -114,6 +114,9 @@
       "myAuctions": "مزاداتي"
     }
   },
+  "settings": {
+    "title": "الإعدادات"
+  },
   "auth": {
     "login": "تسجيل الدخول",
     "register": "التسجيل",
@@ -178,7 +181,63 @@
   },
   "profile": {
     "title": "الملف الشخصي",
-    "personalInfo": "المعلومات الشخصية",
+    "personalInfo": {
+      "title": "المعلومات الشخصية",
+      "subtitle": "إدارة معلوماتك الشخصية وتفاصيل ملفك الشخصي",
+      "firstName": "الاسم الأول",
+      "lastName": "اسم العائلة",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "jobTitle": "المسمى الوظيفي",
+      "secteur": "قطاع النشاط",
+      "companyName": "اسم الشركة",
+      "edit": "تعديل",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "successUpdate": "تم تحديث الملف الشخصي بنجاح",
+      "failedUpdate": "فشل تحديث الملف الشخصي",
+      "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
+      "updateSuccess": "تم تحديث الملف الشخصي بنجاح",
+      "sessionExpired": "انتهت الجلسة",
+      "updateFailed": "فشل تحديث الملف الشخصي"
+    },
+    "security": {
+      "title": "الأمان",
+      "subtitle": "تحديث كلمة المرور وإعدادات الأمان",
+      "currentPassword": "كلمة المرور الحالية",
+      "newPassword": "كلمة المرور الجديدة",
+      "confirmPassword": "تأكيد كلمة المرور الجديدة",
+      "changePassword": "تغيير كلمة المرور",
+      "savePassword": "حفظ كلمة المرور",
+      "passwordChanged": "تم تغيير كلمة المرور بنجاح",
+      "passwordMismatch": "كلمات المرور غير متطابقة",
+      "passwordShort": "كلمة المرور قصيرة جداً",
+      "update": "تحديث",
+      "successUpdate": "تم تحديث كلمة المرور بنجاح"
+    },
+    "notifications": {
+      "title": "الإشعارات",
+      "emailNotifications": "استلام رسائل بريد إلكتروني حول نشاط حسابك",
+      "newAuctionAlerts": "الحصول على إشعارات عند بدء مزادات جديدة",
+      "bidUpdates": "استلام إشعارات حول مزايداتك",
+      "emailNotificationsTitle": "إشعارات البريد الإلكتروني",
+      "newAuctionAlertsTitle": "تنبيهات المزادات الجديدة",
+      "bidUpdatesTitle": "تحديثات المزايدات",
+      "subtitle": "إدارة تفضيلات الإشعارات",
+      "email": {
+        "title": "إشعارات البريد الإلكتروني",
+        "desc": "استلام إشعارات عبر البريد الإلكتروني"
+      },
+      "auction": {
+        "title": "تنبيهات المزادات الجديدة",
+        "desc": "استلام تنبيهات بالمزادات الجديدة"
+      },
+      "bid": {
+        "title": "تحديثات المزايدات",
+        "desc": "استلام تحديثات حول المزايدات"
+      }
+    },
+    "old_personalInfo": "المعلومات الشخصية",
     "accountSettings": "إعدادات الحساب",
     "security": "الأمان",
     "notifications": "الإشعارات",
@@ -201,9 +260,7 @@
     "ratingScore": "أداء التقييم",
     "noRatingAvailable": "لا يوجد تقييم متاح",
     "personalInformation": "المعلومات الشخصية",
-    "security": "الأمان",
     "activities": "الأنشطة",
-    "notifications": "الإشعارات",
     "offerHistory": "تاريخ العروض",
     "changeAccountToReseller": "تغيير الحساب إلى بائع",
     "resellerVerified": "البائع موثق",
@@ -232,16 +289,7 @@
     "emailNotificationsTitle": "إشعارات البريد الإلكتروني",
     "newAuctionAlertsTitle": "تنبيهات المزادات الجديدة",
     "bidUpdatesTitle": "تحديثات المزايدات",
-    "tabs": {
-      "personalInfo": "المعلومات الشخصية",
-      "security": "الأمان",
-      "documents": "المستندات",
-      "notifications": "الإشعارات",
-      "history": "تاريخ العروض",
-      "myActivities": "نشاطاتي"
-    },
     "noActivities": "لا توجد أنشطة حديثة",
-    "personalInfo": "المعلومات الشخصية",
     "personalInfoDesc": "إدارة معلوماتك الشخصية وتفاصيل ملفك الشخصي",
     "updateSuccess": "تم تحديث الملف الشخصي بنجاح",
     "sessionExpired": "انتهت الجلسة",

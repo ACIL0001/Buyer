@@ -899,6 +899,32 @@ export const Header = () => {
                           <span>{t('account.myProfile')}</span>
                         </div>
                       </Link>
+                      
+                      {/* Dashboard Link */}
+                      <Link href="/dashboard" onClick={() => setIsAccountDropdownOpen(false)}>
+                        <div style={{
+                          padding: '10px 16px',
+                          color: '#333',
+                          transition: 'all 0.2s ease',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          fontSize: '14px'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f5f5f5';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                        >
+                          <svg width={18} height={18} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                           <path d="M0 4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm0 8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2zm8-8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V4zm0 8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2z" fill="#0063b1"/>
+                          </svg>
+                          <span>{t('navigation.dashboard')}</span>
+                        </div>
+                      </Link>
                       {/* Settings Link */}
                       <Link href="/settings" onClick={() => setIsAccountDropdownOpen(false)}>
                         <div style={{

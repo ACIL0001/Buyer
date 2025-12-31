@@ -163,6 +163,9 @@
     "chat": "Chat",
     "logout": "Déconnexion"
   },
+  "settings": {
+    "title": "Paramètres"
+  },
   "auth": {
     "login": "Connexion",
     "register": "S'inscrire",
@@ -259,17 +262,77 @@
   },
   "profile": {
     "title": "Profil",
-    "personalInfo": "Informations personnelles",
+    "personalInfo": {
+      "title": "Informations personnelles",
+      "subtitle": "Gérez vos informations personnelles et les détails de votre profil",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "email": "Email",
+      "phone": "Téléphone",
+      "jobTitle": "Fonction",
+      "secteur": "Secteur d'activité",
+      "companyName": "Nom de l'entreprise",
+      "edit": "Modifier",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "successUpdate": "Profil mis à jour avec succès",
+      "failedUpdate": "Échec de la mise à jour du profil",
+      "profileUpdated": "Profil mis à jour avec succès",
+      "updateSuccess": "Profil mis à jour avec succès",
+      "sessionExpired": "Session expirée",
+      "updateFailed": "Échec de la mise à jour du profil"
+    },
+    "security": {
+      "title": "Sécurité",
+      "subtitle": "Mettez à jour votre mot de passe et les paramètres de sécurité",
+      "currentPassword": "Mot de passe actuel",
+      "newPassword": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le nouveau mot de passe",
+      "changePassword": "Changer le mot de passe",
+      "savePassword": "Enregistrer le mot de passe",
+      "passwordChanged": "Mot de passe changé avec succès",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "passwordShort": "Le mot de passe est trop court",
+      "update": "Mettre à jour",
+      "successUpdate": "Mot de passe mis à jour avec succès"
+    },
+    "tabs": {
+      "personalInfo": "Informations personnelles",
+      "security": "Sécurité",
+      "documents": "Documents",
+      "notifications": "Notifications",
+      "history": "Historique des offres",
+      "myActivities": "Mes Activités"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "emailNotifications": "Recevoir des emails sur l'activité de votre compte",
+      "newAuctionAlerts": "Être notifié quand de nouvelles enchères commencent",
+      "bidUpdates": "Recevoir des notifications sur vos enchères",
+      "emailNotificationsTitle": "Notifications par Email",
+      "newAuctionAlertsTitle": "Alertes de Nouvelles Enchères",
+      "bidUpdatesTitle": "Mises à Jour des Enchères",
+      "subtitle": "Gérez vos préférences de notification",
+      "email": {
+        "title": "Notifications par Email",
+        "desc": "Recevoir des notifications par email"
+      },
+      "auction": {
+        "title": "Alertes de Nouvelles Enchères",
+        "desc": "Recevoir des alertes pour les nouvelles enchères"
+      },
+      "bid": {
+        "title": "Mises à Jour des Enchères",
+        "desc": "Recevoir des mises à jour sur les enchères"
+      }
+    },
     "accountSettings": "Paramètres du compte",
-    "security": "Sécurité",
-    "notifications": "Notifications",
     "privacy": "Confidentialité",
     "preferences": "Préférences",
     "activity": "Activité",
     "history": "Historique",
     "statistics": "Statistiques",
     "editProfile": "Modifier le profil",
-    "changePassword": "Changer le mot de passe",
     "deleteAccount": "Supprimer le compte",
     "saveChanges": "Enregistrer les modifications",
     "cancelChanges": "Annuler les modifications",
@@ -282,9 +345,7 @@
     "ratingScore": "Performance du score",
     "noRatingAvailable": "Aucune évaluation disponible",
     "personalInformation": "Informations personnelles",
-    "security": "Sécurité",
     "activities": "Activités",
-    "notifications": "Notifications",
     "offerHistory": "Historique des offres",
     "changeAccountToReseller": "Changer le compte en vendeur",
     "resellerVerified": "Vendeur vérifié",
@@ -302,7 +363,6 @@
     "cancel": "Annuler",
     "edit": "Modifier",
     "saving": "Enregistrement...",
-    "saveChanges": "Enregistrer les modifications",
     "updating": "Mise à jour...",
     "updatePassword": "Mettre à jour le mot de passe",
     "emailNotifications": "Recevoir des emails sur l'activité de votre compte",
@@ -313,16 +373,7 @@
     "emailNotificationsTitle": "Notifications par Email",
     "newAuctionAlertsTitle": "Alertes de Nouvelles Enchères",
     "bidUpdatesTitle": "Mises à Jour des Enchères",
-    "tabs": {
-      "personalInfo": "Informations personnelles",
-      "security": "Sécurité",
-      "documents": "Documents",
-      "notifications": "Notifications",
-      "history": "Historique des offres",
-      "myActivities": "Mes Activités"
-    },
     "noActivities": "Aucune activité récente",
-    "personalInfo": "Informations personnelles",
     "personalInfoDesc": "Gérez vos informations personnelles et les détails de votre profil",
     "updateSuccess": "Profil mis à jour avec succès",
     "sessionExpired": "Session expirée",

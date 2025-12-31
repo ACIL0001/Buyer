@@ -193,20 +193,20 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
         });
 
         // Check if user is receiving offers/bids on THEIR items
-        const isSellerReceivingTenderBid = notification.type === 'NEW_OFFER' && 
+        // IMPORTANT: Exclude CREATED types which should go to details pages above
+        const isSellerReceivingTenderBid = notification.type === 'NEW_OFFER' &&
                                            (data?.tender || data?.tenderId || 
                                             messageLower.includes('soumission') ||
                                             messageLower.includes('appel d\'offres'));
         
-        const isSellerReceivingAuctionBid = notification.type === 'BID_CREATED' ||
+        const isSellerReceivingAuctionBid = (notification.type === 'BID_CREATED' ||
                                             (notification.type === 'NEW_OFFER' && 
                                              (data?.auction || data?.auctionId ||
-                                              messageLower.includes('enchère')));
+                                              messageLower.includes('enchère'))));
         
         // Seller receiving a new order (nouvelle commande)
-        // Check title for "nouvelle" AND "commande" OR check if it's an ORDER type without "confirmée"
         const isSellerReceivingDirectSaleOrder = (
-            (titleLower.includes('nouvelle') && titleLower.includes('commande')) ||
+            (titleLower.includes('nouvelle') && titleLower.includes('commande') && !titleLower.includes('créée')) ||
             (notification.type === 'ORDER' && !titleLower.includes('confirmée') && !titleLower.includes('confirmed')) ||
             (notification.type === 'NEW_OFFER' && (titleLower.includes('commande') || messageLower.includes('commande')))
         );

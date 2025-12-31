@@ -160,9 +160,9 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
                                          (data?.auction || data?.auctionId ||
                                           notification.message?.toLowerCase().includes('enchère')));
     
-    // Seller receiving a new order (nouvelle commande)
+    // Seller receiving a new order (nouvelle commande) - exclude "créée" notifications
     const isSellerReceivingDirectSaleOrder = (
-        (titleLower.includes('nouvelle') && titleLower.includes('commande')) ||
+        (titleLower.includes('nouvelle') && titleLower.includes('commande') && !titleLower.includes('créée')) ||
         (type === 'ORDER' && !titleLower.includes('confirmée') && !titleLower.includes('confirmed')) ||
         (type === 'NEW_OFFER' && (titleLower.includes('commande') || messageLower.includes('commande')))
     );

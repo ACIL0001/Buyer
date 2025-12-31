@@ -211,12 +211,12 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
               }
             }
         }
-        // 5. ORDER CONFIRMED (Buyer receives confirmation)
+        // 5. ORDER CONFIRMED / PLACED (Buyer receives confirmation)
         else if (notification.type === 'ORDER' && 
-                  (notification.title?.toLowerCase().includes('confirmée') ||
-                   notification.title?.toLowerCase().includes('confirmed'))) {
-          console.log('🔄 Redirecting to My Purchases (Confirmed Order)');
-          redirectPath = '/dashboard/direct-sales/orders';
+                  (titleLower.includes('confirmée') || titleLower.includes('confirmed') ||
+                   titleLower.includes('effectuée') || titleLower.includes('placed'))) {
+          console.log('🔄 Redirecting to My Purchases (Placed/Confirmed)');
+          redirectPath = '/dashboard/direct-sales/orders?tab=my';
         }
         // Fallback for Chat/Messages
         else if (notification.type === 'MESSAGE_RECEIVED' || notification.type === 'MESSAGE_ADMIN' || notification.type === 'CHAT_CREATED') {

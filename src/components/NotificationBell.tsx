@@ -274,11 +274,12 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
                     }
                 }
             }
-            // 5. ORDER CONFIRMED - Buyer receives confirmation
+            // 5. ORDER CONFIRMED / PLACED - Buyer receives confirmation
             else if (notification.type === 'ORDER' && 
-                     (titleLower.includes('confirmée') || titleLower.includes('confirmed'))) {
-                console.log('🔄 Redirecting to My Purchases');
-                redirectPath = '/dashboard/direct-sales/orders';
+                     (titleLower.includes('confirmée') || titleLower.includes('confirmed') ||
+                      titleLower.includes('effectuée') || titleLower.includes('placed'))) {
+                console.log('🔄 Redirecting to My Purchases (Placed/Confirmed)');
+                redirectPath = '/dashboard/direct-sales/orders?tab=my';
             }
         }
 

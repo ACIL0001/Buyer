@@ -8,7 +8,14 @@ import { DirectSaleAPI } from '../api/direct-sale';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
+import AuctionCard from '@/components/cards/AuctionCard';
+import TenderCard from '@/components/cards/TenderCard';
+import DirectSaleCard from '@/components/cards/DirectSaleCard';
 import app from '../../config';
+
+import { Auction } from '@/types/auction';
+import { Tender } from '@/types/tender';
+import { DirectSale } from '@/types/direct-sale';
 
 // Category interface for component usage (tree structure)
 interface Category {
@@ -31,139 +38,9 @@ interface Category {
   updatedAt: string;
 }
 
-interface Auction {
-  _id: string;
-  title: string;
-  description?: string;
-  currentPrice?: number;
-  startingPrice?: number;
-  endingAt?: string;
-  thumbs?: Array<{ url: string }>;
-  images?: string[];
-  image?: string;
-  owner?: {
-    _id: string;
-    firstName?: string;
-    lastName?: string;
-    name?: string;
-    avatar?: { url: string };
-    photoURL?: string;
-    entreprise?: string;
-    companyName?: string;
-    username?: string;
-  };
-  productCategory?: {
-    _id: string;
-    name: string;
-  };
-  status?: string;
-  location?: string;
-  wilaya?: string;
-  quantity?: number;
-}
 
-interface Tender {
-  _id: string;
-  title: string;
-  description?: string;
-  startingPrice?: number;
-  endingAt?: string;
-  thumbs?: Array<{ url: string }>;
-  images?: string[];
-  image?: string;
-  attachments?: Array<{ url: string; path?: string }>;
-  owner?: {
-    _id: string;
-    firstName?: string;
-    lastName?: string;
-    name?: string;
-    avatar?: { url: string };
-    photoURL?: string;
-    entreprise?: string;
-    companyName?: string;
-    username?: string;
-  };
-  productCategory?: {
-    _id: string;
-    name: string;
-  };
-  tenderType?: 'PRODUCT' | 'SERVICE';
-  status?: string;
-  location?: string;
-  wilaya?: string;
-  quantity?: number;
-}
 
-interface DirectSale {
-  _id: string;
-  title: string;
-  description: string;
-  price: number;
-  quantity: number;
-  soldQuantity?: number;
-  saleType: 'PRODUCT' | 'SERVICE';
-  type?: 'PRODUCT' | 'SERVICE'; 
-  thumbs?: Array<{ url: string }>;
-  images?: string[];
-  owner?: {
-    _id: string;
-    firstName?: string;
-    lastName?: string;
-    name?: string;
-    avatar?: { url: string };
-    photoURL?: string;
-    entreprise?: string;
-    companyName?: string;
-    username?: string;
-  };
-  productCategory?: {
-    _id: string;
-    name: string;
-  };
-  status?: string;
-  location?: string;
-  wilaya?: string;
-  place?: string;
-  address?: string;
-  hidden?: boolean;
-}
 
-interface Timer {
-  days: string;
-  hours: string;
-  minutes: string;
-  seconds: string;
-  hasEnded: boolean;
-}
-
-// Helper function to calculate time remaining
-function calculateTimeRemaining(endDate: string): Timer {
-  const total = Date.parse(endDate) - Date.now();
-  const hasEnded = total <= 0;
-
-  if (hasEnded) {
-    return {
-      days: "00",
-      hours: "00",
-      minutes: "00",
-      seconds: "00",
-      hasEnded: true
-    };
-  }
-
-  const seconds = Math.floor((total / 1000) % 60);
-  const minutes = Math.floor((total / 1000 / 60) % 60);
-  const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
-  const days = Math.floor(total / (1000 * 60 * 60 * 24));
-
-  return {
-    days: days.toString().padStart(2, '0'),
-    hours: hours.toString().padStart(2, '0'),
-    minutes: minutes.toString().padStart(2, '0'),
-    seconds: seconds.toString().padStart(2, '0'),
-    hasEnded: false
-  };
-}
 
 export default function CategoryClient() {
   const { t } = useTranslation();
@@ -192,7 +69,7 @@ export default function CategoryClient() {
   const [viewMode, setViewMode] = useState<'categories' | 'auctions'>('categories'); // We keep 'auctions' as the "Item View" mode name for now
   const [filterType, setFilterType] = useState<'ALL' | 'PRODUCT' | 'SERVICE'>('ALL');
     const [activeTab, setActiveTab] = useState<'auctions' | 'tenders' | 'directSales'>('auctions'); // New Tab State
-  const [timers, setTimers] = useState<{ [key: string]: Timer }>({});
+
   
   const [searchResults, setSearchResults] = useState<{ categories: Category[], auctions: Auction[], tenders: Tender[], directSales: DirectSale[] }>({ categories: [], auctions: [], tenders: [], directSales: [] });
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -332,8 +209,10 @@ export default function CategoryClient() {
         }
         
         // Filter Auctions (Always fetched per category)
-        if (auctionRes && Array.isArray(auctionRes)) {
-            const categoryAuctions = auctionRes.filter(auction => {
+        const mappedAuctions = (Array.isArray(auctionRes) ? auctionRes : []).map((a: any) => ({ ...a, id: a._id || a.id }));
+
+        if (mappedAuctions.length > 0) {
+            const categoryAuctions = mappedAuctions.filter((auction: any) => {
               if (auction.productCategory && auction.productCategory._id) {
                 return allCategoryIds.includes(auction.productCategory._id);
               }
@@ -348,7 +227,7 @@ export default function CategoryClient() {
 
         // Filter Direct Sales (from allDirectSales state)
         if (allDirectSales && allDirectSales.length > 0) {
-            const categoryDS = allDirectSales.filter(sale => {
+            const categoryDS = allDirectSales.filter((sale: any) => {
                 if (sale.productCategory && sale.productCategory._id) {
                     return allCategoryIds.includes(sale.productCategory._id);
                 }
@@ -363,9 +242,10 @@ export default function CategoryClient() {
 
         // Filter Tenders (from tenders state)
         if (tenders && tenders.length > 0) {
-            const categoryT = tenders.filter(tender => {
-                if (tender.productCategory && tender.productCategory._id) {
-                    return allCategoryIds.includes(tender.productCategory._id);
+            const categoryT = tenders.filter((tender: any) => {
+                const catId = tender.productCategory?._id || tender.category?._id;
+                if (catId) {
+                    return allCategoryIds.includes(catId);
                 }
                 return false;
             });
@@ -453,10 +333,12 @@ export default function CategoryClient() {
         ]);
         
         const tendersData = tendersRes?.data || tendersRes || [];
-        setTenders(Array.isArray(tendersData) ? tendersData : []);
+        const mappedTenders = (Array.isArray(tendersData) ? tendersData : []).map((t: any) => ({ ...t, id: t._id || t.id }));
+        setTenders(mappedTenders);
 
         const directSalesData = (directSalesRes as any)?.data || directSalesRes || [];
-        setAllDirectSales(Array.isArray(directSalesData) ? directSalesData : []);
+        const mappedSales = (Array.isArray(directSalesData) ? directSalesData : []).map((s: any) => ({ ...s, id: s._id || s.id }));
+        setAllDirectSales(mappedSales);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -464,30 +346,7 @@ export default function CategoryClient() {
     fetchData();
   }, []);
 
-  // Timer update effect
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const newTimers: { [key: string]: Timer } = {};
 
-      // Update auction timers
-      auctions.forEach(auction => {
-        if (auction.endingAt) {
-          newTimers[auction._id] = calculateTimeRemaining(auction.endingAt);
-        }
-      });
-
-      // Update tender timers
-      tenders.forEach(tender => {
-        if (tender.endingAt) {
-          newTimers[tender._id] = calculateTimeRemaining(tender.endingAt);
-        }
-      });
-
-      setTimers(newTimers);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [auctions, tenders]);
 
   // Search functionality for categories, auctions, tenders, and direct sales
   useEffect(() => {
@@ -558,7 +417,7 @@ export default function CategoryClient() {
       navigateWithTop(`/category?category=${categoryId}&name=${encodeURIComponent(categoryName)}`);
     } else if (type === 'auction') {
       const auction = item as Auction;
-      navigateWithTop(`/auction-details/${auction._id}`);
+      navigateWithTop(`/auction-details/${auction.id}`);
     } else if (type === 'tender') {
       const tender = item as Tender;
       navigateWithTop(`/tender-details/${tender._id}`);
@@ -912,559 +771,7 @@ export default function CategoryClient() {
     return categories.map((category, index) => renderCategoryCard(category, index));
   };
 
-  const renderAuctionCard = (auction: Auction) => {
-    const timer = timers[auction._id] || { days: "00", hours: "00", minutes: "00", seconds: "00", hasEnded: false };
-    const isEnded = !!timer.hasEnded;
-    const isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30 && !isEnded;
 
-    return (
-      <div
-        key={auction._id}
-        style={{
-          background: 'white',
-          borderRadius: '16px',
-          overflow: 'hidden',
-          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.08)',
-          border: '1px solid rgba(0, 0, 0, 0.05)',
-          transition: 'all 0.3s ease',
-          cursor: isEnded ? 'default' : 'pointer',
-          opacity: isEnded ? 0.8 : 1,
-          position: 'relative',
-        }}
-        onMouseEnter={(e) => {
-           if (!isEnded) {
-             e.currentTarget.style.transform = 'translateY(-8px)';
-             e.currentTarget.style.boxShadow = '0 20px 40px rgba(59, 130, 246, 0.15)';
-           }
-        }}
-        onMouseLeave={(e) => {
-            if (!isEnded) {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.08)';
-            }
-        }}
-        onClick={() => navigateWithTop(`/auction-details/${auction._id}`)}
-      >
-        <div style={{
-          height: '200px',
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
-        }}>
-          <img
-            src={(() => {
-              if (auction.thumbs && auction.thumbs.length > 0 && auction.thumbs[0].url) {
-                const url = auction.thumbs[0].url;
-                if (url.startsWith('http')) return url;
-                return `${app.baseURL}${url.startsWith('/') ? url.substring(1) : url}`;
-              }
-              if (auction.images && auction.images.length > 0) {
-                 const url = auction.images[0];
-                 if (url.startsWith('http')) return url;
-                 return `${app.baseURL}${url.startsWith('/') ? url.substring(1) : url}`;
-              }
-              return DEFAULT_AUCTION_IMAGE;
-            })()}
-            alt={auction.title}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              transition: 'transform 0.4s ease',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            onError={(e) => {
-              e.currentTarget.src = DEFAULT_AUCTION_IMAGE;
-            }}
-          />
-          
-          {/* Timer Overlay */}
-          <div style={{
-            position: 'absolute',
-            top: '12px',
-            right: '12px',
-            background: isEnded
-              ? 'rgba(0,0,0,0.6)'
-              : (isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'linear-gradient(45deg, #0063b1, #00a3e0)'),
-            color: 'white',
-            padding: '6px 12px',
-            borderRadius: '20px',
-            fontSize: '12px',
-            fontWeight: '600',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-            backdropFilter: 'blur(4px)',
-          }}>
-            {isEnded ? (
-               <span>{t('common.finished')}</span>
-            ) : (
-                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                  <span>{timer.days}d</span>
-                  <span>:</span>
-                  <span>{timer.hours}h</span>
-                  <span>:</span>
-                  <span>{timer.minutes}m</span>
-                  <span>:</span>
-                  <span>{timer.seconds}s</span>
-                </div>
-            )}
-          </div>
-
-          <div style={{
-            position: 'absolute',
-            top: '12px',
-            left: '12px',
-            background: 'rgba(255, 255, 255, 0.95)',
-            color: '#0063b1',
-            padding: '6px 12px',
-            borderRadius: '20px',
-            fontSize: '11px',
-            fontWeight: '700',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-          }}>
-            {auction.productCategory?.name || t('common.auction')}
-          </div>
-        </div>
-
-        <div style={{ padding: '20px' }}>
-          <h3 style={{
-            fontSize: '16px',
-            fontWeight: '600',
-            color: '#1e293b',
-            marginBottom: '12px',
-            lineHeight: '1.4',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            height: '44px',
-          }}>
-            {auction.title}
-          </h3>
-
-           {/* Location and Quantity */}
-           <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-             {(auction.location || auction.wilaya) && (
-                <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '4px', 
-                    fontSize: '12px', 
-                    color: '#64748b',
-                    background: '#f1f5f9',
-                    padding: '4px 8px',
-                    borderRadius: '6px'
-                }}>
-                    <span>📍</span>
-                    <span>{auction.location || auction.wilaya}</span>
-                </div>
-             )}
-              {auction.quantity && (
-                <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '4px', 
-                    fontSize: '12px', 
-                    color: '#64748b',
-                    background: '#f1f5f9',
-                    padding: '4px 8px',
-                    borderRadius: '6px'
-                }}>
-                    <span>📦</span>
-                    <span>{auction.quantity}</span>
-                </div>
-             )}
-           </div>
-
-          <div style={{
-            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-            borderRadius: '12px',
-            padding: '12px 16px',
-            marginBottom: '16px',
-            border: '1px solid #e2e8f0',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            <div>
-                <p style={{
-                fontSize: '11px',
-                color: '#64748b',
-                margin: '0 0 2px 0',
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                }}>
-                {t('category.currentBid')}
-                </p>
-                <p style={{
-                fontSize: '18px',
-                fontWeight: '700',
-                margin: 0,
-                color: '#0063b1',
-                }}>
-                {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()} DA
-                </p>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-              }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  overflow: 'hidden',
-                  border: '2px solid #fff',
-                  boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                }}>
-                  <img
-                    src={auction.owner?.avatar?.url ? (auction.owner.avatar.url.startsWith('http') ? auction.owner.avatar.url : `${app.baseURL}${auction.owner.avatar.url.startsWith('/') ? auction.owner.avatar.url.substring(1) : auction.owner.avatar.url}`) : '/assets/images/avatar.jpg'}
-                    alt="Owner"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={(e) => { e.currentTarget.src = '/assets/images/avatar.jpg'; }}
-                  />
-                </div>
-                <div>
-                   <p style={{ fontSize: '12px', fontWeight: '600', color: '#333', margin: 0 }}>
-                     {auction.owner?.firstName ? `${auction.owner.firstName} ${auction.owner.lastName || ''}` : (auction.owner?.name || 'Anonymous')}
-                   </p>
-                </div>
-              </div>
-          </div>
-          
-           <button
-            style={{
-              width: '100%',
-              marginTop: '16px',
-              padding: '10px 20px',
-              background: isEnded ? '#cbd5e1' : 'linear-gradient(90deg, #3b82f6, #1d4ed8)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '10px',
-              fontWeight: '600',
-              fontSize: '14px',
-              cursor: isEnded ? 'default' : 'pointer',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              opacity: isEnded ? 0.8 : 1,
-            }}
-          >
-            {isEnded ? t('common.finished') : t('category.placeBid')}
-            {!isEnded && (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
-                </svg>
-            )}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  const renderTenderCard = (tender: Tender) => {
-      const timer = timers[tender._id] || { days: "00", hours: "00", minutes: "00", seconds: "00", hasEnded: false };
-      const isEnded = !!timer.hasEnded;
-      const isService = tender.tenderType === 'SERVICE' || tender.productCategory?.name === 'Services'; // Fallback check
-
-      return (
-        <div
-          key={tender._id}
-          style={{
-            background: 'white',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.08)',
-            border: '1px solid rgba(0, 0, 0, 0.05)',
-            transition: 'all 0.3s ease',
-            cursor: 'pointer',
-            position: 'relative',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-6px)';
-            e.currentTarget.style.boxShadow = '0 20px 40px rgba(79, 70, 229, 0.15)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.08)';
-          }}
-          onClick={() => navigateWithTop(`/tender-details/${tender._id}`)}
-        >
-           <div style={{
-            height: '180px',
-            position: 'relative',
-            overflow: 'hidden',
-            background: '#e0e7ff',
-           }}>
-             <img
-                src={(() => {
-                  if (tender.thumbs && tender.thumbs.length > 0 && tender.thumbs[0].url) {
-                    const url = tender.thumbs[0].url;
-                    if (url.startsWith('http')) return url;
-                    return `${app.baseURL}${url.startsWith('/') ? url.substring(1) : url}`;
-                  }
-                  if (tender.images && tender.images.length > 0) {
-                     const url = tender.images[0];
-                     if (url.startsWith('http')) return url;
-                     return `${app.baseURL}${url.startsWith('/') ? url.substring(1) : url}`;
-                  }
-                  return DEFAULT_AUCTION_IMAGE; // Use common default or distinct one
-                })()}
-                alt={tender.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                onError={(e) => { e.currentTarget.src = DEFAULT_AUCTION_IMAGE; }}
-             />
-
-             {/* Type Badge */}
-             <div style={{
-                position: 'absolute',
-                top: '12px',
-                left: '12px',
-                background: isService ? '#10b981' : '#4f46e5',
-                color: 'white',
-                padding: '4px 10px',
-                borderRadius: '8px',
-                fontSize: '11px',
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-             }}>
-                {isService ? (t('common.service') || 'Service') : (t('common.product') || 'Produit')}
-             </div>
-
-             {/* Timer Overlay */}
-             <div style={{
-                position: 'absolute',
-                bottom: '10px',
-                right: '10px',
-                background: isEnded ? 'rgba(0,0,0,0.7)' : 'rgba(79, 70, 229, 0.9)',
-                color: 'white',
-                padding: '6px 12px',
-                borderRadius: '20px',
-                fontSize: '12px',
-                fontWeight: '600',
-                backdropFilter: 'blur(4px)',
-             }}>
-                 {isEnded ? (
-                    <span>{t('common.finished')}</span>
-                 ) : (
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                        <span>{timer.days}d</span>:<span>{timer.hours}h</span>:<span>{timer.minutes}m</span>
-                    </div>
-                 )}
-             </div>
-           </div>
-
-          <div style={{ padding: '20px' }}>
-            <h3 style={{
-              fontSize: '16px',
-              fontWeight: '600',
-              color: '#1e293b',
-              marginBottom: '10px',
-              lineHeight: '1.4',
-              height: '44px',
-              overflow: 'hidden',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-            }}>
-              {tender.title}
-            </h3>
-            
-             <div style={{ marginBottom: '16px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-               <span style={{ fontSize: '12px', color: '#64748b', background: '#f8fafc', padding: '4px 8px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
-                 {tender.productCategory?.name}
-               </span>
-               <span style={{ fontSize: '12px', color: '#64748b', background: '#f8fafc', padding: '4px 8px', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
-                 📍 {tender.location || tender.wilaya || t('common.notSpecified')}
-               </span>
-             </div>
-
-             {/* Owner Info */}
-             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                 <img
-                    src={tender.owner?.avatar?.url ? (tender.owner.avatar.url.startsWith('http') ? tender.owner.avatar.url : `${app.baseURL}${tender.owner.avatar.url.startsWith('/') ? tender.owner.avatar.url.substring(1) : tender.owner.avatar.url}`) : '/assets/images/avatar.jpg'}
-                    alt="Owner"
-                    style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
-                    onError={(e) => { e.currentTarget.src = '/assets/images/avatar.jpg'; }}
-                  />
-                  <div style={{ fontSize: '13px', color: '#475569', fontWeight: '500' }}>
-                    {tender.owner?.entreprise || tender.owner?.companyName || (tender.owner?.firstName ? `${tender.owner.firstName} ${tender.owner.lastName}` : 'Tender Owner')}
-                  </div>
-             </div>
-
-            <button
-              style={{
-                width: '100%',
-                padding: '10px',
-                background: isEnded ? '#cbd5e1' : '#4f46e5',
-                color: 'white',
-                border: 'none',
-                borderRadius: '10px',
-                fontWeight: '600',
-                cursor: isEnded ? 'default' : 'pointer',
-                transition: 'all 0.3s ease',
-              }}
-              onMouseEnter={(e) => !isEnded && (e.currentTarget.style.background = '#4338ca')}
-              onMouseLeave={(e) => !isEnded && (e.currentTarget.style.background = '#4f46e5')}
-            >
-              {isEnded ? t('common.closed') : (t('common.viewDetails') || 'Voir les détails')}
-            </button>
-          </div>
-        </div>
-      );
-  };
-
-  const renderDirectSaleCard = (sale: DirectSale) => {
-      const isSoldOut = sale.status === 'SOLD_OUT' || (sale.quantity <= (sale.soldQuantity || 0));
-
-      return (
-        <div
-          key={sale._id}
-          style={{
-            background: 'white',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.08)',
-            border: '1px solid rgba(0, 0, 0, 0.05)',
-            transition: 'all 0.3s ease',
-            cursor: 'pointer',
-            opacity: isSoldOut ? 0.8 : 1,
-            position: 'relative',
-            filter: isSoldOut ? 'grayscale(0.8)' : 'none',
-          }}
-          onClick={() => navigateWithTop(`/direct-sale-details/${sale._id}`)}
-          onMouseEnter={(e) => {
-             if (!isSoldOut) {
-                e.currentTarget.style.transform = 'translateY(-6px)';
-                e.currentTarget.style.boxShadow = '0 20px 40px rgba(16, 185, 129, 0.15)';
-             }
-          }}
-          onMouseLeave={(e) => {
-             if (!isSoldOut) {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.08)';
-             }
-          }}
-        >
-          <div style={{
-            height: '200px',
-            position: 'relative',
-            overflow: 'hidden',
-            background: '#ecfdf5',
-          }}>
-             <img
-                src={sale.thumbs && sale.thumbs.length > 0 ? (sale.thumbs[0].url.startsWith('http') ? sale.thumbs[0].url : `${app.baseURL}/static/${sale.thumbs[0].url}`) : DEFAULT_AUCTION_IMAGE}
-                alt={sale.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                onError={(e) => { e.currentTarget.src = DEFAULT_AUCTION_IMAGE; }}
-             />
-             
-             {/* Type Badge */}
-             <div style={{
-                position: 'absolute',
-                top: '12px',
-                left: '12px',
-                background: sale.saleType === 'SERVICE' ? '#3b82f6' : '#10b981',
-                color: 'white',
-                padding: '4px 10px',
-                borderRadius: '8px',
-                fontSize: '11px',
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-             }}>
-                {sale.saleType === 'SERVICE' ? (t('common.service') || 'Service') : (t('common.product') || 'Produit')}
-             </div>
-
-             {isSoldOut && (
-                 <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'rgba(0,0,0,0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontWeight: '800',
-                    fontSize: '18px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '1px'
-                 }}>
-                    {t('common.soldOut') || 'VENDU'}
-                 </div>
-             )}
-          </div>
-          <div style={{ padding: '20px' }}>
-            <h3 style={{
-              fontSize: '16px',
-              fontWeight: '600',
-              color: '#1e293b',
-              marginBottom: '8px',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
-            }}>
-              {sale.title}
-            </h3>
-
-             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', fontSize: '12px', color: '#64748b' }}>
-                 {sale.location && <span>📍 {sale.location}</span>}
-                 {!sale.location && sale.wilaya && <span>📍 {sale.wilaya}</span>}
-                 {sale.quantity > 0 && <span>📦 {sale.quantity}</span>}
-             </div>
-
-            <p style={{
-              fontSize: '20px',
-              fontWeight: '700',
-              color: '#059669',
-              margin: '0 0 16px 0',
-            }}>
-              {Number(sale.price).toLocaleString()} DA
-            </p>
-
-            {/* Owner/Store Info */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
-                <img
-                    src={sale.owner?.avatar?.url ? (sale.owner.avatar.url.startsWith('http') ? sale.owner.avatar.url : `${app.baseURL}${sale.owner.avatar.url.startsWith('/') ? sale.owner.avatar.url.substring(1) : sale.owner.avatar.url}`) : '/assets/images/avatar.jpg'}
-                    alt="Owner"
-                    style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }}
-                    onError={(e) => { e.currentTarget.src = '/assets/images/avatar.jpg'; }}
-                />
-                <div style={{ fontSize: '12px', color: '#475569', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {sale.owner?.username || sale.owner?.name || 'Seller'}
-                </div>
-            </div>
-
-             <button
-              style={{
-                width: '100%',
-                padding: '10px',
-                background: isSoldOut ? '#94a3b8' : '#059669',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: '600',
-                cursor: isSoldOut ? 'default' : 'pointer',
-                transition: 'all 0.3s ease',
-              }}
-              disabled={isSoldOut}
-            >
-              {isSoldOut ? (t('common.soldOut') || 'Épuisé') : (t('common.buyNow') || 'Acheter')}
-            </button>
-          </div>
-        </div>
-      );
-  };
 
   if (loading) {
     return (
@@ -1709,7 +1016,7 @@ export default function CategoryClient() {
                   </div>
                   {searchResults.auctions.slice(0, 5).map((auction) => (
                     <div
-                      key={auction._id}
+                      key={auction.id}
                       onClick={() => handleSearchSelect(auction, 'auction')}
                       style={{
                         padding: '12px',
@@ -2039,7 +1346,11 @@ export default function CategoryClient() {
                                 maxWidth: '1400px',
                                 margin: '0 auto',
                             }}>
-                                {filteredAuctions.map(renderAuctionCard)}
+                                {filteredAuctions.map(auction => (
+                                    <div key={auction.id} style={{ height: '100%' }}>
+                                        <AuctionCard auction={auction} />
+                                    </div>
+                                ))}
                             </div>
                         ) : (
                              // Empty State for Auctions
@@ -2059,7 +1370,11 @@ export default function CategoryClient() {
                                 maxWidth: '1400px',
                                 margin: '0 auto',
                             }}>
-                                {filteredTenders.map(renderTenderCard)}
+                                {filteredTenders.map(tender => (
+                                    <div key={tender._id} style={{ height: '100%' }}>
+                                        <TenderCard tender={tender} />
+                                    </div>
+                                ))}
                             </div>
                         ) : (
                             // Empty State for Tenders
@@ -2079,7 +1394,11 @@ export default function CategoryClient() {
                                 maxWidth: '1400px',
                                 margin: '0 auto',
                             }}>
-                                {filteredDirectSales.map(renderDirectSaleCard)}
+                                {filteredDirectSales.map(sale => (
+                                    <div key={sale._id} style={{ height: '100%' }}>
+                                        <DirectSaleCard sale={sale} />
+                                    </div>
+                                ))}
                             </div>
                         ) : (
                             // Empty State for Direct Sales

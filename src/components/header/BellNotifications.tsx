@@ -110,12 +110,8 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
     
     // Helper to safely get IDs
     const getChatId = () => data?.chatId || data?.chat?._id;
-    const getBidId = () => data?.bid?._id || data?.bidId || (data?.bid && typeof data.bid === 'string' ? data.bid : null);
-    const getTenderId = () => data?.tender?._id || data?.tenderId || (data?.tender && typeof data.tender === 'string' ? data.tender : null);
-    const getDirectSaleId = () => data?.directSale?._id || data?.directSaleId || (data?.directSale && typeof data.directSale === 'string' ? data.directSale : null);
 
     // CHAT REDIRECTION
-    // If we have a chat ID, that's usually the best place to go for chat/offer/order related stuff
     const chatId = getChatId();
     if (chatId && (
         type === 'CHAT_CREATED' || 
@@ -131,85 +127,47 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
       return;
     }
 
-    // SPECIFIC TYPE REDIRECTION
-    switch (type) {
-      // Auctions
-      case 'BID_CREATED':
-      case 'NEW_OFFER': // On Bid
-      case 'BID_OUTBID':
-      case 'AUCTION_LOST':
-      case 'AUCTION_ENDING_SOON':
-        const bidId = getBidId() || (data && data._id);
-        const auctionId = data?.auction?._id || data?.auctionId || data?.auction;
-        
-        // If it's a bid created notification (owner getting notified), go to auction details
-        if (type === 'BID_CREATED' && auctionId) {
-             console.log('🚀 Redirecting to auction (Bid Created):', auctionId);
-             router.push(`/auctions/details/${auctionId}`);
-             return;
-        }
+    // SELLER NOTIFICATIONS - Redirect to dashboard management pages
+    
+    // Check if seller is receiving offers/bids on THEIR items
+    const isSellerReceivingTenderBid = type === 'NEW_OFFER' && 
+                                       (data?.tender || data?.tenderId || 
+                                        notification.message?.toLowerCase().includes('soumission') ||
+                                        notification.message?.toLowerCase().includes('appel d\'offres'));
+    
+    const isSellerReceivingAuctionBid = type === 'BID_CREATED' ||
+                                        (type === 'NEW_OFFER' && 
+                                         (data?.auction || data?.auctionId ||
+                                          notification.message?.toLowerCase().includes('enchère')));
+    
+    const isSellerReceivingDirectSaleOrder = (type === 'ORDER' || type === 'NEW_OFFER') &&
+                                              (notification.title?.toLowerCase().includes('commande') || 
+                                               notification.title?.toLowerCase().includes('order') ||
+                                               (data?.purchase || data?.directSale));
 
-        if (bidId) {
-          console.log('🚀 Redirecting to auction bid:', bidId);
-          router.push(`/auctions/details/${bidId}`);
-          return;
-        }
-        
-        // Fallback for new offer on tender - prioritize tender details
-        const tenderIdForOffer = getTenderId();
-        if (tenderIdForOffer) {
-            console.log('🚀 Redirecting to tender (from offer):', tenderIdForOffer);
-            router.push(`/tenders/details/${tenderIdForOffer}`);
-            return;
-        }
-        break;
+    if (isSellerReceivingTenderBid) {
+        console.log('🔄 Redirecting to Tender Bids Dashboard');
+        router.push('/dashboard/tender-bids');
+        return;
+    }
 
-      // Tenders
-      case 'TENDER_CREATED':
-        // For creation, data might be the tender itself object
-        const tId = getTenderId() || (data && data._id); 
-        if (tId) {
-          console.log('🚀 Redirecting to tender:', tId);
-          router.push(`/tenders/details/${tId}`);
-          return;
-        }
-        break;
+    if (isSellerReceivingAuctionBid) {
+        console.log('🔄 Redirecting to Auction Offers Dashboard');
+        router.push('/dashboard/offers');
+        return;
+    }
 
-      // Direct Sales
-      case 'DIRECT_SALE_CREATED':
-        // For creation, data might be the direct sale itself object
-        const dsId = getDirectSaleId() || (data && data._id);
-        if (dsId) {
-          console.log('🚀 Redirecting to direct sale:', dsId);
-          router.push(`/direct-sales/details/${dsId}`);
-          return;
-        }
-        break;
-        
-      case 'ORDER':
-      case 'ORDER_RECEIVED':
-        // If no chatId, go to direct sale details
-        const dsOrderId = getDirectSaleId();
-        if (dsOrderId) {
-             console.log('🚀 Redirecting to direct sale order:', dsOrderId);
-             router.push(`/direct-sales/details/${dsOrderId}`);
-             return;
-        }
-        break;
+    if (isSellerReceivingDirectSaleOrder) {
+        console.log('🔄 Redirecting to Direct Sales Orders Dashboard');
+        router.push('/dashboard/direct-sales/orders');
+        return;
     }
 
     // GENERIC FALLBACK based on available data
     if (getChatId()) {
       router.push(`/dashboard/chat?chatId=${getChatId()}`);
-    } else if (getBidId()) {
-      router.push(`/auctions/details/${getBidId()}`);
-    } else if (getTenderId()) {
-      router.push(`/tenders/details/${getTenderId()}`);
-    } else if (getDirectSaleId()) {
-      router.push(`/direct-sales/details/${getDirectSaleId()}`);
     } else {
       console.log('❓ No redirection target found for notification:', notification);
-      // Optional: go to notifications page or profile if you have one
     }
   };
 

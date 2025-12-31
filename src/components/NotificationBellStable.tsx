@@ -140,84 +140,45 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
           }
       }
 
-      // Check if this is an order confirmation notification (buyer receives when seller confirms)
-      const isOrderConfirmed = notification.type === 'ORDER' && 
-                                (notification.title?.toLowerCase().includes('commande confirmée') ||
-                                 notification.title?.toLowerCase().includes('order confirmed') ||
-                                 notification.message?.toLowerCase().includes('confirmée') ||
-                                 notification.message?.toLowerCase().includes('confirmed'));
+      // Check notification types for seller receiving offers/bids
+      const isSellerReceivingTenderBid = notification.type === 'NEW_OFFER' && 
+                                         (notification.data?.tender || notification.data?.tenderId || 
+                                          notification.message?.toLowerCase().includes('soumission') ||
+                                          notification.message?.toLowerCase().includes('appel d\'offres'));
       
-      // Check if this is an offer accepted notification (seller receives when buyer accepts submission)
-      const isOfferAccepted = notification.type === 'OFFER_ACCEPTED' &&
-                              (notification.title?.toLowerCase().includes('offre acceptée') ||
-                               notification.title?.toLowerCase().includes('offer accepted') ||
-                               notification.message?.toLowerCase().includes('acceptée') ||
-                               notification.message?.toLowerCase().includes('accepted') ||
-                               notification.data?.tenderBid ||
-                               notification.data?.tender);
+      const isSellerReceivingAuctionBid = notification.type === 'BID_CREATED' ||
+                                          (notification.type === 'NEW_OFFER' && 
+                                           (notification.data?.auction || notification.data?.auctionId ||
+                                            notification.message?.toLowerCase().includes('enchère')));
       
-      // Check if this is a purchase/bid notification that should redirect to seller app
-      const isDirectSaleOrder = (notification.type === 'ORDER' || 
-                                notification.type === 'NEW_OFFER') &&
-                                !isOrderConfirmed &&
-                                (notification.title?.toLowerCase().includes('commande') ||
-                                notification.title?.toLowerCase().includes('order') ||
-                                 (notification.data?.purchase || notification.data?.directSale));
-      
-      const isTenderBid = notification.type === 'NEW_OFFER' && 
-                          !isOfferAccepted &&
-                          (notification.data?.tender || notification.data?.tenderId || 
-                           notification.message?.toLowerCase().includes('soumission') ||
-                           notification.message?.toLowerCase().includes('appel d\'offres'));
-      
-      const isAuctionBid = notification.type === 'BID_CREATED' ||
-                           (notification.type === 'NEW_OFFER' && 
-                            (notification.data?.auction || notification.data?.auctionId ||
-                             notification.message?.toLowerCase().includes('enchère')));
+      const isSellerReceivingDirectSaleOrder = (notification.type === 'ORDER' || notification.type === 'NEW_OFFER') &&
+                                                (notification.title?.toLowerCase().includes('commande') || 
+                                                 notification.title?.toLowerCase().includes('order') ||
+                                                 (notification.data?.purchase || notification.data?.directSale));
 
-      // 1. DIRECT SALE ORDER (Buyer received an order OR Seller received an order)
-      if (isDirectSaleOrder) {
-        // Redirect to details page instead of dashboard list if possible
-        const directSaleId = notification.data?.directSale?._id || notification.data?.directSaleId || notification.data?.directSale;
-        if (directSaleId && typeof directSaleId === 'string') {
-             console.log('🔄 Redirecting to Direct Sale Details (Order):', directSaleId);
-             router.push(`/direct-sales/details/${directSaleId}`);
-             return;
-        }
-        console.log('🔄 Redirecting to Direct Sales Orders (Fallback)');
-        router.push('/dashboard/direct-sales/orders');
-        return;
-      }
-
-      // 2. TENDER BIDS (Seller received a bid on their tender)
-      if (isTenderBid) {
-        // Redirect to details page instead of dashboard list
-        const tenderId = notification.data?.tender?._id || notification.data?.tenderId || notification.data?.tender;
-        if (tenderId && typeof tenderId === 'string') {
-            console.log('🔄 Redirecting to Tender Details (Bid):', tenderId);
-            router.push(`/tenders/details/${tenderId}`);
-            return;
-        }
-        console.log('🔄 Redirecting to Tender Bids (Fallback)');
+      // 1. TENDER BIDS - Seller received a bid on their tender
+      if (isSellerReceivingTenderBid) {
+        console.log('🔄 Redirecting to Tender Bids Dashboard');
         router.push('/dashboard/tender-bids');
         return;
       }
 
-      // 3. AUCTION BIDS (Seller received a bid on their auction)
-      if (isAuctionBid) {
-         // Redirect to details page instead of dashboard list
-         const auctionId = notification.data?.auction?._id || notification.data?.auctionId || notification.data?.auction;
-         if (auctionId && typeof auctionId === 'string') {
-             console.log('🔄 Redirecting to Auction Details (Bid):', auctionId);
-             router.push(`/auctions/details/${auctionId}`);
-             return;
-         }
-         console.log('🔄 Redirecting to Auctions Dashboard (Fallback)');
-         router.push('/dashboard/auctions');
+      // 2. AUCTION BIDS - Seller received a bid on their auction
+      if (isSellerReceivingAuctionBid) {
+         console.log('🔄 Redirecting to Auction Offers Dashboard');
+         router.push('/dashboard/offers');
          return;
       }
 
+      // 3. DIRECT SALE ORDER - Seller received an order
+      if (isSellerReceivingDirectSaleOrder) {
+        console.log('🔄 Redirecting to Direct Sales Orders Dashboard');
+        router.push('/dashboard/direct-sales/orders');
+        return;
+      }
+
       // 4. OFFER ACCEPTED (Bidder's offer was accepted)
+      const isOfferAccepted = notification.type === 'OFFER_ACCEPTED';
       if (isOfferAccepted) {
           // If it was a tender offer - go to tender details
           const tenderId = notification.data?.tender?._id || notification.data?.tenderId || notification.data?.tender;
@@ -238,21 +199,17 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
           return;
       }
 
-      // 6. ORDER CONFIRMED (Buyer receives confirmation)
+      // 5. ORDER CONFIRMED (Buyer receives confirmation)
+      const isOrderConfirmed = notification.type === 'ORDER' && 
+                                (notification.title?.toLowerCase().includes('confirmée') ||
+                                 notification.title?.toLowerCase().includes('confirmed'));
       if (isOrderConfirmed) {
-        // Try to redirect to product details
-        const dsId = notification.data?.directSale?._id || notification.data?.directSaleId || notification.data?.directSale;
-        if (dsId && typeof dsId === 'string') {
-            console.log('🔄 Redirecting to Direct Sale Details (Confirmed):', dsId);
-            router.push(`/direct-sales/details/${dsId}`);
-            return;
-        }
         console.log('🔄 Redirecting to My Purchases (Confirmed Order)');
         router.push('/dashboard/direct-sales/orders'); 
         return;
       }
       
-      // Fallback for Chat/Messages (if any remain here, though simpler now)
+      // Fallback for Chat/Messages
       if (notification.type === 'MESSAGE_RECEIVED' || notification.type === 'MESSAGE_ADMIN' || notification.type === 'CHAT_CREATED') {
            const chatId = notification.data?.chatId || notification.chatId;
            if (chatId) {

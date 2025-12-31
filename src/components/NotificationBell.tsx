@@ -134,9 +134,12 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
 
     // Redirect logic
     try {
+        // Cast notification.data as any for flexible property access
+        const data = notification.data as any;
+
         // 1. PUBLIC CREATION NOTIFICATIONS (Prioritize these)
         if (notification.type === 'TENDER_CREATED') {
-            const id = notification.data?._id || notification.data?.id || notification.data?.tenderId;
+            const id = data?._id || data?.id || data?.tenderId;
             if (id) {
                console.log('🚀 Redirecting to Tender (Created):', id);
                router.push(`/tenders/details/${id}`);
@@ -144,7 +147,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
             }
         }
         if (notification.type === 'AUCTION_CREATED') {
-            const id = notification.data?._id || notification.data?.id || notification.data?.auctionId;
+            const id = data?._id || data?.id || data?.auctionId;
             if (id) {
                console.log('🚀 Redirecting to Auction (Created):', id);
                router.push(`/auctions/details/${id}`);
@@ -152,7 +155,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
             }
         }
         if (notification.type === 'DIRECT_SALE_CREATED') {
-            const id = notification.data?._id || notification.data?.id || notification.data?.directSaleId;
+            const id = data?._id || data?.id || data?.directSaleId;
             if (id) {
                console.log('🚀 Redirecting to Direct Sale (Created):', id);
                router.push(`/direct-sales/details/${id}`);
@@ -161,8 +164,8 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
         }
 
         // 2. CHAT REDIRECTION
-        if (notification.data?.chatId) {
-            router.push(`/dashboard/chat?conversationId=${notification.data.chatId}`);
+        if (data?.chatId) {
+            router.push(`/dashboard/chat?conversationId=${data.chatId}`);
             return; 
         }
 
@@ -179,21 +182,21 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
         
         const isDirectSaleOrder = (notification.type === 'ORDER' || notification.type === 'NEW_OFFER') && !isOrderConfirmed &&
                                   (notification.title?.toLowerCase().includes('commande') || notification.title?.toLowerCase().includes('order') ||
-                                   (notification.data?.purchase || notification.data?.directSale));
+                                   (data?.purchase || data?.directSale));
         
         const isTenderBid = notification.type === 'NEW_OFFER' && 
                             !isOfferAccepted &&
-                            (notification.data?.tender || notification.data?.tenderId || 
+                            (data?.tender || data?.tenderId || 
                              notification.message?.toLowerCase().includes('soumission') ||
                              notification.message?.toLowerCase().includes('appel d\'offres'));
         
         const isAuctionBid = notification.type === 'BID_CREATED' ||
                              (notification.type === 'NEW_OFFER' && 
-                              (notification.data?.auction || notification.data?.auctionId ||
+                              (data?.auction || data?.auctionId ||
                                notification.message?.toLowerCase().includes('enchère')));
 
         if (isDirectSaleOrder) {
-             const directSaleId = notification.data?.directSale?._id || notification.data?.directSaleId || notification.data?.directSale;
+             const directSaleId = data?.directSale?._id || data?.directSaleId || data?.directSale;
              if (directSaleId && typeof directSaleId === 'string') {
                  router.push(`/direct-sales/details/${directSaleId}`);
                  return;
@@ -203,7 +206,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
         }
 
         if (isTenderBid) {
-             const tenderId = notification.data?.tender?._id || notification.data?.tenderId || notification.data?.tender;
+             const tenderId = data?.tender?._id || data?.tenderId || data?.tender;
              if (tenderId && typeof tenderId === 'string') {
                  router.push(`/tenders/details/${tenderId}`);
                  return;
@@ -213,7 +216,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
         }
 
         if (isAuctionBid) {
-             const auctionId = notification.data?.auction?._id || notification.data?.auctionId || notification.data?.auction;
+             const auctionId = data?.auction?._id || data?.auctionId || data?.auction;
              if (auctionId && typeof auctionId === 'string') {
                  router.push(`/auctions/details/${auctionId}`);
                  return;
@@ -223,12 +226,12 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
         }
 
         if (isOfferAccepted) {
-            const tenderId = notification.data?.tender?._id || notification.data?.tenderId || notification.data?.tender;
+            const tenderId = data?.tender?._id || data?.tenderId || data?.tender;
             if (tenderId && typeof tenderId === 'string') {
                router.push(`/tenders/details/${tenderId}`); 
                return;
             }
-            const dsId = notification.data?.directSale?._id || notification.data?.directSaleId;
+            const dsId = data?.directSale?._id || data?.directSaleId;
             if (dsId && typeof dsId === 'string') {
                 router.push(`/direct-sales/details/${dsId}`);
                 return;
@@ -238,7 +241,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
         }
 
         if (isOrderConfirmed) {
-            const dsId = notification.data?.directSale?._id || notification.data?.directSaleId || notification.data?.directSale;
+            const dsId = data?.directSale?._id || data?.directSaleId || data?.directSale;
             if (dsId && typeof dsId === 'string') {
                 router.push(`/direct-sales/details/${dsId}`);
                 return;

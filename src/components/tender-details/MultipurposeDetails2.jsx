@@ -943,7 +943,9 @@ const MultipurposeDetails2 = () => {
         const bidResponse = await TendersAPI.submitTenderBid(tenderId, payload);
         console.log("[MultipurposeDetails2] Tender bid response:", bidResponse);
         
-        // Also create an offer record for tracking
+        // Also create an offer record for tracking - REMOVED to prevent duplicate notifications
+        // The Tender entry created by submitTenderBid is sufficient.
+        /* 
         try {
           const offerPayload = {
             price: finalBidAmount,
@@ -958,6 +960,7 @@ const MultipurposeDetails2 = () => {
           console.warn("Offer creation failed (this is optional):", offerErr);
           // Don't show error as tender bid succeeded
         }
+        */
         
         // Show success message
         const successMessage = isMieuxDisant 

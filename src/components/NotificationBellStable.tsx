@@ -167,8 +167,16 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
             (notification.type === 'NEW_OFFER' && (titleLower.includes('commande') || messageLower.includes('commande')))
         );
 
+        // Priority Check: Bidder Submissions (My Actions)
+        const isBidderSubmission = titleLower.includes('soumise') || titleLower.includes('submitted') || 
+                                   titleLower.includes('enregistrée') || titleLower.includes('registered');
+
+        if (isBidderSubmission && (notification.data?.tender || notification.data?.tenderId || messageLower.includes('appel d\'offres') || messageLower.includes('tender'))) {
+             console.log('🔄 Redirecting to Tender Bids Dashboard (My Tab)');
+             redirectPath = '/dashboard/tender-bids?tab=my';
+        }
         // 1. TENDER BIDS - Seller received a bid on their tender
-        if (isSellerReceivingTenderBid) {
+        else if (isSellerReceivingTenderBid) {
           console.log('🔄 Redirecting to Tender Bids Dashboard (Received Tab)');
           redirectPath = '/dashboard/tender-bids?tab=received';
         }

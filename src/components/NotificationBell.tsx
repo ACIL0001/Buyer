@@ -226,7 +226,20 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
             });
 
             // Redirect sellers to their dashboard "received" tab to manage incoming offers/orders
-            if (isSellerReceivingTenderBid) {
+            
+            // Priority Check: Bidder Submissions (My Actions)
+            if (titleLower.includes('soumise') || titleLower.includes('submitted') || 
+                titleLower.includes('enregistrée') || titleLower.includes('registered')) {
+                 if (data?.tender || data?.tenderId || messageLower.includes('appel d\'offres') || messageLower.includes('tender')) {
+                     console.log('🔄 Redirecting to Tender Bids Dashboard (My Tab)');
+                     redirectPath = '/dashboard/tender-bids?tab=my';
+                 }
+            }
+
+            if (redirectPath) {
+                // Already handled
+            }
+            else if (isSellerReceivingTenderBid) {
                 console.log('🔄 Redirecting to Tender Bids Dashboard (Received Tab)');
                 redirectPath = '/dashboard/tender-bids?tab=received';
             }

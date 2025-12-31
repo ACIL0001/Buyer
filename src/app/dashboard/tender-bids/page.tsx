@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import {
@@ -65,6 +65,7 @@ interface TenderBid {
 
 export default function TenderBidsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const theme = useTheme();
   const { auth, isLogged } = useAuth();
   const { t } = useTranslation();
@@ -90,6 +91,14 @@ export default function TenderBidsPage() {
   const [showBidDetailsDialog, setShowBidDetailsDialog] = useState(false);
   const [filterTab, setFilterTab] = useState<'received' | 'my'>('my');
   const [error, setError] = useState<string | null>(null);
+
+  // Sync tab with URL parameter
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'received' || tabParam === 'my') {
+      setFilterTab(tabParam as 'received' | 'my');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (isLogged && auth?.user?._id) {
@@ -494,6 +503,11 @@ export default function TenderBidsPage() {
             setFilterTab(newValue);
             setPage(0);
             setSelected([]);
+            
+            // Update URL parameters
+            const params = new URLSearchParams(searchParams.toString());
+            params.set('tab', newValue);
+            router.push(`/dashboard/tender-bids?${params.toString()}`);
           }}
           sx={{
             '& .MuiTab-root': {

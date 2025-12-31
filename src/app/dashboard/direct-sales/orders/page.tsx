@@ -19,7 +19,7 @@ import {
   Tab,
 } from '@mui/material';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { MdVisibility } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import useAuth from '@/hooks/useAuth';
@@ -58,6 +58,7 @@ interface Order {
 
 export default function OrdersPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t, i18n } = useTranslation();
   const { isLogged } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -75,6 +76,16 @@ export default function OrdersPage() {
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selected, setSelected] = useState<string[]>([]);
+
+  // Sync tab with URL parameter
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'received') {
+      setTabValue(0);
+    } else if (tabParam === 'made' || tabParam === 'my') {
+      setTabValue(1);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (isLogged) {
@@ -167,6 +178,11 @@ export default function OrdersPage() {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+    
+    // Update URL parameters
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', newValue === 0 ? 'received' : 'made');
+    router.push(`/dashboard/direct-sales/orders?${params.toString()}`);
   };
 
   const getColumns = (isPurchase: boolean) => [

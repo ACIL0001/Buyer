@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import {
@@ -55,6 +55,7 @@ interface Offer {
 
 export default function OffersPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const theme = useTheme();
   const { auth, isLogged } = useAuth();
   const { t, i18n } = useTranslation();
@@ -79,6 +80,14 @@ export default function OffersPage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<'received' | 'my'>('my');
+
+  // Sync tab with URL parameter
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'received' || tabParam === 'my') {
+      setFilterTab(tabParam as 'received' | 'my');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (isLogged && auth?.user?._id) {
@@ -505,6 +514,11 @@ export default function OffersPage() {
             setFilterTab(newValue);
             setPage(0); // Reset to first page when switching tabs
             setSelected([]); // Clear selection when switching tabs
+            
+            // Update URL parameters
+            const params = new URLSearchParams(searchParams.toString());
+            params.set('tab', newValue);
+            router.push(`/dashboard/offers?${params.toString()}`);
           }}
           sx={{
             '& .MuiTab-root': {

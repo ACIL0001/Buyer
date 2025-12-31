@@ -59,11 +59,11 @@ export default function AccountPopover() {
         if (url.includes('&') && !url.includes('?')) {
             url = url.replace('&', '?');
         }
-        if (url.startsWith('http://localhost:3000')) {
-            return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-        }
-        if (url.startsWith('http://localhost/')) {
-            return url.replace('http://localhost', app.baseURL.replace(/\/$/, ''));
+        if (url.startsWith('http://localhost')) {
+            const apiBase = app.baseURL.replace(/\/$/, '');
+            url = url.replace(/http:\/\/localhost:3000/g, apiBase)
+                    .replace(/http:\/\/localhost/g, apiBase);
+             return url;
         }
         if (url.startsWith('/static/')) {
             return `${app.baseURL.replace(/\/$/, '')}${url}`;
@@ -104,15 +104,17 @@ export default function AccountPopover() {
         const avatarObj = auth.user.avatar as any;
         if (avatarObj.fullUrl) {
             let fullUrl = avatarObj.fullUrl;
-            if (fullUrl.startsWith('http://localhost:3000')) {
-                fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+            if (fullUrl.includes('localhost')) {
+                fullUrl = fullUrl.replace(/http:\/\/localhost:3000/g, app.baseURL.replace(/\/$/, ''))
+                                 .replace(/http:\/\/localhost/g, app.baseURL.replace(/\/$/, ''));
             }
             return fullUrl;
         }
         
         if (avatarObj.url) {
-            if (avatarObj.url.startsWith('http')) {
-                return avatarObj.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+            if (avatarObj.url.includes('localhost')) {
+                return avatarObj.url.replace(/http:\/\/localhost:3000/g, app.baseURL.replace(/\/$/, ''))
+                                    .replace(/http:\/\/localhost/g, app.baseURL.replace(/\/$/, ''));
             }
             const path = avatarObj.url.startsWith('/') ? avatarObj.url : `/${avatarObj.url}`;
             const finalPath = path.startsWith('/static/') ? path : `/static${path}`;

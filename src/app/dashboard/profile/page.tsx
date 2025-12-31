@@ -533,10 +533,16 @@ export default function ProfilePage() {
         }
         
         if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-            let normalized = cleanUrl
-                .replace(/http:\/\/localhost:3000/g, API_BASE_URL.replace(/\/$/, ''))
-                .replace(/http:\/\/localhost\//g, API_BASE_URL.replace(/\/$/, '') + '/')
-                .replace(/http:\/\/localhost$/g, API_BASE_URL.replace(/\/$/, ''));
+            let normalized = cleanUrl;
+            
+            // Handle localhost URLs by replacing with API_BASE_URL
+            if (cleanUrl.includes('localhost')) {
+                const apiBase = API_BASE_URL.replace(/\/$/, '');
+                normalized = cleanUrl
+                    .replace(/http:\/\/localhost:3000/g, apiBase)
+                    .replace(/http:\/\/localhost\:\d+/g, apiBase)
+                    .replace(/http:\/\/localhost/g, apiBase);
+            }
             
             if (normalized.startsWith('http://localhost')) {
                 try {

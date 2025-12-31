@@ -1277,8 +1277,11 @@ export default function UsersPage() {
                                   // Remove trailing slash and ensure port is included
                                   apiBaseUrl = apiBaseUrl.replace(/\/$/, '');
                                   // If baseURL is just 'http://localhost' without port, add :3000
+                                  // If baseURL is just 'http://localhost' without port, we shouldn't hardcode :3000 here
+                                  // but since DEV_SERVER_URL is now set to prod, this check might be redundant but safe to keep generalized
                                   if (apiBaseUrl === 'http://localhost' || apiBaseUrl === 'https://localhost') {
-                                    apiBaseUrl = apiBaseUrl.replace(/localhost/, 'localhost:3000');
+                                      // DO NOTHING - or redirect to PROD. better to assume broken config uses global config
+                                      apiBaseUrl = app.baseURL || 'https://mazadclick-server.onrender.com'; 
                                   }
                                   
                                   // Helper to normalize URL - converts to full URL
@@ -1294,9 +1297,12 @@ export default function UsersPage() {
                                       normalized = normalized.replace(/^https:\/\/localhost\//, DEV_SERVER_WITH_SLASH_SECURE);
                                       
                                       // Replace localhost:3000 with production API URL if needed (for production builds)
-                                      if (process.env.NODE_ENV === 'production') {
-                                        const productionBase = app.baseURL.replace(/\/$/, '');
-
+                                      if (true) { // Always force replacement if it contains localhost
+                                        const productionBase = (app.baseURL || 'https://mazadclick-server.onrender.com').replace(/\/$/, '');
+                                        
+                                        // Replace localhost:3000 specifically
+                                        normalized = normalized.replace(/http:\/\/localhost:3000/g, productionBase);
+                                        
                                         normalized = normalized
                                           .replace(DEV_SERVER_REGEX, productionBase)
                                           .replace(DEV_SERVER_SECURE_REGEX, productionBase);

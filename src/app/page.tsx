@@ -159,7 +159,7 @@ export default function Home() {
       if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
         // Replace localhost:3000 with current baseURL if needed
         if (imageUrl.includes('localhost:3000')) {
-          const baseURL = app.baseURL || 'http://localhost:3000/';
+          const baseURL = app.baseURL || 'https://mazadclick-server.onrender.com/';
           return imageUrl.replace('http://localhost:3000', baseURL.replace(/\/$/, ''));
         }
         return imageUrl;
@@ -167,18 +167,18 @@ export default function Home() {
       
       // Handle /static/ paths by removing leading slash and prepending baseURL
       if (imageUrl.startsWith('/static/')) {
-        const baseURL = app.baseURL || 'http://localhost:3000/';
+        const baseURL = app.baseURL || 'https://mazadclick-server.onrender.com/';
         return `${baseURL}${imageUrl.substring(1)}`;
       }
       
       // Handle other paths starting with /
       if (imageUrl.startsWith('/')) {
-        const baseURL = app.baseURL || 'http://localhost:3000/';
+        const baseURL = app.baseURL || 'https://mazadclick-server.onrender.com/'
         return `${baseURL}${imageUrl.substring(1)}`;
       }
       
       // Handle paths without leading slash
-      const baseURL = app.baseURL || 'http://localhost:3000/';
+      const baseURL = app.baseURL || 'https://mazadclick-server.onrender.com/';
       return `${baseURL}${imageUrl}`;
     }
     
@@ -196,14 +196,14 @@ export default function Home() {
     // If it's already a full URL, return it as-is
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
       if (imageUrl.includes('localhost:3000')) {
-        const baseURL = app.baseURL || 'http://localhost:3000/';
+        const baseURL = app.baseURL || 'https://mazadclick-server.onrender.com/';
         return imageUrl.replace('http://localhost:3000', baseURL.replace(/\/$/, ''));
       }
       return imageUrl;
     }
 
     // Handle relative paths
-    const baseURL = app.baseURL || 'http://localhost:3000/';
+    const baseURL = app.baseURL || 'https://mazadclick-server.onrender.com/';
     if (imageUrl.startsWith('/static/')) {
       return `${baseURL}${imageUrl.substring(1)}`;
     }

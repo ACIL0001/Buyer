@@ -27,11 +27,11 @@ const getAvatarUrl = (user: any) => {
         if (url.includes('&') && !url.includes('?')) {
             url = url.replace('&', '?');
         }
-        if (url.startsWith('http://localhost:3000')) {
-            return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-        }
-        if (url.startsWith('http://localhost/')) {
-            return url.replace('http://localhost', app.baseURL.replace(/\/$/, ''));
+        if (url.startsWith('http://localhost')) {
+            const apiBase = app.baseURL.replace(/\/$/, '');
+            url = url.replace(/http:\/\/localhost:3000/g, apiBase)
+                    .replace(/http:\/\/localhost/g, apiBase);
+             return url;
         }
         if (url.startsWith('/static/')) {
             return `${app.baseURL.replace(/\/$/, '')}${url}`;
@@ -71,15 +71,17 @@ const getAvatarUrl = (user: any) => {
     if (avatar) {
         if (avatar.fullUrl) {
         let fullUrl = avatar.fullUrl;
-        if (fullUrl.startsWith('http://localhost:3000')) {
-            fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+        if (fullUrl.includes('localhost')) {
+            fullUrl = fullUrl.replace(/http:\/\/localhost:3000/g, app.baseURL.replace(/\/$/, ''))
+                             .replace(/http:\/\/localhost/g, app.baseURL.replace(/\/$/, ''));
         }
         return fullUrl;
         }
         
         if (avatar.url) {
-        if (avatar.url.startsWith('http')) {
-            return avatar.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+        if (avatar.url.includes('localhost')) {
+            return avatar.url.replace(/http:\/\/localhost:3000/g, app.baseURL.replace(/\/$/, ''))
+                             .replace(/http:\/\/localhost/g, app.baseURL.replace(/\/$/, ''));
         }
         const path = avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`;
         const finalPath = path.startsWith('/static/') ? path : `/static${path}`;

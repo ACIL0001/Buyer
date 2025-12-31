@@ -113,6 +113,22 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
     try {
       console.log('🔖 Marking notification as read:', notification._id, 'source:', notification.source);
       
+      // ENHANCED DIAGNOSTIC LOGGING
+      console.log('🔍 ============ DETAILED NOTIFICATION DEBUG (Stable) ============');
+      console.log('🔍 Notification ID:', notification._id);
+      console.log('🔍 Notification Type:', notification.type);
+      console.log('🔍 Title:', notification.title);
+      console.log('🔍 Message:', notification.message);
+      console.log('🔍 Data Object:', notification.data);
+      console.log('🔍 Data._id:', notification.data?._id);
+      console.log('🔍 Data.id:', notification.data?.id);
+      console.log('🔍 Data.auctionId:', notification.data?.auctionId);
+      console.log('🔍 Data.auction:', notification.data?.auction);
+      console.log('🔍 Data.auction._id:', notification.data?.auction?._id);
+      console.log('🔍 Data.auction.id:', notification.data?.auction?.id);
+      console.log('🔍 Full Object:', JSON.stringify(notification, null, 2));
+      console.log('🔍 ================================================================');
+      
       let redirectPath: string | null = null;
 
       // 0. NEW ITEMS CREATED (Public Notifications) - Prioritize these checks

@@ -70,16 +70,24 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
   const handleNotificationClick = (notification: any) => {
     console.log('🔔 Notification clicked:', notification);
     
+    // ENHANCED DIAGNOSTIC LOGGING
+    console.log('🔍 ============ DETAILED NOTIFICATION DEBUG (BellNotifications) ============');
+    console.log('🔍 Notification ID:', notification._id);
+    console.log('🔍 Notification Type:', notification.type);
+    console.log('🔍 Title:', notification.title);
+    console.log('🔍 Message:', notification.message);
+    console.log('🔍 Data Object:', notification.data);
+    console.log('🔍 Data._id:', notification.data?._id);
+    console.log('🔍 Data.id:', notification.data?.id);
+    console.log('🔍 Data.auctionId:', notification.data?.auctionId);
+    console.log('🔍 Data.auction:', notification.data?.auction);
+    console.log('🔍 Data.auction._id:', notification.data?.auction?._id);
+    console.log('🔍 Data.auction.id:', notification.data?.auction?.id);
+    console.log('🔍 Full Object:', JSON.stringify(notification, null, 2));
+    console.log('🔍 ==========================================================================');
+    
     // 3. Redirect logic based on type and data (FIRST!)
     const { type, data} = notification;
-
-    // DEBUG: Log the entire notification to understand its structure
-    console.log('📢 NOTIFICATION DEBUG (BellNotifications):', {
-        type: type,
-        title: notification.title,
-        message: notification.message,
-        data: data
-    });
 
     let redirectPath: string | null = null;
 

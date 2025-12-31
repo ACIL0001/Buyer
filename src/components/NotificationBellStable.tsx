@@ -113,6 +113,33 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
     try {
       console.log('🔖 Marking notification as read:', notification._id, 'source:', notification.source);
       
+      // 0. NEW ITEMS CREATED (Public Notifications) - Prioritize these checks
+      // Redirect to the public details page for the item
+      if (notification.type === 'TENDER_CREATED') {
+          const id = notification.data?._id || notification.data?.id || notification.data?.tenderId;
+          if (id) {
+             console.log('🚀 Redirecting to Tender (Created):', id);
+             router.push(`/tenders/details/${id}`);
+             return;
+          }
+      }
+      if (notification.type === 'AUCTION_CREATED') {
+          const id = notification.data?._id || notification.data?.id || notification.data?.auctionId;
+          if (id) {
+             console.log('🚀 Redirecting to Auction (Created):', id);
+             router.push(`/auctions/details/${id}`);
+             return;
+          }
+      }
+      if (notification.type === 'DIRECT_SALE_CREATED') {
+          const id = notification.data?._id || notification.data?.id || notification.data?.directSaleId;
+          if (id) {
+             console.log('🚀 Redirecting to Direct Sale (Created):', id);
+             router.push(`/direct-sales/details/${id}`);
+             return;
+          }
+      }
+
       // Check if this is an order confirmation notification (buyer receives when seller confirms)
       const isOrderConfirmed = notification.type === 'ORDER' && 
                                 (notification.title?.toLowerCase().includes('commande confirmée') ||
@@ -150,75 +177,77 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
 
       // 1. DIRECT SALE ORDER (Buyer received an order OR Seller received an order)
       if (isDirectSaleOrder) {
-        console.log('🔄 Redirecting to Direct Sales Orders');
-        // If specific order ID is available, we could pass it, but standard page is fine
+        // Redirect to details page instead of dashboard list if possible
+        const directSaleId = notification.data?.directSale?._id || notification.data?.directSaleId || notification.data?.directSale;
+        if (directSaleId && typeof directSaleId === 'string') {
+             console.log('🔄 Redirecting to Direct Sale Details (Order):', directSaleId);
+             router.push(`/direct-sales/details/${directSaleId}`);
+             return;
+        }
+        console.log('🔄 Redirecting to Direct Sales Orders (Fallback)');
         router.push('/dashboard/direct-sales/orders');
         return;
       }
 
       // 2. TENDER BIDS (Seller received a bid on their tender)
       if (isTenderBid) {
-        console.log('🔄 Redirecting to Tender Bids');
+        // Redirect to details page instead of dashboard list
+        const tenderId = notification.data?.tender?._id || notification.data?.tenderId || notification.data?.tender;
+        if (tenderId && typeof tenderId === 'string') {
+            console.log('🔄 Redirecting to Tender Details (Bid):', tenderId);
+            router.push(`/tenders/details/${tenderId}`);
+            return;
+        }
+        console.log('🔄 Redirecting to Tender Bids (Fallback)');
         router.push('/dashboard/tender-bids');
         return;
       }
 
       // 3. AUCTION BIDS (Seller received a bid on their auction)
       if (isAuctionBid) {
-         console.log('🔄 Redirecting to Auctions');
-         // Usually managing auctions happens in /dashboard/auctions
+         // Redirect to details page instead of dashboard list
+         const auctionId = notification.data?.auction?._id || notification.data?.auctionId || notification.data?.auction;
+         if (auctionId && typeof auctionId === 'string') {
+             console.log('🔄 Redirecting to Auction Details (Bid):', auctionId);
+             router.push(`/auctions/details/${auctionId}`);
+             return;
+         }
+         console.log('🔄 Redirecting to Auctions Dashboard (Fallback)');
          router.push('/dashboard/auctions');
          return;
       }
 
       // 4. OFFER ACCEPTED (Bidder's offer was accepted)
       if (isOfferAccepted) {
-          // If it was a tender offer
-          if (notification.data?.tender || notification.data?.tenderId) {
-             console.log('🔄 Redirecting to My Tender Bids (Accepted)');
-             // Assuming filter tab logic handles "my bids" vs "received bids"
-             router.push('/dashboard/tender-bids'); 
+          // If it was a tender offer - go to tender details
+          const tenderId = notification.data?.tender?._id || notification.data?.tenderId || notification.data?.tender;
+          if (tenderId && typeof tenderId === 'string') {
+             console.log('🔄 Redirecting to Tender Details (Accepted):', tenderId);
+             router.push(`/tenders/details/${tenderId}`); 
              return;
           }
-          // If it was a direct sale offer (less common flow defined here but just in case)
-          console.log('🔄 Redirecting to Orders for accepted offer');
+          // If it was a direct sale offer - go to direct sale details
+          const dsId = notification.data?.directSale?._id || notification.data?.directSaleId;
+          if (dsId && typeof dsId === 'string') {
+              console.log('🔄 Redirecting to Direct Sale Details (Accepted):', dsId);
+              router.push(`/direct-sales/details/${dsId}`);
+              return;
+          }
+          console.log('🔄 Redirecting to Orders for accepted offer (Fallback)');
           router.push('/dashboard/direct-sales/orders');
           return;
       }
 
-      // 5. NEW ITEMS CREATED (Public Notifications)
-      // Redirect to the public details page for the item
-      if (notification.type === 'TENDER_CREATED') {
-          const id = notification.data?._id || notification.data?.id || notification.data?.tenderId;
-          if (id) {
-             router.push(`/tenders/details/${id}`);
-             return;
-          }
-      }
-      if (notification.type === 'AUCTION_CREATED') {
-          const id = notification.data?._id || notification.data?.id || notification.data?.auctionId;
-          if (id) {
-             router.push(`/auctions/details/${id}`);
-             return;
-          }
-      }
-      if (notification.type === 'DIRECT_SALE_CREATED') {
-          const id = notification.data?._id || notification.data?.id || notification.data?.directSaleId;
-          if (id) {
-             router.push(`/direct-sales/details/${id}`);
-             return;
-          }
-      }
-
       // 6. ORDER CONFIRMED (Buyer receives confirmation)
       if (isOrderConfirmed) {
-        // ... (Existing chat logic can remain or be simplified)
-        // User asked to redirect to "that commande page". 
-        // We will prioritize the Orders page if no chat actions are specifically desired, 
-        // BUT the existing code prioritized chat. 
-        // Let's stick to the User Request: "redirect ot that offre or commande page"
+        // Try to redirect to product details
+        const dsId = notification.data?.directSale?._id || notification.data?.directSaleId || notification.data?.directSale;
+        if (dsId && typeof dsId === 'string') {
+            console.log('🔄 Redirecting to Direct Sale Details (Confirmed):', dsId);
+            router.push(`/direct-sales/details/${dsId}`);
+            return;
+        }
         console.log('🔄 Redirecting to My Purchases (Confirmed Order)');
-        // In the Orders page, there is a tab for "Made" (Purchases)
         router.push('/dashboard/direct-sales/orders'); 
         return;
       }

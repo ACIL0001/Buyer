@@ -128,10 +128,127 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
       setClickedNotificationId(null);
     }, 300);
 
-    // Redirect to chat if chatId is present
-    if (notification?.data?.chatId) {
-       setIsOpen(false); // Close dropdown
-       router.push(`/dashboard/chat?conversationId=${notification.data.chatId}`);
+    setIsOpen(false); // Close dropdown
+
+    if (!notification) return;
+
+    // Redirect logic
+    try {
+        // 1. PUBLIC CREATION NOTIFICATIONS (Prioritize these)
+        if (notification.type === 'TENDER_CREATED') {
+            const id = notification.data?._id || notification.data?.id || notification.data?.tenderId;
+            if (id) {
+               console.log('🚀 Redirecting to Tender (Created):', id);
+               router.push(`/tenders/details/${id}`);
+               return;
+            }
+        }
+        if (notification.type === 'AUCTION_CREATED') {
+            const id = notification.data?._id || notification.data?.id || notification.data?.auctionId;
+            if (id) {
+               console.log('🚀 Redirecting to Auction (Created):', id);
+               router.push(`/auctions/details/${id}`);
+               return;
+            }
+        }
+        if (notification.type === 'DIRECT_SALE_CREATED') {
+            const id = notification.data?._id || notification.data?.id || notification.data?.directSaleId;
+            if (id) {
+               console.log('🚀 Redirecting to Direct Sale (Created):', id);
+               router.push(`/direct-sales/details/${id}`);
+               return;
+            }
+        }
+
+        // 2. CHAT REDIRECTION
+        if (notification.data?.chatId) {
+            router.push(`/dashboard/chat?conversationId=${notification.data.chatId}`);
+            return; 
+        }
+
+        // 3. OTHER BUSINESS LOGIC REDIRECTIONS
+
+        // Check specifics 
+        const isOrderConfirmed = notification.type === 'ORDER' && 
+                                  (notification.title?.toLowerCase().includes('commande confirmée') ||
+                                   notification.title?.toLowerCase().includes('order confirmed') ||
+                                   notification.message?.toLowerCase().includes('confirmée') ||
+                                   notification.message?.toLowerCase().includes('confirmed'));
+        
+        const isOfferAccepted = notification.type === 'OFFER_ACCEPTED';
+        
+        const isDirectSaleOrder = (notification.type === 'ORDER' || notification.type === 'NEW_OFFER') && !isOrderConfirmed &&
+                                  (notification.title?.toLowerCase().includes('commande') || notification.title?.toLowerCase().includes('order') ||
+                                   (notification.data?.purchase || notification.data?.directSale));
+        
+        const isTenderBid = notification.type === 'NEW_OFFER' && 
+                            !isOfferAccepted &&
+                            (notification.data?.tender || notification.data?.tenderId || 
+                             notification.message?.toLowerCase().includes('soumission') ||
+                             notification.message?.toLowerCase().includes('appel d\'offres'));
+        
+        const isAuctionBid = notification.type === 'BID_CREATED' ||
+                             (notification.type === 'NEW_OFFER' && 
+                              (notification.data?.auction || notification.data?.auctionId ||
+                               notification.message?.toLowerCase().includes('enchère')));
+
+        if (isDirectSaleOrder) {
+             const directSaleId = notification.data?.directSale?._id || notification.data?.directSaleId || notification.data?.directSale;
+             if (directSaleId && typeof directSaleId === 'string') {
+                 router.push(`/direct-sales/details/${directSaleId}`);
+                 return;
+             }
+             router.push('/dashboard/direct-sales/orders');
+             return;
+        }
+
+        if (isTenderBid) {
+             const tenderId = notification.data?.tender?._id || notification.data?.tenderId || notification.data?.tender;
+             if (tenderId && typeof tenderId === 'string') {
+                 router.push(`/tenders/details/${tenderId}`);
+                 return;
+             }
+             router.push('/dashboard/tender-bids');
+             return;
+        }
+
+        if (isAuctionBid) {
+             const auctionId = notification.data?.auction?._id || notification.data?.auctionId || notification.data?.auction;
+             if (auctionId && typeof auctionId === 'string') {
+                 router.push(`/auctions/details/${auctionId}`);
+                 return;
+             }
+             router.push('/dashboard/auctions');
+             return;
+        }
+
+        if (isOfferAccepted) {
+            const tenderId = notification.data?.tender?._id || notification.data?.tenderId || notification.data?.tender;
+            if (tenderId && typeof tenderId === 'string') {
+               router.push(`/tenders/details/${tenderId}`); 
+               return;
+            }
+            const dsId = notification.data?.directSale?._id || notification.data?.directSaleId;
+            if (dsId && typeof dsId === 'string') {
+                router.push(`/direct-sales/details/${dsId}`);
+                return;
+            }
+            router.push('/dashboard/direct-sales/orders');
+            return;
+        }
+
+        if (isOrderConfirmed) {
+            const dsId = notification.data?.directSale?._id || notification.data?.directSaleId || notification.data?.directSale;
+            if (dsId && typeof dsId === 'string') {
+                router.push(`/direct-sales/details/${dsId}`);
+                return;
+            }
+            router.push('/dashboard/direct-sales/orders'); 
+            return;
+        }
+        
+    } catch (e) {
+        console.error("Error handling notification redirection", e);
     }
   };
 

@@ -80,6 +80,33 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
     
     // 3. Redirect logic based on type and data
     const { type, data } = notification;
+
+    // 0. NEW ITEMS CREATED (Public Notifications) - Prioritize these checks
+    // Redirect to the public details page for the item
+    if (type === 'TENDER_CREATED') {
+        const id = data?._id || data?.id || data?.tenderId;
+        if (id) {
+            console.log('🚀 Redirecting to Tender (Created):', id);
+            router.push(`/tenders/details/${id}`);
+            return;
+        }
+    }
+    if (type === 'AUCTION_CREATED') {
+        const id = data?._id || data?.id || data?.auctionId;
+        if (id) {
+            console.log('🚀 Redirecting to Auction (Created):', id);
+            router.push(`/auctions/details/${id}`);
+            return;
+        }
+    }
+    if (type === 'DIRECT_SALE_CREATED') {
+        const id = data?._id || data?.id || data?.directSaleId;
+        if (id) {
+            console.log('🚀 Redirecting to Direct Sale (Created):', id);
+            router.push(`/direct-sales/details/${id}`);
+            return;
+        }
+    }
     
     // Helper to safely get IDs
     const getChatId = () => data?.chatId || data?.chat?._id;
@@ -113,12 +140,22 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
       case 'AUCTION_LOST':
       case 'AUCTION_ENDING_SOON':
         const bidId = getBidId() || (data && data._id);
+        const auctionId = data?.auction?._id || data?.auctionId || data?.auction;
+        
+        // If it's a bid created notification (owner getting notified), go to auction details
+        if (type === 'BID_CREATED' && auctionId) {
+             console.log('🚀 Redirecting to auction (Bid Created):', auctionId);
+             router.push(`/auctions/details/${auctionId}`);
+             return;
+        }
+
         if (bidId) {
-          console.log('🚀 Redirecting to auction:', bidId);
+          console.log('🚀 Redirecting to auction bid:', bidId);
           router.push(`/auctions/details/${bidId}`);
           return;
         }
-        // Fallback for new offer on tender
+        
+        // Fallback for new offer on tender - prioritize tender details
         const tenderIdForOffer = getTenderId();
         if (tenderIdForOffer) {
             console.log('🚀 Redirecting to tender (from offer):', tenderIdForOffer);

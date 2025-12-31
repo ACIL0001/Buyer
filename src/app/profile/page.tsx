@@ -205,15 +205,22 @@ function ProfilePage() {
     const [activeUpgradeSection, setActiveUpgradeSection] = useState<'verified' | 'certified' | null>('verified');
 
     // Document lists
+    // Verification documents - User must provide EITHER (RC + NIF) OR (Carte Fellah alone)
     const requiredDocuments = [
         { key: 'registreCommerceCarteAuto', label: t('profile.documents.registreCommerce') || 'Registre de Commerce / Carte Artisan' },
         { key: 'nifRequired', label: t('profile.documents.nif') || 'NIF' },
-        { key: 'nis', label: t('profile.documents.nis') || 'NIS' },
-        { key: 'art', label: t('profile.documents.art') || 'Article' }
+        { key: 'carteFellah', label: t('profile.documents.carteFellah') || 'Carte Fellah' }
     ];
 
+    // Certification documents - Additional professional documents for certified status
     const optionalDocuments = [
-         { key: 'carteFellah', label: t('profile.documents.carteFellah') || 'Carte Fellah' },
+        { key: 'nis', label: t('profile.documents.nis') || 'NIS' },
+        { key: 'art', label: t('profile.documents.art') || 'Article' },
+        { key: 'c20', label: t('profile.documents.c20') || 'C20' },
+        { key: 'misesAJourCnas', label: t('profile.documents.misesAJourCnas') || 'Mises à jour CNAS' },
+        { key: 'last3YearsBalanceSheet', label: t('profile.documents.balanceSheet') || 'Bilans des 3 dernières années' },
+        { key: 'certificates', label: t('profile.documents.certificates') || 'Certificats' },
+        { key: 'identityCard', label: t('profile.documents.identityCard') || 'Carte d\'identité' }
     ];
 
     // ... existing code ...
@@ -725,7 +732,7 @@ function ProfilePage() {
                 {/* Submit button for optional documents section - show when at least one optional document is uploaded */}
                 {!isRequired && identity && identity._id && (() => {
                     // Check if any optional document is uploaded
-                    const optionalDocKeys = ['nis', 'numeroArticle', 'c20', 'misesAJourCnas', 'last3YearsBalanceSheet', 'certificates', 'identityCard'];
+                    const optionalDocKeys = ['nis', 'art', 'c20', 'misesAJourCnas', 'last3YearsBalanceSheet', 'certificates', 'identityCard'];
                     const hasAnyOptionalDoc = optionalDocKeys.some(key => {
                         const doc = identity[key];
                         return doc && ((doc as any).url || (doc as any).fullUrl);

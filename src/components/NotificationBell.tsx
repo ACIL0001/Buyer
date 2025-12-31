@@ -605,8 +605,8 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
             )}
           </div>
           
-          {/* Footer */}
-          <div style={{
+          {/* Footer - Removed as per user request */}
+          {/* <div style={{
             padding: '12px',
             borderTop: '1px solid #f0f0f0',
             textAlign: 'center',
@@ -637,7 +637,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
             >
               {t('notifications.viewAll')}
             </Link>
-          </div>
+          </div> */}
         </div>
         
         <style jsx>{`

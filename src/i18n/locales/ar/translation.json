@@ -1,6 +1,7 @@
 {
   "common": {
     "home": "الرئيسية",
+    "dashboard": "لوحة القيادة",
     "auctions": "المزادات",
     "tenders": "طلبات العروض",
     "directSales": "المبيعات المباشرة",
@@ -361,7 +362,8 @@
     "defaultMessage": "لديك إشعار جديد",
     "processing": "جاري المعالجة...",
     "loading": "جاري تحميل الإشعارات...",
-    "viewAll": "عرض الكل"
+    "viewAll": "عرض الكل",
+    "showingCount": " {{shown}} من {{total}}"
   },
   "footer": {
     "about": "حول",

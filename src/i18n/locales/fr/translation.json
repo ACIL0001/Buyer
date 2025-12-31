@@ -478,7 +478,8 @@
     "defaultMessage": "Vous avez une nouvelle notification",
     "processing": "Traitement...",
     "loading": "Chargement des notifications...",
-    "viewAll": "Voir tout"
+    "viewAll": "Voir tout",
+    "showingCount": "Affichage de {{shown}} sur {{total}}"
   },
   "chat": {
     "title": "Chat",

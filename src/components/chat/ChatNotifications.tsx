@@ -642,8 +642,9 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
             )}
           </div>
           
-          {/* Footer */}
-          <div style={{
+          
+          {/* Footer - Removed as per user request */}
+          {/* <div style={{
             padding: '12px 15px',
             borderTop: '1px solid #f0f0f0',
             textAlign: 'center',
@@ -681,7 +682,7 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
               <BiMessage size={16} />
               {t('chat.viewAllMessages')}
             </Link>
-          </div>
+          </div> */}
         </div>
         
         <style jsx>{`

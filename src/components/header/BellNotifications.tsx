@@ -70,22 +70,22 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
   const handleNotificationClick = (notification: any) => {
     console.log('🔔 Notification clicked:', notification);
     
-    // ENHANCED DIAGNOSTIC LOGGING
+    // ENHANCED DIAGNOSTIC LOGGING (Using console.error to ensure visibility)
     const notifData = notification.data as any;
-    console.log('🔍 ============ DETAILED NOTIFICATION DEBUG (BellNotifications) ============');
-    console.log('🔍 Notification ID:', notification._id);
-    console.log('🔍 Notification Type:', notification.type);
-    console.log('🔍 Title:', notification.title);
-    console.log('🔍 Message:', notification.message);
-    console.log('🔍 Data Object:', notifData);
-    console.log('🔍 Data._id:', notifData?._id);
-    console.log('🔍 Data.id:', notifData?.id);
-    console.log('🔍 Data.auctionId:', notifData?.auctionId);
-    console.log('🔍 Data.auction:', notifData?.auction);
-    console.log('🔍 Data.auction._id:', notifData?.auction?._id);
-    console.log('🔍 Data.auction.id:', notifData?.auction?.id);
-    console.log('🔍 Full Object:', JSON.stringify(notification, null, 2));
-    console.log('🔍 ==========================================================================');
+    console.error('🔍 ============ DETAILED NOTIFICATION DEBUG (BellNotifications) ============');
+    console.error('🔍 Notification ID:', notification._id);
+    console.error('🔍 Notification Type:', notification.type);
+    console.error('🔍 Title:', notification.title);
+    console.error('🔍 Message:', notification.message);
+    console.error('🔍 Data Object:', notifData);
+    console.error('🔍 Data._id:', notifData?._id);
+    console.error('🔍 Data.id:', notifData?.id);
+    console.error('🔍 Data.auctionId:', notifData?.auctionId);
+    console.error('🔍 Data.auction:', notifData?.auction);
+    console.error('🔍 Data.auction._id:', notifData?.auction?._id);
+    console.error('🔍 Data.auction.id:', notifData?.auction?.id);
+    console.error('🔍 Full Object:', JSON.stringify(notification, null, 2));
+    console.error('🔍 ==========================================================================');
     
     // 3. Redirect logic based on type and data (FIRST!)
     const { type, data} = notification;

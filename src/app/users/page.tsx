@@ -9,6 +9,7 @@ import useAuth from '@/hooks/useAuth';
 import { UserAPI, USER_TYPE } from "@/app/api/users";
 import { extractErrorMessage, isRetryableError } from '@/types/Error';
 import app, { DEV_SERVER_URL } from "@/config";
+import { normalizeImageUrl } from "@/utils/url";
 
 const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const DEV_SERVER_REGEX = new RegExp(escapeRegExp(DEV_SERVER_URL), "g");
@@ -1272,94 +1273,21 @@ export default function UsersPage() {
                                 justifyContent: 'center'
                               }}>
                                 {(() => {
-                                  // Get API base URL from config - ensure it has proper format
-                                  let apiBaseUrl = app.baseURL || DEV_SERVER_URL;
-                                  // Remove trailing slash and ensure port is included
-                                  apiBaseUrl = apiBaseUrl.replace(/\/$/, '');
-                                  // If baseURL is just 'http://localhost' without port, add :3000
-                                  // If baseURL is just 'http://localhost' without port, we shouldn't hardcode :3000 here
-                                  // but since DEV_SERVER_URL is now set to prod, this check might be redundant but safe to keep generalized
-                                  if (apiBaseUrl === 'http://localhost' || apiBaseUrl === 'https://localhost') {
-                                      // DO NOTHING - or redirect to PROD. better to assume broken config uses global config
-                                      apiBaseUrl = app.baseURL || 'https://mazadclick-server.onrender.com'; 
-                                  }
+                                  // Simplified logic using normalizeImageUrl
+                                  let avatarSource = "";
                                   
-                                  // Helper to normalize URL - converts to full URL
-                                  const normalizeUrl = (url: string): string => {
-                                    if (!url || url.trim() === "") return "";
-                                    let normalized = url.trim();
-                                    
-                                    // If it's already a full URL (http/https), fix it if needed
-                                    if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
-                                      // Fix localhost URLs without port (http://localhost/... or https://localhost/...)
-                                      // Match http://localhost or https://localhost followed by / but not :port
-                                      normalized = normalized.replace(/^http:\/\/localhost\//, DEV_SERVER_WITH_SLASH);
-                                      normalized = normalized.replace(/^https:\/\/localhost\//, DEV_SERVER_WITH_SLASH_SECURE);
-                                      
-                                      // Replace localhost:3000 with production API URL if needed (for production builds)
-                                      if (true) { // Always force replacement if it contains localhost
-                                        const productionBase = (app.baseURL || 'https://mazadclick-server.onrender.com').replace(/\/$/, '');
-                                        
-                                        // Replace localhost:3000 specifically
-                                        normalized = normalized.replace(/http:\/\/localhost:3000/g, productionBase);
-                                        
-                                        normalized = normalized
-                                          .replace(DEV_SERVER_REGEX, productionBase)
-                                          .replace(DEV_SERVER_SECURE_REGEX, productionBase);
-                                      }
-                                      return normalized;
-                                    }
-                                    
-                                    // If it starts with /static/, prepend API base URL
-                                    if (normalized.startsWith('/static/')) {
-                                      return `${apiBaseUrl}${normalized}`;
-                                    }
-                                    
-                                    // If it starts with / (but not /static/), prepend API base URL
-                                    if (normalized.startsWith('/')) {
-                                      return `${apiBaseUrl}${normalized}`;
-                                    }
-                                    
-                                    // Otherwise, construct full URL with /static/ prefix
-                                    return `${apiBaseUrl}/static/${normalized}`;
-                                  };
-                                  
-                                  // Get avatar URL with proper normalization
-                                  let avatarUrl = "/assets/images/avatar.jpg";
-                                  
-                                  // Try photoURL first (highest priority - server sets this)
                                   if (user.photoURL && user.photoURL.trim() !== "") {
-                                    const url = normalizeUrl(user.photoURL);
-                                    if (url) avatarUrl = url;
-                                  } 
-                                  // Try avatar.fullUrl (server sets this)
-                                  else if (user.avatar && typeof user.avatar === 'object' && !Array.isArray(user.avatar)) {
-                                    const avatarObj = user.avatar as any;
-                                    if (avatarObj.fullUrl && avatarObj.fullUrl.trim() !== "") {
-                                      const url = normalizeUrl(avatarObj.fullUrl);
-                                      if (url) avatarUrl = url;
-                                    }
+                                    avatarSource = user.photoURL;
+                                  } else if (user.avatar) {
+                                      if (typeof user.avatar === 'string') {
+                                           avatarSource = user.avatar;
+                                      } else if (typeof user.avatar === 'object' && !Array.isArray(user.avatar)) {
+                                          const avatarObj = user.avatar as any;
+                                          avatarSource = avatarObj.fullUrl || avatarObj.url || (avatarObj.filename ? `/static/${avatarObj.filename}` : "");
+                                      }
                                   }
-                                  // Try avatar.url
-                                  else if (user.avatar && typeof user.avatar === 'object' && !Array.isArray(user.avatar)) {
-                                    const avatarObj = user.avatar as any;
-                                    if (avatarObj.url && avatarObj.url.trim() !== "") {
-                                      const url = normalizeUrl(avatarObj.url);
-                                      if (url) avatarUrl = url;
-                                    }
-                                  }
-                                  // Try avatar as string
-                                  else if (user.avatar && typeof user.avatar === 'string' && user.avatar.trim() !== "") {
-                                    const url = normalizeUrl(user.avatar);
-                                    if (url) avatarUrl = url;
-                                  }
-                                  // Try avatar.filename (construct URL)
-                                  else if (user.avatar && typeof user.avatar === 'object' && !Array.isArray(user.avatar)) {
-                                    const avatarObj = user.avatar as any;
-                                    if (avatarObj.filename && avatarObj.filename.trim() !== "") {
-                                      avatarUrl = normalizeUrl(`/static/${avatarObj.filename}`);
-                                    }
-                                  }
+                                  
+                                  const avatarUrl = avatarSource ? normalizeImageUrl(avatarSource) : "/assets/images/avatar.jpg";
                                   
                                   return (
                                     <img
@@ -1375,11 +1303,10 @@ export default function UsersPage() {
                                       }}
                                       onError={(e) => {
                                         const target = e.target as HTMLImageElement;
-                                        console.error('❌ Image failed to load:', avatarUrl, 'User:', user._id);
-                                        target.src = "/assets/images/avatar.jpg";
-                                      }}
-                                      onLoad={() => {
-                                        console.log('✅ Image loaded successfully:', avatarUrl);
+                                        // console.error('❌ Image failed to load:', avatarUrl, 'User:', user._id);
+                                        if (target.src !== "/assets/images/avatar.jpg") {
+                                            target.src = "/assets/images/avatar.jpg";
+                                        }
                                       }}
                                     />
                                   );

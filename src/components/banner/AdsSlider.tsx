@@ -5,6 +5,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay, Keyboard } from "swiper/modules";
 import { AdsAPI, Ad } from '@/app/api/ads';
 import app from '@/config';
+import { normalizeImageUrl } from '@/utils/url';
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -57,24 +58,7 @@ const AdsSlider: React.FC = () => {
       return '/assets/images/cat.avif'; // Fallback image
     }
 
-    // If it's already a full URL, return it as-is
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      if (imageUrl.includes('localhost:3000')) {
-        return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-      }
-      return imageUrl;
-    }
-
-    // Handle relative paths
-    if (imageUrl.startsWith('/static/')) {
-      return `${app.baseURL}${imageUrl.substring(1)}`;
-    }
-    
-    if (imageUrl.startsWith('/')) {
-      return `${app.baseURL}${imageUrl.substring(1)}`;
-    }
-    
-    return `${app.baseURL}${imageUrl}`;
+    return normalizeImageUrl(imageUrl);
   };
 
   const handleAdClick = (ad: Ad) => {

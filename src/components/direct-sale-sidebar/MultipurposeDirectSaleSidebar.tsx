@@ -8,6 +8,7 @@ import { SubCategoryAPI } from '@/app/api/subcategory'
 import app from '@/config'
 import { useTranslation } from 'react-i18next'
 import useAuth from '@/hooks/useAuth'
+import { normalizeImageUrl } from '@/utils/url'
 
 // Define SALE_TYPE enum
 const SALE_TYPE = {
@@ -160,27 +161,14 @@ const MultipurposeDirectSaleSidebar = () => {
                      category.thumb?.fullUrl || 
                      category.image || 
                      category.thumbnail || 
+                     category.photo || 
                      '';
     
     if (!imageUrl) {
       return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
     }
 
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      if (imageUrl.includes('localhost:3000')) {
-        return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-      }
-      return imageUrl;
-    }
-
-    const cleanUrl = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
-    const baseURL = app.baseURL.replace(/\/$/, '');
-    
-    if (cleanUrl.includes('static/') || cleanUrl.startsWith('static/')) {
-      return `${baseURL}/${cleanUrl}`;
-    }
-    
-    return `${baseURL}/static/${cleanUrl}`;
+    return normalizeImageUrl(imageUrl);
   };
 
   const renderCircularCategories = (categories: any[]) => {
@@ -1093,16 +1081,7 @@ const MultipurposeDirectSaleSidebar = () => {
                               <img
                                 src={(() => {
                                     if (directSale.thumbs && directSale.thumbs.length > 0) {
-                                        const imageUrl = directSale.thumbs[0].url;
-                                        if (imageUrl.startsWith('http')) {
-                                            return imageUrl;
-                                        } else if (imageUrl.startsWith('/static/')) {
-                                            return `${app.baseURL}${imageUrl.substring(1)}`;
-                                        } else if (imageUrl.startsWith('/')) {
-                                            return `${app.baseURL}${imageUrl.substring(1)}`;
-                                        } else {
-                                            return `${app.baseURL}${imageUrl}`;
-                                        }
+                                        return normalizeImageUrl(directSale.thumbs[0].url);
                                     }
                                     return DEFAULT_DIRECT_SALE_IMAGE;
                                 })()}
@@ -1321,19 +1300,10 @@ const MultipurposeDirectSaleSidebar = () => {
                                 <img
                                 src={(() => {
                                     if (directSale.owner?.avatar?.url) {
-                                        const imageUrl = directSale.owner.avatar.url;
-                                        if (imageUrl.startsWith('http')) {
-                                            return imageUrl;
-                                        } else if (imageUrl.startsWith('/static/')) {
-                                            return `${app.baseURL}${imageUrl.substring(1)}`;
-                                        } else if (imageUrl.startsWith('/')) {
-                                            return `${app.baseURL}${imageUrl.substring(1)}`;
-                                        } else {
-                                            return `${app.baseURL}${imageUrl}`;
-                                        }
+                                        return normalizeImageUrl(directSale.owner.avatar.url);
                                     }
                                     if (directSale.owner?.photoURL) {
-                                        return directSale.owner.photoURL;
+                                        return normalizeImageUrl(directSale.owner.photoURL);
                                     }
                                     return DEFAULT_PROFILE_IMAGE;
                                 })()}

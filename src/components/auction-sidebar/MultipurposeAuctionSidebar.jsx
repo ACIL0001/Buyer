@@ -7,6 +7,7 @@ import { AuctionsAPI } from '@/app/api/auctions'
 import { CategoryAPI } from '@/app/api/category'
 import { SubCategoryAPI } from '@/app/api/subcategory'
 import app from '@/config'; // Import the app config
+import { normalizeImageUrl } from '@/utils/url';
 import { useTranslation } from 'react-i18next';
 import useAuth from '@/hooks/useAuth';
 
@@ -21,10 +22,7 @@ const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
 const DEFAULT_PROFILE_IMAGE = "/assets/images/avatar.jpg";
 // Use server baseURL for default category image with multiple fallback options
 const getDefaultCategoryImage = () => {
-    const baseURL = app.baseURL.replace(/\/$/, '');
-    // Try common default category image paths on the server
-    // If server image doesn't exist, use a data URI placeholder
-    return `${baseURL}/static/default-category.png`;
+    return normalizeImageUrl('/static/default-category.png');
 };
 
 const MultipurposeAuctionSidebar = () => {
@@ -136,21 +134,7 @@ const MultipurposeAuctionSidebar = () => {
             return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
         }
 
-        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-            if (imageUrl.includes('localhost:3000')) {
-                return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-            }
-            return imageUrl;
-        }
-
-        const cleanUrl = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
-        const baseURL = app.baseURL.replace(/\/$/, '');
-        
-        if (cleanUrl.includes('static/') || cleanUrl.startsWith('static/')) {
-            return `${baseURL}/${cleanUrl}`;
-        }
-        
-        return `${baseURL}/static/${cleanUrl}`;
+        return normalizeImageUrl(imageUrl);
     };
 
     // Render categories in circular format
@@ -332,37 +316,7 @@ const MultipurposeAuctionSidebar = () => {
                         <img
                             src={(() => {
                               if (category.thumb && category.thumb.url) {
-                                const imageUrl = category.thumb.url;
-                                if (imageUrl.startsWith('http')) {
-                                  return imageUrl;
-                                } else if (imageUrl.startsWith('/static/')) {
-                                  const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                  console.log('🎯 AUCTION SIDEBAR CATEGORY IMAGE:', {
-                                    originalUrl: imageUrl,
-                                    finalUrl: finalUrl,
-                                    categoryId: category._id,
-                                    categoryName: category.name
-                                  });
-                                  return finalUrl;
-                                } else if (imageUrl.startsWith('/')) {
-                                  const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                  console.log('🎯 AUCTION SIDEBAR CATEGORY IMAGE:', {
-                                    originalUrl: imageUrl,
-                                    finalUrl: finalUrl,
-                                    categoryId: category._id,
-                                    categoryName: category.name
-                                  });
-                                  return finalUrl;
-                                } else {
-                                  const finalUrl = `${app.baseURL}${imageUrl}`;
-                                  console.log('🎯 AUCTION SIDEBAR CATEGORY IMAGE:', {
-                                    originalUrl: imageUrl,
-                                    finalUrl: finalUrl,
-                                    categoryId: category._id,
-                                    categoryName: category.name
-                                  });
-                                  return finalUrl;
-                                }
+                                return normalizeImageUrl(category.thumb.url);
                               }
                               return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
                             })()}

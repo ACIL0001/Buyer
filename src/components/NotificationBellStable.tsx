@@ -265,9 +265,9 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    width: 'calc(100vw - 32px)',
-                    maxWidth: '400px',
-                    maxHeight: '80vh'
+                    width: '320px',
+                    maxWidth: '90vw',
+                    maxHeight: '60vh'
                 } : {
                     // Desktop Styles
                     top: dropdownPos.top,

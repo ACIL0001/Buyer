@@ -165,46 +165,31 @@ const STATS_FINANCE = [
 
 const QUICK_ACTIONS = [
     { 
-        name: "dashboard.navigation.newTender", 
-        action: "create_submission", 
+        title: "dashboard.navigation.myTenders", 
         category: "submission",
         icon: MdEmail,
-        subIcon: MdAdd
+        actions: [
+            { label: "common.view", link: "/dashboard/tenders", icon: MdVisibility },
+            { label: "common.create", link: "/dashboard/tenders/create", icon: MdAdd, isCreate: true }
+        ]
     },
     { 
-        name: "dashboard.navigation.myTenders", 
-        action: "view_submissions", 
-        category: "submission",
-        icon: MdEmail, // Base icon
-        subIcon: null // Plain or check? Image implies just the icon or icon variant
-    },
-    { 
-        name: "dashboard.navigation.createAuction", 
-        action: "create_auction", 
+        title: "dashboard.navigation.auctions", 
         category: "auction",
         icon: MdGavel,
-        subIcon: MdAdd
+        actions: [
+            { label: "common.view", link: "/dashboard/auctions", icon: MdVisibility },
+            { label: "common.create", link: "/dashboard/auctions/create", icon: MdAdd, isCreate: true }
+        ]
     },
     { 
-        name: "dashboard.navigation.auctions", 
-        action: "view_auctions", 
-        category: "auction",
-        icon: MdGavel,
-        subIcon: null
-    },
-    { 
-        name: "dashboard.navigation.createSale", 
-        action: "create_direct_sale", 
+        title: "dashboard.navigation.mySales", 
         category: "direct",
         icon: MdStore,
-        subIcon: MdAdd
-    },
-    { 
-        name: "dashboard.navigation.mySales", 
-        action: "view_direct_sales", 
-        category: "direct",
-        icon: MdStore,
-        subIcon: null
+        actions: [
+            { label: "common.view", link: "/dashboard/direct-sales", icon: MdVisibility },
+            { label: "common.create", link: "/dashboard/direct-sales/create", icon: MdAdd, isCreate: true }
+        ]
     },
 ];
 
@@ -223,60 +208,34 @@ const ActionCard = ({ item }: { item: typeof QUICK_ACTIONS[0] }) => {
     const { t } = useTranslation();
     const theme = COLORS[item.category as keyof typeof COLORS];
     
-    // Determine link
-    let href = '#';
-    if(item.action.includes('submission')) href = item.action.includes('create') ? '/dashboard/tenders/create' : '/dashboard/tenders';
-    else if(item.action.includes('auction')) href = item.action.includes('create') ? '/dashboard/auctions/create' : '/dashboard/auctions';
-    else if(item.action.includes('direct')) href = item.action.includes('create') ? '/dashboard/direct-sales/create' : '/dashboard/direct-sales';
-
     return (
-        <ButtonBase
-            component={Link}
-            href={href}
+        <Paper
+            elevation={0}
             sx={{
                 width: '100%',
-                height: 140, 
-                bgcolor: theme.bg, // Restored theme background
-                color: theme.main, // Restored theme color
+                height: 180, // Increased height for buttons
+                bgcolor: theme.bg,
+                color: theme.main,
                 borderRadius: 4,
                 position: 'relative',
                 overflow: 'hidden',
                 transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
                 border: '1px solid',
-                borderColor: 'transparent', // Usually colored cards don't need borders
+                borderColor: 'transparent',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                p: 3,
-                gap: 2,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.05)', // Subtle initial shadow
-                '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 100%)', // Lighten gradient
-                    opacity: 0,
-                    transition: 'opacity 0.3s ease',
-                },
+                p: 2,
+                gap: 1.5,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                 '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: `0 14px 28px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.05)`, 
-                    '&::before': {
-                        opacity: 1,
-                    },
+                    transform: 'translateY(-5px)',
+                    boxShadow: `0 12px 24px rgba(0,0,0,0.08)`, 
                     '& .icon-bot': {
-                        transform: 'scale(1.1) rotate(5deg)',
-                        bgcolor: 'rgba(255,255,255,0.9)', // Lighter bg on hover for icon
-                        color: theme.main,
+                        transform: 'scale(1.1)',
+                        bgcolor: 'rgba(255,255,255,0.9)',
                     }
-                },
-                '&:active': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: `0 5px 10px rgba(0,0,0,0.1)`,
                 }
             }}
         >
@@ -286,35 +245,57 @@ const ActionCard = ({ item }: { item: typeof QUICK_ACTIONS[0] }) => {
                     position: 'relative', 
                     p: 2,
                     borderRadius: '50%',
-                    bgcolor: 'rgba(255,255,255,0.7)', // Semi-transparent white to blend
+                    bgcolor: 'rgba(255,255,255,0.6)', 
                     color: theme.main,
                     transition: 'all 0.3s ease',
-                    mb: 1,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
                 }}
             >
                 <item.icon size={32} />
-                {item.subIcon && (
-                    <Box 
-                        sx={{ 
-                            position: 'absolute', 
-                            bottom: -2, 
-                            right: -2, 
-                            bgcolor: 'white', 
-                            borderRadius: '50%',
+            </Box>
+            
+            <Typography variant="body1" sx={{ fontWeight: 700, fontSize: '1rem', mb: 1, textAlign: 'center' }}>
+                {t(item.title)}
+            </Typography>
+
+            <Box sx={{ display: 'flex', gap: 1.5, width: '100%', px: 1 }}>
+                {item.actions.map((action, idx) => (
+                    <ButtonBase
+                        key={idx}
+                        component={Link}
+                        href={action.link}
+                        sx={{
+                            flex: 1,
+                            py: 1,
+                            px: 1.5,
+                            borderRadius: 3,
+                            bgcolor: action.isCreate ? theme.main : 'rgba(255,255,255,0.6)',
+                            color: action.isCreate ? '#fff' : theme.main,
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
                             display: 'flex',
-                            p: 0.5,
-                            boxShadow: 1
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 0.5,
+                            transition: 'all 0.2s',
+                            boxShadow: action.isCreate ? '0 4px 10px rgba(0,0,0,0.1)' : 'none',
+                            '&:hover': {
+                                bgcolor: action.isCreate ? theme.main : 'rgba(255,255,255,0.9)',
+                                opacity: action.isCreate ? 0.9 : 1,
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                            }
                         }}
                     >
-                        <item.subIcon size={16} style={{ fill: theme.main }}/>
-                    </Box>
-                )}
+                        {/* Translate standard keys or fallback */}
+                        {t(action.label) === action.label && action.label === 'common.view' ? 'Voir' : 
+                         t(action.label) === action.label && action.label === 'common.create' ? 'Créer' : 
+                         t(action.label)}
+                        {action.isCreate && <MdAdd size={14} />}
+                    </ButtonBase>
+                ))}
             </Box>
-            <Typography variant="body1" sx={{ fontWeight: 700, fontSize: '0.95rem', zIndex: 1, textAlign: 'center' }}>
-                {t(item.name)}
-            </Typography>
-        </ButtonBase>
+        </Paper>
     );
 };
 
@@ -431,7 +412,7 @@ export default function DashboardPage() {
             <Grid container spacing={3} sx={{ mb: 6 }}>
                 {QUICK_ACTIONS.map((action, index) => (
                     <Zoom in={true} style={{ transitionDelay: `${index * 50}ms` }} key={index}>
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                             <ActionCard item={action} />
                         </Grid>
                     </Zoom>

@@ -125,23 +125,6 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
       return;
     }
 
-    // ENHANCED DIAGNOSTIC LOGGING (Using console.error to ensure visibility)
-    const notifData = notification.data as any;
-    console.error('🔍 ============ DETAILED NOTIFICATION DEBUG ============');
-    console.error('🔍 Notification ID:', notification._id);
-    console.error('🔍 Notification Type:', notification.type);
-    console.error('🔍 Title:', notification.title);
-    console.error('🔍 Message:', notification.message);
-    console.error('🔍 Data Object:', notifData);
-    console.error('🔍 Data._id:', notifData?._id);
-    console.error('🔍 Data.id:', notifData?.id);
-    console.error('🔍 Data.auctionId:', notifData?.auctionId);
-    console.error('🔍 Data.auction:', notifData?.auction);
-    console.error('🔍 Data.auction._id:', notifData?.auction?._id);
-    console.error('🔍 Data.auction.id:', notifData?.auction?.id);
-    console.error('🔍 Full Object:', JSON.stringify(notification, null, 2));
-    console.error('🔍 ====================================================');
-
     // REDIRECT LOGIC FIRST - Execute navigation BEFORE state changes
     try {
         // Cast notification.data as any for flexible property access

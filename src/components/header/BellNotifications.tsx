@@ -66,52 +66,39 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
       }
     }
   }, [isOpen, onOpenChange]); // Remove refresh dependency to prevent excessive API calls
-
+  
   const handleNotificationClick = (notification: any) => {
-    console.log('🔔 Notification clicked:', notification);
-    
-    // ENHANCED DIAGNOSTIC LOGGING (Using console.error to ensure visibility)
-    const notifData = notification.data as any;
-    console.error('🔍 ============ DETAILED NOTIFICATION DEBUG (BellNotifications) ============');
-    console.error('🔍 Notification ID:', notification._id);
-    console.error('🔍 Notification Type:', notification.type);
-    console.error('🔍 Title:', notification.title);
-    console.error('🔍 Message:', notification.message);
-    console.error('🔍 Data Object:', notifData);
-    console.error('🔍 Data._id:', notifData?._id);
-    console.error('🔍 Data.id:', notifData?.id);
-    console.error('🔍 Data.auctionId:', notifData?.auctionId);
-    console.error('🔍 Data.auction:', notifData?.auction);
-    console.error('🔍 Data.auction._id:', notifData?.auction?._id);
-    console.error('🔍 Data.auction.id:', notifData?.auction?.id);
-    console.error('🔍 Full Object:', JSON.stringify(notification, null, 2));
-    console.error('🔍 ==========================================================================');
-    
+    console.log('🔔 Notification clicked:', notification._id);
+
     // 3. Redirect logic based on type and data (FIRST!)
     const { type, data} = notification;
+    const titleLower = notification.title?.toLowerCase() || '';
 
     let redirectPath: string | null = null;
 
     // 0. NEW ITEMS CREATED (Public Notifications) - Prioritize these checks
     // Redirect to the public details page for the item
+    
+    // TENDER CREATED
     if (type === 'TENDER_CREATED') {
         const id = data?._id || data?.id || data?.tenderId;
         if (id) {
-            console.log('🚀 Redirecting to Tender (Created):', id);
             redirectPath = `/tenders/details/${id}`;
         }
     }
-    else if (type === 'AUCTION_CREATED') {
+    // AUCTION CREATED (Handled via AUCTION_CREATED type OR BID_CREATED with "créée" in title)
+    else if (type === 'AUCTION_CREATED' || 
+            (type === 'BID_CREATED' && (titleLower.includes('créée') || titleLower.includes('created')))) {
         const id = data?._id || data?.id || data?.auctionId;
         if (id) {
             console.log('🚀 Redirecting to Auction (Created):', id);
             redirectPath = `/auctions/details/${id}`;
         }
     }
+    // DIRECT SALE CREATED
     else if (type === 'DIRECT_SALE_CREATED') {
         const id = data?._id || data?.id || data?.directSaleId;
         if (id) {
-            console.log('🚀 Redirecting to Direct Sale (Created):', id);
             redirectPath = `/direct-sales/details/${id}`;
         }
     }

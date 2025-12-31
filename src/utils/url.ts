@@ -9,7 +9,7 @@ const DEFAULT_IMAGE = '/assets/images/avatar.jpg';
 
 // Production server URL for normalizing localhost URLs
 const PRODUCTION_SERVER = 'https://mazadclick-server.onrender.com';
-const DEV_SERVER = 'http://localhost:3000';
+const DEV_SERVER = 'https://mazadclick-server.onrender.com';
 
 // Check if we're in development
 const isDevelopment = process.env.NODE_ENV === 'development';

@@ -1,4 +1,4 @@
-export const DEV_SERVER_URL = 'http://localhost:3000';
+export const DEV_SERVER_URL = 'https://mazadclick-server.onrender.com';
 export const PROD_SERVER_URL = 'https://mazadclick-server.onrender.com';
 export const PROD_SERVER_URL_FALLBACK = 'https://api.mazad.click';
 

@@ -71,18 +71,19 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
     console.log('🔔 Notification clicked:', notification);
     
     // ENHANCED DIAGNOSTIC LOGGING
+    const notifData = notification.data as any;
     console.log('🔍 ============ DETAILED NOTIFICATION DEBUG (BellNotifications) ============');
     console.log('🔍 Notification ID:', notification._id);
     console.log('🔍 Notification Type:', notification.type);
     console.log('🔍 Title:', notification.title);
     console.log('🔍 Message:', notification.message);
-    console.log('🔍 Data Object:', notification.data);
-    console.log('🔍 Data._id:', notification.data?._id);
-    console.log('🔍 Data.id:', notification.data?.id);
-    console.log('🔍 Data.auctionId:', notification.data?.auctionId);
-    console.log('🔍 Data.auction:', notification.data?.auction);
-    console.log('🔍 Data.auction._id:', notification.data?.auction?._id);
-    console.log('🔍 Data.auction.id:', notification.data?.auction?.id);
+    console.log('🔍 Data Object:', notifData);
+    console.log('🔍 Data._id:', notifData?._id);
+    console.log('🔍 Data.id:', notifData?.id);
+    console.log('🔍 Data.auctionId:', notifData?.auctionId);
+    console.log('🔍 Data.auction:', notifData?.auction);
+    console.log('🔍 Data.auction._id:', notifData?.auction?._id);
+    console.log('🔍 Data.auction.id:', notifData?.auction?.id);
     console.log('🔍 Full Object:', JSON.stringify(notification, null, 2));
     console.log('🔍 ==========================================================================');
     

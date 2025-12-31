@@ -844,6 +844,33 @@ export const Header = () => {
 
                     {/* Menu Items - Compact */}
                     <div style={{ padding: '4px 0' }}>
+                      {/* Profile Link */}
+                      <Link href="/profile" onClick={() => setIsAccountDropdownOpen(false)}>
+                        <div style={{
+                          padding: '10px 16px',
+                          color: '#333',
+                          transition: 'all 0.2s ease',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          fontSize: '14px'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f5f5f5';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                        >
+                          <svg width={18} height={18} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                            <path d="M8 8C10.2091 8 12 6.20914 12 4C12 1.79086 10.2091 0 8 0C5.79086 0 4 1.79086 4 4C4 6.20914 5.79086 8 8 8Z" fill="#0063b1"/>
+                            <path d="M8 10C3.58172 10 0 12.6863 0 16H16C16 12.6863 12.4183 10 8 10Z" fill="#0063b1"/>
+                          </svg>
+                          <span>{t('account.myProfile')}</span>
+                        </div>
+                      </Link>
+
                       {/* Dashboard Link */}
                       <Link href="/dashboard" onClick={() => setIsAccountDropdownOpen(false)}>
                         <div style={{
@@ -870,33 +897,6 @@ export const Header = () => {
                             <rect x="9" y="9" width="6" height="6" rx="1" stroke="#0063b1" strokeWidth="1.5" fill="none"/>
                           </svg>
                           <span>Dashboard</span>
-                        </div>
-                      </Link>
-                      
-                      {/* Profile Link */}
-                      <Link href="/profile" onClick={() => setIsAccountDropdownOpen(false)}>
-                        <div style={{
-                          padding: '10px 16px',
-                          color: '#333',
-                          transition: 'all 0.2s ease',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          fontSize: '14px'
-                        }}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.backgroundColor = '#f5f5f5';
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
-                        >
-                          <svg width={18} height={18} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                            <path d="M8 8C10.2091 8 12 6.20914 12 4C12 1.79086 10.2091 0 8 0C5.79086 0 4 1.79086 4 4C4 6.20914 5.79086 8 8 8Z" fill="#0063b1"/>
-                            <path d="M8 10C3.58172 10 0 12.6863 0 16H16C16 12.6863 12.4183 10 8 10Z" fill="#0063b1"/>
-                          </svg>
-                          <span>{t('account.myProfile')}</span>
                         </div>
                       </Link>
                       

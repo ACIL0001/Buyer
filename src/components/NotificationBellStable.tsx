@@ -124,7 +124,7 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
       if (notification.type === 'TENDER_CREATED') {
           const id = notification.data?._id || notification.data?.id || notification.data?.tenderId;
           if (id) {
-             redirectPath = `/tenders/details/${id}`;
+             redirectPath = `/tender-details/${id}`;
           }
       }
       // AUCTION CREATED (Handled via AUCTION_CREATED type OR BID_CREATED with "créée" in title)
@@ -133,14 +133,14 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
           const id = notification.data?._id || notification.data?.id || notification.data?.auctionId;
           if (id) {
              console.log('🚀 Redirecting to Auction (Created):', id);
-             redirectPath = `/auctions/details/${id}`;
+             redirectPath = `/auction-details/${id}`;
           }
       }
       // DIRECT SALE CREATED
       else if (notification.type === 'DIRECT_SALE_CREATED') {
           const id = notification.data?._id || notification.data?.id || notification.data?.directSaleId;
           if (id) {
-             redirectPath = `/direct-sales/details/${id}`;
+             redirectPath = `/direct-sale/${id}`;
           }
       }
       // FALLBACK to original logic for other types
@@ -188,14 +188,14 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
             const tenderId = notification.data?.tender?._id || notification.data?.tenderId || notification.data?.tender;
             if (tenderId && typeof tenderId === 'string') {
                console.log('🔄 Redirecting to Tender Details (Accepted):', tenderId);
-               redirectPath = `/tenders/details/${tenderId}`;
+               redirectPath = `/tender-details/${tenderId}`;
             }
             else {
               // If it was a direct sale offer - go to direct sale details
               const dsId = notification.data?.directSale?._id || notification.data?.directSaleId;
               if (dsId && typeof dsId === 'string') {
                   console.log('🔄 Redirecting to Direct Sale Details (Accepted):', dsId);
-                  redirectPath = `/direct-sales/details/${dsId}`;
+                  redirectPath = `/direct-sale/${dsId}`;
               }
               else {
                 console.log('🔄 Redirecting to Orders for accepted offer (Fallback)');

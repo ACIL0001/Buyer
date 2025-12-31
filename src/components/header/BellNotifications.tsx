@@ -83,7 +83,7 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
     if (type === 'TENDER_CREATED') {
         const id = data?._id || data?.id || data?.tenderId;
         if (id) {
-            redirectPath = `/tenders/details/${id}`;
+            redirectPath = `/tender-details/${id}`;
         }
     }
     // AUCTION CREATED (Handled via AUCTION_CREATED type OR BID_CREATED with "créée" in title)
@@ -92,14 +92,14 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
         const id = data?._id || data?.id || data?.auctionId;
         if (id) {
             console.log('🚀 Redirecting to Auction (Created):', id);
-            redirectPath = `/auctions/details/${id}`;
+            redirectPath = `/auction-details/${id}`;
         }
     }
     // DIRECT SALE CREATED
     else if (type === 'DIRECT_SALE_CREATED') {
         const id = data?._id || data?.id || data?.directSaleId;
         if (id) {
-            redirectPath = `/direct-sales/details/${id}`;
+            redirectPath = `/direct-sale/${id}`;
         }
     }
     else {

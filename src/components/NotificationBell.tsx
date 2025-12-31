@@ -149,7 +149,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
             console.log('🔍 Extracted Tender ID:', id);
             if (id) {
                console.log('🚀 Redirecting to Tender (Created):', id);
-               redirectPath = `/tenders/details/${id}`;
+               redirectPath = `/tender-details/${id}`;
             } else {
                console.error('❌ TENDER_CREATED matched but NO ID found in data:', data);
             }
@@ -160,7 +160,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
             console.log('🔍 Extracted Auction ID:', id);
             if (id) {
                console.log('🚀 Redirecting to Auction (Created):', id);
-               redirectPath = `/auctions/details/${id}`;
+               redirectPath = `/auction-details/${id}`;
             } else {
                console.error('❌ AUCTION_CREATED matched but NO ID found in data:', data);
             }
@@ -171,7 +171,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
             console.log('🔍 Extracted Direct Sale ID:', id);
             if (id) {
                console.log('🚀 Redirecting to Direct Sale (Created):', id);
-               redirectPath = `/direct-sales/details/${id}`;
+               redirectPath = `/direct-sale/${id}`;
             } else {
                console.error('❌ DIRECT_SALE_CREATED matched but NO ID found in data:', data);
             }
@@ -242,19 +242,19 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
                 const tenderId = data?.tender?._id || data?.tenderId || data?.tender;
                 if (tenderId && typeof tenderId === 'string') {
                   console.log('🔄 Redirecting to Tender Details (Accepted):', tenderId);
-                  redirectPath = `/tenders/details/${tenderId}`;
+                  redirectPath = `/tender-details/${tenderId}`;
                 }
                 else {
                     const auctionId = data?.auction?._id || data?.auctionId || data?.auction;
                     if (auctionId && typeof auctionId === 'string') {
                         console.log('🔄 Redirecting to Auction Details (Accepted):', auctionId);
-                        redirectPath = `/auctions/details/${auctionId}`;
+                        redirectPath = `/auction-details/${auctionId}`;
                     }
                     else {
                         const dsId = data?.directSale?._id || data?.directSaleId;
                         if (dsId && typeof dsId === 'string') {
                             console.log('🔄 Redirecting to Direct Sale Details (Accepted):', dsId);
-                            redirectPath = `/direct-sales/details/${dsId}`;
+                            redirectPath = `/direct-sale/${dsId}`;
                         }
                     }
                 }

@@ -326,7 +326,7 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
           marginTop: 'auto'
         }}>
           <img
-            src={(typeof sale.owner === 'object' && sale.owner?.avatar?.url) || (typeof sale.owner === 'object' && sale.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
+            src={normalizeImageUrl((typeof sale.owner === 'object' ? (sale.owner?.avatar?.url || sale.owner?.photoURL) : undefined)) || DEFAULT_PROFILE_IMAGE}
             alt={displayName}
             style={{
               width: '28px',

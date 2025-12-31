@@ -13,6 +13,7 @@ import app from '@/config';
 import { useTranslation } from 'react-i18next';
 import { Tender, TENDER_STATUS } from '@/types/tender';
 import useAuth from '@/hooks/useAuth';
+import { normalizeImageUrl } from '@/utils/url';
 import "../auction-details/st.css";
 import "../auction-details/modern-details.css";
 import { useRouter } from "next/navigation";
@@ -59,76 +60,18 @@ export function calculateTimeRemaining(endDate: string): Timer {
   };
 }
 
-// Helper function to ensure URL is absolute (prefixed with API base URL)
-const getAbsoluteUrl = (url?: string): string => {
-  if (!url) return DEFAULT_PROFILE_IMAGE;
-  // Already an absolute URL
-  if (url.startsWith('http')) return url;
-  // Relative URL - prefix with API base URL
-  const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
-  const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-  return `${baseURL}${cleanUrl}`;
-};
+
 
 // Helper function to get the correct tender image URL
 const getTenderImageUrl = (tender: Tender) => {
-  console.log('🎯 ===== TENDER IMAGE URL PROCESSING =====');
-  console.log('📋 Tender Info:', {
-    id: tender._id,
-    title: tender.title,
-    hasAttachments: !!tender.attachments,
-    attachmentsLength: tender.attachments?.length || 0
-  });
-  
   if (tender.attachments && tender.attachments.length > 0 && tender.attachments[0].url) {
     const imageUrl = tender.attachments[0].url;
-    console.log('🔍 Original Image Data:', {
-      originalUrl: imageUrl,
-      appRoute: app.route,
-      appBaseURL: app.baseURL,
-      imageType: typeof imageUrl,
-      imageLength: imageUrl.length
-    });
     
-    // Handle different URL formats
-    if (imageUrl.startsWith('http')) {
-      console.log('✅ CASE: Full URL detected');
-      console.log('🔗 Final URL:', imageUrl);
-      console.log('📝 Action: Using full URL as-is');
-      return imageUrl; // Already a full URL
-    } else if (imageUrl.startsWith('/')) {
-      if (imageUrl.startsWith('/static/')) {
-        console.log('✅ CASE: Static path detected');
-        const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-        console.log('🔧 Construction:', `${app.baseURL} + ${imageUrl.substring(1)}`);
-        console.log('🔗 Final URL:', finalUrl);
-        console.log('📝 Action: Removed leading slash, combined with baseURL');
-        return finalUrl;
-      } else {
-        console.log('✅ CASE: Root path detected');
-        const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-        console.log('🔧 Construction:', `${app.baseURL} + ${imageUrl.substring(1)}`);
-        console.log('🔗 Final URL:', finalUrl);
-        console.log('📝 Action: Removed leading slash, combined with baseURL');
-        return finalUrl;
-      }
-    } else {
-      console.log('✅ CASE: Relative path detected');
-      const finalUrl = `${app.baseURL}${imageUrl}`;
-      console.log('🔧 Construction:', `${app.baseURL} + ${imageUrl}`);
-      console.log('🔗 Final URL:', finalUrl);
-      console.log('📝 Action: Combined with baseURL');
-      return finalUrl;
-    }
+    // Use the centralized normalization utility which handles localhost:3000 replacement
+    return normalizeImageUrl(imageUrl);
   } else {
-    console.log('❌ CASE: No image data found');
-    console.log('🔍 Attachments data:', tender.attachments);
-    console.log('🔗 Fallback URL:', DEFAULT_TENDER_IMAGE);
-    console.log('📝 Action: Using default image');
     return DEFAULT_TENDER_IMAGE;
   }
-  
-  console.log('🎯 ===== END TENDER IMAGE URL PROCESSING =====\n');
 };
 
 const Home1LiveTenders = () => {
@@ -150,14 +93,10 @@ const Home1LiveTenders = () => {
     try {
       const response = await fetch(url, { method: 'HEAD' });
       const isAccessible = response.ok;
-      console.log(`🔍 Tender image URL test for ${url}:`, {
-        status: response.status,
-        ok: isAccessible,
-        contentType: response.headers.get('content-type')
-      });
+
       return isAccessible;
     } catch (error) {
-      console.log(`❌ Tender image URL test failed for ${url}:`, error);
+      // console.log(`❌ Tender image URL test failed for ${url}:`, error);
       return false;
     }
   };
@@ -168,15 +107,15 @@ const Home1LiveTenders = () => {
       try {
         const response = await fetch(url, { method: 'HEAD' });
         if (response.ok) {
-          console.log(`✅ Found working tender image URL: ${url}`);
+          // console.log(`✅ Found working tender image URL: ${url}`);
           return url;
         }
       } catch (error) {
-        console.log(`❌ Tender URL failed: ${url}`);
+        // console.log(`❌ Tender URL failed: ${url}`);
         continue;
       }
     }
-    console.log('❌ No working tender image URLs found');
+    // console.log('❌ No working tender image URLs found');
     return null;
   };
 
@@ -211,7 +150,7 @@ const Home1LiveTenders = () => {
 
   // Handle image load errors
   const handleImageError = async (tenderId: string, tender: Tender) => {
-    console.log('❌ Tender image load error for:', tenderId, tender);
+    // console.log('❌ Tender image load error for:', tenderId, tender);
     
     // Get all possible image URLs for this tender
     const possibleImageSources = [
@@ -232,7 +171,7 @@ const Home1LiveTenders = () => {
       generateBackendImageUrls(imagePath as string)
     ).filter(Boolean) as string[];
     
-    console.log('🔍 All possible tender backend URLs to try:', allPossibleUrls);
+    // console.log('🔍 All possible tender backend URLs to try:', allPossibleUrls);
     
     // Find the first working URL
     const workingUrl = await findWorkingImageUrl(allPossibleUrls);
@@ -1117,7 +1056,7 @@ const Home1LiveTenders = () => {
                             marginBottom: 'clamp(10px, 2vw, 14px)',
                           }}>
                             <img
-                              src={getAbsoluteUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
+                              src={normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
                               alt={displayName}
                               style={{
                                 width: '32px',

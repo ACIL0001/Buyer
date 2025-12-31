@@ -379,7 +379,7 @@ const TenderCard = ({ tender }: TenderCardProps) => {
           marginTop: 'auto'
         }}>
           <img
-            src={tender.owner?.photoURL || DEFAULT_PROFILE_IMAGE}
+            src={normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
             alt={displayName}
             style={{
               width: '28px',

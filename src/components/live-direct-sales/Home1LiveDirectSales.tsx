@@ -12,6 +12,7 @@ import { DirectSaleAPI } from "@/app/api/direct-sale";
 import app from '@/config';
 import { useTranslation } from 'react-i18next';
 import useAuth from '@/hooks/useAuth';
+import { normalizeImageUrl } from '@/utils/url';
 import "../auction-details/st.css";
 import "../auction-details/modern-details.css";
 import { useRouter } from "next/navigation";
@@ -57,27 +58,14 @@ const getDirectSaleImageUrl = (directSale: DirectSale) => {
   if (directSale.thumbs && directSale.thumbs.length > 0 && directSale.thumbs[0].url) {
     const imageUrl = directSale.thumbs[0].url;
     
-    if (imageUrl.startsWith('http')) {
-      return imageUrl;
-    } else if (imageUrl.startsWith('/')) {
-      return `${app.baseURL}${imageUrl.substring(1)}`;
-    } else {
-      return `${app.baseURL}${imageUrl}`;
-    }
+    // Use the centralized normalization utility for consistent URL handling
+    return normalizeImageUrl(imageUrl);
   }
   return DEFAULT_DIRECT_SALE_IMAGE;
 };
 
 // Helper function to ensure URL is absolute (prefixed with API base URL)
-const getAbsoluteUrl = (url?: string): string => {
-  if (!url) return DEFAULT_PROFILE_IMAGE;
-  // Already an absolute URL
-  if (url.startsWith('http')) return url;
-  // Relative URL - prefix with API base URL
-  const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
-  const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-  return `${baseURL}${cleanUrl}`;
-};
+
 
 const Home1LiveDirectSales = () => {
   const { t } = useTranslation();
@@ -886,7 +874,7 @@ const Home1LiveDirectSales = () => {
                             marginBottom: 'clamp(10px, 2vw, 14px)',
                           }}>
                             <img
-                              src={getAbsoluteUrl(directSale.owner?.avatar?.url || directSale.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
+                              src={normalizeImageUrl(directSale.owner?.avatar?.url || directSale.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
                               alt={displayName}
                               style={{
                                 width: '32px',

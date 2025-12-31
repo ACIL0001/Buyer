@@ -13,6 +13,7 @@ import app from '@/config';
 import { ApiResponse } from '@/types/ApiResponse';
 import { useTranslation } from 'react-i18next';
 import useAuth from '@/hooks/useAuth';
+import { normalizeImageUrl } from '@/utils/url';
 import "../auction-details/st.css";
 import "../auction-details/modern-details.css";
 import { useRouter } from "next/navigation";
@@ -106,30 +107,10 @@ export function calculateTimeRemaining(endDate: string): Timer {
   };
 }
 
-// Helper function to ensure URL is absolute (prefixed with API base URL)
-const getAbsoluteUrl = (url?: string): string => {
-  if (!url) return DEFAULT_PROFILE_IMAGE;
-  // Already an absolute URL
-  if (url.startsWith('http')) return url;
-  // Relative URL - prefix with API base URL
-  const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
-  const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
-  return `${baseURL}${cleanUrl}`;
-};
+
 
 // Helper function to get the correct image URL
 const getAuctionImageUrl = (auction: Auction) => {
-  console.log('🎯 ===== AUCTION IMAGE URL PROCESSING =====');
-  console.log('📋 Auction Info:', {
-    id: auction.id,
-    title: auction.title || auction.name,
-    hasThumbs: !!auction.thumbs,
-    thumbsLength: auction.thumbs?.length || 0,
-    hasImages: !!auction.images,
-    imagesLength: auction.images?.length || 0,
-    allKeys: Object.keys(auction)
-  });
-  
   // Check all possible image sources in order of preference
   const possibleImageSources = [
     auction.thumbs?.[0]?.url,
@@ -145,66 +126,18 @@ const getAuctionImageUrl = (auction: Auction) => {
     auction.mainImage
   ].filter(Boolean); // Remove null/undefined values
   
-  console.log('🔍 Possible image sources:', possibleImageSources);
-  
   if (possibleImageSources.length > 0) {
     const imageUrl = possibleImageSources[0] as string;
     
     if (!imageUrl) {
-      console.log('⚠️ No valid image URL found');
       return DEFAULT_AUCTION_IMAGE;
     }
     
-    console.log('🔍 Using image source:', imageUrl);
-    console.log('🔍 Original Image Data:', {
-      originalUrl: imageUrl,
-      appRoute: app.route,
-      appBaseURL: app.baseURL,
-      imageType: typeof imageUrl,
-      imageLength: imageUrl.length
-    });
-    
-    // Handle different URL formats
-    if (imageUrl.startsWith('http')) {
-      console.log('✅ CASE: Full URL detected');
-      console.log('🔗 Final URL:', imageUrl);
-      console.log('📝 Action: Using full URL as-is');
-      return imageUrl; // Already a full URL
-    } else if (imageUrl.startsWith('/')) {
-      if (imageUrl.startsWith('/static/')) {
-        console.log('✅ CASE: Static path detected');
-        const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-        console.log('🔧 Construction:', `${app.baseURL} + ${imageUrl.substring(1)}`);
-        console.log('🔗 Final URL:', finalUrl);
-        console.log('📝 Action: Removed leading slash, combined with baseURL');
-        return finalUrl;
-      } else {
-        console.log('✅ CASE: Root path detected');
-        const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-        console.log('🔧 Construction:', `${app.baseURL} + ${imageUrl.substring(1)}`);
-        console.log('🔗 Final URL:', finalUrl);
-        console.log('📝 Action: Removed leading slash, combined with baseURL');
-        return finalUrl;
-      }
-    } else {
-      console.log('✅ CASE: Relative path detected');
-      const finalUrl = `${app.baseURL}${imageUrl}`;
-      console.log('🔧 Construction:', `${app.baseURL} + ${imageUrl}`);
-      console.log('🔗 Final URL:', finalUrl);
-      console.log('📝 Action: Combined with baseURL');
-      return finalUrl;
-    }
+    // Use the centralized normalization utility which handles localhost:3000 replacement
+    return normalizeImageUrl(imageUrl);
   } else {
-    console.log('❌ CASE: No image data found');
-    console.log('🔍 Thumbs data:', auction.thumbs);
-    console.log('🔍 Images data:', auction.images);
-    console.log('🔍 All auction properties:', Object.keys(auction));
-    console.log('🔗 Fallback URL:', DEFAULT_AUCTION_IMAGE);
-    console.log('📝 Action: Using default image');
     return DEFAULT_AUCTION_IMAGE;
   }
-  
-  console.log('🎯 ===== END IMAGE URL PROCESSING =====\n');
 };
 
 const Home1LiveAuction = () => {
@@ -226,14 +159,10 @@ const Home1LiveAuction = () => {
     try {
       const response = await fetch(url, { method: 'HEAD' });
       const isAccessible = response.ok;
-      console.log(`🔍 Auction image URL test for ${url}:`, {
-        status: response.status,
-        ok: isAccessible,
-        contentType: response.headers.get('content-type')
-      });
+
       return isAccessible;
     } catch (error) {
-      console.log(`❌ Auction image URL test failed for ${url}:`, error);
+      // console.log(`❌ Auction image URL test failed for ${url}:`, error);
       return false;
     }
   };
@@ -244,15 +173,15 @@ const Home1LiveAuction = () => {
       try {
         const response = await fetch(url, { method: 'HEAD' });
         if (response.ok) {
-          console.log(`✅ Found working auction image URL: ${url}`);
+          // console.log(`✅ Found working auction image URL: ${url}`);
           return url;
         }
       } catch (error) {
-        console.log(`❌ Auction URL failed: ${url}`);
+        // console.log(`❌ Auction URL failed: ${url}`);
         continue;
       }
     }
-    console.log('❌ No working auction image URLs found');
+    // console.log('❌ No working auction image URLs found');
     return null;
   };
 
@@ -287,7 +216,7 @@ const Home1LiveAuction = () => {
 
   // Handle image load errors
   const handleImageError = async (auctionId: string, auction: Auction) => {
-    console.log('❌ Auction image load error for:', auctionId, auction);
+    // console.log('❌ Auction image load error for:', auctionId, auction);
     
     // Get all possible image URLs for this auction
     const possibleImageSources = [
@@ -309,7 +238,7 @@ const Home1LiveAuction = () => {
       generateBackendImageUrls(imagePath as string)
     ).filter(Boolean) as string[];
     
-    console.log('🔍 All possible auction backend URLs to try:', allPossibleUrls);
+    // console.log('🔍 All possible auction backend URLs to try:', allPossibleUrls);
     
     // Find the first working URL
     const workingUrl = await findWorkingImageUrl(allPossibleUrls);
@@ -1224,7 +1153,7 @@ const Home1LiveAuction = () => {
                             marginBottom: 'clamp(10px, 2vw, 14px)',
                           }}>
                             <img
-                              src={getAbsoluteUrl(auction.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
+                              src={normalizeImageUrl(auction.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
                               alt={displayName}
                               style={{
                                 width: '32px',

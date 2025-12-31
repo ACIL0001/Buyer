@@ -391,7 +391,7 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
           marginTop: 'auto'
         }}>
           <img
-            src={ownerObject?.photoURL || ownerObject?.profileImage?.url || DEFAULT_PROFILE_IMAGE}
+            src={normalizeImageUrl(ownerObject?.photoURL || ownerObject?.profileImage?.url) || DEFAULT_PROFILE_IMAGE}
             alt={displayName}
             style={{
               width: '28px',

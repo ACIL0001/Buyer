@@ -238,6 +238,43 @@ export default function AccountPopover() {
               {t('common.profile')}
             </Typography>
           </MenuItem>
+
+          {/* Settings Link */}
+          <MenuItem
+            component={Link}
+            href="/settings"
+            onClick={handleClose}
+            sx={{ 
+              p: 1,
+              borderRadius: '8px',
+              transition: 'all 0.2s ease',
+              color: 'text.primary',
+              textDecoration: 'none',
+              minHeight: '40px',
+              '&:hover': {
+                bgcolor: '#f0f7ff',
+                color: 'primary.main',
+                transform: 'translateX(3px)'
+              }
+            }}
+          >
+            <Box sx={{ 
+              mr: 1.5, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              width: 28,
+              height: 28,
+              borderRadius: '6px',
+              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
+              color: 'primary.main'
+            }}>
+              <Iconify icon="eva:settings-2-fill" width={18} height={18} />
+            </Box>
+            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
+              {t("settings.title") || "Settings"}
+            </Typography>
+          </MenuItem>
         </Box>
 
         <Divider sx={{ my: 1, borderStyle: 'dashed' }} />

@@ -41,76 +41,9 @@ const ProfilePageWrapper = () => {
     )
 }
 
-interface ProfileFormData {
-    firstName: string
-    lastName: string
-    email: string
-    phone: string
-    rate: number
-    wilaya: string
-    activitySector: string // Renamed
-    companyName: string // Renamed
-    jobTitle: string
-    // entity: string // Removed
-}
 
-// Password field component to properly encapsulate useState hook
-const PasswordField = ({ name, label, value, onChange, index }: {
-    name: string;
-    label: string;
-    value: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    index: number;
-}) => {
-    const [isVisible, setIsVisible] = useState(false);
-    
-    return (
-        <motion.div
-            className="modern-form-field"
-            initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
-        >
-            <label htmlFor={name}>{label}</label>
-            <div style={{ position: 'relative', width: '100%' }}>
-                <input
-                    type={isVisible ? "text" : "password"}
-                    id={name}
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    placeholder={`Enter ${label.toLowerCase()}`}
-                    style={{ 
-                        paddingRight: '40px',
-                        width: '100%',
-                        boxSizing: 'border-box'
-                    }}
-                />
-                <button 
-                    type="button"
-                    onClick={() => setIsVisible(!isVisible)}
-                    style={{
-                        position: 'absolute',
-                        right: '10px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        cursor: 'pointer',
-                        color: '#9ca3af',
-                        fontSize: '1rem',
-                        background: 'none',
-                        border: 'none',
-                        padding: '4px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
-                >
-                    <i className={`bi ${isVisible ? 'bi-eye-slash-fill' : 'bi-eye-fill'}`} />
-                </button>
-            </div>
-        </motion.div>
-    );
-};
+
+
 
 // ... existing code ...
 
@@ -140,9 +73,7 @@ function ProfilePage() {
     });
 
     const [activeTab, setActiveTab] = useState("activities");
-    const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [isPasswordChanging, setIsPasswordChanging] = useState(false);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [isUploadingCover, setIsUploadingCover] = useState(false);
     const [coverKey, setCoverKey] = useState(Date.now());
@@ -159,11 +90,7 @@ function ProfilePage() {
     const coverInputRef = useRef<HTMLInputElement>(null);
     const documentFileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
-    const [passwordData, setPasswordData] = useState({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-    });
+
 
     // Helper to refresh user data
     const fetchFreshUserData = async () => {
@@ -182,39 +109,14 @@ function ProfilePage() {
 
     const [showCompleteProfile, setShowCompleteProfile] = useState(false); 
     
-    const [formData, setFormData] = useState<ProfileFormData>({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        rate: 0,
-        wilaya: "",
-        activitySector: "",
-        companyName: "",
-        jobTitle: "",
-    });
+
 
     // ... existing refs ...
 
     // Initialize form data when auth.user changes
     useEffect(() => {
-        if (auth.user) {
-            setFormData({
-                firstName: auth.user.firstName || "",
-                lastName: auth.user.lastName || "",
-                email: auth.user.email || "",
-                phone: auth.user.phone || "",
-                rate: auth.user.rate || 0,
-                wilaya: auth.user.wilaya || "",
-                activitySector: (auth.user as any).activitySector || (auth.user as any).secteur || "",
-                companyName: (auth.user as any).companyName || (auth.user as any).socialReason || "",
-                jobTitle: auth.user.jobTitle || "",
-                // entity: auth.user.entity || "",
-            });
-
-            // Check for Complete Profile Note
-            checkProfileCompletion(auth.user);
-        }
+        // Check for Complete Profile Note
+        checkProfileCompletion(auth.user);
     }, [auth.user]);
 
     const checkProfileCompletion = (user: any) => {
@@ -243,11 +145,7 @@ function ProfilePage() {
 
     const handleNoteAction = async (action: 'complete' | 'postpone' | 'dismiss') => {
         if (action === 'complete') {
-             setActiveTab('personal-info'); // Redirect to profile info
-             // Just hide the note locally for now? Or keep it until filled?
-             // User goal: "Compléter" should redirect to the documents section of the user's profile."
-             // Wait, user said "Compléter should redirect to the documents section".
-             setActiveTab('documents');
+             router.push('/settings');
              setShowCompleteProfile(false); // Hide note as we are acting on it
         } else {
              // API Call to update preference
@@ -298,21 +196,7 @@ function ProfilePage() {
         }
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
 
-    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setPasswordData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
 
     // Helper for loading state
     const isLoadingDocuments = isLoadingIdentity;
@@ -336,89 +220,7 @@ function ProfilePage() {
     
     // In handleSubmit:
     // Ensure we send correct keys
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsLoading(true);
 
-        try {
-            console.log('🔄 Updating profile with data:', formData);
-
-            const updatePayload = {
-                ...formData,
-            };
-
-            const updatedUser = await UserAPI.updateProfile(updatePayload);
-            
-            enqueueSnackbar(t("profileUpdated") || "Profile updated successfully", { variant: "success" });
-            setIsEditing(false);
-
-            // Update local state
-            const currentUser = auth.user;
-            const mergedUser = {
-                ...currentUser,
-                ...updatedUser,
-            };
-            
-            set({ user: mergedUser, tokens: auth.tokens });
-            
-            // Re-check profile completion note
-            checkProfileCompletion(mergedUser);
-
-        } catch (error: any) {
-            console.error('❌ Error updating profile:', error);
-            const errorMessage = error.response?.data?.message || t("updateFailed") || "Failed to update profile";
-            enqueueSnackbar(errorMessage, { variant: "error" });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handlePasswordSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (passwordData.newPassword !== passwordData.confirmPassword) {
-            enqueueSnackbar(t("passwordsDoNotMatch"), { variant: "error" });
-            return;
-        }
-
-        if (passwordData.newPassword.length < 6) {
-            enqueueSnackbar(t("passwordTooShort"), { variant: "error" });
-            return;
-        }
-
-        setIsPasswordChanging(true);
-
-        try {
-            console.log('🔐 Changing password...');
-
-            const response = await UserAPI.changePassword({
-                currentPassword: passwordData.currentPassword,
-                newPassword: passwordData.newPassword
-            });
-
-            enqueueSnackbar(response.message || t("passwordChanged"), { variant: "success" });
-
-            setPasswordData({
-                currentPassword: "",
-                newPassword: "",
-                confirmPassword: "",
-            });
-
-        } catch (error: any) {
-            console.error('❌ Error changing password:', error);
-
-            if (error.response?.status === 401) {
-                enqueueSnackbar(t("sessionExpired"), { variant: 'error' });
-                set({ tokens: undefined, user: undefined });
-                router.push("/auth/login");
-            } else {
-                const errorMessage = error.message || t("failedToUpdatePassword");
-                enqueueSnackbar(errorMessage, { variant: "error" });
-            }
-        } finally {
-            setIsPasswordChanging(false);
-        }
-    };
 
     const handleAvatarClick = () => {
         if (fileInputRef.current) {
@@ -1637,10 +1439,7 @@ function ProfilePage() {
                             <div className="modern-tab-nav">
                                 {[
                                     { id: "activities", icon: "bi-activity", label: t("profile.tabs.myActivities") || "Mes Activités" },
-                                    { id: "personal-info", icon: "bi-person-circle", label: t("profile.tabs.personalInfo") || "Personal information" },
-                                    { id: "security", icon: "bi-shield-lock-fill", label: t("profile.tabs.security") || "Security" },
                                     { id: "documents", icon: "bi-file-earmark-text-fill", label: t("profile.tabs.documents") || "Documents" },
-                                    { id: "notifications", icon: "bi-bell-fill", label: t("profile.tabs.notifications") || "Notifications" },
                                     { id: "history", icon: "bi-clock-history", label: t("profile.tabs.history") || "Offer history" }
                                 ].map((tab, index) => (
                                     <motion.button
@@ -1684,341 +1483,9 @@ function ProfilePage() {
                                         </motion.div>
                                     )}
 
-                                    {/* Personal Info Tab */}
-                                    {activeTab === "personal-info" && (
-                                        <motion.div
-                                            key="personal-info"
-                                            className="modern-tab-content"
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -20 }}
-                                            transition={{ duration: 0.6, type: "spring" }}
-                                        >
-                                            <div className="modern-section-card">
-                                                <div className="section-header">
-                                                    <div className="header-content">
-                                                        <motion.div
-                                                            className="header-icon"
-                                                            whileHover={{ rotate: 10, scale: 1.1 }}
-                                                            transition={{ type: "spring", stiffness: 300 }}
-                                                        >
-                                                            <i className="bi bi-person-circle"></i>
-                                                        </motion.div>
-                                                        <div className="header-text">
-                                                            <h2>{t("profile.personalInfo") || "Personal info"}</h2>
-                                                            <p>{t("profile.personalInfoDesc") || "Manage your personal information and profile details"}</p>
-                                                        </div>
-                                                    </div>
-                                                    <motion.button
-                                                        className={`modern-edit-button ${isEditing ? "editing" : ""}`}
-                                                        onClick={() => setIsEditing(!isEditing)}
-                                                        whileHover={{ scale: 1.05 }}
-                                                        whileTap={{ scale: 0.95 }}
-                                                        transition={{ type: "spring", stiffness: 400 }}
-                                                    >
-                                                        <motion.i
-                                                            className={`bi ${isEditing ? 'bi-x-circle' : 'bi-pencil-square'}`}
-                                                            animate={{ rotate: isEditing ? 180 : 0 }}
-                                                            transition={{ duration: 0.3 }}
-                                                        />
-                                                        <span>{isEditing ? t("common.cancel") : t("common.edit")}</span>
-                                                    </motion.button>
-                                                </div>
 
-                                                <motion.form
-                                                    onSubmit={handleSubmit}
-                                                    className="modern-profile-form"
-                                                    initial={{ opacity: 0, y: 20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ duration: 0.6, delay: 0.5 }}
-                                                >
-                                                    <div className="modern-form-grid">
-                                                        <motion.div
-                                                            className="modern-form-field"
-                                                            initial={{ opacity: 0, x: -20 }}
-                                                            animate={{ opacity: 1, x: 0 }}
-                                                            transition={{ duration: 0.5, delay: 0.6 }}
-                                                        >
-                                                            <label htmlFor="firstName">{t("profile.firstName") || "First name"}</label>
-                                                            <input
-                                                                type="text"
-                                                                id="firstName"
-                                                                name="firstName"
-                                                                value={formData.firstName}
-                                                                onChange={handleInputChange}
-                                                                disabled={!isEditing}
-                                                                required
-                                                                placeholder="Enter your first name"
-                                                            />
-                                                        </motion.div>
 
-                                                        <motion.div
-                                                            className="modern-form-field"
-                                                            initial={{ opacity: 0, x: 20 }}
-                                                            animate={{ opacity: 1, x: 0 }}
-                                                            transition={{ duration: 0.5, delay: 0.7 }}
-                                                        >
-                                                            <label htmlFor="lastName">{t("profile.lastName") || "Last name"}</label>
-                                                            <input
-                                                                type="text"
-                                                                id="lastName"
-                                                                name="lastName"
-                                                                value={formData.lastName}
-                                                                onChange={handleInputChange}
-                                                                disabled={!isEditing}
-                                                                required
-                                                                placeholder="Enter your last name"
-                                                            />
-                                                        </motion.div>
 
-                                                        {/* Wilaya Field - Using Select from Constants */}
-                                                        <motion.div
-                                                            className="modern-form-field"
-                                                            initial={{ opacity: 0, x: -20 }}
-                                                            animate={{ opacity: 1, x: 0 }}
-                                                            transition={{ duration: 0.5, delay: 0.8 }}
-                                                        >
-                                                            <label htmlFor="wilaya">{t("profile.wilaya") || "Wilaya"}</label>
-                                                            <select
-                                                                id="wilaya"
-                                                                name="wilaya"
-                                                                value={formData.wilaya}
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    setFormData(prev => ({ ...prev, wilaya: val }));
-                                                                }}
-                                                                disabled={!isEditing}
-                                                                style={{
-                                                                    width: '100%',
-                                                                    padding: '12px 16px',
-                                                                    borderRadius: '12px',
-                                                                    border: '1px solid #e5e7eb',
-                                                                    backgroundColor: isEditing ? '#ffffff' : '#f9fafb',
-                                                                    color: '#1f2937',
-                                                                    fontSize: '14px',
-                                                                    outline: 'none',
-                                                                    transition: 'all 0.2s',
-                                                                    cursor: isEditing ? 'pointer' : 'default',
-                                                                    height: '48px'
-                                                                }}
-                                                            >
-                                                                <option value="">Select Wilaya</option>
-                                                                {WILAYAS.map((w, index) => (
-                                                                    <option key={index} value={w}>{w}</option>
-                                                                ))}
-                                                            </select>
-                                                        </motion.div>
-
-                                                        {/* Company Name (Formally Social Reason) */}
-                                                        <motion.div
-                                                            className="modern-form-field"
-                                                            initial={{ opacity: 0, x: 20 }}
-                                                            animate={{ opacity: 1, x: 0 }}
-                                                            transition={{ duration: 0.5, delay: 0.85 }}
-                                                        >
-                                                            <label htmlFor="companyName">Nom d'entreprise</label>
-                                                            <input
-                                                                type="text"
-                                                                id="companyName"
-                                                                name="companyName"
-                                                                value={formData.companyName}
-                                                                onChange={handleInputChange}
-                                                                disabled={!isEditing}
-                                                                placeholder="Entrez le nom de l'entreprise"
-                                                            />
-                                                        </motion.div>
-
-                                                        {/* Job Title */}
-                                                        <motion.div
-                                                            className="modern-form-field"
-                                                            initial={{ opacity: 0, x: -20 }}
-                                                            animate={{ opacity: 1, x: 0 }}
-                                                            transition={{ duration: 0.5, delay: 0.9 }}
-                                                        >
-                                                            <label htmlFor="jobTitle">{t("profile.jobTitle") || "Job Title"}</label>
-                                                            <input
-                                                                type="text"
-                                                                id="jobTitle"
-                                                                name="jobTitle" // Note: name attribute matches state key
-                                                                value={formData.jobTitle}
-                                                                onChange={handleInputChange}
-                                                                disabled={!isEditing}
-                                                                placeholder="Enter job title"
-                                                            />
-                                                        </motion.div>
-
-                                                        {/* Activity Sector */}
-                                                        <motion.div
-                                                            className="modern-form-field"
-                                                            initial={{ opacity: 0, x: 20 }}
-                                                            animate={{ opacity: 1, x: 0 }}
-                                                            transition={{ duration: 0.5, delay: 0.95 }}
-                                                        >
-                                                            <label htmlFor="activitySector">Secteur d'activité</label>
-                                                            <input
-                                                                type="text"
-                                                                id="activitySector"
-                                                                name="activitySector"
-                                                                value={formData.activitySector}
-                                                                onChange={handleInputChange}
-                                                                disabled={!isEditing}
-                                                                placeholder="Entrez votre secteur d'activité"
-                                                            />
-                                                        </motion.div>
-
-                                                        {/* Entity removed */}
-                                                        
-                                                        <motion.div
-                                                            className="modern-form-field"
-                                                            initial={{ opacity: 0, x: 20 }}
-                                                            animate={{ opacity: 1, x: 0 }}
-                                                            transition={{ duration: 0.5, delay: 0.9 }}
-                                                        >
-                                                            <label htmlFor="phone">{t("profile.phone") || "Phone"}</label>
-                                                            <input
-                                                                type="tel"
-                                                                id="phone"
-                                                                name="phone"
-                                                                value={formData.phone}
-                                                                onChange={handleInputChange}
-                                                                disabled={!isEditing}
-                                                                placeholder="Enter your phone number"
-                                                            />
-                                                        </motion.div>
-                                                    </div>
-
-                                                    {isEditing && (
-                                                        <motion.div
-                                                            className="modern-actions"
-                                                            initial={{ opacity: 0, y: 20 }}
-                                                            animate={{ opacity: 1, y: 0 }}
-                                                            transition={{ duration: 0.5, delay: 1.0 }}
-                                                        >
-                                                            <motion.button
-                                                                type="button"
-                                                                onClick={() => setIsEditing(false)}
-                                                                className="modern-btn secondary"
-                                                                whileHover={{ scale: 1.02 }}
-                                                                whileTap={{ scale: 0.98 }}
-                                                            >
-                                                                <i className="bi bi-x-circle"></i>
-                                                                <span>{t("common.cancel")}</span>
-                                                            </motion.button>
-
-                                                            <motion.button
-                                                                type="submit"
-                                                                disabled={isLoading}
-                                                                className="modern-btn primary"
-                                                                whileHover={{ scale: 1.02 }}
-                                                                whileTap={{ scale: 0.98 }}
-                                                            >
-                                                                {isLoading ? (
-                                                                    <>
-                                                                        <div className="loading-spinner-lg"></div>
-                                                                        <span>{t("profile.saving") || "Saving..."}</span>
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <i className="bi bi-check-circle"></i>
-                                                                        <span>{t("profile.saveChanges") || "Save changes"}</span>
-                                                                    </>
-                                                                )}
-                                                            </motion.button>
-                                                        </motion.div>
-                                                    )}
-                                                </motion.form>
-                                            </div>
-                                        </motion.div>
-                                    )}
-
-                                    {/* Security Tab */}
-                                    {activeTab === "security" && (
-                                        <motion.div
-                                            key="security"
-                                            className="modern-tab-content"
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -20 }}
-                                            transition={{ duration: 0.6, type: "spring" }}
-                                        >
-                                            <div className="modern-section-card">
-                                                <div className="section-header">
-                                                    <div className="header-content">
-                                                        <motion.div
-                                                            className="header-icon"
-                                                            whileHover={{ rotate: 10, scale: 1.1 }}
-                                                            transition={{ type: "spring", stiffness: 300 }}
-                                                        >
-                                                            <i className="bi bi-shield-lock-fill"></i>
-                                                        </motion.div>
-                                                        <div className="header-text">
-                                                            <h2>Security</h2>
-                                                            <p>Update your password and security settings</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <motion.form
-                                                    onSubmit={handlePasswordSubmit}
-                                                    className="modern-profile-form"
-                                                    initial={{ opacity: 0, y: 20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ duration: 0.6, delay: 0.3 }}
-                                                >
-                                                    <div className="modern-form-grid">
-                                                        <PasswordField
-                                                            name="currentPassword"
-                                                            label={t("profile.currentPassword") || "Current password"}
-                                                            value={passwordData.currentPassword}
-                                                            onChange={handlePasswordChange}
-                                                            index={0}
-                                                        />
-                                                        <PasswordField
-                                                            name="newPassword"
-                                                            label={t("profile.newPassword") || "New password"}
-                                                            value={passwordData.newPassword}
-                                                            onChange={handlePasswordChange}
-                                                            index={1}
-                                                        />
-                                                        <PasswordField
-                                                            name="confirmPassword"
-                                                            label={t("profile.confirmPassword") || "Confirm password"}
-                                                            value={passwordData.confirmPassword}
-                                                            onChange={handlePasswordChange}
-                                                            index={2}
-                                                        />
-                                                    </div>
-
-                                                    <motion.div
-                                                        className="modern-actions"
-                                                        initial={{ opacity: 0, y: 20 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ duration: 0.5, delay: 0.8 }}
-                                                    >
-                                                        <motion.button
-                                                            type="submit"
-                                                            disabled={isPasswordChanging}
-                                                            className="modern-btn primary"
-                                                            whileHover={{ scale: 1.02 }}
-                                                            whileTap={{ scale: 0.98 }}
-                                                        >
-                                                            {isPasswordChanging ? (
-                                                                <>
-                                                                    <div className="loading-spinner-lg"></div>
-                                                                    <span>Updating...</span>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <i className="bi bi-shield-check"></i>
-                                                                    <span>Update password</span>
-                                                                </>
-                                                            )}
-                                                        </motion.button>
-                                                    </motion.div>
-                                                </motion.form>
-                                            </div>
-                                        </motion.div>
-                                    )}
 
                                     {/* Documents Tab */}
                                     {activeTab === "documents" && (
@@ -2134,166 +1601,7 @@ function ProfilePage() {
                                         </motion.div>
                                     )}
 
-                                    {/* Notifications Tab */}
-                                    {activeTab === "notifications" && (
-                                        <motion.div
-                                            key="notifications"
-                                            className="modern-tab-content"
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -20 }}
-                                            transition={{ duration: 0.6, type: "spring" }}
-                                        >
-                                            <div className="modern-section-card">
-                                                <div className="section-header">
-                                                    <div className="header-content">
-                                                        <motion.div
-                                                            className="header-icon"
-                                                            whileHover={{ rotate: 10, scale: 1.1 }}
-                                                            transition={{ type: "spring", stiffness: 300 }}
-                                                        >
-                                                            <i className="bi bi-bell-fill"></i>
-                                                        </motion.div>
-                                                        <div className="header-text">
-                                                            <h2 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Notifications</h2>
-                                                            <p style={{ fontSize: '0.75rem' }}>Manage your notification preferences</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
 
-                                                <motion.div
-                                                    className="modern-notifications-grid"
-                                                    initial={{ opacity: 0, y: 20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ duration: 0.6, delay: 0.3 }}
-                                                >
-                                                    {[
-                                                        {
-                                                            icon: "bi-envelope-heart",
-                                                            title: "Email notifications",
-                                                            desc: "Receive email notifications",
-                                                            color: "primary",
-                                                            gradient: "linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)"
-                                                        },
-                                                        {
-                                                            icon: "bi-bell-fill",
-                                                            title: "New auction alerts",
-                                                            desc: "Receive alerts for new auctions",
-                                                            color: "success",
-                                                            gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)"
-                                                        },
-                                                        {
-                                                            icon: "bi-heart-pulse",
-                                                            title: "Bid updates",
-                                                            desc: "Receive updates about bids",
-                                                            color: "warning",
-                                                            gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
-                                                        }
-                                                    ].map((notification, index) => (
-                                                        <motion.div
-                                                            key={notification.title}
-                                                            className="modern-notification-card"
-                                                            initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                            transition={{
-                                                                duration: 0.6,
-                                                                delay: 0.4 + index * 0.15,
-                                                                type: "spring",
-                                                                stiffness: 100
-                                                            }}
-                                                            whileHover={{
-                                                                scale: 1.03,
-                                                                boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
-                                                                y: -5
-                                                            }}
-                                                            whileTap={{ scale: 0.98 }}
-                                                        >
-                                                            <div className="notification-card-background">
-                                                                <div
-                                                                    className="card-gradient"
-                                                                    style={{ background: notification.gradient }}
-                                                                ></div>
-                                                            </div>
-
-                                                            <div className="notification-content">
-                                                                <motion.div
-                                                                    className={`notification-icon ${notification.color}`}
-                                                                    whileHover={{
-                                                                        rotate: 10,
-                                                                        scale: 1.1
-                                                                    }}
-                                                                    transition={{ type: "spring", stiffness: 300 }}
-                                                                >
-                                                                    <motion.i
-                                                                        className={notification.icon}
-                                                                        animate={{
-                                                                            scale: [1, 1.1, 1],
-                                                                        }}
-                                                                        transition={{
-                                                                            duration: 2,
-                                                                            repeat: Number.POSITIVE_INFINITY,
-                                                                            delay: index * 0.3
-                                                                        }}
-                                                                    />
-                                                                </motion.div>
-
-                                                                <div className="notification-text">
-                                                                    <motion.h3
-                                                                        initial={{ opacity: 0, x: -10 }}
-                                                                        animate={{ opacity: 1, x: 0 }}
-                                                                        transition={{ delay: 0.5 + index * 0.1 }}
-                                                                    >
-                                                                        {notification.title}
-                                                                    </motion.h3>
-                                                                    <motion.p
-                                                                        initial={{ opacity: 0, x: -10 }}
-                                                                        animate={{ opacity: 1, x: 0 }}
-                                                                        transition={{ delay: 0.6 + index * 0.1 }}
-                                                                    >
-                                                                        {notification.desc}
-                                                                    </motion.p>
-                                                                </div>
-                                                            </div>
-
-                                                            <motion.div
-                                                                className="modern-switch-container"
-                                                                whileHover={{ scale: 1.05 }}
-                                                            >
-                                                                <label className="modern-switch">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        defaultChecked
-                                                                        className="switch-input"
-                                                                    />
-                                                                    <motion.span
-                                                                        className="switch-slider"
-                                                                        whileTap={{ scale: 0.95 }}
-                                                                    >
-                                                                        <motion.span
-                                                                            className="switch-thumb"
-                                                                            layout
-                                                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                                                        />
-                                                                    </motion.span>
-                                                                </label>
-                                                                <motion.div
-                                                                    className="switch-glow"
-                                                                    animate={{
-                                                                        opacity: [0.5, 1, 0.5]
-                                                                    }}
-                                                                    transition={{
-                                                                        duration: 2,
-                                                                        repeat: Number.POSITIVE_INFINITY,
-                                                                        delay: index * 0.5
-                                                                    }}
-                                                                />
-                                                            </motion.div>
-                                                        </motion.div>
-                                                    ))}
-                                                </motion.div>
-                                            </div>
-                                        </motion.div>
-                                    )}
                                 </AnimatePresence>
                             </div>
                         </motion.div>

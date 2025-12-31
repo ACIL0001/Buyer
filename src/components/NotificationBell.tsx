@@ -158,25 +158,39 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
         let redirectPath: string | null = null;
 
         // 1. PUBLIC CREATION NOTIFICATIONS (Prioritize these - for newly created items)
+        console.log('🔍 Checking Creation Types...');
+        
         if (notification.type === 'TENDER_CREATED') {
+            console.log('🔍 Type matched TENDER_CREATED');
             const id = data?._id || data?.id || data?.tenderId;
+            console.log('🔍 Extracted Tender ID:', id);
             if (id) {
                console.log('🚀 Redirecting to Tender (Created):', id);
                redirectPath = `/tenders/details/${id}`;
+            } else {
+               console.error('❌ TENDER_CREATED matched but NO ID found in data:', data);
             }
         }
         else if (notification.type === 'AUCTION_CREATED') {
+            console.log('🔍 Type matched AUCTION_CREATED');
             const id = data?._id || data?.id || data?.auctionId;
+            console.log('🔍 Extracted Auction ID:', id);
             if (id) {
                console.log('🚀 Redirecting to Auction (Created):', id);
                redirectPath = `/auctions/details/${id}`;
+            } else {
+               console.error('❌ AUCTION_CREATED matched but NO ID found in data:', data);
             }
         }
         else if (notification.type === 'DIRECT_SALE_CREATED') {
+            console.log('🔍 Type matched DIRECT_SALE_CREATED');
             const id = data?._id || data?.id || data?.directSaleId;
+            console.log('🔍 Extracted Direct Sale ID:', id);
             if (id) {
                console.log('🚀 Redirecting to Direct Sale (Created):', id);
                redirectPath = `/direct-sales/details/${id}`;
+            } else {
+               console.error('❌ DIRECT_SALE_CREATED matched but NO ID found in data:', data);
             }
         }
         // 2. CHAT REDIRECTION

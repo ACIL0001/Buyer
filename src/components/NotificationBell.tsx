@@ -154,8 +154,10 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
                console.error('❌ TENDER_CREATED matched but NO ID found in data:', data);
             }
         }
-        else if (notification.type === 'AUCTION_CREATED') {
-            console.log('🔍 Type matched AUCTION_CREATED');
+        else if (notification.type === 'AUCTION_CREATED' || 
+                (notification.type === 'BID_CREATED' && 
+                 (notification.title?.toLowerCase().includes('créée') || notification.title?.toLowerCase().includes('created')))) {
+            console.log('🔍 Type matched AUCTION_CREATED or BID_CREATED (Created)');
             const id = data?._id || data?.id || data?.auctionId;
             console.log('🔍 Extracted Auction ID:', id);
             if (id) {

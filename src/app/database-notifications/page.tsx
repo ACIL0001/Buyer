@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsBell, BsCheck, BsCheckAll } from 'react-icons/bs';
+import { useRouter } from 'next/navigation';
 
 interface Notification {
   _id: string;
@@ -12,9 +13,11 @@ interface Notification {
   read: boolean;
   createdAt: string;
   userId: string;
+  data?: any;
 }
 
 export default function DatabaseNotificationsPage() {
+  const router = useRouter();
   const { t } = useTranslation();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,6 +86,88 @@ export default function DatabaseNotificationsPage() {
     if (diffInMinutes < 60) return t('notifications.minutesAgo', { minutes: diffInMinutes });
     if (diffInMinutes < 1440) return t('notifications.hoursAgo', { hours: Math.floor(diffInMinutes / 60) });
     return t('notifications.daysAgo', { days: Math.floor(diffInMinutes / 1440) });
+  };
+
+  const handleNotificationClick = (notification: Notification) => {
+    const { type, data } = notification;
+    const titleLower = notification.title?.toLowerCase() || '';
+    const messageLower = notification.message?.toLowerCase() || '';
+
+    let redirectPath: string | null = null;
+    
+    // 1. PUBLIC CREATION NOTIFICATIONS
+    if (type === 'TENDER_CREATED') {
+        const id = data?._id || data?.id || data?.tenderId;
+        if (id) redirectPath = `/tender-details/${id}`;
+    }
+    else if (type === 'AUCTION_CREATED' || 
+            (type === 'BID_CREATED' && (titleLower.includes('créée') || titleLower.includes('created')))) {
+        const id = data?._id || data?.id || data?.auctionId;
+        if (id) redirectPath = `/auction-details/${id}`;
+    }
+    else if (type === 'DIRECT_SALE_CREATED') {
+        const id = data?._id || data?.id || data?.directSaleId;
+        if (id) redirectPath = `/direct-sale/${id}`;
+    }
+    // 2. CHAT REDIRECTION
+    else if (data?.chatId) {
+        redirectPath = `/dashboard/chat?conversationId=${data.chatId}`;
+    }
+    // 3. SELLER NOTIFICATIONS
+    else {
+         const isSellerReceivingTenderBid = !titleLower.includes('créée') &&
+                                          type === 'NEW_OFFER' && 
+                                          (data?.tender || data?.tenderId || 
+                                           messageLower.includes('soumission') ||
+                                           messageLower.includes('appel d\'offres'));
+        
+        const isSellerReceivingAuctionBid = !titleLower.includes('créée') &&
+                                            (type === 'BID_CREATED' ||
+                                            (type === 'NEW_OFFER' && 
+                                             (data?.auction || data?.auctionId ||
+                                              messageLower.includes('enchère'))));
+        
+        const isSellerReceivingDirectSaleOrder = (
+            (titleLower.includes('nouvelle') && titleLower.includes('commande') && !titleLower.includes('créée')) ||
+            (type === 'ORDER' && !titleLower.includes('confirmée') && !titleLower.includes('confirmed')) ||
+            (type === 'NEW_OFFER' && (titleLower.includes('commande') || messageLower.includes('commande')))
+        );
+
+        if (isSellerReceivingTenderBid) {
+            redirectPath = '/dashboard/tender-bids?tab=received';
+        }
+        else if (isSellerReceivingAuctionBid) {
+            redirectPath = '/dashboard/offers?tab=received';
+        }
+        else if (isSellerReceivingDirectSaleOrder) {
+            redirectPath = '/dashboard/direct-sales/orders?tab=received';
+        }
+        // 4. BUYER NOTIFICATIONS
+        else if (type === 'OFFER_ACCEPTED') {
+             const tenderId = data?.tender?._id || data?.tenderId || data?.tender;
+             if (tenderId && typeof tenderId === 'string') redirectPath = `/tender-details/${tenderId}`;
+             else {
+                 const auctionId = data?.auction?._id || data?.auctionId || data?.auction;
+                 if (auctionId && typeof auctionId === 'string') redirectPath = `/auction-details/${auctionId}`;
+                 else {
+                     const dsId = data?.directSale?._id || data?.directSaleId;
+                     if (dsId && typeof dsId === 'string') redirectPath = `/direct-sale/${dsId}`;
+                 }
+             }
+        }
+        else if (type === 'ORDER' && (titleLower.includes('confirmée') || titleLower.includes('confirmed'))) {
+             redirectPath = '/dashboard/direct-sales/orders';
+        }
+    }
+
+    if (redirectPath) {
+        router.push(redirectPath);
+    }
+    
+    // Always mark as read if not read
+    if (!notification.read) {
+        handleMarkAsRead(notification._id);
+    }
   };
 
   const getNotificationIcon = (type: string) => {
@@ -160,7 +245,8 @@ export default function DatabaseNotificationsPage() {
               notifications.map((notification) => (
                 <div
                   key={notification._id}
-                  className={`px-6 py-4 hover:bg-gray-50 transition-colors ${
+                  onClick={() => handleNotificationClick(notification)}
+                  className={`px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer ${
                     !notification.read ? 'bg-blue-50' : ''
                   }`}
                 >
@@ -188,7 +274,10 @@ export default function DatabaseNotificationsPage() {
                             <BsCheckAll size={16} color="#28a745" />
                           ) : (
                             <button
-                              onClick={() => handleMarkAsRead(notification._id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMarkAsRead(notification._id);
+                              }}
                               className="text-gray-400 hover:text-gray-600"
                             >
                               <BsCheck size={16} />

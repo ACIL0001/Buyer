@@ -21,21 +21,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import ProfileSkeleton from "@/components/skeletons/ProfileSkeleton"
 import VerificationPopup from "@/components/VerificationPopup"
 import UserActivitiesSection from "@/components/profile/UserActivitiesSection"
+import { normalizeImageUrl } from "@/utils/url"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://mazadclick-server.onrender.com/api";
-const SERVER_URL = API_BASE_URL.replace('/api', '');
-
-const normalizeUrl = (url: string): string => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    const cleanUrl = url.startsWith('/') ? url : `/${url}`;
-    return `${SERVER_URL}${cleanUrl}`;
-};
-
-const getImageUrl = (url?: string | null): string => {
-    if (!url) return '';
-    return normalizeUrl(url);
-};
+// Local constants removed in favor of @/utils/url
+const getImageUrl = normalizeImageUrl;
 
 const ProfilePageWrapper = () => {
     const [show, setShow] = useState(false)
@@ -64,6 +53,64 @@ interface ProfileFormData {
     jobTitle: string
     // entity: string // Removed
 }
+
+// Password field component to properly encapsulate useState hook
+const PasswordField = ({ name, label, value, onChange, index }: {
+    name: string;
+    label: string;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    index: number;
+}) => {
+    const [isVisible, setIsVisible] = useState(false);
+    
+    return (
+        <motion.div
+            className="modern-form-field"
+            initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
+        >
+            <label htmlFor={name}>{label}</label>
+            <div style={{ position: 'relative', width: '100%' }}>
+                <input
+                    type={isVisible ? "text" : "password"}
+                    id={name}
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                    placeholder={`Enter ${label.toLowerCase()}`}
+                    style={{ 
+                        paddingRight: '40px',
+                        width: '100%',
+                        boxSizing: 'border-box'
+                    }}
+                />
+                <button 
+                    type="button"
+                    onClick={() => setIsVisible(!isVisible)}
+                    style={{
+                        position: 'absolute',
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        cursor: 'pointer',
+                        color: '#9ca3af',
+                        fontSize: '1rem',
+                        background: 'none',
+                        border: 'none',
+                        padding: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                >
+                    <i className={`bi ${isVisible ? 'bi-eye-slash-fill' : 'bi-eye-fill'}`} />
+                </button>
+            </div>
+        </motion.div>
+    );
+};
 
 // ... existing code ...
 
@@ -123,9 +170,10 @@ function ProfilePage() {
         try {
              // Re-fetch user profile
              if (auth.user) {
-                  const updatedUser = await UserAPI.getMe();
+                  const response = await UserAPI.getMe();
+                  const userData = response.user || response.data;
                   // Merge with existing token
-                  set({ user: updatedUser, tokens: auth.tokens });
+                  set({ user: userData, tokens: auth.tokens });
              }
         } catch (e) {
             console.error("Failed to refresh user data", e);
@@ -175,7 +223,7 @@ function ProfilePage() {
         
         // Check if note is dismissed or postponed max times
         const noteStatus = user.profileCompletionNote || { dismissed: false, postponedCount: 0 };
-        if (noteStatus.dismissed || noteStatus.postponedCount >= 4) {
+        if (noteStatus.dismissed || noteStatus.postponedCount >= 5) {
             setShowCompleteProfile(false);
             return;
         }
@@ -439,18 +487,16 @@ function ProfilePage() {
                         // Ensure avatar has proper URL format
                         let avatarObj = updatedUser.avatar;
                         
-                        // If response has attachment info, use it to construct proper avatar URL
+                            // If response has attachment info, use it to construct proper avatar URL
                         if (responseWithAttachment?.attachment) {
                             const attachment = responseWithAttachment.attachment;
-                        const normalizedUrl = attachment.url?.startsWith('http') 
-                            ? attachment.url 
-                            : `${API_BASE_URL.replace(/\/$/, '')}${attachment.url?.startsWith('/') ? attachment.url : '/static/' + attachment.url}`;
+                        const normalizedUrl = normalizeImageUrl(attachment.url);
                         
                         avatarObj = {
                             _id: attachment._id,
                             url: attachment.url,
                             filename: attachment.filename,
-                            fullUrl: attachment.fullUrl ? normalizeUrl(attachment.fullUrl) : normalizedUrl
+                            fullUrl: attachment.fullUrl ? normalizeImageUrl(attachment.fullUrl) : normalizedUrl
                         };
                     }
                     
@@ -589,14 +635,9 @@ function ProfilePage() {
 
     const getDocumentUrl = (document: any): string => {
         if (!document) return '';
-        if (document.fullUrl) return document.fullUrl;
+        if (document.fullUrl) return normalizeImageUrl(document.fullUrl);
         if (document.url) {
-            if (document.url.startsWith('http')) {
-                return document.url;
-            }
-            // Remove leading slash from document.url to avoid double slashes
-            const cleanUrl = document.url.startsWith('/') ? document.url.substring(1) : document.url;
-            return `${API_BASE_URL}${cleanUrl}`;
+            return normalizeImageUrl(document.url);
         }
         return '';
     };
@@ -967,52 +1008,8 @@ function ProfilePage() {
         );
     };
 
-    // Helper to normalize URL - always return full URL with correct port
-    const normalizeUrl = React.useCallback((url: string): string => {
-        if (!url || url.trim() === '') return '';
-        
-        const cleanUrl = url.trim();
-        const apiBase = API_BASE_URL.replace(/\/$/, '');
-
-        // Check if URL is from localhost (various ports)
-        if (cleanUrl.match(/http:\/\/localhost:\d+/) || cleanUrl.startsWith('http://localhost')) {
-            // Extract the path from the localhost URL
-            try {
-                // If it's a full URL, parse it to get the pathname
-                if (cleanUrl.startsWith('http')) {
-                    const urlObj = new URL(cleanUrl);
-                    return `${apiBase}${urlObj.pathname}`;
-                }
-            } catch (e) {
-                console.error('Failed to parse URL:', cleanUrl);
-            }
-            // Fallback for malformed but localhost-containing strings
-            return cleanUrl.replace(/http:\/\/localhost:\d+/, apiBase)
-                          .replace('http://localhost', apiBase);
-        }
-        
-        // Handle legacy api.mazad.click URLs
-        if (cleanUrl.startsWith('https://api.mazad.click')) {
-            return cleanUrl.replace('https://api.mazad.click', apiBase);
-        }
-        
-        // If already a full HTTP/HTTPS URL (and not localhost), return it
-        if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-            return cleanUrl;
-        }
-        
-        // Handle relative paths
-        if (cleanUrl.startsWith('/static/')) {
-            return `${apiBase}${cleanUrl}`;
-        }
-        
-        if (cleanUrl.startsWith('/')) {
-            return `${apiBase}/static${cleanUrl}`;
-        }
-        
-        // If no leading slash, assume it's a filename
-        return `${apiBase}/static/${cleanUrl}`;
-    }, []);
+    // normalizeUrl hook removed - using imported normalizeImageUrl directly
+    const normalizeUrl = normalizeImageUrl;
 
     // Construct avatar source with multiple fallback options
     const getAvatarSrc = () => {
@@ -1065,10 +1062,10 @@ function ProfilePage() {
             let avatarUrl;
             
             if (filename.startsWith('http') || filename.startsWith('/')) {
-                 avatarUrl = normalizeUrl(filename);
+                 avatarUrl = normalizeImageUrl(filename);
             } else {
-                 // Assume it's a static file if just a filename
-                 avatarUrl = `${API_BASE_URL}/static/${filename}`;
+                 // Use normalizeImageUrl which handles bare filenames by assuming static
+                 avatarUrl = normalizeImageUrl(filename);
             }
 
             if (avatarUrl && !avatarUrl.includes('mock-images')) {
@@ -1969,52 +1966,27 @@ function ProfilePage() {
                                                     transition={{ duration: 0.6, delay: 0.3 }}
                                                 >
                                                     <div className="modern-form-grid">
-                                                        {[
-                                                            { name: "currentPassword", label: t("profile.currentPassword") || "Current password", icon: "bi-lock" },
-                                                            { name: "newPassword", label: t("profile.newPassword") || "New password", icon: "bi-key" },
-                                                            { name: "confirmPassword", label: t("profile.confirmPassword") || "Confirm password", icon: "bi-check-circle" }
-                                                        ].map((field, index) => {
-                                                            // State for this field is managed by appending 'Show' to name in a local state
-                                                            // However, since we are inside map, better to use separate state or object
-                                                            // Let's use a simple state object for visibility
-                                                            const [isVisible, setIsVisible] = useState(false);
-
-                                                            return (
-                                                                <motion.div
-                                                                    key={field.name}
-                                                                    className="modern-form-field"
-                                                                    initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                                                                    animate={{ opacity: 1, x: 0 }}
-                                                                    transition={{ duration: 0.5, delay: 0.4 + (index * 0.1) }}
-                                                                >
-                                                                    <label htmlFor={field.name}>{field.label}</label>
-                                                                    <div style={{ position: 'relative' }}>
-                                                                        <input
-                                                                            type={isVisible ? "text" : "password"}
-                                                                            id={field.name}
-                                                                            name={field.name}
-                                                                            value={passwordData[field.name as keyof typeof passwordData]}
-                                                                            onChange={handlePasswordChange}
-                                                                            placeholder={`Enter ${field.label.toLowerCase()}`}
-                                                                            style={{ paddingRight: '40px' }}
-                                                                        />
-                                                                        <i 
-                                                                            className={`bi ${isVisible ? 'bi-eye-slash-fill' : 'bi-eye-fill'}`}
-                                                                            onClick={() => setIsVisible(!isVisible)}
-                                                                            style={{
-                                                                                position: 'absolute',
-                                                                                right: '12px',
-                                                                                top: '50%',
-                                                                                transform: 'translateY(-50%)',
-                                                                                cursor: 'pointer',
-                                                                                color: '#9ca3af',
-                                                                                fontSize: '1.2rem'
-                                                                            }}
-                                                                        />
-                                                                    </div>
-                                                                </motion.div>
-                                                            );
-                                                        })}
+                                                        <PasswordField
+                                                            name="currentPassword"
+                                                            label={t("profile.currentPassword") || "Current password"}
+                                                            value={passwordData.currentPassword}
+                                                            onChange={handlePasswordChange}
+                                                            index={0}
+                                                        />
+                                                        <PasswordField
+                                                            name="newPassword"
+                                                            label={t("profile.newPassword") || "New password"}
+                                                            value={passwordData.newPassword}
+                                                            onChange={handlePasswordChange}
+                                                            index={1}
+                                                        />
+                                                        <PasswordField
+                                                            name="confirmPassword"
+                                                            label={t("profile.confirmPassword") || "Confirm password"}
+                                                            value={passwordData.confirmPassword}
+                                                            onChange={handlePasswordChange}
+                                                            index={2}
+                                                        />
                                                     </div>
 
                                                     <motion.div

@@ -168,7 +168,11 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
           // Redirect logic
           console.log('🔐 Login successful. Login count:', user.loginCount);
+          if (!user.loginCount || user.loginCount <= 1) {
+             router.replace('/profile');
+          } else {
              router.replace('/');
+          }
           
           if (onSuccess) {
             onSuccess();

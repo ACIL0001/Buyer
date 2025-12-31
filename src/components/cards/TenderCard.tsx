@@ -1,4 +1,5 @@
 import { Tender } from '@/types/tender';
+import { normalizeImageUrl } from '@/utils/url';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -31,19 +32,7 @@ const TenderCard = ({ tender }: TenderCardProps) => {
 
   const getTenderImageUrl = (tender: Tender) => {
     if (tender.attachments && tender.attachments.length > 0 && tender.attachments[0].url) {
-      const imageUrl = tender.attachments[0].url;
-      
-      if (imageUrl.startsWith('http')) {
-        return imageUrl;
-      } else if (imageUrl.startsWith('/')) {
-        if (imageUrl.startsWith('/static/')) {
-           return `${app.baseURL}${imageUrl.substring(1)}`;
-        } else {
-           return `${app.baseURL}${imageUrl.substring(1)}`;
-        }
-      } else {
-        return `${app.baseURL}${imageUrl}`;
-      }
+      return normalizeImageUrl(tender.attachments[0].url) || DEFAULT_TENDER_IMAGE;
     }
     return DEFAULT_TENDER_IMAGE;
   };

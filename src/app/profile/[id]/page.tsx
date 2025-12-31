@@ -11,36 +11,11 @@ import "../modern-styles.css";
 import useAuth from '@/hooks/useAuth';
 import { useTranslation } from "react-i18next";
 import UserActivitiesSection from "@/components/profile/UserActivitiesSection";
+import { normalizeImageUrl } from "@/utils/url";
 
 // Helper for image URLs
-const getImageUrl = (url?: string) => {
-    if (!url) return undefined;
-
-    // Handle localhost URLs - convert to production URL
-    if (url.includes('localhost:3000')) {
-        const prodBase = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
-        const parts = url.split('localhost:3000');
-        if (parts.length > 1) {
-            let path = parts[1];
-            if (path.startsWith('/')) path = path.substring(1);
-            return `${prodBase}${path}`;
-        }
-    }
-    
-    // Handle Absolute URLs (General)
-    if (url.startsWith('http')) {
-        // If it's already an http url and not localhost (caught above), return as is
-        return url;
-    }
-
-    // Handle Relative Paths
-    if (url.startsWith('/static') || url.startsWith('static/')) {
-        const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
-        return `${baseURL}${url.startsWith('/') ? url.slice(1) : url}`;
-    }
-    
-    return url;
-};
+// Helper for image URLs
+const getImageUrl = normalizeImageUrl;
 
 const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const DEV_SERVER_REGEX = new RegExp(escapeRegExp(DEV_SERVER_URL), "g");

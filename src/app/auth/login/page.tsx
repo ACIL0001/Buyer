@@ -78,16 +78,20 @@ const GlassContainer = styled(Box)(({ theme }) => ({
 
 export default function Login() {
   const { t } = useTranslation();
-  const { isLogged } = useAuth();
+  const { isLogged, user } = useAuth();
   const router = useRouter();
   const { width } = useResponsive();
   const smUp = width >= 600;
 
   useEffect(() => {
     if (isLogged) {
-      router.replace('/');
+        if (!user?.loginCount || user.loginCount <= 1) {
+            router.replace('/profile');
+        } else {
+            router.replace('/');
+        }
     }
-  }, [isLogged, router]);
+  }, [isLogged, router, user?.loginCount]);
 
   if (isLogged) {
     return null;

@@ -37,4 +37,9 @@ export default interface User {
   entity?: string;
   promoCode?: string;
   secteur?: string;
+  loginCount?: number;
+  subscriptionPlan?: string;
+  activeSubscription?: any;
+  isCertified?: boolean;
+  companyName?: string;
 }

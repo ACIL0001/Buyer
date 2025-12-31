@@ -17,6 +17,7 @@ import { NotificationAPI } from '@/app/api/notification';
 import { useTranslation } from 'react-i18next';
 import { getSellerUrl, getFrontendUrl } from '@/config';
 import app from '@/config';
+import { normalizeImageUrl } from '@/utils/url';
 
 const initialState = {
   activeMenu: "",
@@ -165,76 +166,30 @@ export const Header = () => {
     // Priority 1: photoURL
     const photoURL = auth.user?.photoURL;
     if (photoURL && photoURL.trim() !== '') {
-      let url = photoURL.trim();
-      // Fix malformed query strings
-      if (url.includes('&') && !url.includes('?')) {
-        url = url.replace('&', '?');
-      }
-      // Normalize localhost URLs
-      if (url.startsWith('http://localhost:3000')) {
-        return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-      }
-      if (url.startsWith('http://localhost/')) {
-        return url.replace('http://localhost', app.baseURL.replace(/\/$/, ''));
-      }
-      if (url.startsWith('/static/')) {
-        return `${app.baseURL.replace(/\/$/, '')}${url}`;
-      }
-      if (url.startsWith('/')) {
-        return `${app.baseURL.replace(/\/$/, '')}/static${url}`;
-      }
-      if (!url.startsWith('http')) {
-        return `${app.baseURL.replace(/\/$/, '')}/static/${url}`;
-      }
-      // Handle legacy api.mazad.click URLs
-      if (url.startsWith('https://api.mazad.click')) {
-          return url.replace('https://api.mazad.click', app.baseURL.replace(/\/$/, ''));
-      }
-      return url;
+      return normalizeImageUrl(photoURL);
     }
 
     // Priority 2: avatar string (from registration)
     const avatar = auth.user?.avatar;
     if (typeof avatar === 'string' && avatar.trim() !== '') {
-        let avatarUrl;
-        if (avatar.startsWith('http')) {
-             avatarUrl = avatar
-                .replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''))
-                .replace('https://api.mazad.click', app.baseURL.replace(/\/$/, ''));
-        } else if (avatar.startsWith('/static/')) {
-            avatarUrl = `${app.baseURL.replace(/\/$/, '')}${avatar}`;
-        } else if (avatar.startsWith('/')) {
-            avatarUrl = `${app.baseURL.replace(/\/$/, '')}/static${avatar}`;
-        } else {
-            avatarUrl = `${app.baseURL.replace(/\/$/, '')}/static/${avatar}`;
-        }
-        return avatarUrl;
+      return normalizeImageUrl(avatar);
     }
 
     // Priority 3: avatar object
     if (avatar) {
       // Try fullUrl first
       if (avatar.fullUrl) {
-        let fullUrl = avatar.fullUrl;
-        if (fullUrl.startsWith('http://localhost:3000')) {
-          fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-        }
-        return fullUrl;
+        return normalizeImageUrl(avatar.fullUrl);
       }
       
       // Try url
       if (avatar.url) {
-        if (avatar.url.startsWith('http')) {
-          return avatar.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-        }
-        const path = avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`;
-        const finalPath = path.startsWith('/static/') ? path : `/static${path}`;
-        return `${app.baseURL.replace(/\/$/, '')}${finalPath}`;
+        return normalizeImageUrl(avatar.url);
       }
       
       // Try filename
       if (avatar.filename) {
-        return `${app.baseURL.replace(/\/$/, '')}/static/${avatar.filename}`;
+        return normalizeImageUrl(`/static/${avatar.filename}`);
       }
     }
     return '';
@@ -660,85 +615,27 @@ export const Header = () => {
                     }}
                   >
                     {(() => {
-                      // Helper to get avatar URL
+                      // Helper to get avatar URL - uses shared normalizeImageUrl utility
                       const getAvatarUrl = () => {
                         if (!auth?.user) return '';
 
                         // Priority 1: photoURL
                         const photoURL = auth.user?.photoURL;
                         if (photoURL && photoURL.trim() !== '') {
-                          let url = photoURL.trim();
-                          // Fix malformed query strings
-                          if (url.includes('&') && !url.includes('?')) {
-                            url = url.replace('&', '?');
-                          }
-                          // Normalize localhost URLs
-                          if (url.startsWith('http://localhost:3000')) {
-                            return url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-                          }
-                          if (url.startsWith('http://localhost/')) {
-                            return url.replace('http://localhost', app.baseURL.replace(/\/$/, ''));
-                          }
-                          if (url.startsWith('/static/')) {
-                            return `${app.baseURL.replace(/\/$/, '')}${url}`;
-                          }
-                          if (url.startsWith('/')) {
-                            return `${app.baseURL.replace(/\/$/, '')}/static${url}`;
-                          }
-                          if (!url.startsWith('http')) {
-                            return `${app.baseURL.replace(/\/$/, '')}/static/${url}`;
-                          }
-                          // Handle legacy api.mazad.click URLs
-                          if (url.startsWith('https://api.mazad.click')) {
-                              return url.replace('https://api.mazad.click', app.baseURL.replace(/\/$/, ''));
-                          }
-                          return url;
+                          return normalizeImageUrl(photoURL);
                         }
 
                         // Priority 2: avatar string (from registration)
                         const avatar = auth.user?.avatar;
                         if (typeof avatar === 'string' && avatar.trim() !== '') {
-                            let avatarUrl;
-                            if (avatar.startsWith('http')) {
-                                 avatarUrl = avatar
-                                    .replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''))
-                                    .replace('https://api.mazad.click', app.baseURL.replace(/\/$/, ''));
-                            } else if (avatar.startsWith('/static/')) {
-                                avatarUrl = `${app.baseURL.replace(/\/$/, '')}${avatar}`;
-                            } else if (avatar.startsWith('/')) {
-                                avatarUrl = `${app.baseURL.replace(/\/$/, '')}/static${avatar}`;
-                            } else {
-                                avatarUrl = `${app.baseURL.replace(/\/$/, '')}/static/${avatar}`;
-                            }
-                            return avatarUrl;
+                          return normalizeImageUrl(avatar);
                         }
 
                         // Priority 3: avatar object
-
                         if (avatar) {
-                          // Try fullUrl first
-                          if (avatar.fullUrl) {
-                            let fullUrl = avatar.fullUrl;
-                            if (fullUrl.startsWith('http://localhost:3000')) {
-                              fullUrl = fullUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-                            }
-                            return fullUrl;
-                          }
-                          
-                          // Try url
-                          if (avatar.url) {
-                            if (avatar.url.startsWith('http')) {
-                              return avatar.url.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-                            }
-                            const path = avatar.url.startsWith('/') ? avatar.url : `/${avatar.url}`;
-                            const finalPath = path.startsWith('/static/') ? path : `/static${path}`;
-                            return `${app.baseURL.replace(/\/$/, '')}${finalPath}`;
-                          }
-                          
-                          // Try filename
-                          if (avatar.filename) {
-                            return `${app.baseURL.replace(/\/$/, '')}/static/${avatar.filename}`;
-                          }
+                          if (avatar.fullUrl) return normalizeImageUrl(avatar.fullUrl);
+                          if (avatar.url) return normalizeImageUrl(avatar.url);
+                          if (avatar.filename) return normalizeImageUrl(`/static/${avatar.filename}`);
                         }
 
                         return '';

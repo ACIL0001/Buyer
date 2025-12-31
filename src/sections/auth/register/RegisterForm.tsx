@@ -145,12 +145,17 @@ function TermsModal({ open, onClose, termsContent, termsAttachment, isLoading }:
 }) {
   const [docxContent, setDocxContent] = useState<string>('');
   const [isConverting, setIsConverting] = useState(false);
+  const [conversionError, setConversionError] = useState(false);
 
   useEffect(() => {
     if (open && termsAttachment && (termsAttachment.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
         setIsConverting(true);
+        setConversionError(false);
         fetch(getFullUrl(termsAttachment.url))
-            .then(response => response.arrayBuffer())
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.arrayBuffer();
+            })
             .then(arrayBuffer => mammoth.convertToHtml({ arrayBuffer }))
             .then(result => {
                 setDocxContent(result.value);
@@ -158,6 +163,7 @@ function TermsModal({ open, onClose, termsContent, termsAttachment, isLoading }:
             })
             .catch(error => {
                 console.error("Error converting DOCX:", error);
+                setConversionError(true);
                 setIsConverting(false);
             });
     }
@@ -195,7 +201,7 @@ function TermsModal({ open, onClose, termsContent, termsAttachment, isLoading }:
                             style={{ border: 'none' }}
                             title="Terms PDF"
                         />
-                    ) : termsAttachment.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ? (
+                    ) : termsAttachment.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' && !conversionError ? (
                         <Box sx={{ p: 2, bgcolor: 'white', minHeight: '100%' }}>
                             <DocumentPage dangerouslySetInnerHTML={{ __html: docxContent }} />
                         </Box>

@@ -244,6 +244,7 @@ export const requests = {
     return instance.post(url, formData, {
       ...(config || {}),
       headers: {
+        'Content-Type': 'multipart/form-data',
         ...((config && (config as any).headers) ? (config as any).headers : {})
       }
     })

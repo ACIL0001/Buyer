@@ -1,4 +1,5 @@
 import { Auction } from '@/types/auction';
+import { normalizeImageUrl } from '@/utils/url';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -46,14 +47,7 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
 
     if (possibleImageSources.length > 0) {
       const imageUrl = possibleImageSources[0] as string;
-      
-      if (imageUrl.startsWith('http')) {
-        return imageUrl;
-      } else if (imageUrl.startsWith('/')) {
-          return `${app.baseURL}${imageUrl.substring(1)}`;
-      } else {
-        return `${app.baseURL}${imageUrl}`;
-      }
+      return normalizeImageUrl(imageUrl) || DEFAULT_AUCTION_IMAGE;
     } else {
       return DEFAULT_AUCTION_IMAGE;
     }

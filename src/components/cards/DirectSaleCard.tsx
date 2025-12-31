@@ -1,4 +1,5 @@
 import { DirectSale } from '@/types/direct-sale';
+import { normalizeImageUrl } from '@/utils/url';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { useState, useCallback } from 'react';
@@ -30,15 +31,7 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
 
   const getDirectSaleImageUrl = (directSale: DirectSale) => {
     if (directSale.thumbs && directSale.thumbs.length > 0 && directSale.thumbs[0].url) {
-      const imageUrl = directSale.thumbs[0].url;
-      
-      if (imageUrl.startsWith('http')) {
-        return imageUrl;
-      } else if (imageUrl.startsWith('/')) {
-        return `${app.baseURL}${imageUrl.substring(1)}`;
-      } else {
-        return `${app.baseURL}${imageUrl}`;
-      }
+      return normalizeImageUrl(directSale.thumbs[0].url) || DEFAULT_DIRECT_SALE_IMAGE;
     }
     return DEFAULT_DIRECT_SALE_IMAGE;
   };

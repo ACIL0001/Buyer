@@ -239,42 +239,7 @@ export default function AccountPopover() {
             </Typography>
           </MenuItem>
 
-          {/* Home Link */}
-          <MenuItem
-            component={Link}
-            href="/"
-            onClick={handleClose}
-            sx={{ 
-              p: 1,
-              borderRadius: '8px',
-              transition: 'all 0.2s ease',
-              color: 'text.primary',
-              textDecoration: 'none',
-              minHeight: '40px',
-              '&:hover': {
-                bgcolor: '#f0f7ff',
-                color: 'primary.main',
-                transform: 'translateX(3px)'
-              }
-            }}
-          >
-            <Box sx={{ 
-              mr: 1.5, 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              width: 28,
-              height: 28,
-              borderRadius: '6px',
-              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
-              color: 'primary.main'
-            }}>
-              <Iconify icon="eva:home-fill" width={18} height={18} />
-            </Box>
-            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
-              {t("common.home") || "Home"}
-            </Typography>
-          </MenuItem>
+
 
           {/* Settings Link */}
           <MenuItem

@@ -79,7 +79,15 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
     setIsOpen(false);
     
     // 3. Redirect logic based on type and data
-    const { type, data } = notification;
+    const { type, data} = notification;
+
+    // DEBUG: Log the entire notification to understand its structure
+    console.log('📢 NOTIFICATION DEBUG (BellNotifications):', {
+        type: type,
+        title: notification.title,
+        message: notification.message,
+        data: data
+    });
 
     // 0. NEW ITEMS CREATED (Public Notifications) - Prioritize these checks
     // Redirect to the public details page for the item
@@ -129,6 +137,18 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
 
     // SELLER NOTIFICATIONS - Redirect to dashboard management pages
     
+    const titleLower = notification.title?.toLowerCase() || '';
+    const messageLower = notification.message?.toLowerCase() || '';
+    
+    console.log('🔍 Checking seller notifications (BellNotifications):', {
+        titleLower,
+        messageLower,
+        type: type,
+        hasCommande: titleLower.includes('commande') || messageLower.includes('commande'),
+        hasNouvelle: titleLower.includes('nouvelle'),
+        hasConfirmee: titleLower.includes('confirmée') || titleLower.includes('confirmed')
+    });
+
     // Check if seller is receiving offers/bids on THEIR items
     const isSellerReceivingTenderBid = type === 'NEW_OFFER' && 
                                        (data?.tender || data?.tenderId || 
@@ -140,14 +160,18 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
                                          (data?.auction || data?.auctionId ||
                                           notification.message?.toLowerCase().includes('enchère')));
     
-    // Seller receiving a new order (nouvelle commande) - NOT a confirmation for buyer
-    const isSellerReceivingDirectSaleOrder = (type === 'ORDER' || type === 'NEW_OFFER') &&
-                                              !(notification.title?.toLowerCase().includes('confirmée') || 
-                                                notification.title?.toLowerCase().includes('confirmed')) &&
-                                              (notification.title?.toLowerCase().includes('commande') || 
-                                               notification.title?.toLowerCase().includes('nouvelle') ||
-                                               notification.title?.toLowerCase().includes('order') ||
-                                               (data?.purchase || data?.directSale));
+    // Seller receiving a new order (nouvelle commande)
+    const isSellerReceivingDirectSaleOrder = (
+        (titleLower.includes('nouvelle') && titleLower.includes('commande')) ||
+        (type === 'ORDER' && !titleLower.includes('confirmée') && !titleLower.includes('confirmed')) ||
+        (type === 'NEW_OFFER' && (titleLower.includes('commande') || messageLower.includes('commande')))
+    );
+
+    console.log('🎯 Seller notification checks (BellNotifications):', {
+        isSellerReceivingTenderBid,
+        isSellerReceivingAuctionBid,
+        isSellerReceivingDirectSaleOrder
+    });
 
     if (isSellerReceivingTenderBid) {
         console.log('🔄 Redirecting to Tender Bids Dashboard (Received Tab)');
@@ -162,7 +186,7 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
     }
 
     if (isSellerReceivingDirectSaleOrder) {
-        console.log('🔄 Redirecting to Direct Sales Orders Dashboard (Received Tab) - Nouvelle Commande');
+        console.log('✅ REDIRECTING: Direct Sales Orders Dashboard (Received Tab) - Nouvelle Commande');
         router.push('/dashboard/direct-sales/orders?tab=received');
         return;
     }
@@ -171,7 +195,7 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
     if (getChatId()) {
       router.push(`/dashboard/chat?chatId=${getChatId()}`);
     } else {
-      console.log('❓ No redirection target found for notification:', notification);
+      console.log('⚠️ No redirect condition matched for this notification');
     }
   };
 

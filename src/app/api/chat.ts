@@ -185,7 +185,7 @@ export const ChatAPI = {
       }
 
       // Use direct fetch to bypass authentication for guest endpoints
-      // const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/chat/find-guest-chat?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`;
+      // const url = `${process.env.NEXT_PUBLIC_API_URL || app.baseURL.replace(/\/$/, '')}/chat/find-guest-chat?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`;
       const url = `${process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL}/chat/find-guest-chat?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`;
       console.log('🔍 Finding guest chat:', url);
 

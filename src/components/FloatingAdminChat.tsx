@@ -39,8 +39,8 @@ interface AdminChat {
     createdAt: string;
 }
 
-const RESOLVED_API_BASE_URL = (app.baseURL || DEV_SERVER_URL).replace(/\/$/, '');
-const DEV_SERVER_WITH_SLASH = DEV_SERVER_URL.endsWith('/') ? DEV_SERVER_URL : `${DEV_SERVER_URL}/`;
+const RESOLVED_API_BASE_URL = app.baseURL ? app.baseURL.replace(/\/$/, '') : 'https://mazadclick-server.onrender.com';
+const DEV_SERVER_WITH_SLASH = RESOLVED_API_BASE_URL + '/';
 const RESOLVED_API_STATIC_URL = `${RESOLVED_API_BASE_URL}/static`;
 
 const FloatingAdminChat: React.FC = () => {

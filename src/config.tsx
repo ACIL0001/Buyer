@@ -6,7 +6,7 @@ export const PROD_SERVER_URL_FALLBACK = 'https://api.mazad.click';
 export const PRODUCTION_URLS = [PROD_SERVER_URL, PROD_SERVER_URL_FALLBACK];
 
 export const isProductionEnvironment = process.env.NODE_ENV === 'production';
-export const resolvedServerUrl = isProductionEnvironment ? PROD_SERVER_URL : (process.env.NEXT_PUBLIC_API_BASE_URL || DEV_SERVER_URL);
+export const resolvedServerUrl = PROD_SERVER_URL;
 const resolvedServerUrlWithSlash = resolvedServerUrl.endsWith('/')
   ? resolvedServerUrl
   : `${resolvedServerUrl}/`;

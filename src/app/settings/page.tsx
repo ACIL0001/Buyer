@@ -229,10 +229,10 @@ export default function SettingsPage() {
 
                     <div className="modern-tabs-section">
                         <div className="modern-tab-nav">
-                             {[
-                                { id: "personal-info", icon: "bi-person-circle", label: t("profile.tabs.personalInfo") || "Personal Information" },
-                                { id: "security", icon: "bi-shield-lock-fill", label: t("profile.tabs.security") || "Security" },
-                                { id: "notifications", icon: "bi-bell-fill", label: t("profile.tabs.notifications") || "Notifications" },
+                            {[
+                                { id: "personal-info", icon: "bi-person-circle", label: t("profile.personalInfo.title") || "Personal Information" },
+                                { id: "security", icon: "bi-shield-lock-fill", label: t("profile.security.title") || "Security" },
+                                { id: "notifications", icon: "bi-bell-fill", label: t("profile.notifications.title") || "Notifications" },
                             ].map((tab, index) => (
                                 <motion.button
                                     key={tab.id}

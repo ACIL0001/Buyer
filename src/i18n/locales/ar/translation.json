@@ -168,17 +168,6 @@
     "auctionRules": "قواعد المزاد",
     "termsAndConditions": "الشروط والأحكام"
   },
-  "category": {
-    "title": "الفئة",
-    "categories": "الفئات",
-    "allCategories": "جميع الفئات",
-    "selectCategory": "اختر الفئة",
-    "noCategories": "لم يتم العثور على فئات",
-    "categoryDetails": "تفاصيل الفئة",
-    "subcategories": "الفئات الفرعية",
-    "items": "العناصر",
-    "auctions": "المزادات"
-  },
   "profile": {
     "title": "الملف الشخصي",
     "personalInfo": {
@@ -374,37 +363,6 @@
     "loading": "جاري تحميل الإشعارات...",
     "viewAll": "عرض الكل"
   },
-  "chat": {
-    "title": "الدردشة",
-    "messages": "الرسائل",
-    "conversations": "المحادثات",
-    "newMessage": "رسالة جديدة",
-    "typeMessage": "اكتب رسالتك...",
-    "send": "إرسال",
-    "online": "متصل",
-    "offline": "غير متصل",
-    "typing": "يكتب...",
-    "lastSeen": "آخر ظهور",
-    "noMessages": "لا توجد رسائل",
-    "startConversation": "بدء محادثة",
-    "searchConversations": "البحث في المحادثات",
-    "markAsRead": "تحديد كمقروء",
-    "deleteConversation": "حذف المحادثة",
-    "openAdminChat": "فتح دردشة المدير",
-    "adminSupport": "دعم المدير",
-    "online": "متصل",
-    "closeChat": "إغلاق الدردشة",
-    "loadingMessages": "جاري تحميل الرسائل...",
-    "startConversation": "ابدأ محادثة",
-    "hereToHelp": "نحن هنا للمساعدة!",
-    "adminTyping": "المدير يكتب...",
-    "typeMessage": "اكتب رسالتك...",
-    "addEmoji": "إضافة رمز تعبيري",
-    "attachFile": "إرفاق ملف",
-    "sendMessage": "إرسال رسالة",
-    "inputHint": "اضغط Enter للإرسال، Shift+Enter لسطر جديد",
-    "quickEmojis": "رموز تعبيرية سريعة"
-  },
   "footer": {
     "about": "حول",
     "contact": "اتصل بنا",
@@ -540,7 +498,12 @@
     "searchAuctions": "المزادات",
     "searchTenders": "المناقصات",
     "noAuctionsInCategory": "لا توجد مزادات متاحة في هذه الفئة بعد.",
-    "noAuctionsMatchSearch": "لا توجد مزادات تطابق معايير البحث الخاصة بك."
+    "noAuctionsMatchSearch": "لا توجد مزادات تطابق معايير البحث الخاصة بك.",
+    "selectCategory": "اختر الفئة",
+    "noCategories": "لم يتم العثور على فئات",
+    "categoryDetails": "تفاصيل الفئة",
+    "subcategories": "الفئات الفرعية",
+    "auctions": "المزادات"
   },
   "subscription": {
     "title": "اختر اشتراكك",
@@ -649,7 +612,18 @@
     "today": "اليوم",
     "yesterday": "أمس",
     "searchConversations": "البحث في المحادثات",
-    "noMessage": "لا توجد رسالة"
+    "noMessage": "لا توجد رسالة",
+    "offline": "غير متصل",
+    "lastSeen": "آخر ظهور",
+    "markAsRead": "تحديد كمقروء",
+    "deleteConversation": "حذف المحادثة",
+    "openAdminChat": "فتح دردشة المدير",
+    "adminSupport": "دعم المدير",
+    "loadingMessages": "جاري تحميل الرسائل...",
+    "hereToHelp": "نحن هنا للمساعدة!",
+    "adminTyping": "المدير يكتب...",
+    "inputHint": "اضغط Enter للإرسال، Shift+Enter لسطر جديد",
+    "quickEmojis": "رموز تعبيرية سريعة"
   },
   "notFound": {
     "categoriesNotFound": "الفئات غير موجودة",

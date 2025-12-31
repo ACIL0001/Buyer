@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BiMessage } from 'react-icons/bi';
@@ -16,6 +17,8 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(1024);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Use Zustand store pattern for auth
@@ -61,11 +64,30 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
     totalUnread: totalUnread
   });
 
+  const updateDropdownPosition = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const isMobile = window.innerWidth <= 768;
+      
+      if (!isMobile) {
+        setDropdownPos({
+          top: rect.bottom + 10,
+          right: window.innerWidth - rect.right
+        });
+      }
+    }
+  };
+
   const toggleDropdown = (e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
+
+    if (!isOpen) {
+        updateDropdownPosition();
+    }
+
     const newIsOpen = !isOpen;
     setIsOpen(newIsOpen);
     if (newIsOpen && onOpenChange) {
@@ -77,16 +99,21 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
+      if (isOpen) {
+        updateDropdownPosition();
+      }
     };
     
-    // Set initial width
     setWindowWidth(window.innerWidth);
     
     window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', updateDropdownPosition, true);
+
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', updateDropdownPosition, true);
     };
-  }, []);
+  }, [isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -219,104 +246,60 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
     return t('chat.daysAgo', { days: Math.floor(diffInMinutes / 1440) });
   };
 
-  return (
-    <div style={{ position: 'relative' }} ref={dropdownRef}>
-      <button
-        type="button"
-        onClick={toggleDropdown}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: isOpen ? '#f1f1f1' : '#f8f9fa',
-          border: 'none',
-          borderRadius: '50%',
-          width: variant === 'header' ? '40px' : '48px',
-          height: variant === 'header' ? '40px' : '48px',
-          cursor: 'pointer',
-          position: 'relative',
-          transition: 'all 0.3s ease',
-          boxShadow: isOpen ? '0 4px 15px rgba(0,0,0,0.08)' : '0 2px 10px rgba(0,0,0,0.05)'
-        }}
-        onMouseOver={(e) => {
-          if (!isOpen) {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.08)';
-            e.currentTarget.style.background = '#f1f1f1';
-          }
-        }}
-        onMouseOut={(e) => {
-          if (!isOpen) {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.05)';
-            e.currentTarget.style.background = '#f8f9fa';
-          }
-        }}
-        title={t('chat.messages')}
-      >
-        <BiMessage size={variant === 'header' ? 20 : 24} color={isOpen ? '#0063b1' : '#666'} />
-        
-        {totalUnread > 0 && (
-          <span style={{
-            position: 'absolute',
-            top: '-8px',
-            right: '-8px',
-            background: '#FF3366',
-            color: 'white',
-            borderRadius: '50%',
-            padding: '2px 6px',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            zIndex: 5,
-            minWidth: '20px',
-            height: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-            boxShadow: '0 0 0 2px #fff'
-          }}>
-            {totalUnread > 99 ? '99+' : totalUnread}
-          </span>
-        )}
-      </button>
+  const isMobile = windowWidth <= 768;
 
-      {isOpen && (
-        <>
-          {/* Mobile backdrop overlay */}
-          {windowWidth <= 768 && (
-            <div 
-              style={{
+  const renderDropdown = () => {
+    if (!isOpen) return null;
+
+    return createPortal(
+      <>
+        {/* Overlay - Transparent on Desktop, Dimmed on Mobile */}
+        <div 
+            style={{
                 position: 'fixed',
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
-                background: 'rgba(0, 0, 0, 0.5)',
-                zIndex: 999,
-                animation: 'fadeIn 0.2s ease-out'
-              }}
-              onClick={() => setIsOpen(false)}
-            />
-          )}
-          
-          <div style={{
-            position: windowWidth <= 768 ? 'fixed' : 'absolute',
-            top: windowWidth <= 768 ? '50%' : 'calc(100% + 10px)',
-            left: windowWidth <= 768 ? '50%' : 'auto',
-            right: windowWidth <= 768 ? 'auto' : 0,
-            transform: windowWidth <= 768 ? 'translate(-50%, -50%)' : 'none',
-            background: 'white',
-            borderRadius: '12px',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-            width: windowWidth <= 768 ? 'calc(100vw - 32px)' : '360px',
-            maxWidth: windowWidth <= 768 ? '400px' : '360px',
-            zIndex: 1000,
-            overflow: 'hidden',
-            animation: 'fadeIn 0.2s ease-out',
-            border: '1px solid rgba(0,0,0,0.05)'
-          }}>
-          
+                backgroundColor: isMobile ? 'rgba(0,0,0,0.5)' : 'transparent',
+                zIndex: 99999, // High z-index to be on top of everything
+                transition: 'background-color 0.2s ease'
+            }}
+            onClick={() => setIsOpen(false)}
+        />
+        
+        {/* Dropdown Content */}
+        <div 
+            ref={dropdownRef}
+            style={{
+                position: 'fixed',
+                ...(isMobile ? {
+                    // Mobile Styles
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 'calc(100vw - 32px)',
+                    maxWidth: '400px',
+                    maxHeight: '80vh'
+                } : {
+                    // Desktop Styles
+                    top: dropdownPos.top,
+                    right: dropdownPos.right,
+                    width: '360px',
+                    transform: 'none'
+                }),
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                boxShadow: isMobile ? '0 10px 25px rgba(0,0,0,0.2)' : '0 4px 20px rgba(0,0,0,0.15)',
+                zIndex: 100000, // Higher than overlay
+                overflow: 'hidden',
+                animation: 'fadeIn 0.2s ease-out',
+                display: 'flex',
+                flexDirection: 'column',
+                border: '1px solid rgba(0,0,0,0.05)'
+            }}
+            onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
+        >
           {/* Header */}
           <div style={{
             padding: '15px',
@@ -324,7 +307,8 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            background: 'linear-gradient(to right, #fafafa, #ffffff)'
+            background: 'linear-gradient(to right, #fafafa, #ffffff)',
+            flexShrink: 0
           }}>
             <div style={{ 
               fontWeight: 600, 
@@ -377,7 +361,7 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
           </div>
 
           {/* Content */}
-          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+          <div style={{ overflowY: 'auto', flex: 1, maxHeight: isMobile ? 'calc(80vh - 100px)' : '400px' }}>
             {loading ? (
               <div style={{
                 padding: '40px 20px',
@@ -406,7 +390,7 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
               }}>
                 <div style={{ 
                   width: '50px', 
-                  height: '50px',
+                  height: '50px', 
                   borderRadius: '50%',
                   background: '#f8f9fa',
                   display: 'flex',
@@ -663,7 +647,8 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
             padding: '12px 15px',
             borderTop: '1px solid #f0f0f0',
             textAlign: 'center',
-            background: 'linear-gradient(to right, #f8f9fa, #ffffff)'
+            background: 'linear-gradient(to right, #f8f9fa, #ffffff)',
+            flexShrink: 0
           }}>
             <Link 
               href="/dashboard/chat"
@@ -698,19 +683,85 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
             </Link>
           </div>
         </div>
-        </>
-      )}
-      
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
-    </div>
+        
+        <style jsx>{`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </>,
+      document.body
+    );
+  };
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={toggleDropdown}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: isOpen ? '#f1f1f1' : '#f8f9fa',
+          border: 'none',
+          borderRadius: '50%',
+          width: variant === 'header' ? '40px' : '48px',
+          height: variant === 'header' ? '40px' : '48px',
+          cursor: 'pointer',
+          position: 'relative',
+          transition: 'all 0.3s ease',
+          boxShadow: isOpen ? '0 4px 15px rgba(0,0,0,0.08)' : '0 2px 10px rgba(0,0,0,0.05)'
+        }}
+        onMouseOver={(e) => {
+          if (!isOpen) {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.08)';
+            e.currentTarget.style.background = '#f1f1f1';
+          }
+        }}
+        onMouseOut={(e) => {
+          if (!isOpen) {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.05)';
+            e.currentTarget.style.background = '#f8f9fa';
+          }
+        }}
+        title={t('chat.messages')}
+      >
+        <BiMessage size={variant === 'header' ? 20 : 24} color={isOpen ? '#0063b1' : '#666'} />
+        
+        {totalUnread > 0 && (
+          <span style={{
+            position: 'absolute',
+            top: '-8px',
+            right: '-8px',
+            background: '#FF3366',
+            color: 'white',
+            borderRadius: '50%',
+            padding: '2px 6px',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            zIndex: 5,
+            minWidth: '20px',
+            height: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            boxShadow: '0 0 0 2px #fff'
+          }}>
+            {totalUnread > 99 ? '99+' : totalUnread}
+          </span>
+        )}
+      </button>
+      {renderDropdown()}
+    </>
   );
 } 

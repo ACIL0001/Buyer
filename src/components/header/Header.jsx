@@ -896,7 +896,7 @@ export const Header = () => {
                             <rect x="1" y="9" width="6" height="6" rx="1" stroke="#0063b1" strokeWidth="1.5" fill="none"/>
                             <rect x="9" y="9" width="6" height="6" rx="1" stroke="#0063b1" strokeWidth="1.5" fill="none"/>
                           </svg>
-                          <span>Dashboard</span>
+                          <span>{t('navigation.dashboard')}</span>
                         </div>
                       </Link>
                       

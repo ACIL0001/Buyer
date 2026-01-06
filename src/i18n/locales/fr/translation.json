@@ -142,6 +142,7 @@
   },
   "navigation": {
     "home": "Accueil",
+    "dashboardLink": "Tableau de bord",
     "dashboard": "Tableau de bord",
     "auctions": "Enchères",
     "addAuction": "Créer Enchère",
@@ -434,7 +435,12 @@
       "certificates": "Certificats",
       "certificatesDesc": "Certificats professionnels ou autres documents complémentaires",
       "paymentProof": "Preuve de paiement",
-      "paymentProofDesc": "Justificatif de paiement de souscription"
+      "paymentProofDesc": "Justificatif de paiement de souscription",
+      "registreCommerce": "Registre de Commerce / Carte Artisan",
+      "c20": "C20",
+      "misesAJourCnas": "Mises à jour CNAS",
+      "balanceSheet": "Bilans des 3 dernières années",
+      "identityCard": "Carte d'identité"
     },
     "addCoverPhoto": "Cliquez pour ajouter une photo de couverture",
     "addCover": "Ajouter Couverture",
@@ -445,7 +451,12 @@
     "secteur": "Secteur",
     "entity": "Entité",
     "selectWilaya": "Sélectionner Wilaya",
-    "enterDetails": "Entrez les détails"
+    "enterDetails": "Entrez les détails",
+    "hero": {
+      "maxFileSize": "Taille du fichier trop grande (max 5 Mo)",
+      "coverSuccess": "Photo de couverture mise à jour avec succès",
+      "coverError": "Échec de la mise à jour de la photo de couverture"
+    }
   },
   "account": {
     "switchToSeller": "Passer en mode vendeur",
@@ -1392,56 +1403,6 @@
         "identityCard": "Carte d'identité",
         "identityCardDesc": "Carte d'identité nationale"
       }
-    }
-  },
-  "profile": {
-    "documents": {
-      "registreCommerce": "Registre de Commerce / Carte Artisan",
-      "nif": "NIF",
-      "nis": "NIS",
-      "art": "Article",
-      "carteFellah": "Carte Fellah",
-      "c20": "C20",
-      "misesAJourCnas": "Mises à jour CNAS",
-      "balanceSheet": "Bilans des 3 dernières années",
-      "certificates": "Certificats",
-      "identityCard": "Carte d'identité",
-      "requiredForVerification": "Documents Obligatoires pour Vérification",
-      "requiredForCertification": "Documents requis pour certification",
-      "verificationNoteTitle": "Vérification",
-      "verificationRequirement": "Fournir (RC/ Autres + NIF) ou (Carte Fellah uniquement).",
-      "verificationSaveNote": "Cliquez sur \"Soumettre\" pour envoyer à l'administrateur.",
-      "certificationNoteTitle": "Certification",
-      "certificationRequirement": "Ajoutez ces documents pour la certification professionnelle.",
-      "certificationSaveNote": "Cliquez sur \"Soumettre\" pour envoyer à l'administrateur.",
-      "submitForCertification": "Soumettre pour certification",
-      "pendingCertification": "En attente de certification",
-      "certified": "Certifié",
-      "management": "Gestion des Documents",
-      "managementDesc": "Gérez vos documents d'identité. Vous pouvez remplacer les documents existants ou ajouter de nouveaux documents optionnels.",
-      "loading": "Chargement des documents...",
-      "upgradeToVerified": "Passer à Vérifié",
-      "upgradeToCertified": "Passer à Certifié",
-      "status": "Statut",
-      "approved": "Approuvé",
-      "rejected": "Rejeté",
-      "pending": "En attente",
-      "note": "Les documents marqués d'un astérisque (*) sont obligatoires. Vous pouvez remplacer ou ajouter des documents à tout moment.",
-      "clickButtonsNote": "Cliquez sur les boutons ci-dessus pour voir les documents requis pour chaque niveau de vérification."
-    },
-    "tabs": {
-      "myActivities": "Mes Activités",
-      "documents": "Documents",
-      "history": "Historique"
-    },
-    "noActivities": "Aucune activité récente",
-    "addCoverPhoto": "Ajouter une photo de couverture",
-    "changeCover": "Modifier la couverture",
-    "addCover": "Ajouter une couverture",
-    "hero": {
-      "maxFileSize": "Taille du fichier trop grande (max 5 Mo)",
-      "coverSuccess": "Photo de couverture mise à jour avec succès",
-      "coverError": "Échec de la mise à jour de la photo de couverture"
     }
   },
   "review": {

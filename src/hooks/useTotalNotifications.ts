@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import useNotification from './useNotification';
 import { useAdminMessageNotifications } from './useAdminMessageNotifications';
 
@@ -21,7 +21,7 @@ export default function useTotalNotifications() {
   }, [generalUnreadCount, adminUnreadCount]);
 
   // Refresh all notification counts
-  const refreshAll = async () => {
+  const refreshAll = useCallback(async () => {
     console.log('🔄 Refreshing all notification counts');
     setIsLoading(true);
     try {
@@ -35,7 +35,7 @@ export default function useTotalNotifications() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [refreshGeneral, refreshAdmin]);
 
   return {
     totalUnreadCount,

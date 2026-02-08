@@ -25,6 +25,7 @@ import {
     MdKeyboardArrowRight,
     MdLocationOn,
     MdEmail,
+    MdPhone,
 } from 'react-icons/md';
 import useAuth from '@/hooks/useAuth';
 
@@ -70,6 +71,10 @@ export default function CreateDirectSalePage() {
         price: Yup.number().positive().required(t('createDirectSale.errors.priceRequired')),
         wilaya: Yup.string().required(t('createDirectSale.errors.wilayaRequired')),
         location: Yup.string().required(t('createDirectSale.errors.locationRequired')),
+        contactNumber: Yup.string().matches(
+            /^[0-9]{10}$/,
+            'Le numéro de contact doit contenir 10 chiffres'
+        ).optional(),
     });
 
     const formik = useFormik({
@@ -84,7 +89,8 @@ export default function CreateDirectSalePage() {
             location: '',
             isPro: false,
             hidden: false,
-            visibleToVerified: false,
+            professionalOnly: false,
+            contactNumber: '',
         },
         validationSchema,
         validateOnChange: false,
@@ -152,9 +158,13 @@ export default function CreateDirectSalePage() {
                owner: auth.user?._id,
                ...values,
                place: values.location, 
-               quantity: parseInt(values.quantity),
+               quantity: values.quantity,
                price: parseFloat(values.price),
+               professionalOnly: values.professionalOnly, // explicitly mapping it though it's already in values
+               hidden: values.hidden === true,
             };
+            console.log('📤 Direct Sale Payload:', dataPayload);
+            console.log('📞 Contact Number in payload:', dataPayload.contactNumber);
             formData.append('data', JSON.stringify(dataPayload));
             mediaFiles.forEach(f => {
                 if(f.type.startsWith('image')) formData.append('thumbs[]', f);
@@ -288,7 +298,7 @@ export default function CreateDirectSalePage() {
                                 />
                                 <TextField 
                                     label={t('createDirectSale.quantity')} 
-                                    fullWidth type="number" 
+                                    fullWidth type="text" 
                                     variant="outlined"
                                     {...formik.getFieldProps('quantity')} 
                                 />
@@ -310,9 +320,28 @@ export default function CreateDirectSalePage() {
                                     {...formik.getFieldProps('location')} 
                                 />
                              </Box>
-                        </Grid>
+                         </Grid>
 
-                        {/* SETTINGS */}
+                         {/* CONTACT NUMBER */}
+                         <Grid size={{ xs: 12, md: 6 }}>
+                             <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>Contact (Optionnel)</Typography>
+                             <Box sx={{ p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}>
+                                 <TextField
+                                     fullWidth
+                                     label="Numéro de contact"
+                                     placeholder="Ex: 0555123456"
+                                     variant="outlined"
+                                     InputProps={{ 
+                                         startAdornment: <InputAdornment position="start"><MdPhone /></InputAdornment> 
+                                     }}
+                                     helperText="Si non fourni, votre numéro d'inscription sera affiché"
+                                     {...formik.getFieldProps('contactNumber')}
+                                     error={formik.touched.contactNumber && !!formik.errors.contactNumber}
+                                />
+                             </Box>
+                         </Grid>
+
+                         {/* SETTINGS */}
                         <Grid size={{ xs: 12, md: 6 }}>
                             <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>{t('createDirectSale.settings')}</Typography>
                             <Box sx={{ p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}>
@@ -326,22 +355,13 @@ export default function CreateDirectSalePage() {
                                     }
                                     sx={{ mb: 2, width: '100%', alignItems: 'flex-start' }}
                                 />
+
                                 <FormControlLabel
-                                    control={<Switch checked={formik.values.isPro} onChange={formik.handleChange} name="isPro" />}
+                                    control={<Switch checked={formik.values.professionalOnly} onChange={formik.handleChange} name="professionalOnly" />}
                                     label={
                                         <Box>
-                                            <Typography variant="body1" fontWeight="bold">{t('createDirectSale.professionalSale')}</Typography>
-                                            <Typography variant="caption" color="text.secondary">{t('createDirectSale.proDesc')}</Typography>
-                                        </Box>
-                                    }
-                                    sx={{ mb: 2, width: '100%', alignItems: 'flex-start' }}
-                                />
-                                <FormControlLabel
-                                    control={<Switch checked={formik.values.visibleToVerified} onChange={formik.handleChange} name="visibleToVerified" />}
-                                    label={
-                                        <Box>
-                                            <Typography variant="body1" fontWeight="bold">{t('createDirectSale.verifiedOnly')}</Typography>
-                                            <Typography variant="caption" color="text.secondary">{t('createDirectSale.verifiedOnlyDesc')}</Typography>
+                                            <Typography variant="body1" fontWeight="bold">Professionnels uniquement</Typography>
+                                            <Typography variant="caption" color="text.secondary">Visible uniquement par les comptes professionnels</Typography>
                                         </Box>
                                     }
                                     sx={{ width: '100%', alignItems: 'flex-start' }}

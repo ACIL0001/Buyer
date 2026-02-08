@@ -29,6 +29,7 @@ import {
     MdKeyboardArrowRight,
     MdLocationOn,
     MdEmail,
+    MdPhone,
 } from 'react-icons/md';
 import useAuth from '@/hooks/useAuth';
 
@@ -89,6 +90,10 @@ export default function CreateAuctionPage() {
             otherwise: (schema) => schema.notRequired(),
         }),
         reservePrice: Yup.number().min(0).required(t('createAuction.errors.reservePriceRequired')),
+        contactNumber: Yup.string().matches(
+            /^[0-9]{10}$/,
+            'Le numéro de contact doit contenir 10 chiffres'
+        ).optional(),
     });
 
     const formik = useFormik({
@@ -106,8 +111,9 @@ export default function CreateAuctionPage() {
             quantity: '',
             isPro: false,
             hidden: false,
-            visibleToVerified: false,
+            professionalOnly: false,
             reservePrice: '',
+            contactNumber: '',
         },
         validationSchema,
         validateOnChange: false,
@@ -196,6 +202,8 @@ export default function CreateAuctionPage() {
                 startingAt: startDate.toISOString(),
                 endingAt: endDate.toISOString(),
                 owner: auth?.user?._id,
+                professionalOnly: values.professionalOnly,
+                hidden: values.hidden === true,
             };
             
             if (!payload.productSubCategory || payload.productSubCategory === '') {
@@ -410,7 +418,7 @@ export default function CreateAuctionPage() {
                                      <TextField
                                         fullWidth
                                         label={t('createAuction.quantity')}
-                                        type="number"
+                                        type="text"
                                         variant="outlined"
                                         {...formik.getFieldProps('quantity')}
                                         error={formik.touched.quantity && Boolean(formik.errors.quantity)}
@@ -446,7 +454,9 @@ export default function CreateAuctionPage() {
                                     helperText={formik.touched.place && formik.errors.place}
                                  />
                              </Box>
-                        </Grid>
+                         </Grid>
+
+
 
                         {/* VISIBILITY SETTINGS */}
                         <Grid size={{ xs: 12, md: 6 }}>
@@ -462,22 +472,13 @@ export default function CreateAuctionPage() {
                                     }
                                     sx={{ mb: 2, width: '100%', alignItems: 'flex-start' }}
                                 />
+
                                 <FormControlLabel
-                                    control={<Switch checked={formik.values.isPro} onChange={formik.handleChange} name="isPro" />}
+                                    control={<Switch checked={formik.values.professionalOnly} onChange={formik.handleChange} name="professionalOnly" />}
                                     label={
                                         <Box>
-                                            <Typography variant="body1" fontWeight="bold">{t('createAuction.proOnly')}</Typography>
-                                            <Typography variant="caption" color="text.secondary">{t('createAuction.proOnlyDesc')}</Typography>
-                                        </Box>
-                                    }
-                                    sx={{ mb: 2, width: '100%', alignItems: 'flex-start' }}
-                                />
-                                <FormControlLabel
-                                    control={<Switch checked={formik.values.visibleToVerified} onChange={formik.handleChange} name="visibleToVerified" />}
-                                    label={
-                                        <Box>
-                                            <Typography variant="body1" fontWeight="bold">{t('createAuction.verifiedOnly')}</Typography>
-                                            <Typography variant="caption" color="text.secondary">{t('createAuction.verifiedOnlyDesc')}</Typography>
+                                            <Typography variant="body1" fontWeight="bold">Professionnels uniquement</Typography>
+                                            <Typography variant="caption" color="text.secondary">Visible uniquement par les comptes professionnels</Typography>
                                         </Box>
                                     }
                                     sx={{ width: '100%', alignItems: 'flex-start' }}

@@ -10,8 +10,8 @@ import { TendersAPI } from '@/app/api/tenders';
 import { DirectSaleAPI } from '@/app/api/direct-sale';
 import { useRouter } from 'next/navigation';
 import app from '@/config';
-import { normalizeImageUrl } from '@/utils/url';
 import { FaShoppingBag, FaHandshake } from 'react-icons/fa';
+import Fuse from 'fuse.js';
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -35,6 +35,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
   const [allAuctions, setAllAuctions] = useState<any[]>([]);
   const [allTenders, setAllTenders] = useState<any[]>([]);
   const [allDirectSales, setAllDirectSales] = useState<any[]>([]);
+  const [showNotifyMe, setShowNotifyMe] = useState(false);
+  const [notifyMeEmail, setNotifyMeEmail] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchResultsRef = useRef<HTMLDivElement>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
@@ -99,48 +101,147 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     
     if (query.length > 0) {
       setLoadingSearch(true);
+      setShowNotifyMe(false);
       try {
-        const lowerQuery = query.toLowerCase();
+        // 1. Fuzzy matching for categories
+        const categoryFuse = new Fuse(allCategories, {
+          keys: ['name'],
+          threshold: 0.6,
+          distance: 100,
+          minMatchCharLength: 2,
+          includeScore: true,
+        });
+
+        console.log('🔍 Home1Banner Fuzzy search - Query:', query, 'Categories count:', allCategories.length);
+
+        const categorySearchResults = categoryFuse.search(query);
+        console.log('🎯 Home1Banner Category fuzzy search results:', categorySearchResults);
         
-        // Search categories
-        const filteredCategories = allCategories.filter((category: any) => 
-          category.name.toLowerCase().includes(lowerQuery)
-        ).map(cat => ({ ...cat, type: 'category' }));
+        const filteredCategories = categorySearchResults.map(result => ({ 
+          ...result.item, 
+          type: 'category',
+          score: result.score
+        }));
         
-        // Search auctions
-        const filteredAuctions = allAuctions.filter((auction: any) => 
-          (auction.title || auction.name || '').toLowerCase().includes(lowerQuery)
-        ).map(auction => ({ ...auction, type: 'auction' }));
+        // 2. Fuzzy matching for auctions
+        const auctionFuse = new Fuse(allAuctions, {
+          keys: ['title', 'name', 'description'],
+          threshold: 0.5,
+          distance: 100,
+          minMatchCharLength: 3,
+          includeScore: true,
+        });
+
+        const auctionSearchResults = auctionFuse.search(query);
+        console.log('🎯 Home1Banner Auction fuzzy search results:', auctionSearchResults);
         
-        // Search tenders
-        const filteredTenders = allTenders.filter((tender: any) => 
-          (tender.title || tender.name || '').toLowerCase().includes(lowerQuery)
-        ).map(tender => ({ ...tender, type: 'tender' }));
+        const filteredAuctions = auctionSearchResults.map(result => ({ 
+          ...result.item, 
+          type: 'auction',
+          score: result.score
+        }));
         
-        // Search direct sales
-        const filteredDirectSales = allDirectSales.filter((directSale: any) => 
-          (directSale.title || directSale.name || '').toLowerCase().includes(lowerQuery)
-        ).map(directSale => ({ ...directSale, type: 'directSale' }));
+        // 3. Fuzzy matching for tenders
+        const tenderFuse = new Fuse(allTenders, {
+          keys: ['title', 'name', 'description'],
+          threshold: 0.5,
+          distance: 100,
+          minMatchCharLength: 3,
+          includeScore: true,
+        });
+
+        const tenderSearchResults = tenderFuse.search(query);
+        console.log('🎯 Home1Banner Tender fuzzy search results:', tenderSearchResults);
         
-        // Combine all results
+        const filteredTenders = tenderSearchResults.map(result => ({ 
+          ...result.item, 
+          type: 'tender',
+          score: result.score
+        }));
+        
+        // 4. Fuzzy matching for direct sales
+        const directSaleFuse = new Fuse(allDirectSales, {
+          keys: ['title', 'name', 'description'],
+          threshold: 0.5,
+          distance: 100,
+          minMatchCharLength: 3,
+          includeScore: true,
+        });
+
+        const directSaleSearchResults = directSaleFuse.search(query);
+        console.log('🎯 Home1Banner DirectSale fuzzy search results:', directSaleSearchResults);
+        
+        const filteredDirectSales = directSaleSearchResults.map(result => ({ 
+          ...result.item, 
+          type: 'directSale',
+          score: result.score
+        }));
+        
+        // 5. Combine all local results
         const combinedResults = [
           ...filteredCategories,
           ...filteredAuctions,
           ...filteredTenders,
           ...filteredDirectSales
-        ];
+        ].sort((a, b) => (a.score || 0) - (b.score || 0));
         
-        setSearchResults(combinedResults);
-        setShowSearchResults(true);
+        console.log('✨ Home1Banner All fuzzy search results (sorted by relevance):', combinedResults);
+        
+        // 6. If no local results, try database fallback
+        if (combinedResults.length === 0) {
+          console.log('🔄 No local results, trying database fallback...');
+          
+          try {
+            const fallbackResponse = await fetch('http://localhost:3000/search/fallback', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ query, limit: 3, minProbability: 50 })
+            });
+            
+            const fallbackData = await fallbackResponse.json();
+            
+            if (fallbackData.success && fallbackData.hasResults) {
+              console.log('💡 Database fallback results:', fallbackData.results);
+              
+              const fallbackResults = fallbackData.results.map((r: any) => ({
+                ...r,
+                type: r.type || 'suggestion',
+                isFallback: true,
+                name: r.term,
+              }));
+              
+              setSearchResults(fallbackResults);
+              setShowSearchResults(true);
+              setShowNotifyMe(false);
+            } else {
+              console.log('❌ No results found, showing notify me option');
+              setSearchResults([]);
+              setShowSearchResults(true);
+              setShowNotifyMe(true);
+            }
+          } catch (fallbackError) {
+            console.error('Database fallback error:', fallbackError);
+            setSearchResults([]);
+            setShowSearchResults(true);
+            setShowNotifyMe(true);
+          }
+        } else {
+          setSearchResults(combinedResults);
+          setShowSearchResults(true);
+          setShowNotifyMe(false);
+        }
+        
       } catch (error) {
         console.error('Error searching:', error);
         setSearchResults([]);
+        setShowNotifyMe(true);
       } finally {
         setLoadingSearch(false);
       }
     } else {
       setSearchResults([]);
       setShowSearchResults(false);
+      setShowNotifyMe(false);
     }
   };
 
@@ -152,16 +253,89 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     });
   }, [router]);
 
-  const handleSearchSelect = (item: any) => {
-    setSearchQuery(item.title || item.name || '');
+  // Handle notify me submission
+  const handleNotifyMe = async () => {
+    if (!notifyMeEmail && !notifyMeEmail.trim()) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3000/search/notify-me', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          searchQuery: searchQuery,
+          email: notifyMeEmail,
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('✅ ' + data.message);
+        setShowNotifyMe(false);
+        setNotifyMeEmail('');
+        setShowSearchResults(false);
+      } else {
+        alert('❌ Failed to submit notification request. Please try again.');
+      }
+    } catch (error) {
+      console.error('Notify me error:', error);
+      alert('❌ An error occurred. Please try again later.');
+    }
+  };
+
+  const handleEdgeWeightUpdate = async (item: any) => {
+    if (!item.isFallback || !item.termId) return;
+
+    try {
+      // Map the type correctly - fallback suggestions are usually categories/products
+      const typeMapping: any = {
+        'suggestion': 'category',
+        'product': 'category',
+        'category': 'category',
+        'auction': 'auction',
+        'tender': 'tender',
+        'directSale': 'directSale',
+      };
+
+      const mappedType = typeMapping[item.type] || 'category';
+      const selectedId = item.categoryId || item._id || item.id || item.termId;
+
+      await fetch('http://localhost:3000/search/update-edge-weight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          searchQuery: searchQuery,
+          selectedTermId: item.termId,
+          selectedType: mappedType,
+          selectedId: selectedId,
+        })
+      });
+      console.log('✅ Edge weight updated for:', item.term);
+    } catch (error) {
+      console.error('Edge weight update error:', error);
+    }
+  };
+
+  const handleSearchSelect = async (item: any) => {
+    setSearchQuery(item.title || item.name || item.term || '');
     setShowSearchResults(false);
     
+    // Update edge weight if this is a fallback result
+    if (item.isFallback) {
+      await handleEdgeWeightUpdate(item);
+    }
+    
     // Navigate based on item type
-    if (item.type === 'category') {
-      const categoryId = item._id || item.id;
-      const categoryName = item.name;
-      const categoryUrl = `/category?category=${categoryId}&name=${encodeURIComponent(categoryName)}`;
-      navigateWithTop(categoryUrl);
+    if (item.type === 'category' || item.type === 'suggestion') {
+      const categoryId = item.categoryId || item._id || item.id;
+      const categoryName = item.name || item.term;
+      if (categoryId && categoryName) {
+        const categoryUrl = `/category?category=${categoryId}&name=${encodeURIComponent(categoryName)}`;
+        navigateWithTop(categoryUrl);
+      }
     } else if (item.type === 'auction') {
       const auctionId = item._id || item.id;
       navigateWithTop(`/auction-details/${auctionId}`);
@@ -261,8 +435,34 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
   const getCategoryImageUrl = (category: any): string => {
     // Check if category has thumb with url (matching working implementation)
-    const imageUrl = category.thumb?.url || 
-                     category.thumb?.fullUrl || 
+    if (category.thumb && category.thumb.url) {
+      const imageUrl = category.thumb.url;
+      
+      // If it's already a full URL, return it as-is
+      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+        // Replace localhost:3000 with current baseURL if needed
+        if (imageUrl.includes('localhost:3000')) {
+          return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+        }
+        return imageUrl;
+      }
+      
+      // Handle /static/ paths by removing leading slash and prepending baseURL
+      if (imageUrl.startsWith('/static/')) {
+        return `${app.baseURL}${imageUrl.substring(1)}`;
+      }
+      
+      // Handle other paths starting with /
+      if (imageUrl.startsWith('/')) {
+        return `${app.baseURL}${imageUrl.substring(1)}`;
+      }
+      
+      // Handle paths without leading slash
+      return `${app.baseURL}${imageUrl}`;
+    }
+    
+    // Fallback: try other possible fields
+    const imageUrl = category.thumb?.fullUrl || 
                      category.image || 
                      category.thumbnail || 
                      category.photo || 
@@ -272,7 +472,24 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
       return '/assets/images/cat.avif'; // Fallback image
     }
 
-    return normalizeImageUrl(imageUrl);
+    // If it's already a full URL, return it as-is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      if (imageUrl.includes('localhost:3000')) {
+        return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
+      }
+      return imageUrl;
+    }
+
+    // Handle relative paths
+    if (imageUrl.startsWith('/static/')) {
+      return `${app.baseURL}${imageUrl.substring(1)}`;
+    }
+    
+    if (imageUrl.startsWith('/')) {
+      return `${app.baseURL}${imageUrl.substring(1)}`;
+    }
+    
+    return `${app.baseURL}${imageUrl}`;
   };
 
   const navigateToCategory = (category: any, event: React.MouseEvent) => {
@@ -1238,23 +1455,112 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           )}
 
           {/* No Results Message */}
-          {showSearchResults && searchResults.length === 0 && searchQuery.length > 0 && !loadingSearch && (
+          {/* No Results & Notify Me */}
+          {(showNotifyMe || (showSearchResults && searchResults.length === 0 && searchQuery.length > 0 && !loadingSearch)) && (
             <div style={{
               position: 'absolute',
               top: '100%',
               left: '0',
               right: '0',
-              background: 'rgba(255, 255, 255, 0.95)',
+              background: 'rgba(255, 255, 255, 0.98)',
               backdropFilter: 'blur(20px)',
               border: '1px solid rgba(0, 0, 0, 0.1)',
               borderRadius: '16px',
               marginTop: '8px',
-              padding: '20px',
-              textAlign: 'center',
-              color: '#64748b',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.2)',
               zIndex: 1000,
+              overflow: 'hidden',
+              animation: 'slideDown 0.3s ease',
             }}>
-              {t('home.searchNoResults')} "{searchQuery}"
+              <div style={{
+                padding: '24px 20px',
+                textAlign: 'center',
+                borderBottom: '1px solid rgba(0,0,0,0.05)',
+                background: '#f8fafc',
+              }}>
+                <div style={{ fontSize: '40px', marginBottom: '10px' }}>🔍</div>
+                <h3 style={{ 
+                  margin: '0 0 8px 0', 
+                  color: '#1e293b', 
+                  fontSize: '16px', 
+                  fontWeight: '700' 
+                }}>
+                  {t('home.searchNoResults')} "{searchQuery}"
+                </h3>
+                <p style={{ 
+                  margin: '0', 
+                  color: '#64748b', 
+                  fontSize: '13px',
+                  lineHeight: '1.5'
+                }}>
+                  We couldn't find what you're looking for right now.
+                </p>
+              </div>
+
+              <div style={{ padding: '20px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  marginBottom: '12px',
+                  color: '#3b82f6',
+                  fontWeight: '600',
+                  fontSize: '14px'
+                }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                  </svg>
+                  Get notified when available
+                </div>
+                
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={notifyMeEmail}
+                    onChange={(e) => setNotifyMeEmail(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      border: '1px solid #e2e8f0',
+                      outline: 'none',
+                      fontSize: '14px',
+                      transition: 'border-color 0.2s',
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                  />
+                  <button
+                    onClick={handleNotifyMe}
+                    style={{
+                      padding: '10px 20px',
+                      borderRadius: '8px',
+                      background: '#3b82f6',
+                      color: 'white',
+                      border: 'none',
+                      fontWeight: '600',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      transition: 'background 0.2s',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#2563eb'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = '#3b82f6'}
+                  >
+                    Notify Me
+                  </button>
+                </div>
+                <p style={{ 
+                  marginTop: '12px', 
+                  marginBottom: '0', 
+                  fontSize: '11px', 
+                  color: '#94a3b8', 
+                  textAlign: 'center' 
+                }}>
+                  We'll send you an email as soon as we find a match.
+                </p>
+              </div>
             </div>
           )}
           

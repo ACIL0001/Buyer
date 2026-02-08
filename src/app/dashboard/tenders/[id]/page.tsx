@@ -65,6 +65,8 @@ export default function TenderDetailPage() {
   const fetchTenderDetails = useCallback(async () => {
     try {
       const response = await TendersAPI.getTenderById(id);
+      console.log('📞 Tender response:', response);
+      console.log('📞 Contact Number:', response?.contactNumber);
       setTender(response);
     } catch (error) {
       console.error('Error fetching tender details:', error);
@@ -236,85 +238,15 @@ export default function TenderDetailPage() {
                                 <Typography variant="body1">{typeof tender.category === 'object' ? tender.category.name : tender.category}</Typography>
                             </Grid>
                         )}
+                        {tender.contactNumber && (
+                            <Grid size={{ xs: 12 }}>
+                                <Typography variant="body2" color="text.secondary">Numéro de contact</Typography>
+                                <Typography variant="body1">{tender.contactNumber}</Typography>
+                            </Grid>
+                        )}
                     </Grid>
                 </AccordionDetails>
             </Accordion>
-          </Card>
-
-          <Card sx={{ p: 3 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
-               <Typography variant="h6">
-                 {t ? t('tenders.mySubmissions') : 'Mes soumissions'} ({tenderBids.length})
-               </Typography>
-            </Stack>
-
-            {tenderBids.length === 0 ? (
-                <Alert severity="info" sx={{ width: '100%' }}>Aucune offre soumise pour le moment</Alert>
-            ) : (
-                <TableContainer>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                {evaluationType === 'MIEUX_DISANT' ? (
-                                    <TableCell>Proposition</TableCell>
-                                ) : (
-                                    <TableCell align="right">Montant</TableCell>
-                                )}
-
-                                <TableCell align="center">Date</TableCell>
-                                <TableCell align="center">Statut</TableCell>
-                                <TableCell align="center">Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {tenderBids.map((bid) => (
-                                <TableRow key={bid._id} hover>
-                                    {evaluationType === 'MIEUX_DISANT' ? (
-                                        <TableCell sx={{ maxWidth: 200, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                            {bid.proposal}
-                                        </TableCell>
-                                    ) : (
-                                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>
-                                            {(bid.price || bid.bidAmount)?.toLocaleString()} DA
-                                        </TableCell>
-                                    )}
-
-                                    <TableCell align="center">{formatDate(bid.createdAt)}</TableCell>
-                                    <TableCell align="center">
-                                        <Chip 
-                                            label={bid.status === 'pending' ? 'En attente' : bid.status} 
-                                            color={bid.status === 'pending' ? 'warning' : 'success'} 
-                                            size="small" 
-                                            variant="outlined" 
-                                        />
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Stack direction="row" spacing={1} justifyContent="center">
-                                            <Button 
-                                                size="small" 
-                                                variant="outlined"
-                                                onClick={() => router.push(`/dashboard/tenders/${id}/offers/${bid._id}`)}
-                                            >
-                                                Détails
-                                            </Button>
-                                            {isOwner && bid.status === 'PENDING' && (
-                                                <Button
-                                                    size="small"
-                                                    variant="contained"
-                                                    color="success"
-                                                    onClick={() => handleAcceptBid(bid)}
-                                                >
-                                                    Accepter
-                                                </Button>
-                                            )}
-                                        </Stack>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
           </Card>
         </Grid>
 

@@ -160,6 +160,12 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             localStorage.setItem('showVerificationPopup', 'true');
           }
 
+          // Track login count for profile note feature
+          const currentNoteLoginCount = parseInt(localStorage.getItem('profile_note_login_count') || '0');
+          localStorage.setItem('profile_note_login_count', (currentNoteLoginCount + 1).toString());
+          // Clear session flag so note can show in new session
+          sessionStorage.removeItem('profile_note_shown');
+
           // Fetch fresh user data in background to ensure we have the full profile
           // We don't await this to speed up the UI feedback
           authStore.getState().fetchFreshUserData().catch(e => {
@@ -308,7 +314,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              router.push('/reset-password');
+              router.push('/auth/forgot-password');
             }}
             sx={{ 
               textAlign: 'left',

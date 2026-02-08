@@ -1114,7 +1114,7 @@ const MultipurposeAuctionSidebar = () => {
                                     pointerEvents: 'auto',
                                 }}
                             >
-                                Toutes
+                                {t('common.all') || 'Toutes'}
                             </button>
                             <button
                                 type="button"
@@ -1140,7 +1140,7 @@ const MultipurposeAuctionSidebar = () => {
                                     pointerEvents: 'auto',
                                 }}
                             >
-                                En Cours
+                                {t('common.active') || 'En Cours'}
                             </button>
                             <button
                                 type="button"
@@ -1166,7 +1166,7 @@ const MultipurposeAuctionSidebar = () => {
                                     pointerEvents: 'auto',
                                 }}
                             >
-                                Terminées
+                                {t('common.finished') || 'Terminées'}
                             </button>
                         </div>
                     </div>
@@ -1334,7 +1334,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                     border: '1px solid rgba(255, 255, 255, 0.2)',
                                                                 }}
                                                         >
-                                                            {auction.bidType === 'PRODUCT' ? 'Produit' : 'Service'}
+                                                            {auction.bidType === 'PRODUCT' ? t('common.product') : t('common.service')}
                                                             </div>
 
                                                         {/* Countdown Timer */}
@@ -1403,7 +1403,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                     navigateWithTop(`/auction-details/${auction._id}`);
                                                                 }}
                                                             >
-                                                                {auction.title || t('auctionSidebar.noTitle')}
+                                                                {auction.title || t('common.noTitle')}
                                                             </Link>
                                                         </h3>
 
@@ -1431,7 +1431,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                         overflow: 'hidden',
                                                                         textOverflow: 'ellipsis',
                                                                     }}>
-                                                                        📦 Quantité
+                                                                        📦 {t('common.quantity')}
                                                                     </p>
                                                                     <p style={{
                                                                         fontSize: '11px',
@@ -1441,7 +1441,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                         overflow: 'hidden',
                                                                         textOverflow: 'ellipsis',
                                                                     }}>
-                                                                        {auction.quantity || 'Non spécifiée'}
+                                                                        {auction.quantity || t('common.notSpecified')}
                                                                     </p>
                                                                 </div>
                                                             )}
@@ -1462,7 +1462,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                     overflow: 'hidden',
                                                                     textOverflow: 'ellipsis',
                                                                 }}>
-                                                                    📍 Localisation
+                                                                    📍 {t('common.location')}
                                                                 </p>
                                                                 <p style={{
                                                                     fontSize: '11px',
@@ -1483,7 +1483,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                       const parts = [place, address, location, wilaya].filter(Boolean);
                                                                       // Remove duplicates and join
                                                                       const uniqueParts = [...new Set(parts)];
-                                                                      return uniqueParts.length > 0 ? uniqueParts.join(', ') : 'Non spécifiée';
+                                                                      return uniqueParts.length > 0 ? uniqueParts.join(', ') : t('common.notSpecified');
                                                                     })()}
                                                                 </p>
                                                             </div>
@@ -1506,7 +1506,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                 margin: '0 0 2px 0',
                                                                     fontWeight: '600',
                                                             }}>
-                                                                💰 Prix actuel
+                                                                💰 {t('auction.currentPrice')}
                                                             </p>
                                                                     <p style={{
                                                                 fontSize: '12px',
@@ -1545,13 +1545,13 @@ const MultipurposeAuctionSidebar = () => {
                                                                     fontWeight: '600',
                                                                     color: hasAuctionEnded ? '#888' : '#0063b1',
                                                                 }}>
-                                                                    {auction.biddersCount || 0} participant{(auction.biddersCount || 0) !== 1 ? 's' : ''}
+                                                                    {t('auction.biddersWithCount', { count: auction.biddersCount || 0 })}
                                                                 </span>
                                                                 <span style={{
                                                                     fontSize: '10px',
                                                                     color: hasAuctionEnded ? '#888' : '#666',
                                                                 }}>
-                                                                    ont enchéri
+                                                                    {t('auction.bidsPlaced')}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -1566,6 +1566,9 @@ const MultipurposeAuctionSidebar = () => {
                                                                 }}>
                                                                     <img
                                                                 src={(() => {
+                                                                    if (auction.hidden) {
+                                                                        return DEFAULT_PROFILE_IMAGE;
+                                                                    }
                                                                     if (auction.owner?.avatar?.url) {
                                                                         const imageUrl = auction.owner.avatar.url;
                                                                         if (imageUrl.startsWith('http')) {
@@ -1622,7 +1625,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                         {(() => {
                                                                             // Check if seller is hidden (anonymous)
                                                                             if (auction.hidden === true) {
-                                                                        return 'Anonyme';
+                                                                        return t('common.anonymous');
                                                                             }
                                                                             
                                                                             // Prioritize company name over personal name
@@ -1650,7 +1653,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                                 return auction.owner.firstName;
                                                                             }
                                                                             // Default fallback
-                                                                    return 'Vendeur';
+                                                                    return t('common.seller');
                                                                         })()}
                                                             </span>
                                                             </div>
@@ -1700,7 +1703,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                 navigateWithTop(`/auction-details/${auction._id}`);
                                                             }}
                                                         >
-                                                            Voir les détails
+                                                            {t('common.viewDetails')}
                                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                                                 <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
                                                             </svg>

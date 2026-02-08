@@ -17,6 +17,7 @@ import { normalizeImageUrl } from '@/utils/url';
 import "../auction-details/st.css";
 import "../auction-details/modern-details.css";
 import { useRouter } from "next/navigation";
+import ShareButton from '@/components/common/ShareButton';
 
 // Default image constants
 const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
@@ -56,6 +57,7 @@ interface Auction {
   wilaya?: string;
   description?: string;
   biddersCount?: number;
+  participantsCount?: number;
   bidType?: 'PRODUCT' | 'SERVICE';
   // --- Image properties for enhanced image loading ---
   images?: string[];
@@ -1010,6 +1012,22 @@ const Home1LiveAuction = () => {
                               {t('liveAuction.yourAuction')}
                             </div>
                           )}
+
+                          {/* Share Button - Positioned in bottom-right of image */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '10px',
+                            right: '10px',
+                            zIndex: 10,
+                          }}>
+                            <ShareButton
+                              type="auction"
+                              id={auction.id}
+                              title={auction.title}
+                              description={auction.description}
+                              imageUrl={getAuctionImageUrl(auction)}
+                            />
+                          </div>
                         </div>
 
                         {/* Auction Details */}

@@ -38,6 +38,7 @@ interface User {
   joinDate: string;
   createdAt?: string;
   phone?: string;
+  contactNumber?: string;
   location?: string;
   description?: string;
   verificationStatus?: string;
@@ -50,13 +51,14 @@ interface User {
   entity?: string;
   wilaya?: string;
   bio?: string;
+  isProfileVisible?: boolean;
 }
 
 export default function PublicProfilePage() {
     const { t } = useTranslation();
     const router = useRouter();
     const params = useParams();
-    const { initializeAuth } = useAuth();
+    const { user: currentUser, initializeAuth } = useAuth();
     
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -171,6 +173,14 @@ export default function PublicProfilePage() {
     }
 
     const avatarSrc = getAvatarSrc();
+    
+    // Check if profile should be visible (visible if isProfileVisible is true OR if current user is the owner)
+    // Default to true if isProfileVisible is undefined to maintain backward compatibility
+    // But based on user request, if they chose "invisible", it should be invisible.
+    // If undefined, we can assume public or check requirements. Assuming public for now.
+    const isOwner = currentUser && currentUser._id === userId;
+    const isProfileVisible = user.isProfileVisible !== false; // Default to true if undefined
+    const canViewInfo = isProfileVisible || isOwner;
 
     return (
         <div>
@@ -341,6 +351,22 @@ export default function PublicProfilePage() {
                                             <span>VERIFIED</span>
                                         </div>
                                     )}
+                                    {user.isCertified && (
+                                        <div style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '4px',
+                                            padding: '4px 10px',
+                                            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                                            color: 'white',
+                                            borderRadius: '20px',
+                                            fontSize: '12px',
+                                            fontWeight: '600'
+                                        }}>
+                                            <i className="bi bi-award-fill"></i>
+                                            <span>CERTIFIED</span>
+                                        </div>
+                                    )}
                                     {user.isRecommended && (
                                         <div style={{
                                             display: 'inline-flex',
@@ -373,7 +399,7 @@ export default function PublicProfilePage() {
                         <div className="modern-tab-nav">
                              {[
                                 { id: "activities", icon: "bi-activity", label: t("profile.activities") || "Activités" },
-                                { id: "info", icon: "bi-person-circle", label: t("profile.personalInfo") || "Informations" },
+                                { id: "info", icon: "bi-person-circle", label: t("profile.personalInfo.title") || "Informations" },
                              ].map((tab) => (
                                 <button
                                     key={tab.id}
@@ -410,6 +436,7 @@ export default function PublicProfilePage() {
                                         transition={{ duration: 0.3 }}
                                     >
                                         <div className="modern-section-card">
+                                            {canViewInfo ? (
                                             <div className="modern-form-grid">
                                                 <div className="modern-form-field">
                                                     <label>Full Name</label>
@@ -426,11 +453,11 @@ export default function PublicProfilePage() {
                                                         </div>
                                                     </div>
                                                 )}
-                                                {user.phone && (
+                                                {(user.contactNumber || user.phone) && (
                                                     <div className="modern-form-field">
                                                         <label>Phone</label>
                                                          <div style={{ padding: '0.75rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                                                            {user.phone}
+                                                            {user.contactNumber || user.phone}
                                                         </div>
                                                     </div>
                                                 )}
@@ -476,6 +503,19 @@ export default function PublicProfilePage() {
                                                     </div>
                                                 </div>
                                             </div>
+                                            ) : (
+                                                <div style={{ 
+                                                    padding: '2rem', 
+                                                    textAlign: 'center', 
+                                                    color: '#6b7280', 
+                                                    background: '#f9fafb', 
+                                                    borderRadius: '8px',
+                                                    border: '1px dashed #e5e7eb'
+                                                }}>
+                                                    <i className="bi bi-lock-fill" style={{ fontSize: '2rem', marginBottom: '1rem', display: 'block', color: '#9ca3af' }}></i>
+                                                    <p>{t("profile.privateProfile") || "Cet utilisateur a choisi de garder ses informations personnelles privées."}</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </motion.div>
                                 )}

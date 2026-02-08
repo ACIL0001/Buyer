@@ -82,6 +82,7 @@ interface DirectSale {
   createdAt: string;
   updatedAt: string;
   owner?: any;
+  contactNumber?: string;
 }
 
 export default function DirectSaleDetailPage() {
@@ -99,7 +100,12 @@ export default function DirectSaleDetailPage() {
   const fetchDirectSale = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('🌐 [FRONTEND] Fetching direct sale with ID:', id);
       const data = await DirectSaleAPI.getDirectSaleById(id);
+      console.log('📞 [FRONTEND] Full Direct Sale response:', data);
+      console.log('📞 [FRONTEND] Contact Number field:', data?.contactNumber);
+      console.log('📞 [FRONTEND] Has Contact Number:', !!data?.contactNumber);
+      console.log('📞 [FRONTEND] All fields:', Object.keys(data || {}));
       setDirectSale(data);
     } catch (error) {
       console.error('Error fetching direct sale:', error);
@@ -236,75 +242,6 @@ export default function DirectSaleDetailPage() {
                         </Grid>
                     </Grid>
                 </Card>
-
-                {/* Orders Table */}
-                <Card sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <MdShoppingCart /> {t('directSales.detail.orders', { count: purchases.length })}
-                    </Typography>
-                    
-                    {purchasesLoading ? (
-                        <Box display="flex" justifyContent="center" p={3}><CircularProgress /></Box>
-                    ) : purchases.length > 0 ? (
-                        <TableContainer component={Paper} variant="outlined">
-                            <Table>
-                                <TableHead>
-                                    <TableRow sx={{ bgcolor: 'action.hover' }}>
-                                        <TableCell>{t('directSales.detail.table.buyer')}</TableCell>
-                                        <TableCell align="right">{t('common.quantity')}</TableCell>
-                                        <TableCell align="right">{t('directSales.detail.table.totalPrice')}</TableCell>
-                                        <TableCell align="center">{t('directSales.detail.table.status')}</TableCell>
-                                        <TableCell align="right">{t('common.date')}</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {purchases.map((purchase) => (
-                                        <TableRow key={purchase._id} hover>
-                                             <TableCell>
-                                                <Stack direction="row" alignItems="center" spacing={2}>
-                                                    <Link href={`/profile/${purchase.buyer?._id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                                        <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.light }}>
-                                                            {purchase.buyer?.firstName?.charAt(0) || <MdPerson />}
-                                                        </Avatar>
-                                                        <Box>
-                                                            <Typography variant="subtitle2" sx={{ '&:hover': { textDecoration: 'underline' } }}>
-                                                                {purchase.buyer?.firstName} {purchase.buyer?.lastName}
-                                                            </Typography>
-                                                            {purchase.buyer?.email && (
-                                                                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                                                                    {purchase.buyer?.email}
-                                                                </Typography>
-                                                            )}
-                                                            {purchase.buyer?.phone && (
-                                                                <Chip label={purchase.buyer.phone} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem', mt: 0.5 }} />
-                                                            )}
-                                                        </Box>
-                                                    </Link>
-                                                </Stack>
-                                             </TableCell>
-                                             <TableCell align="right">{purchase.quantity}</TableCell>
-                                             <TableCell align="right">{purchase.totalPrice?.toLocaleString()} DA</TableCell>
-                                             <TableCell align="center">
-                                                <Chip 
-                                                    label={purchase.status} 
-                                                    size="small" 
-                                                    color={getPurchaseStatusColor(purchase.status) as any}
-                                                    variant="outlined" 
-                                                />
-                                             </TableCell>
-                                             <TableCell align="right">{formatDate(purchase.createdAt)}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    ) : (
-                         <Paper variant="outlined" sx={{ p: 4, textAlign: 'center', bgcolor: 'action.hover' }}>
-                             <MdShoppingCart size={48} color="gray" />
-                             <Typography variant="body1" color="text.secondary">{t('directSales.detail.noOrders')}</Typography>
-                         </Paper>
-                    )}
-                </Card>
             </Grid>
 
             {/* Sidebar Info */}
@@ -346,6 +283,12 @@ export default function DirectSaleDetailPage() {
                             <Typography variant="body2" color="text.secondary">{t('directSales.detail.place')}</Typography>
                              <Typography variant="body1" fontWeight={500}>{directSale.place || directSale.location || t('directSales.detail.notSpecified')}</Typography>
                         </Box>
+                        {directSale.contactNumber && (
+                            <Box>
+                                <Typography variant="body2" color="text.secondary">Numéro de contact</Typography>
+                                <Typography variant="body1" fontWeight={500}>{directSale.contactNumber}</Typography>
+                            </Box>
+                        )}
                     </Stack>
                  </Card>
 

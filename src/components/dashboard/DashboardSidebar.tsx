@@ -64,7 +64,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
         {/* Logo - Click to go to home page */}
          <Box 
             component="img" 
-            src="/assets/logo.black.png" 
+            src="/assets/img/logo.png" 
             sx={{ 
               width: 140, 
               height: 'auto', 

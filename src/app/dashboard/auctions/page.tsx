@@ -367,7 +367,7 @@ export default function AuctionsPage() {
             <Button
               variant="contained"
               component={Link}
-              href="/dashboard/auctions/create"
+              href="/dashboard/auctions/create/"
               startIcon={<MdAdd />}
               sx={{
                 minWidth: { xs: '100%', sm: 'auto' },
@@ -431,7 +431,7 @@ export default function AuctionsPage() {
           <Button
             variant="contained"
             component={Link}
-            href="/dashboard/auctions/create"
+            href="/dashboard/auctions/create/"
             startIcon={<MdAdd />}
             sx={{ px: 4, py: 1.5 }}
           >

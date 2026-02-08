@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { AuctionsAPI } from "@/app/api/auctions";
 import { TendersAPI } from "@/app/api/tenders";
 import { DirectSaleAPI } from "@/app/api/direct-sale";
 import { Auction } from '@/types/auction';
 import { Tender } from '@/types/tender';
 import { DirectSale } from '@/types/direct-sale';
-import AuctionCard from '../cards/AuctionCard';
-import TenderCard from '../cards/TenderCard';
-import DirectSaleCard from '../cards/DirectSaleCard';
-import { CircularProgress, Box, Typography, Tabs, Tab } from '@mui/material';
+import { CircularProgress, Box, Typography } from '@mui/material';
+import { motion } from 'framer-motion';
 
 interface UserActivitiesSectionProps {
   userId: string;
@@ -19,7 +19,7 @@ interface UserActivitiesSectionProps {
 
 const UserActivitiesSection = ({ userId }: UserActivitiesSectionProps) => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState(0);
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const [tenders, setTenders] = useState<Tender[]>([]);
@@ -50,7 +50,6 @@ const UserActivitiesSection = ({ userId }: UserActivitiesSectionProps) => {
         const allDirectSales = extractArray(directSalesData);
 
         // Filter by userId
-        // Note: Check both direct object equality and _id property
         const userAuctions = allAuctions.filter((item: any) => 
             item.owner?._id === userId || item.owner === userId || item.seller?._id === userId
         );
@@ -81,10 +80,6 @@ const UserActivitiesSection = ({ userId }: UserActivitiesSectionProps) => {
     }
   }, [userId]);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-  };
-
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 4, minHeight: '200px' }}>
@@ -93,122 +88,210 @@ const UserActivitiesSection = ({ userId }: UserActivitiesSectionProps) => {
     );
   }
 
-  const hasActivities = auctions.length > 0 || tenders.length > 0 || directSales.length > 0;
+  const containerStyle = {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+      gap: '24px',
+      padding: '10px 0'
+  };
 
-  if (!hasActivities) {
-      return (
-        <Box sx={{ textAlign: 'center', p: 4, color: '#666', background: '#f8f9fa', borderRadius: '16px' }}>
-            <Typography variant="h6" color="textSecondary">
-                {t('profile.noActivities') || "Aucune activité récente"}
-            </Typography>
-        </Box>
-      );
-  }
+  const cardStyle = (color: string, borderColor: string) => ({
+      borderRadius: '20px',
+      border: `2px solid ${borderColor}`,
+      padding: '30px 20px',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+      background: 'white',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+      transition: 'transform 0.2s',
+      height: '100%',
+      position: 'relative' as const,
+      zIndex: 1
+  });
+
+  const iconCircleStyle = (bgColor: string, color: string) => ({
+      width: '80px',
+      height: '80px',
+      borderRadius: '50%',
+      background: bgColor,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: '20px',
+      color: color,
+      fontSize: '32px'
+  });
+
+  const titleStyle = {
+      fontSize: '20px',
+      fontWeight: '700',
+      color: '#0f3460',
+      marginBottom: '30px'
+  };
+
+  const buttonContainerStyle = {
+      display: 'flex',
+      gap: '12px',
+      width: '100%',
+      marginTop: 'auto',
+      position: 'relative' as const,
+      zIndex: 10
+  };
+
+  const viewButtonStyle = {
+      flex: 1,
+      padding: '10px',
+      borderRadius: '10px',
+      border: 'none',
+      background: '#0d47a1', // Blue
+      color: 'white',
+      fontWeight: '600',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px',
+      fontSize: '14px'
+  };
+  
+  const createButtonStyle = {
+      flex: 1,
+      padding: '10px',
+      borderRadius: '10px',
+      border: 'none',
+      background: '#0d47a1', // Blue
+      color: 'white',
+      fontWeight: '600',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px',
+      fontSize: '14px'
+  };
 
   return (
-    <div className="user-activities-section">
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs 
-            value={activeTab} 
-            onChange={handleTabChange} 
-            aria-label="User activities tabs"
-            variant="scrollable"
-            scrollButtons="auto"
-            allowScrollButtonsMobile
-            sx={{
-                '& .MuiTab-root': {
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    fontSize: '1rem',
-                    minWidth: 'auto',
-                    mr: 2,
-                    '&.Mui-selected': {
-                        color: '#0063b1'
-                    }
-                },
-                '& .MuiTabs-indicator': {
-                    backgroundColor: '#0063b1'
-                }
+    <div className="user-activities-section" style={{ width: '100%', padding: '10px 0' }}>
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            style={{
+                background: 'white',
+                borderRadius: '24px',
+                padding: '40px',
+                boxShadow: '0 20px 40px -10px rgba(0,0,0,0.08)',
+                border: '1px solid rgba(230, 230, 230, 0.6)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                position: 'relative',
+                overflow: 'hidden',
+                minHeight: '160px'
             }}
         >
-          <Tab label={t('common.all') || "Tout"} />
-          {auctions.length > 0 && <Tab label={`${t('common.auctions') || "Enchères"} (${auctions.length})`} />}
-          {tenders.length > 0 && <Tab label={`${t('common.tenders') || "Appels d'offres"} (${tenders.length})`} />}
-          {directSales.length > 0 && <Tab label={`${t('common.directSales') || "Ventes directes"} (${directSales.length})`} />}
-        </Tabs>
-      </Box>
+            <div style={{ zIndex: 2 }}>
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '12px',
+                    marginBottom: '10px'
+                }}>
+                    <span style={{
+                        padding: '6px 12px',
+                        background: '#f1f5f9',
+                        borderRadius: '20px',
+                        color: '#475569',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                    }}>
+                        {t('profile.activityStats.overview') || 'Overview'}
+                    </span>
+                </div>
+                
+                <h3 style={{ 
+                    margin: '0 0 16px 0', 
+                    color: '#1e293b', 
+                    fontSize: '32px', 
+                    fontWeight: '800',
+                    lineHeight: 1.2
+                }}>
+                    {t('profile.activityStats.userActivity') || 'User Activity'}
+                </h3>
+                
+                <div style={{ 
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: '8px'
+                }}>
+                    <span style={{ 
+                        fontSize: '64px', 
+                        fontWeight: '900', 
+                        background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        lineHeight: 1
+                    }}>
+                        {auctions.length + tenders.length + directSales.length}
+                    </span>
+                    <span style={{ 
+                        fontSize: '18px', 
+                        fontWeight: '600', 
+                        color: '#64748b'
+                    }}>
+                        {t('profile.activityStats.totalInteractions') || 'Total Interactions'}
+                    </span>
+                </div>
+            </div>
 
-      <div className="activities-grid">
-         {/* Grid Layout Style */}
-         <style jsx>{`
-            .cards-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-                gap: 32px;
-            }
-         `}</style>
-        
-        <div className="cards-grid">
-            {/* Show ALL */}
-            {activeTab === 0 && (
-                <>
-                    {auctions.map(auction => (
-                        <AuctionCard key={auction.id || (auction as any)._id || `auction-${Math.random()}`} auction={auction} />
-                    ))}
-                    {tenders.map(tender => (
-                        <TenderCard key={tender._id || `tender-${Math.random()}`} tender={tender} />
-                    ))}
-                    {directSales.map(sale => (
-                        <DirectSaleCard key={sale._id || `sale-${Math.random()}`} sale={sale} />
-                    ))}
-                </>
-            )}
+            {/* Decorative Visual on the right */}
+            <div style={{ 
+                position: 'relative',
+                zIndex: 2,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '20px'
+            }}>
+                <div style={{
+                    width: '100px',
+                    height: '100px',
+                    borderRadius: '30px',
+                    background: 'linear-gradient(135deg, #eff6ff 0%, #ffffff 100%)',
+                    boxShadow: '0 10px 30px rgba(37, 99, 235, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '1px solid rgba(255,255,255,0.8)'
+                }}>
+                    <i className="bi bi-bar-chart-fill" style={{ fontSize: '40px', color: '#2563eb' }}></i>
+                </div>
+            </div>
 
-            {/* Show Auctions - Dynamic Index */}
-            {/* Logic: We filter what tabs are shown. 
-                If Tab 1 is clicked, it corresponds to the first available category.
-                This dynamic indexing is tricky. Better to be explicit based on counts.
-            */}
-            
-            {/* Correct Logic: verify if the specific type tab is active 
-                We need to know which index corresponds to which type.
-                Let's simplify: All is always 0.
-                Next ones depend on presence.
-            */}
-             
-            {(activeTab === (1) && auctions.length > 0) && (
-                 auctions.map(auction => (
-                    <AuctionCard key={auction.id || (auction as any)._id} auction={auction} />
-                ))
-            )}
-
-             {/* Tenders Tab Logic */}
-            {((activeTab === 1 && auctions.length === 0 && tenders.length > 0) || 
-              (activeTab === 2 && auctions.length > 0 && tenders.length > 0)) && (
-                 tenders.map(tender => (
-                    <TenderCard key={tender._id} tender={tender} />
-                ))
-            )}
-
-             {/* Direct Sales Tab Logic */}
-             {/* 
-                Possible Indices for Direct Sales:
-                - 1: If no Auctions, no Tenders
-                - 2: If Auctions OR Tenders present (but not both)
-                - 3: If Auctions AND Tenders present
-             */}
-             {(() => {
-                 let salesIndex = 1;
-                 if (auctions.length > 0) salesIndex++;
-                 if (tenders.length > 0) salesIndex++;
-                 
-                 return activeTab === salesIndex ? directSales.map(sale => (
-                     <DirectSaleCard key={sale._id} sale={sale} />
-                 )) : null;
-             })()}
-
-        </div>
-      </div>
+            {/* Abstract Background Shapes */}
+            <div style={{
+                position: 'absolute',
+                top: '-20%',
+                right: '-5%',
+                width: '300px',
+                height: '300px',
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(37,99,235,0.03) 0%, rgba(255,255,255,0) 70%)',
+                zIndex: 1
+            }} />
+            <div style={{
+                position: 'absolute',
+                bottom: '-20%',
+                left: '-5%',
+                width: '200px',
+                height: '200px',
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(245,158,11,0.03) 0%, rgba(255,255,255,0) 70%)',
+                zIndex: 1
+            }} />
+        </motion.div>
     </div>
   );
 };

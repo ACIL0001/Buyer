@@ -35,6 +35,7 @@ export interface Tender {
   location: string;
   isPro: boolean;
   verifiedOnly?: boolean;
+  hidden?: boolean;
   minimumPrice?: number;
   awardedTo?: any;
   status: TENDER_STATUS;

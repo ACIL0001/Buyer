@@ -19,7 +19,6 @@ import SocketProvider from "@/contexts/socket";
 import { useCreateSocket } from '@/contexts/socket';
 import { getSellerUrl } from '@/config';
 import app from '@/config';
-import { normalizeImageUrl } from '@/utils/url';
 import { CategoryAPI } from '@/app/api/category';
 import { AuctionsAPI } from '@/app/api/auctions';
 import { TendersAPI } from '@/app/api/tenders';
@@ -27,6 +26,7 @@ import { useRouter } from 'next/navigation';
 import ResponsiveTest from '@/components/common/ResponsiveTest';
 import { FaGavel } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
+import Fuse from 'fuse.js';
 
 export default function Home() {
   const { t } = useTranslation();
@@ -106,6 +106,8 @@ export default function Home() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [loadingSearch, setLoadingSearch] = useState(false);
+  const [showNotifyMe, setShowNotifyMe] = useState(false);
+  const [notifyMeEmail, setNotifyMeEmail] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchResultsRef = useRef<HTMLDivElement>(null);
 
@@ -152,8 +154,39 @@ export default function Home() {
 
   // Helper function to get category image URL
   const getCategoryImageUrl = (category: any): string => {
-    const imageUrl = category.thumb?.url || 
-                     category.thumb?.fullUrl || 
+    // Check if category has thumb with url (matching working implementation)
+    if (category.thumb && category.thumb.url) {
+      const imageUrl = category.thumb.url;
+      
+      // If it's already a full URL, return it as-is
+      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+        // Replace localhost:3000 with current baseURL if needed
+        if (imageUrl.includes('localhost:3000')) {
+          const baseURL = app.baseURL || 'http://localhost:3000/';
+          return imageUrl.replace('http://localhost:3000', baseURL.replace(/\/$/, ''));
+        }
+        return imageUrl;
+      }
+      
+      // Handle /static/ paths by removing leading slash and prepending baseURL
+      if (imageUrl.startsWith('/static/')) {
+        const baseURL = app.baseURL || 'http://localhost:3000/';
+        return `${baseURL}${imageUrl.substring(1)}`;
+      }
+      
+      // Handle other paths starting with /
+      if (imageUrl.startsWith('/')) {
+        const baseURL = app.baseURL || 'http://localhost:3000/';
+        return `${baseURL}${imageUrl.substring(1)}`;
+      }
+      
+      // Handle paths without leading slash
+      const baseURL = app.baseURL || 'http://localhost:3000/';
+      return `${baseURL}${imageUrl}`;
+    }
+    
+    // Fallback: try other possible fields
+    const imageUrl = category.thumb?.fullUrl || 
                      category.image || 
                      category.thumbnail || 
                      category.photo || 
@@ -163,7 +196,26 @@ export default function Home() {
       return '/assets/images/cat.avif'; // Fallback image
     }
 
-    return normalizeImageUrl(imageUrl);
+    // If it's already a full URL, return it as-is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      if (imageUrl.includes('localhost:3000')) {
+        const baseURL = app.baseURL || 'http://localhost:3000/';
+        return imageUrl.replace('http://localhost:3000', baseURL.replace(/\/$/, ''));
+      }
+      return imageUrl;
+    }
+
+    // Handle relative paths
+    const baseURL = app.baseURL || 'http://localhost:3000/';
+    if (imageUrl.startsWith('/static/')) {
+      return `${baseURL}${imageUrl.substring(1)}`;
+    }
+    
+    if (imageUrl.startsWith('/')) {
+      return `${baseURL}${imageUrl.substring(1)}`;
+    }
+    
+    return `${baseURL}${imageUrl}`;
   };
 
   // Category search functions
@@ -189,42 +241,148 @@ export default function Home() {
     
     if (query.length > 0) {
       setLoadingSearch(true);
+      setShowNotifyMe(false);
+      
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🔍 SEARCH STARTED');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('📝 Query:', query);
+      console.log('📊 Categories count:', categories.length);
+      console.log('📊 Auctions count:', allAuctions.length);
+      console.log('📊 Tenders count:', allTenders.length);
+      
       try {
-        const lowerQuery = query.toLowerCase();
+        // 1. Fuzzy matching for categories
+        const categoryFuse = new Fuse(categories, {
+          keys: ['name'],
+          threshold: 0.6,
+          distance: 100,
+          minMatchCharLength: 2,
+          includeScore: true,
+        });
+
+        const categorySearchResults = categoryFuse.search(query);
+        console.log('🎯 Category fuzzy results:', categorySearchResults.length, 'matches');
         
-        // Search categories
-        const filteredCategories = categories.filter((category: any) => 
-          category.name.toLowerCase().includes(lowerQuery)
-        ).map(cat => ({ ...cat, type: 'category' }));
+        const filteredCategories = categorySearchResults.map(result => ({ 
+          ...result.item, 
+          type: 'category',
+          score: result.score
+        }));
         
-        // Search auctions by name/title
-        const filteredAuctions = allAuctions.filter((auction: any) => 
-          (auction.title || auction.name || '').toLowerCase().includes(lowerQuery)
-        ).map(auction => ({ ...auction, type: 'auction' }));
+        // 2. Fuzzy matching for auctions
+        const auctionFuse = new Fuse(allAuctions, {
+          keys: ['title', 'name', 'description'],
+          threshold: 0.5,
+          distance: 100,
+          minMatchCharLength: 3,
+          includeScore: true,
+        });
+
+        const auctionSearchResults = auctionFuse.search(query);
+        console.log('🎯 Auction fuzzy results:', auctionSearchResults.length, 'matches');
         
-        // Search tenders by name/title
-        const filteredTenders = allTenders.filter((tender: any) => 
-          (tender.title || tender.name || '').toLowerCase().includes(lowerQuery)
-        ).map(tender => ({ ...tender, type: 'tender' }));
+        const filteredAuctions = auctionSearchResults.map(result => ({ 
+          ...result.item, 
+          type: 'auction',
+          score: result.score
+        }));
         
-        // Combine all results
+        // 3. Fuzzy matching for tenders
+        const tenderFuse = new Fuse(allTenders, {
+          keys: ['title', 'name', 'description'],
+          threshold: 0.5,
+          distance: 100,
+          minMatchCharLength: 3,
+          includeScore: true,
+        });
+
+        const tenderSearchResults = tenderFuse.search(query);
+        console.log('🎯 Tender fuzzy results:', tenderSearchResults.length, 'matches');
+        
+        const filteredTenders = tenderSearchResults.map(result => ({ 
+          ...result.item, 
+          type: 'tender',
+          score: result.score
+        }));
+        
+        // 4. Combine all local results
         const combinedResults = [
           ...filteredCategories,
           ...filteredAuctions,
           ...filteredTenders
-        ];
+        ].sort((a, b) => (a.score || 0) - (b.score || 0));
         
-        setSearchResults(combinedResults);
-      setShowSearchResults(true);
+        console.log('✨ Total local results:', combinedResults.length);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        // 5. If no local results, try database fallback
+        if (combinedResults.length === 0) {
+          console.log('');
+          console.log('🔄 NO LOCAL RESULTS - TRYING DATABASE FALLBACK');
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          
+          try {
+            const fallbackResponse = await fetch('http://localhost:3000/search/fallback', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ query, limit: 3, minProbability: 50 })
+            });
+            
+            const fallbackData = await fallbackResponse.json();
+            console.log('📦 API Response:', fallbackData);
+            
+            if (fallbackData.success && fallbackData.hasResults) {
+              console.log('💡 DATABASE FALLBACK SUCCESS!');
+              console.log('📊 Results found:', fallbackData.results.length);
+              fallbackData.results.forEach((r: any, i: number) => {
+                console.log(`  ${i + 1}. ${r.term} (${r.probability}% match, type: ${r.type})`);
+              });
+              console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+              
+              const fallbackResults = fallbackData.results.map((r: any) => ({
+                ...r,
+                type: r.type || 'suggestion',
+                isFallback: true,
+                name: r.term,
+              }));
+              
+              setSearchResults(fallbackResults);
+              setShowSearchResults(true);
+              setShowNotifyMe(false);
+            } else {
+              console.log('❌ NO DATABASE RESULTS FOUND');
+              console.log('🔔 Showing "Notify Me" option');
+              console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+              setSearchResults([]);
+              setShowSearchResults(true);
+              setShowNotifyMe(true);
+            }
+          } catch (fallbackError) {
+            console.error('❌ DATABASE FALLBACK ERROR:', fallbackError);
+            setSearchResults([]);
+            setShowSearchResults(true);
+            setShowNotifyMe(true);
+          }
+        } else {
+          console.log('✅ LOCAL RESULTS FOUND - Using fuzzy match results');
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+          setSearchResults(combinedResults);
+          setShowSearchResults(true);
+          setShowNotifyMe(false);
+        }
+        
       } catch (error) {
-        console.error('Error searching:', error);
+        console.error('❌ SEARCH ERROR:', error);
         setSearchResults([]);
+        setShowNotifyMe(true);
       } finally {
         setLoadingSearch(false);
       }
     } else {
       setSearchResults([]);
       setShowSearchResults(false);
+      setShowNotifyMe(false);
     }
   };
 
@@ -236,16 +394,126 @@ export default function Home() {
     });
   }, [router]);
 
-  const handleSearchSelect = (item: any) => {
-    setSearchQuery(item.title || item.name || '');
+  // Handle notify me submission
+  const handleNotifyMe = async () => {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🔔 NOTIFY ME REQUEST');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📝 Query:', searchQuery);
+    console.log('📧 Email:', notifyMeEmail);
+    
+    if (!notifyMeEmail && !notifyMeEmail.trim()) {
+      console.log('❌ Email validation failed');
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3000/search/notify-me', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          searchQuery: searchQuery,
+          email: notifyMeEmail,
+        })
+      });
+
+      const data = await response.json();
+      console.log('📦 API Response:', data);
+      
+      if (data.success) {
+        console.log('✅ NOTIFY ME SUCCESS!');
+        console.log('🆔 Request ID:', data.requestId);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        alert('✅ ' + data.message);
+        setShowNotifyMe(false);
+        setNotifyMeEmail('');
+        setShowSearchResults(false);
+      } else {
+        console.log('❌ NOTIFY ME FAILED');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        alert('❌ Failed to submit notification request. Please try again.');
+      }
+    } catch (error) {
+      console.error('❌ NOTIFY ME ERROR:', error);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      alert('❌ An error occurred. Please try again later.');
+    }
+  };
+
+  // Update edge weight when user selects a fallback result
+  const handleEdgeWeightUpdate = async (item: any) => {
+    console.log('');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🧠 EDGE WEIGHT UPDATE');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📝 Query:', searchQuery);
+    console.log('🎯 Selected:', item.term || item.name);
+    console.log('📦 Item type:', item.type);
+    console.log('🆔 Term ID:', item.termId);
+    console.log('🏷️  Is Fallback:', item.isFallback);
+    
+    if (!item.isFallback || !item.termId) {
+      console.log('⏭️  Skipping: Not a fallback result');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      return;
+    }
+
+    try {
+      // Map the type correctly - fallback suggestions are usually categories/products
+      const typeMapping: any = {
+        'suggestion': 'category',
+        'product': 'category',
+        'category': 'category',
+        'auction': 'auction',
+        'tender': 'tender',
+        'directSale': 'directSale',
+      };
+
+      const mappedType = typeMapping[item.type] || 'category';
+      const selectedId = item.categoryId || item._id || item.id || item.termId;
+
+      console.log('🔄 Mapped type:', item.type, '→', mappedType);
+      console.log('🆔 Selected ID:', selectedId);
+
+      await fetch('http://localhost:3000/search/update-edge-weight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          searchQuery: searchQuery,
+          selectedTermId: item.termId,
+          selectedType: mappedType,
+          selectedId: selectedId,
+        })
+      });
+      
+      console.log('✅ EDGE WEIGHT UPDATED SUCCESSFULLY!');
+      console.log('💡 Next search for "' + searchQuery + '" will rank this higher');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    } catch (error) {
+      console.error('❌ EDGE WEIGHT UPDATE ERROR:', error);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    }
+  };
+
+
+  const handleSearchSelect = async (item: any) => {
+    setSearchQuery(item.title || item.name || item.term || '');
     setShowSearchResults(false);
     
+    // Update edge weight if this is a fallback result
+    if (item.isFallback) {
+      await handleEdgeWeightUpdate(item);
+    }
+    
     // Navigate based on item type
-    if (item.type === 'category') {
-      const categoryId = item._id || item.id;
-      const categoryName = item.name;
-    const categoryUrl = `/category?category=${categoryId}&name=${encodeURIComponent(categoryName)}`;
-    navigateWithTop(categoryUrl);
+    if (item.type === 'category' || item.type === 'suggestion') {
+      const categoryId = item.categoryId || item._id || item.id;
+      const categoryName = item.name || item.term;
+      if (categoryId && categoryName) {
+        const categoryUrl = `/category?category=${categoryId}&name=${encodeURIComponent(categoryName)}`;
+        navigateWithTop(categoryUrl);
+      }
     } else if (item.type === 'auction') {
       const auctionId = item._id || item.id;
       navigateWithTop(`/auction-details/${auctionId}`);

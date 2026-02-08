@@ -64,7 +64,7 @@ const useNavConfig = () => {
         },
         {
           title: t('dashboard.navigation.createAuction', 'Create Auction'),
-          path: '/dashboard/auctions/create',
+          path: '/dashboard/auctions/create/',
           icon: getIcon(MdAddCircle),
         },
         {
@@ -86,7 +86,7 @@ const useNavConfig = () => {
         },
         {
           title: t('dashboard.navigation.newTender', 'New Tender'),
-          path: '/dashboard/tenders/create',
+          path: '/dashboard/tenders/create/',
           icon: getIcon(MdAddCircle),
         },
         {
@@ -108,7 +108,7 @@ const useNavConfig = () => {
         },
         {
           title: t('dashboard.navigation.createSale', 'Create Sale'),
-          path: '/dashboard/direct-sales/create',
+          path: '/dashboard/direct-sales/create/',
           icon: getIcon(MdAddCircle),
         },
         {

@@ -50,6 +50,13 @@ export function useAdminMessageNotifications() {
 
   const currentUserId = getCurrentUserId();
 
+  // Ref to track if we have notifications (to avoid dependency on state in callback)
+  const hasAdminNotificationsRef = useRef(false);
+
+  useEffect(() => {
+    hasAdminNotificationsRef.current = adminNotifications.length > 0;
+  }, [adminNotifications.length]);
+
   // Fetch admin message notifications
   const fetchAdminNotifications = useCallback(async () => {
     // Prevent overlapping fetches
@@ -77,7 +84,7 @@ export function useAdminMessageNotifications() {
       isFetchingRef.current = true;
       // Don't set loading to true on every background refresh to avoid UI flickering
       // Only set it on initial load if we have no data
-      if (adminNotifications.length === 0) {
+      if (!hasAdminNotificationsRef.current) {
         setLoading(true);
       }
 
@@ -129,7 +136,7 @@ export function useAdminMessageNotifications() {
       setLoading(false);
       isFetchingRef.current = false;
     }
-  }, [adminNotifications.length]);
+  }, []);
 
   // Calculate total unread count for admin messages
   const totalUnreadCount = useMemo(() => {

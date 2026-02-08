@@ -17,6 +17,7 @@ import { normalizeImageUrl } from '@/utils/url';
 import "../auction-details/st.css";
 import "../auction-details/modern-details.css";
 import { useRouter } from "next/navigation";
+import ShareButton from '@/components/common/ShareButton';
 
 // Default image constants
 const DEFAULT_TENDER_IMAGE = "/assets/images/logo-white.png";
@@ -760,12 +761,17 @@ const Home1LiveTenders = () => {
                   const isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30;
 
                   // Determine the display name for the tender owner
-                  // Prioritize company name over personal name
-                  const companyName = tender.owner?.entreprise || tender.owner?.companyName;
-                  const ownerName = tender.owner?.firstName && tender.owner?.lastName
-                    ? `${tender.owner.firstName} ${tender.owner.lastName}`.trim()
-                    : tender.owner?.name;
-                  const displayName = companyName || ownerName || t('common.buyer');
+                  let displayName;
+                  if (tender.hidden) {
+                    displayName = t('common.anonymous') || 'Anonyme';
+                  } else {
+                    // Prioritize company name over personal name
+                    const companyName = tender.owner?.entreprise || tender.owner?.companyName;
+                    const ownerName = tender.owner?.firstName && tender.owner?.lastName
+                      ? `${tender.owner.firstName} ${tender.owner.lastName}`.trim()
+                      : tender.owner?.name;
+                    displayName = companyName || ownerName || t('common.buyer');
+                  }
 
                   return (
                     <SwiperSlide key={tender._id} style={{ height: 'auto', display: 'flex', justifyContent: 'center' }}>
@@ -918,6 +924,22 @@ const Home1LiveTenders = () => {
                               {t('liveTenders.yourTender')}
                             </div>
                           )}
+
+                          {/* Share Button - Positioned in bottom-right of image */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '10px',
+                            right: '10px',
+                            zIndex: 10,
+                          }}>
+                            <ShareButton
+                              type="tender"
+                              id={tender._id}
+                              title={tender.title}
+                              description={tender.description}
+                              imageUrl={getTenderImageUrl(tender)}
+                            />
+                          </div>
                         </div>
 
                         {/* Tender Details */}

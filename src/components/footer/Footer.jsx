@@ -282,26 +282,19 @@ const Footer = () => {
       }}>
         <div style={{ 
           fontSize: 'clamp(12px, 3vw, 14px)', 
-          color: 'var(--text-secondary, #666)',
+          color: '  var(--text-secondary, #666)',
           textAlign: 'center',
           lineHeight: '1.4',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis'
         }}>
-          ©2024 <Link href="/" style={{ 
+          ©2026 <Link href="/" style={{
             color: 'var(--primary-color, #0063b1)', 
             textDecoration: 'none',
             fontWeight: '600',
             display: 'inline'
           }}>MazadClick</Link>
-          <span style={{ color: 'var(--text-muted, #999)' }}> • Tous droits réservés • Créé par </span>
-          <Link href="https://noteasy-dz.com/" target="_blank" style={{ 
-            color: 'var(--primary-color, #0063b1)', 
-            textDecoration: 'none',
-            fontWeight: '600',
-            display: 'inline'
-          }}>NotEasy</Link>
         </div>
         <div>
           <ul style={{ 

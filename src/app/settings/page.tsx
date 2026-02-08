@@ -100,6 +100,7 @@ export default function SettingsPage() {
         activitySector: "",
         companyName: "",
         jobTitle: "",
+        isProfileVisible: true,
     });
 
     useEffect(() => {
@@ -117,12 +118,16 @@ export default function SettingsPage() {
                 activitySector: (auth.user as any).activitySector || (auth.user as any).secteur || "",
                 companyName: (auth.user as any).companyName || (auth.user as any).socialReason || "",
                 jobTitle: auth.user.jobTitle || "",
+                isProfileVisible: (auth.user as any).isProfileVisible !== undefined ? (auth.user as any).isProfileVisible : true,
             });
         }
     }, [auth.user]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
+        const target = e.target as HTMLInputElement;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -232,7 +237,6 @@ export default function SettingsPage() {
                             {[
                                 { id: "personal-info", icon: "bi-person-circle", label: t("profile.personalInfo.title") || "Personal Information" },
                                 { id: "security", icon: "bi-shield-lock-fill", label: t("profile.security.title") || "Security" },
-                                { id: "notifications", icon: "bi-bell-fill", label: t("profile.notifications.title") || "Notifications" },
                             ].map((tab, index) => (
                                 <motion.button
                                     key={tab.id}
@@ -287,108 +291,237 @@ export default function SettingsPage() {
                                             </div>
 
                                             <form onSubmit={handleSubmit} className="modern-profile-form">
-                                                <div className="modern-form-grid">
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
                                                     <div className="modern-form-field">
-                                                        <label htmlFor="firstName">{t("profile.personalInfo.firstName") || "First name"}</label>
-                                                        <input
-                                                            type="text"
-                                                            id="firstName"
-                                                            name="firstName"
-                                                            value={formData.firstName}
-                                                            onChange={handleInputChange}
-                                                            disabled={!isEditing}
-                                                            required
-                                                        />
+                                                        <label htmlFor="firstName">{t("profile.personalInfo.firstName") || "Prénom"}</label>
+                                                        <div className="input-with-icon">
+                                                            <i className="bi bi-person"></i>
+                                                            <input
+                                                                type="text"
+                                                                id="firstName"
+                                                                name="firstName"
+                                                                value={formData.firstName}
+                                                                onChange={handleInputChange}
+                                                                disabled={!isEditing}
+                                                                required
+                                                            />
+                                                        </div>
                                                     </div>
 
                                                     <div className="modern-form-field">
-                                                        <label htmlFor="lastName">{t("profile.lastName") || "Last name"}</label>
-                                                        <input
-                                                            type="text"
-                                                            id="lastName"
-                                                            name="lastName"
-                                                            value={formData.lastName}
-                                                            onChange={handleInputChange}
-                                                            disabled={!isEditing}
-                                                            required
-                                                        />
+                                                        <label htmlFor="lastName">{t("profile.lastName") || "Nom"}</label>
+                                                        <div className="input-with-icon">
+                                                            <i className="bi bi-person"></i>
+                                                            <input
+                                                                type="text"
+                                                                id="lastName"
+                                                                name="lastName"
+                                                                value={formData.lastName}
+                                                                onChange={handleInputChange}
+                                                                disabled={!isEditing}
+                                                                required
+                                                            />
+                                                        </div>
                                                     </div>
 
                                                     <div className="modern-form-field">
                                                         <label htmlFor="wilaya">{t("profile.wilaya") || "Wilaya"}</label>
-                                                        <select
-                                                            id="wilaya"
-                                                            name="wilaya"
-                                                            value={formData.wilaya}
-                                                            onChange={handleInputChange}
-                                                            disabled={!isEditing}
-                                                            style={{
-                                                                width: '100%',
-                                                                padding: '12px 16px',
-                                                                borderRadius: '12px',
-                                                                border: '1px solid #e5e7eb',
-                                                                backgroundColor: isEditing ? '#ffffff' : '#f9fafb',
-                                                                color: '#1f2937',
-                                                                fontSize: '14px',
-                                                                outline: 'none',
-                                                                height: '48px'
-                                                            }}
-                                                        >
-                                                            <option value="">Select Wilaya</option>
-                                                            {WILAYAS.map((w, index) => (
-                                                                <option key={index} value={w}>{w}</option>
-                                                            ))}
-                                                        </select>
+                                                        <div className="input-with-icon">
+                                                            <i className="bi bi-geo-alt"></i>
+                                                            <select
+                                                                id="wilaya"
+                                                                name="wilaya"
+                                                                value={formData.wilaya}
+                                                                onChange={handleInputChange}
+                                                                disabled={!isEditing}
+                                                                style={{
+                                                                    width: '100%',
+                                                                    padding: '12px 16px',
+                                                                    paddingLeft: '45px',
+                                                                    borderRadius: '12px',
+                                                                    border: '1px solid #e2e8f0',
+                                                                    backgroundColor: isEditing ? '#ffffff' : '#f8fafc',
+                                                                    color: '#1e293b',
+                                                                    fontSize: '14px',
+                                                                    outline: 'none',
+                                                                    height: '48px',
+                                                                    appearance: 'none',
+                                                                    cursor: isEditing ? 'pointer' : 'default',
+                                                                    transition: 'all 0.2s ease'
+                                                                }}
+                                                            >
+                                                                <option value="">Sélectionner une Wilaya</option>
+                                                                {WILAYAS.map((w, index) => (
+                                                                    <option key={index} value={w}>{w}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
                                                     </div>
 
                                                     <div className="modern-form-field">
-                                                        <label htmlFor="companyName">{t("profile.personalInfo.companyName") || "Company Name"}</label>
-                                                        <input
-                                                            type="text"
-                                                            id="companyName"
-                                                            name="companyName"
-                                                            value={formData.companyName}
-                                                            onChange={handleInputChange}
-                                                            disabled={!isEditing}
-                                                        />
+                                                        <label htmlFor="companyName">{t("profile.personalInfo.companyName") || "Nom de l'entreprise"}</label>
+                                                        <div className="input-with-icon">
+                                                            <i className="bi bi-building"></i>
+                                                            <input
+                                                                type="text"
+                                                                id="companyName"
+                                                                name="companyName"
+                                                                value={formData.companyName}
+                                                                onChange={handleInputChange}
+                                                                disabled={!isEditing}
+                                                            />
+                                                        </div>
                                                     </div>
 
                                                     <div className="modern-form-field">
-                                                        <label htmlFor="jobTitle">{t("profile.personalInfo.jobTitle") || "Job Title"}</label>
-                                                        <input
-                                                            type="text"
-                                                            id="jobTitle"
-                                                            name="jobTitle"
-                                                            value={formData.jobTitle}
-                                                            onChange={handleInputChange}
-                                                            disabled={!isEditing}
-                                                        />
+                                                        <label htmlFor="jobTitle">{t("profile.personalInfo.jobTitle") || "Poste actuel"}</label>
+                                                        <div className="input-with-icon">
+                                                            <i className="bi bi-person-workspace"></i>
+                                                            <input
+                                                                type="text"
+                                                                id="jobTitle"
+                                                                name="jobTitle"
+                                                                value={formData.jobTitle}
+                                                                onChange={handleInputChange}
+                                                                disabled={!isEditing}
+                                                            />
+                                                        </div>
                                                     </div>
 
                                                     <div className="modern-form-field">
-                                                        <label htmlFor="activitySector">{t("profile.personalInfo.secteur") || "Activity Sector"}</label>
-                                                        <input
-                                                            type="text"
-                                                            id="activitySector"
-                                                            name="activitySector"
-                                                            value={formData.activitySector}
-                                                            onChange={handleInputChange}
-                                                            disabled={!isEditing}
-                                                        />
+                                                        <label htmlFor="activitySector">{t("profile.personalInfo.secteur") || "Secteur d'activité"}</label>
+                                                        <div className="input-with-icon">
+                                                            <i className="bi bi-activity"></i>
+                                                            <input
+                                                                type="text"
+                                                                id="activitySector"
+                                                                name="activitySector"
+                                                                value={formData.activitySector}
+                                                                onChange={handleInputChange}
+                                                                disabled={!isEditing}
+                                                            />
+                                                        </div>
                                                     </div>
 
                                                     <div className="modern-form-field">
-                                                        <label htmlFor="phone">{t("profile.personalInfo.phone") || "Phone"}</label>
-                                                        <input
-                                                            type="tel"
-                                                            id="phone"
-                                                            name="phone"
-                                                            value={formData.phone}
-                                                            onChange={handleInputChange}
-                                                            disabled={!isEditing}
-                                                        />
+                                                        <label htmlFor="phone">{t("profile.personalInfo.phone") || "Téléphone"}</label>
+                                                        <div className="input-with-icon">
+                                                            <i className="bi bi-telephone"></i>
+                                                            <input
+                                                                type="tel"
+                                                                id="phone"
+                                                                name="phone"
+                                                                value={formData.phone}
+                                                                onChange={handleInputChange}
+                                                                disabled={!isEditing}
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="modern-form-field" style={{ gridColumn: '1 / -1' }}>
+                                                        <div style={{ 
+                                                            display: 'flex', 
+                                                            justifyContent: 'space-between', 
+                                                            alignItems: 'center',
+                                                            background: '#f8fafc',
+                                                            padding: '1rem',
+                                                            borderRadius: '12px',
+                                                            border: '1px solid #e2e8f0'
+                                                        }}>
+                                                            <div>
+                                                                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: '#334155' }}>
+                                                                    {t("profile.personalInfo.isProfileVisible") || "Profil public"}
+                                                                </h4>
+                                                                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+                                                                    {t("profile.personalInfo.isProfileVisibleDesc") || "Rendre votre profil visible"}
+                                                                </p>
+                                                            </div>
+                                                            <div style={{ position: 'relative', width: '46px', height: '26px' }}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    id="isProfileVisible"
+                                                                    name="isProfileVisible"
+                                                                    checked={!!formData.isProfileVisible}
+                                                                    onChange={handleInputChange}
+                                                                    disabled={!isEditing}
+                                                                    style={{ opacity: 0, width: 0, height: 0 }}
+                                                                />
+                                                                <label 
+                                                                    htmlFor="isProfileVisible"
+                                                                    style={{
+                                                                        position: 'absolute',
+                                                                        cursor: isEditing ? 'pointer' : 'not-allowed',
+                                                                        top: 0, left: 0, right: 0, bottom: 0,
+                                                                        backgroundColor: formData.isProfileVisible ? '#3b82f6' : '#cbd5e1',
+                                                                        transition: '.3s',
+                                                                        borderRadius: '34px',
+                                                                        opacity: isEditing ? 1 : 0.7
+                                                                    }}
+                                                                >
+                                                                    <span style={{
+                                                                        display: 'block',
+                                                                        position: 'absolute',
+                                                                        height: '20px',
+                                                                        width: '20px',
+                                                                        left: formData.isProfileVisible ? '23px' : '3px',
+                                                                        top: '3px',
+                                                                        backgroundColor: 'white',
+                                                                        transition: '.3s',
+                                                                        borderRadius: '50%',
+                                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                                                    }}></span>
+                                                                </label>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                
+                                                <style jsx>{`
+                                                    .input-with-icon {
+                                                        position: relative;
+                                                        width: 100%;
+                                                    }
+                                                    .input-with-icon i {
+                                                        position: absolute;
+                                                        left: 14px;
+                                                        top: 50%;
+                                                        transform: translateY(-50%);
+                                                        color: #94a3b8;
+                                                        font-size: 1.1rem;
+                                                        pointer-events: none;
+                                                        transition: color 0.2s;
+                                                    }
+                                                    .input-with-icon input:focus + i,
+                                                    .input-with-icon input:not(:placeholder-shown) + i {
+                                                        color: #3b82f6;
+                                                    }
+                                                    .modern-form-field input {
+                                                        width: 100%;
+                                                        padding: 12px 16px 12px 42px;
+                                                        border-radius: 12px;
+                                                        border: 1px solid #e2e8f0;
+                                                        background-color: ${isEditing ? '#ffffff' : '#f8fafc'};
+                                                        color: #1e293b;
+                                                        font-size: 14px;
+                                                        outline: none;
+                                                        transition: all 0.2s ease;
+                                                    }
+                                                    .modern-form-field input:focus {
+                                                        border-color: #3b82f6;
+                                                        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                                                    }
+                                                    .modern-form-field input:disabled {
+                                                        color: #64748b;
+                                                        cursor: default;
+                                                    }
+                                                    .modern-form-field label {
+                                                        font-size: 0.9rem;
+                                                        font-weight: 500;
+                                                        color: #475569;
+                                                        margin-bottom: 0.5rem;
+                                                        display: block;
+                                                    }
+                                                `}</style>
 
                                                 {isEditing && (
                                                     <div className="modern-actions">
@@ -495,91 +628,7 @@ export default function SettingsPage() {
                                     </motion.div>
                                 )}
 
-                                {activeTab === "notifications" && (
-                                    <motion.div
-                                        key="notifications"
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -20 }}
-                                        transition={{ duration: 0.4 }}
-                                    >
-                                        <div className="modern-section-card">
-                                            <div className="section-header">
-                                                <div className="header-content">
-                                                    <div className="header-icon">
-                                                        <i className="bi bi-bell-fill"></i>
-                                                    </div>
-                                                    <div className="header-text">
-                                                        <h2 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>{t("profile.notifications.title") || "Notifications"}</h2>
-                                                        <p style={{ fontSize: '0.75rem' }}>{t("profile.notifications.subtitle") || "Manage your notification preferences"}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
 
-                                            <div className="modern-notifications-grid">
-                                                {[
-                                                    {
-                                                        icon: "bi-envelope-heart",
-                                                        title: t("profile.notifications.email.title") || "Email notifications",
-                                                        desc: t("profile.notifications.email.desc") || "Receive email notifications",
-                                                        color: "primary",
-                                                        gradient: "linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)"
-                                                    },
-                                                    {
-                                                        icon: "bi-bell-fill",
-                                                        title: t("profile.notifications.auction.title") || "New auction alerts",
-                                                        desc: t("profile.notifications.auction.desc") || "Receive alerts for new auctions",
-                                                        color: "success",
-                                                        gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)"
-                                                    },
-                                                    {
-                                                        icon: "bi-heart-pulse",
-                                                        title: t("profile.notifications.bid.title") || "Bid updates",
-                                                        desc: t("profile.notifications.bid.desc") || "Receive updates about bids",
-                                                        color: "warning",
-                                                        gradient: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
-                                                    }
-                                                ].map((notification, index) => (
-                                                    <motion.div
-                                                        key={notification.title}
-                                                        className="modern-notification-card"
-                                                        initial={{ opacity: 0, y: 30 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        whileHover={{ scale: 1.02 }}
-                                                    >
-                                                        <div className="notification-card-background">
-                                                            <div className="card-gradient" style={{ background: notification.gradient }}></div>
-                                                        </div>
-
-                                                        <div className="notification-content">
-                                                            <div className={`notification-icon ${notification.color}`}>
-                                                                <i className={notification.icon} />
-                                                            </div>
-
-                                                            <div className="notification-text">
-                                                                <h3>{notification.title}</h3>
-                                                                <p>{notification.desc}</p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="modern-switch-container">
-                                                            <label className="modern-switch">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    defaultChecked
-                                                                    className="switch-input"
-                                                                />
-                                                                <span className="switch-slider">
-                                                                    <span className="switch-thumb" />
-                                                                </span>
-                                                            </label>
-                                                        </div>
-                                                    </motion.div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                )}
                             </AnimatePresence>
                         </div>
                     </div>

@@ -135,7 +135,15 @@ export function useNotifications() {
 
         setNotifications(prev => {
           const exists = prev.some(notif => notif._id === data._id);
-          if (exists) return prev;
+
+          // Enhanced duplicate check: Check content and recent timing (last 5 seconds)
+          const isDuplicateByContent = prev.some(notif =>
+            notif.title === formattedNotification.title &&
+            notif.message === formattedNotification.message &&
+            new Date(notif.createdAt).getTime() > Date.now() - 5000
+          );
+
+          if (exists || isDuplicateByContent) return prev;
 
           return [formattedNotification, ...prev];
         });

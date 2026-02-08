@@ -286,7 +286,7 @@ export default function TendersPage() {
           <Button
             variant="contained"
             component={Link}
-            href="/dashboard/tenders/create"
+            href="/dashboard/tenders/create/"
             startIcon={<MdAdd />}
             sx={{
               minWidth: { xs: '100%', sm: 'auto' },
@@ -321,7 +321,7 @@ export default function TendersPage() {
           <Button
             variant="contained"
             component={Link}
-            href="/dashboard/tenders/create"
+            href="/dashboard/tenders/create/"
             startIcon={<MdAdd />}
             sx={{ px: 4, py: 1.5 }}
           >

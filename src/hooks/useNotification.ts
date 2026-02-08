@@ -28,6 +28,13 @@ export default function useNotification() {
   // Call useCreateSocket at the top level
   const socketContext = useCreateSocket();
 
+  // Ref to track if we have notifications (to avoid dependency on state in callback)
+  const hasNotificationsRef = useRef(false);
+
+  useEffect(() => {
+    hasNotificationsRef.current = notifications.length > 0;
+  }, [notifications.length]);
+
   const fetchNotifications = useCallback(async () => {
     // Prevent overlapping fetches
     if (isFetchingNotificationsRef.current) return;
@@ -44,7 +51,7 @@ export default function useNotification() {
 
       isFetchingNotificationsRef.current = true;
       // Only set loading on initial fetch or empty state
-      if (notifications.length === 0) {
+      if (!hasNotificationsRef.current) {
         setLoading(true);
       }
 
@@ -81,7 +88,7 @@ export default function useNotification() {
       setLoading(false);
       isFetchingNotificationsRef.current = false;
     }
-  }, [notifications.length, setNotifications, setUnreadCount, setLoading]);
+  }, [setNotifications, setUnreadCount, setLoading]);
 
   // Fetch unread count with enhanced error handling
   const fetchUnreadCount = useCallback(async () => {

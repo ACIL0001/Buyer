@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/header/Header";
 import Footer from "@/components/footer/Footer";
 import { DirectSaleAPI } from "@/app/api/direct-sale";
+import commentsApi from "@/app/api/comments";
 import useAuth from "@/hooks/useAuth";
 import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
 import { toast, ToastContainer } from "react-toastify";
@@ -19,10 +20,31 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import app from "@/config";
 import Link from "next/link";
+import { useTranslation } from 'react-i18next';
+
+
+import CommentItem from "@/components/common/CommentItem";
 
 // Import styles from the reference component
 import "@/components/auction-details/st.css";
 import "@/components/auction-details/modern-details.css";
+
+export interface CommentUser {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  email?: string;
+  photoURL?: string;
+}
+
+export interface Comment {
+  _id: string;
+  comment: string;
+  user: CommentUser;
+  createdAt: string;
+  replies?: Comment[];
+}
 
 interface DirectSale {
   _id: string;
@@ -47,6 +69,7 @@ interface DirectSale {
     companyName?: string;
     hidden?: boolean;
   };
+  hidden?: boolean;
   productCategory?: {
     _id: string;
     name: string;
@@ -58,15 +81,19 @@ interface DirectSale {
   wilaya: string;
   place: string;
   attributes?: string[];
+  comments?: Comment[];
   createdAt?: string;
 }
 
 const DEFAULT_DIRECT_SALE_IMAGE = "/assets/images/logo-dark.png";
 const DEFAULT_PROFILE_IMAGE = "/assets/images/avatar.jpg";
+const DEFAULT_USER_AVATAR = "/assets/images/avatar.jpg";
 
 function DirectSaleDetailContent() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useTranslation();
+  const searchParams = useSearchParams();
   const { isLogged, auth } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   const [directSale, setDirectSale] = useState<DirectSale | null>(null);
@@ -79,6 +106,9 @@ function DirectSaleDetailContent() {
   const [showVideo, setShowVideo] = useState(false);
   const [allDirectSales, setAllDirectSales] = useState<DirectSale[]>([]);
   const [activeTab, setActiveTab] = useState("description");
+  const [newComment, setNewComment] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
 
   const directSaleId = params?.id as string;
 
@@ -174,10 +204,30 @@ function DirectSaleDetailContent() {
       setLoading(true);
       const data = await DirectSaleAPI.getDirectSaleById(directSaleId);
       setDirectSale(data);
+      
+      // Handle Comment Redirection
+      const commentId = searchParams?.get('commentId');
+      if (commentId) {
+           console.log("💬 Detected commentId in URL:", commentId);
+           setActiveTab('comments'); // Corrected tab name for Direct Sales
+           setShowAllComments(true); // Ensure all comments are loaded so scrolling works
+           // Use setTimeout to allow tab switch and rendering to complete
+           setTimeout(() => {
+               const element = document.getElementById(`comment-${commentId}`);
+               if (element) {
+                   console.log("📍 Scrolling to comment:", commentId);
+                   element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                   element.classList.add('highlight-comment'); // Optional: Add CSS class for visual highlight
+               } else {
+                   console.warn("❌ Comment element not found in DOM:", commentId);
+               }
+           }, 800); // 800ms delay to ensure tab content is rendered
+      }
+
       setError(null);
     } catch (err: any) {
       console.error("Error fetching direct sale:", err);
-      setError("Impossible de charger les détails de la vente directe");
+      setError(t('details.errorLoading'));
     } finally {
       setLoading(false);
     }
@@ -185,7 +235,7 @@ function DirectSaleDetailContent() {
 
   const handlePurchase = async () => {
     if (!isLogged) {
-      toast.warning("Veuillez vous connecter pour acheter");
+      toast.warning(t('details.pleaseLoginToBuy'));
       router.push('/auth/login');
       return;
     }
@@ -197,12 +247,12 @@ function DirectSaleDetailContent() {
       : directSale.quantity - directSale.soldQuantity;
 
     if (directSale.quantity > 0 && quantity > availableQuantity) {
-      toast.error(`Seulement ${availableQuantity} article(s) disponible(s)`);
+      toast.error(t('details.onlyQuantityAvailable', { quantity: availableQuantity }));
       return;
     }
 
     if (directSale.owner?._id === auth?.user?._id) {
-      toast.error("Vous ne pouvez pas acheter votre propre produit");
+      toast.error(t('details.cannotBuyOwnProduct'));
       return;
     }
 
@@ -212,7 +262,7 @@ function DirectSaleDetailContent() {
         directSaleId: directSale._id,
         quantity: quantity
       });
-      enqueueSnackbar("Commande effectuée avec succès!", { variant: 'success' });
+      enqueueSnackbar(t('details.orderSuccessful'), { variant: 'success' });
       
       // Refresh the direct sale data to update quantity
       await fetchDirectSale();
@@ -222,7 +272,7 @@ function DirectSaleDetailContent() {
 
     } catch (err: any) {
       console.error("Error purchasing:", err);
-      toast.error(err.response?.data?.message || "Erreur lors de la commande");
+      toast.error(err.response?.data?.message || t('details.errorOrdering'));
     } finally {
       setPurchasing(false);
     }
@@ -258,7 +308,7 @@ function DirectSaleDetailContent() {
               <div className="spinner-border text-primary" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
-              <h3 className="mt-3">Chargement...</h3>
+              <h3 className="mt-3">{t('details.loading')}</h3>
             </div>
           </div>
         </div>
@@ -275,9 +325,9 @@ function DirectSaleDetailContent() {
       }}>
         <div className="container">
           <div className="alert alert-danger text-center">
-            <h3>{error || "Vente directe introuvable"}</h3>
+            <h3>{error || t('details.notFound')}</h3>
             <button className="btn btn-primary mt-3" onClick={() => router.push('/direct-sale')}>
-              Retour aux ventes directes
+              {t('details.back')}
             </button>
           </div>
         </div>
@@ -375,7 +425,7 @@ function DirectSaleDetailContent() {
                         className={`media-toggle-btn ${!showVideo ? 'active' : ''}`}
                         style={{ padding: '8px 12px', border: 'none', borderRadius: '4px', backgroundColor: !showVideo ? '#0063b1' : 'rgba(255,255,255,0.8)', color: !showVideo ? 'white' : '#333', cursor: 'pointer', fontSize: '12px', fontWeight: '500' }}
                       >
-                        📷 Images ({safeThumbs.length})
+                        📷 {t('details.images')} ({safeThumbs.length})
                       </button>
                     )}
                     {safeVideos.length > 0 && (
@@ -384,7 +434,7 @@ function DirectSaleDetailContent() {
                         className={`media-toggle-btn ${showVideo ? 'active' : ''}`}
                         style={{ padding: '8px 12px', border: 'none', borderRadius: '4px', backgroundColor: showVideo ? '#0063b1' : 'rgba(255,255,255,0.8)', color: showVideo ? 'white' : '#333', cursor: 'pointer', fontSize: '12px', fontWeight: '500' }}
                       >
-                        🎥 Videos ({safeVideos.length})
+                        🎥 {t('details.videos')} ({safeVideos.length})
                       </button>
                     )}
                   </div>
@@ -440,7 +490,7 @@ function DirectSaleDetailContent() {
                     fontSize: '12px', 
                     fontWeight: '600' 
                   }}>
-                    {directSale.saleType === 'PRODUCT' ? 'Produit' : 'Service'}
+                    {directSale.saleType === 'PRODUCT' ? t('details.product') : t('details.service')}
                   </span>
                   {directSale.productCategory && (
                       <span style={{ 
@@ -461,28 +511,28 @@ function DirectSaleDetailContent() {
                     <tbody>
                       {directSale.saleType === 'PRODUCT' && (
                         <tr>
-                          <td className="fw-bold">Disponibilité</td>
+                          <td className="fw-bold">{t('details.availability')}</td>
                           <td>
                             {isSoldOut ? (
-                              <span className="text-danger fw-bold">Épuisé</span>
+                              <span className="text-danger fw-bold">{t('details.soldOut')}</span>
                             ) : (
                               <span className="text-success fw-bold">
-                                {directSale.quantity === 0 ? "Illimitée" : `${availableQuantity} en stock`}
+                                {directSale.quantity === 0 ? t('details.unlimited') : `${availableQuantity} ${t('details.inStock')}`}
                               </span>
                             )}
                           </td>
                         </tr>
                       )}
                       <tr>
-                        <td className="fw-bold">Prix Unitaire</td>
+                        <td className="fw-bold">{t('details.unitPrice')}</td>
                         <td><span style={{ color: '#0063b1', fontWeight: '700', fontSize: '20px' }}>{formatPrice(directSale.price)}</span></td>
                       </tr>
                       {directSale.owner && (
                       <tr>
-                        <td className="fw-bold">Vendeur</td>
+                        <td className="fw-bold">{t('details.seller')}</td>
                         <td>
-                            {directSale.owner.hidden === true ? (
-                              <span>Anonyme</span>
+                            {directSale.hidden === true ? (
+                              <span>{t('details.anonymous') || 'Anonyme'}</span>
                             ) : (
                               <Link
                                 href={`/profile/${directSale.owner._id || directSale.owner}`}
@@ -516,8 +566,14 @@ function DirectSaleDetailContent() {
                       </tr>
                       )}
                       <tr>
-                        <td className="fw-bold">Localisation</td>
+                        <td className="fw-bold">{t('details.location')}</td>
                         <td>{directSale.wilaya}, {directSale.place}</td>
+                      </tr>
+                      <tr>
+                        <td className="fw-bold">{t('details.contact')}</td>
+                        <td>
+                          {(directSale as any).contactNumber || (directSale.owner as any)?.phoneNumber || t('details.notAvailable')}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -527,13 +583,13 @@ function DirectSaleDetailContent() {
                   <div className="bid-section">
                     {isOwner && (
                        <div className="alert alert-warning">
-                         Vous ne pouvez pas acheter votre propre produit.
+                          {t('details.cannotBuyOwnProduct')}
                        </div>
                     )}
                     
                     <div style={{ background: 'white', padding: '20px', borderRadius: '12px', border: '1px solid #e9ecef', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <span style={{ fontWeight: '600', color: '#333' }}>Quantité à commander:</span>
+                        <span style={{ fontWeight: '600', color: '#333' }}>{t('details.orderQuantity')}:</span>
                         <div className="quantity-selector">
                           <button 
                             className="qty-btn" 
@@ -559,7 +615,7 @@ function DirectSaleDetailContent() {
                       </div>
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
-                        <span style={{ color: '#666' }}>Total à payer:</span>
+                        <span style={{ color: '#666' }}>{t('details.totalToPay')}:</span>
                         <span style={{ color: '#0063b1', fontWeight: '700', fontSize: '18px' }}>
                           {formatPrice(directSale.price * quantity)}
                         </span>
@@ -572,7 +628,7 @@ function DirectSaleDetailContent() {
                         style={{ width: '100%', opacity: (purchasing || isOwner) ? 0.7 : 1, cursor: (purchasing || isOwner) ? 'not-allowed' : 'pointer' }}
                       >
                         <div className="btn-content" style={{ justifyContent: 'center' }}>
-                          <span>{purchasing ? 'Traitement...' : 'Acheter Maintenant'}</span>
+                          <span>{purchasing ? t('details.processing') : t('details.buyNow')}</span>
                         </div>
                       </button>
                     </div>
@@ -591,28 +647,34 @@ function DirectSaleDetailContent() {
                     className={`tab-button ${activeTab === "description" ? "active" : ""}`}
                     onClick={() => setActiveTab("description")}
                   >
-                    Description
+                    {t('details.productDescription')}
                   </button>
                   {directSale.attributes && directSale.attributes.length > 0 && (
                     <button
                       className={`tab-button ${activeTab === "attributes" ? "active" : ""}`}
                       onClick={() => setActiveTab("attributes")}
                     >
-                      Caractéristiques
+                      {t('details.features')}
                     </button>
                   )}
+                  <button
+                    className={`tab-button ${activeTab === "comments" ? "active" : ""}`}
+                    onClick={() => setActiveTab("comments")}
+                  >
+                    {t('details.comments')} ({directSale.comments?.length || 0})
+                  </button>
                 </div>
 
                 <div className="tab-content">
                   {activeTab === "description" && (
                     <div className="description-content fade show active">
-                      <h3>Description du produit</h3>
+                      <h3>{t('details.productDescription')}</h3>
                       <p style={{ whiteSpace: 'pre-wrap' }}>{directSale.description}</p>
                     </div>
                   )}
                   {activeTab === "attributes" && (
                     <div className="description-content fade show active">
-                      <h3>Caractéristiques</h3>
+                      <h3>{t('details.features')}</h3>
                       <ul className="features-list">
                         {directSale.attributes?.map((attr, index) => (
                           <li key={index}>
@@ -621,6 +683,98 @@ function DirectSaleDetailContent() {
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  )}
+                  {activeTab === "comments" && (
+                    <div className="description-content fade show active">
+                       <div className="comments-area" style={{ marginBottom: 32 }}>
+                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '2px solid #f0f0f0', paddingBottom: '10px' }}>
+                            <h4 style={{ margin: 0, color: '#333', fontSize: '18px' }}>💬 {t('details.comments')} ({directSale.comments?.length || 0})</h4>
+                         </div>
+                         
+                         {/* Comment Form */}
+                         {isLogged ? (
+                           <div style={{ background: '#f8f9fa', borderRadius: '12px', padding: '16px', marginBottom: '20px', border: '1px solid #e9ecef' }}>
+                             <form onSubmit={async (e) => {
+                               e.preventDefault();
+                               if (!newComment.trim()) return;
+                               setSubmittingComment(true);
+                               try {
+                                 await commentsApi.createCommentForDirectSale(directSaleId, newComment, auth?.user?._id || '');
+                                 setNewComment("");
+                                 await fetchDirectSale(); // Refresh comments
+                                 enqueueSnackbar("Commentaire publié avec succès", { variant: 'success' });
+                               } catch (err: any) {
+                                 console.error("Error submitting comment:", err);
+                                 toast.error("Erreur lors de l'envoi du commentaire");
+                               } finally {
+                                 setSubmittingComment(false);
+                               }
+                             }}>
+                               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                                 <img 
+                                   src={auth?.user?.photoURL || DEFAULT_USER_AVATAR} 
+                                   alt="Avatar" 
+                                   style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #0063b1' }} 
+                                   onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_USER_AVATAR; }}
+                                 />
+                                 <div style={{ flex: 1 }}>
+                                   <textarea
+                                     value={newComment}
+                                     onChange={(e) => setNewComment(e.target.value)}
+                                     placeholder="Posez votre question ou partagez votre avis..."
+                                     required
+                                     rows={2}
+                                     style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '8px', fontSize: '14px', resize: 'vertical' }}
+                                   />
+                                   <button 
+                                     type="submit" 
+                                     disabled={submittingComment} 
+                                     className="btn btn-primary btn-sm"
+                                     style={{ borderRadius: '6px', fontWeight: '500' }}
+                                   >
+                                     {submittingComment ? "Envoi..." : "Publier"}
+                                   </button>
+                                 </div>
+                               </div>
+                             </form>
+                           </div>
+                         ) : (
+                           <div style={{ background: '#fff3cd', border: '1px solid #ffeaa7', borderRadius: '8px', padding: '12px', marginBottom: '20px', color: '#856404', textAlign: 'center' }}>
+                             🔒 {t('details.loginToComment')}
+                           </div>
+                         )}
+
+                         {/* Comments List */}
+                         {(directSale.comments && directSale.comments.length > 0) ? (
+                           <div>
+                            <div className="comments-list" style={{ maxHeight: showAllComments ? 'none' : '400px', overflow: 'hidden', transition: 'all 0.3s ease' }}>
+                              {(showAllComments ? directSale.comments : directSale.comments.slice(0, 5)).map((c) => (
+                                <CommentItem 
+                                  key={c._id} 
+                                  comment={c} 
+                                  isLogged={isLogged} 
+                                  authUser={auth.user} 
+                                  onReplySuccess={fetchDirectSale}
+                                />
+                              ))}
+                            </div>
+                             {directSale.comments.length > 5 && (
+                               <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                                 <button onClick={() => setShowAllComments(!showAllComments)} className="btn btn-link btn-sm" style={{ color: '#0063b1', textDecoration: 'none', fontWeight: '600' }}>
+                                   {showAllComments ? `${t('details.showLess')} ▲` : `${t('details.showMore')} (${directSale.comments.length - 5}) ▼`}
+                                 </button>
+                               </div>
+                             )}
+                           </div>
+                         ) : (
+                           <div style={{ textAlign: 'center', padding: '40px 20px', color: '#888', background: '#f8f9fa', borderRadius: '12px', border: '1px dashed #ddd' }}>
+                             <div style={{ fontSize: '48px', marginBottom: '16px' }}>💬</div>
+                             <p style={{ margin: 0, fontSize: '16px' }}>{t('details.noComments')}</p>
+                             <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#aaa' }}>{t('details.beFirstToComment')}</p>
+                           </div>
+                         )}
+                       </div>
                     </div>
                   )}
                 </div>

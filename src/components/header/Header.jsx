@@ -198,7 +198,6 @@ export const Header = () => {
   // Navigation Items
   const navItems = [
     { name: t('navigation.home'), path: "/", matchPaths: ["/"] },
-    { name: t('navigation.dashboardLink'), path: "/dashboard", matchPaths: ["/dashboard"] },
     { name: t('navigation.auctions'), path: "/auction-sidebar", matchPaths: ["/auction-sidebar", "/auction-details"] },
     { name: t('navigation.tenders'), path: "/tenders", matchPaths: ["/tenders", "/tender-details"] },
     { name: t('navigation.directSales'), path: "/direct-sale", matchPaths: ["/direct-sale"] },

@@ -107,12 +107,18 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
   const isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30 && parseInt(timer.days) === 0;
 
   // Determine the display name for the auction owner
+  let displayName;
   const ownerObject = typeof auction.owner === 'object' ? auction.owner : null;
-  const ownerName = ownerObject?.firstName && ownerObject?.lastName
-    ? `${ownerObject.firstName} ${ownerObject.lastName}`.trim()
-    : ownerObject?.name;
-  const sellerName = auction.seller?.name;
-  const displayName = ownerName || sellerName || t('liveAuction.seller');
+
+  if (auction.hidden) {
+      displayName = t('common.anonymous') || 'Anonyme';
+  } else {
+      const ownerName = ownerObject?.firstName && ownerObject?.lastName
+        ? `${ownerObject.firstName} ${ownerObject.lastName}`.trim()
+        : ownerObject?.name;
+      const sellerName = auction.seller?.name;
+      displayName = ownerName || sellerName || t('liveAuction.seller');
+  }
 
   return (
     <div
@@ -371,7 +377,7 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
               fontWeight: '600',
               color: '#0063b1',
             }}>
-              {((auction as any).participantsCount || 0)} {t('liveAuction.participants')}
+              {parseInt(String(auction.participantsCount || 0))} {t('liveAuction.participants')}
             </span>
             <span style={{
               fontSize: '10px',
@@ -391,7 +397,7 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
           marginTop: 'auto'
         }}>
           <img
-            src={normalizeImageUrl(ownerObject?.photoURL || ownerObject?.profileImage?.url) || DEFAULT_PROFILE_IMAGE}
+            src={auction.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl(ownerObject?.photoURL || ownerObject?.profileImage?.url) || DEFAULT_PROFILE_IMAGE)}
             alt={displayName}
             style={{
               width: '28px',

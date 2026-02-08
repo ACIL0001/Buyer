@@ -123,6 +123,18 @@ export default function DirectSalesPage() {
     return sales.filter(sale => sale.status === statusFilter);
   };
 
+  const handleDelete = async (id: string) => {
+    if (window.confirm(t('dashboard.list.confirmDelete') || 'Are you sure you want to delete this sale?')) {
+      try {
+        const { DirectSaleAPI } = await import('@/services/direct-sale');
+        await DirectSaleAPI.delete(id);
+        fetchSales();
+      } catch (error) {
+        console.error('Error deleting sale:', error);
+      }
+    }
+  };
+
   const TableBodyComponent = ({ data = [] }: { data: DirectSale[] }) => {
     const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
 
@@ -165,7 +177,19 @@ export default function DirectSalesPage() {
                   size="small"
                   variant="outlined"
                 >
-                  {t('dashboard.list.view')}
+                  {t('dashboard.list.view') || 'View'}
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent row click
+                    handleDelete(_id);
+                  }}
+                  sx={{ ml: 1 }}
+                >
+                  {t('dashboard.list.delete') || 'Delete'}
                 </Button>
               </TableCell>
             </TableRow>
@@ -216,7 +240,7 @@ export default function DirectSalesPage() {
           <Button
             variant="contained"
             component={Link}
-            href="/dashboard/direct-sales/create"
+            href="/dashboard/direct-sales/create/"
             startIcon={<MdAdd />}
             sx={{
               minWidth: { xs: '100%', sm: 'auto' },
@@ -252,7 +276,7 @@ export default function DirectSalesPage() {
           <Button
             variant="contained"
             component={Link}
-            href="/dashboard/direct-sales/create"
+            href="/dashboard/direct-sales/create/"
             startIcon={<MdAdd />}
             sx={{ px: 4, py: 1.5 }}
           >

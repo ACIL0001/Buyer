@@ -76,10 +76,15 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
     };
   }, [isOpen]);
 
-  // Combined notifications
-  const allNotifications = [
-    ...generalNotifications.map(n => ({ ...n, source: 'general' }))
-  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  // Combined notifications - Remove duplicates based on _id
+  const uniqueNotifications = new Map();
+  [...generalNotifications.map(n => ({ ...n, source: 'general' }))].forEach(n => {
+    if (!uniqueNotifications.has(n._id)) {
+      uniqueNotifications.set(n._id, n);
+    }
+  });
+  const allNotifications = Array.from(uniqueNotifications.values())
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   // Debug logging
   useEffect(() => {
@@ -101,8 +106,12 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
       const titleLower = notification.title?.toLowerCase() || '';
       const messageLower = notification.message?.toLowerCase() || '';
 
-      // 0. NEW ITEMS CREATED (Public Notifications)
-      if (notification.type === 'TENDER_CREATED') {
+      // 0. USER VERIFICATION/CERTIFICATION (Redirect to Profile)
+      if (notification.type === 'USER_VERIFIED' || notification.type === 'USER_CERTIFIED') {
+          redirectPath = '/profile';
+      }
+      // 1. NEW ITEMS CREATED (Public Notifications)
+      else if (notification.type === 'TENDER_CREATED') {
           const id = notification.data?._id || notification.data?.id || notification.data?.tenderId;
           if (id) redirectPath = `/tender-details/${id}`;
       }
@@ -134,6 +143,25 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
             (notification.type === 'ORDER' && !titleLower.includes('confirmée') && !titleLower.includes('confirmed')) ||
             (notification.type === 'NEW_OFFER' && (titleLower.includes('commande') || messageLower.includes('commande')))
         );
+
+        // 2. COMMENT REDIRECTION
+        if (notification.type === 'COMMENT_RECEIVED' || notification.type === 'COMMENT_REPLY') {
+            const data = notification.data || {};
+            // Extract IDs with multiple fallback options
+            const auctionId = data?.auctionId || (data?.entityType === 'BID' ? data?.entityId : null);
+            const tenderId = data?.tenderId || (data?.entityType === 'TENDER' ? data?.entityId : null);
+            const directSaleId = data?.directSaleId || (data?.entityType === 'DIRECT_SALE' ? data?.entityId : null);
+            
+            const commentId = data?.commentId || data?._id;
+
+            if (auctionId) {
+                redirectPath = `/auction-details/${auctionId}${commentId ? `?commentId=${commentId}` : ''}`;
+            } else if (tenderId) {
+                redirectPath = `/tender-details/${tenderId}${commentId ? `?commentId=${commentId}` : ''}`;
+            } else if (directSaleId) {
+                redirectPath = `/direct-sale/${directSaleId}${commentId ? `?commentId=${commentId}` : ''}`;
+            }
+        }
 
         const isBidderSubmission = titleLower.includes('soumise') || titleLower.includes('submitted') || 
                                    titleLower.includes('enregistrée') || titleLower.includes('registered');
@@ -186,18 +214,28 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
         }
       }
 
-      if (redirectPath) {
-        console.log('🎯 Executing redirect to:', redirectPath);
-        router.push(redirectPath);
-      }
-
+      // Mark as read first (in background, don't wait)
       if (notification.source === 'general') {
-        await markGeneralAsRead(notification._id);
+        markGeneralAsRead(notification._id).catch(err => {
+          console.error('Failed to mark as read:', err);
+          // Don't prevent navigation if marking fails
+        });
       }
+      
+      // Close dropdown
       setIsOpen(false);
 
+      // Navigate after a brief delay to ensure mark-as-read request is sent
+      if (redirectPath) {
+        console.log('🎯 Executing redirect to:', redirectPath);
+        setTimeout(() => {
+          router.push(redirectPath);
+        }, 100);
+      }
+
     } catch (error) {
-      console.error('❌ Error marking notification as read:', error);
+      console.error('❌ Error in notification click handler:', error);
+      setIsOpen(false); // Always close dropdown even on error
     }
   };
 
@@ -331,14 +369,14 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
                         <p>{t('notifications.noNotifications')}</p>
                     </div>
                 ) : (
-                    allNotifications.slice(0, 10).map((notification) => {
+                    allNotifications.slice(0, 10).map((notification, index) => {
                         const priceMatch = notification.title?.match(/([\d,]+\.?\d*)\s*DA/i);
                         const priceAmount = priceMatch ? priceMatch[1] : null;
                         const title = priceAmount ? notification.title.replace(/\s*-\s*[\d,]+\.?\d*\s*DA/i, '').trim() : notification.title;
                         const senderName = (notification as any).senderName || (notification as any).data?.senderName || (notification as any).data?.winnerName || (notification as any).data?.buyerName;
 
                         return (
-                            <div key={notification._id} onClick={() => handleMarkAsRead(notification)}
+                            <div key={notification._id || `notif-${index}`} onClick={() => handleMarkAsRead(notification)}
                                 style={{
                                     padding: '12px 15px',
                                     borderBottom: '1px solid #f8f9fa',

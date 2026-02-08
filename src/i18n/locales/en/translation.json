@@ -80,7 +80,11 @@
     "daysAbbr": "d",
     "hoursAbbr": "h",
     "minutesAbbr": "m",
-    "secondsAbbr": "s"
+    "secondsAbbr": "s",
+    "directSale": "Direct Sale",
+    "noTitle": "No Title",
+    "participant": "participant",
+    "participants": "participants"
   },
   "navigation": {
     "home": "Home",
@@ -126,6 +130,11 @@
     "registerSuccess": "Registration successful",
     "logoutSuccess": "Logout successful"
   },
+  "directSale": {
+    "soldOut": "Sold Out",
+    "fixedPrice": "Fixed Price",
+    "noTitle": "No Title"
+  },
   "settings": {
     "title": "Settings"
   },
@@ -157,7 +166,9 @@
     "auctionDetails": "Auction Details",
     "sellerInfo": "Seller Information",
     "auctionRules": "Auction Rules",
-    "termsAndConditions": "Terms and Conditions"
+    "termsAndConditions": "Terms and Conditions",
+    "bidsPlaced": "bids placed",
+    "biddersWithCount": "{{count}} participant(s)"
   },
   "category": {
     "title": "Category",
@@ -251,11 +262,15 @@
       "myActivities": "My Activities"
     },
     "noActivities": "No recent activity",
-    "personalInfo": "Personal Information",
     "personalInfoDesc": "Manage your personal information and profile details",
     "updateSuccess": "Profile updated successfully",
     "sessionExpired": "Session expired",
     "updateFailed": "Failed to update profile",
+    "activityStats": {
+      "overview": "Overview",
+      "userActivity": "User Activity",
+      "totalInteractions": "Total Interactions"
+    },
     "documents": {
       "management": "Document Management",
       "managementDesc": "Manage your identity documents. You can replace existing documents or add new optional documents.",
@@ -267,6 +282,10 @@
       "optionalNote": "Add these documents if you wish to be professionally certified",
       "upgradeToVerified": "Upgrade to Verified",
       "upgradeToCertified": "Upgrade to Certified",
+      "mustBeVerified": "You must be verified before requesting certification.",
+      "nif": "NIF",
+      "mustBeVerified": "You must be verified before requesting certification.",
+      "nif": "NIF",
       "verificationNoteTitle": "Verification",
       "verificationRequirement": "Provide (RC/ Others + NIF) or (Carte Fellah only).",
       "verificationSaveNote": "Click \"Submit\" to send to the administrator.",
@@ -312,7 +331,8 @@
       "certificates": "Certificates",
       "certificatesDesc": "Professional certificates or other supplementary documents",
       "paymentProof": "Payment Proof",
-      "paymentProofDesc": "Subscription payment proof"
+      "paymentProofDesc": "Subscription payment proof",
+      "registreCommerce": "Commercial Register / Artisan Card"
     }
   },
   "account": {
@@ -797,7 +817,63 @@
     "comeBackLater": "Come back later to see new auctions",
     "viewAll": "View all auctions",
     "submitBid": "Bid",
-    "currentPrice": "Price"
+    "currentPrice": "Price",
+    "bidMustBeHigher": "Your bid must be higher than the current price of",
+    "invalidPrice": "Invalid bid amount. Please check that your bid is higher than the current price.",
+    "auctionEnded": "This auction has ended.",
+    "insufficientAmount": "Your bid amount is insufficient.",
+    "bidSuccess": "Your bid has been placed successfully!",
+    "bidError": "Please enter a valid bid amount"
+  },
+  "details": {
+    "availability": "Availability",
+    "soldOut": "Sold Out",
+    "unlimited": "Unlimited",
+    "inStock": "in stock",
+    "unitPrice": "Unit Price",
+    "seller": "Seller",
+    "anonymous": "Anonymous",
+    "location": "Location",
+    "contact": "Contact",
+    "notAvailable": "Not available",
+    "orderQuantity": "Quantity to Order",
+    "totalToPay": "Total to Pay",
+    "buyNow": "Buy Now",
+    "processing": "Processing...",
+    "productDescription": "Product Description",
+    "features": "Features",
+    "comments": "Comments",
+    "similarDirectSales": "Similar Direct Sales",
+    "onlyQuantityAvailable": "Only {{quantity}} item(s) available",
+    "cannotBuyOwnProduct": "You cannot buy your own product",
+    "pleaseLoginToBuy": "Please login to buy",
+    "orderSuccessful": "Order placed successfully!",
+    "errorOrdering": "Error placing order",
+    "loading": "Loading...",
+    "errorLoading": "Unable to load details",
+    "retry": "Retry",
+    "back": "Back",
+    "reloadPage": "Reload Page",
+    "errorOccurred": "An error occurred",
+    "errorMessage": "Sorry, an unexpected error occurred.",
+    "technicalDetails": "Technical Details",
+    "notFound": "Not Found",
+    "unauthorized": "Unauthorized",
+    "serverError": "Server Error",
+    "serverUnreachable": "Server Unreachable",
+    "images": "Images",
+    "videos": "Videos",
+    "product": "Product",
+    "service": "Service",
+    "loginToComment": "Login to add a comment",
+    "noComments": "No comments for this sale.",
+    "beFirstToComment": "Be the first to ask a question!",
+    "publish": "Publish",
+    "sending": "Sending...",
+    "showMore": "Show more comments",
+    "showLess": "Show less",
+    "similarAuctions": "Similar Auctions",
+    "similarTenders": "Similar Tenders"
   },
   "liveTenders": {
     "title": "Tenders",
@@ -1294,5 +1370,53 @@
       "wilayaRequired": "Wilaya is required",
       "locationRequired": "Location is required"
     }
+  },
+  "auctionDetails": {
+    "cannotBidOwn": "You cannot bid on your own auction.",
+    "reviews": "Reviews",
+    "reviewWarning": "Important: Your comments must be specifically related to this auction to be useful to everyone. Thank you for your understanding.",
+    "noSimilarAuctions": "No similar auctions available at the moment",
+    "checkMainPage": "Check our main page to discover other interesting auctions.",
+    "noReviewsAvailable": "No reviews available at the moment.",
+    "beFirstToReview": "Be the first to share your review!",
+    "submitting": "Submitting...",
+    "submitReview": "Submit Review",
+    "writeReview": "Write a review",
+    "rating": "Rating",
+    "comment": "Comment",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "reviewSubmitted": "Review submitted successfully!",
+    "reviewError": "Failed to submit review. Please try again.",
+    "loginRequired": "Please login to submit a review",
+    "errorOccurred": "An error occurred",
+    "errorMessage": "Sorry, an unexpected error occurred while loading this page.",
+    "reloadPage": "Reload Page",
+    "loadingError": "Loading Error",
+    "retry": "Retry",
+    "backToAuctions": "Back to Auctions",
+    "technicalDetails": "Technical Details (for debugging)",
+    "notFound": "Auction not found. It may have been deleted.",
+    "unauthorized": "Unauthorized access. Please login again.",
+    "serverError": "Server error. Please try again later.",
+    "serverUnreachable": "Server unreachable. Check that the server is running.",
+    "startingPrice": "Starting Price",
+    "currentPrice": "Current Price",
+    "availableQuantity": "Available Quantity",
+    "auctionType": "Auction Type",
+    "yourBid": "Your Bid",
+    "lastOffer": "Last Offer",
+    "enterYourBid": "Enter your bid",
+    "placeBid": "Place Bid",
+    "offers": "Offers",
+    "productDetails": "Product Details",
+    "noDescription": "No description available.",
+    "similarAuctions": "Auctions",
+    "similar": "Similar",
+    "offerPlacedOn": "Offer placed on"
+  },
+  "tender": {
+    "offerAccepted": "Your offer has been accepted! A chat with the buyer will open.",
+    "congratsWinner": "Congratulations! You have won this tender. A chat with the buyer is available."
   }
 }

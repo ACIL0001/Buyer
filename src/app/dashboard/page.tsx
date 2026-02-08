@@ -170,7 +170,7 @@ const QUICK_ACTIONS = [
         icon: MdEmail,
         actions: [
             { label: "common.view", link: "/dashboard/tenders", icon: MdVisibility },
-            { label: "common.create", link: "/dashboard/tenders/create", icon: MdAdd, isCreate: true }
+            { label: "common.create", link: "/dashboard/tenders/create/", icon: MdAdd, isCreate: true }
         ]
     },
     { 
@@ -179,7 +179,7 @@ const QUICK_ACTIONS = [
         icon: MdGavel,
         actions: [
             { label: "common.view", link: "/dashboard/auctions", icon: MdVisibility },
-            { label: "common.create", link: "/dashboard/auctions/create", icon: MdAdd, isCreate: true }
+            { label: "common.create", link: "/dashboard/auctions/create/", icon: MdAdd, isCreate: true }
         ]
     },
     { 
@@ -188,7 +188,7 @@ const QUICK_ACTIONS = [
         icon: MdStore,
         actions: [
             { label: "common.view", link: "/dashboard/direct-sales", icon: MdVisibility },
-            { label: "common.create", link: "/dashboard/direct-sales/create", icon: MdAdd, isCreate: true }
+            { label: "common.create", link: "/dashboard/direct-sales/create/", icon: MdAdd, isCreate: true }
         ]
     },
 ];

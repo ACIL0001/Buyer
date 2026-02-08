@@ -44,7 +44,7 @@
     "seller": "البائع",
     "buyer": "المشتري",
     "status": "الحالة",
-    "active": "نشط",
+    "active": "جاري",
     "inactive": "غير نشط",
     "pending": "قيد الانتظار",
     "completed": "مكتمل",
@@ -58,6 +58,7 @@
     "bids": "المزايدات",
     "offers": "العروض",
     "reviews": "التقييمات",
+    "comments": "تعليقات",
     "rating": "التقييم",
     "contact": "اتصل بنا",
     "about": "حول",
@@ -85,11 +86,16 @@
     "showMore": "إظهار المزيد",
     "searchIn": "البحث في",
     "noResults": "لا توجد نتائج لـ",
-    "secondsAbbr": "ث"
+    "secondsAbbr": "ث",
+    "directSale": "بيع مباشر",
+    "noTitle": "بلا عنوان",
+    "participant": "مشارك",
+    "participants": "مشاركين"
   },
   "navigation": {
     "home": "الرئيسية",
     "dashboardLink": "لوحة التحكم",
+    "dashboard": "لوحة التحكم",
     "auctions": "المزادات",
     "addAuction": "إنشاء مزاد",
     "offers": "العروض",
@@ -108,6 +114,10 @@
     "settings": "الإعدادات",
     "notifications": "الإشعارات",
     "chat": "الدردشة",
+    "logout": "تسجيل الخروج"
+  },
+  "account": {
+    "myProfile": "الملف الشخصي",
     "logout": "تسجيل الخروج"
   },
   "dashboard": {
@@ -139,6 +149,11 @@
     "registerSuccess": "تم التسجيل بنجاح",
     "logoutSuccess": "تم تسجيل الخروج بنجاح"
   },
+  "directSale": {
+    "soldOut": "نفذت الكمية",
+    "fixedPrice": "سعر ثابت",
+    "noTitle": "بلا عنوان"
+  },
   "auction": {
     "title": "المزاد",
     "auctions": "المزادات",
@@ -167,7 +182,15 @@
     "auctionDetails": "تفاصيل المزاد",
     "sellerInfo": "معلومات البائع",
     "auctionRules": "قواعد المزاد",
-    "termsAndConditions": "الشروط والأحكام"
+    "termsAndConditions": "الشروط والأحكام",
+    "bidMustBeHigher": "يجب أن تكون مزايدتك أعلى من السعر الحالي البالغ",
+    "invalidPrice": "مبلغ المزايدة غير صالح. يرجى التحقق من أن مزايدتك أعلى من السعر الحالي.",
+    "auctionEnded": "انتهى هذا المزاد.",
+    "insufficientAmount": "مبلغ مزايدتك غير كافٍ.",
+    "bidSuccess": "تم وضع مزايدتك بنجاح!",
+    "bidError": "يرجى إدخال مبلغ مزايدة صالح",
+    "bidsPlaced": "زايدوا",
+    "biddersWithCount": "{{count}} مشارك"
   },
   "profile": {
     "title": "الملف الشخصي",
@@ -246,7 +269,6 @@
     "yourScore": "النتيجة",
     "ratingScore": "أداء التقييم",
     "noRatingAvailable": "لا يوجد تقييم متاح",
-    "personalInformation": "المعلومات الشخصية",
     "activities": "الأنشطة",
     "offerHistory": "تاريخ العروض",
     "changeAccountToReseller": "تغيير الحساب إلى بائع",
@@ -272,6 +294,11 @@
     "updateSuccess": "تم تحديث الملف الشخصي بنجاح",
     "sessionExpired": "انتهت الجلسة",
     "updateFailed": "فشل تحديث الملف الشخصي",
+    "activityStats": {
+      "overview": "نظرة عامة",
+      "userActivity": "نشاط المستخدم",
+      "totalInteractions": "إجمالي التفاعلات"
+    },
     "documents": {
       "management": "إدارة المستندات",
       "managementDesc": "إدارة مستندات هويتك. يمكنك استبدال المستندات الموجودة أو إضافة مستندات اختيارية جديدة.",
@@ -283,6 +310,8 @@
       "optionalNote": "أضف هذه المستندات إذا كنت ترغب في الحصول على شهادة مهنية",
       "upgradeToVerified": "الترقية إلى مُتحقق",
       "upgradeToCertified": "الترقية إلى مُعتمد",
+      "mustBeVerified": "يجب أن تكون موثقًا قبل طلب الشهادة.",
+      "nif": "رقم التعريف الضريبي (NIF)",
       "verificationNoteTitle": "التحقق",
       "verificationRequirement": "تقديم (RC/ أخرى + NIF) أو (بطاقة فلاح فقط).",
       "verificationSaveNote": "انقر على \"إرسال\" لإرسالها إلى المسؤول.",
@@ -303,7 +332,7 @@
       "rejected": "مرفوض",
       "pending": "قيد الانتظار",
       "note": "المستندات المميزة بعلامة النجمة (*) مطلوبة. يمكنك استبدال أو إضافة مستندات في أي وقت.",
-      "rcOthers": "RC/ أخرى",
+      "rcOthers": "السجل التجاري/ أخرى",
       "rcOthersDesc": "سجل تجاري أو مستندات أخرى",
       "nifArticles": "NIF/رقم المادة",
       "nifArticlesDesc": "NIF أو رقم المادة",
@@ -328,7 +357,8 @@
       "certificates": "الشهادات",
       "certificatesDesc": "الشهادات المهنية أو المستندات التكميلية الأخرى",
       "paymentProof": "إثبات الدفع",
-      "paymentProofDesc": "إثبات دفع الاشتراك"
+      "paymentProofDesc": "إثبات دفع الاشتراك",
+      "registreCommerce": "السجل التجاري / بطاقة حرفي"
     }
   },
   "account": {
@@ -738,6 +768,7 @@
   "auctionDetails": {
     "reviews": "التقييمات",
     "reviewWarning": "مهم: يجب أن تكون تعليقاتك مرتبطة تحديداً بهذا المزاد لتكون مفيدة للجميع. شكراً لتفهمكم.",
+    "cannotBidOwn": "لا يمكنك المزايدة على مزادك الخاص.",
     "noSimilarAuctions": "لا توجد مزادات مشابهة متاحة في الوقت الحالي",
     "checkMainPage": "تحقق من صفحتنا الرئيسية لاكتشاف مزادات أخرى مثيرة للاهتمام.",
     "noReviewsAvailable": "لا توجد تقييمات متاحة في الوقت الحالي.",
@@ -1332,5 +1363,59 @@
     "defaultTitle": "إشعار جديد",
     "defaultMessage": "لديك إشعار جديد",
     "processing": "جاري المعالجة..."
+  },
+  "details": {
+    "availability": "التوفر",
+    "soldOut": "نفذت الكمية",
+    "unlimited": "غير محدود",
+    "inStock": "في المخزون",
+    "unitPrice": "سعر الوحدة",
+    "seller": "البائع",
+    "anonymous": "مجهول",
+    "location": "الموقع",
+    "contact": "الاتصال",
+    "notAvailable": "غير متوفر",
+    "orderQuantity": "الكمية للطلب",
+    "totalToPay": "الإجمالي للدفع",
+    "buyNow": "شراء الآن",
+    "processing": "جاري المعالجة...",
+    "productDescription": "وصف المنتج",
+    "features": "المميزات",
+    "comments": "التعليقات",
+    "similarDirectSales": "مبيعات مباشرة مماثلة",
+    "onlyQuantityAvailable": "فقط {{quantity}} عنصر(عناصر) متاحة",
+    "cannotBuyOwnProduct": "لا يمكنك شراء منتجك الخاص",
+    "pleaseLoginToBuy": "يرجى تسجيل الدخول للشراء",
+    "orderSuccessful": "تم تقديم الطلب بنجاح!",
+    "errorOrdering": "خطأ في تقديم الطلب",
+    "loading": "جاري التحميل...",
+    "errorLoading": "تعذر تحميل التفاصيل",
+    "retry": "إعادة المحاولة",
+    "back": "رجوع",
+    "reloadPage": "إعادة تحميل الصفحة",
+    "errorOccurred": "حدث خطأ",
+    "errorMessage": "عذراً، حدث خطأ غير متوقع.",
+    "technicalDetails": "تفاصيل تقنية",
+    "notFound": "غير موجود",
+    "unauthorized": "غير مصرح",
+    "serverError": "خطأ في الخادم",
+    "serverUnreachable": "الخادم غير قابل للوصول",
+    "images": "الصور",
+    "videos": "الفيديوهات",
+    "product": "منتج",
+    "service": "خدمة",
+    "loginToComment": "سجل الدخول لإضافة تعليق",
+    "noComments": "لا توجد تعليقات لهذا البيع.",
+    "beFirstToComment": "كن أول من يسأل سؤالاً!",
+    "publish": "نشر",
+    "sending": "جاري الإرسال...",
+    "showMore": "عرض المزيد من التعليقات",
+    "showLess": "عرض أقل",
+    "similarAuctions": "مزادات مشابهة",
+    "similarTenders": "عروض مماثلة"
+  },
+  "tender": {
+    "offerAccepted": "تم قبول عرضك! سيتم فتح محادثة مع المشتري.",
+    "congratsWinner": "تهانينا! لقد فزت بهذا الطلب. محادثة مع المشتري متاحة الآن."
   }
 }

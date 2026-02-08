@@ -11,16 +11,17 @@ import { motion, AnimatePresence } from "framer-motion"
 import "./modern-styles.css"
 import { UserAPI } from "@/app/api/users"
 import { IdentityAPI } from "@/app/api/identity"
-import { useIdentityStatus } from "@/hooks/useIdentityStatus"
+// import { useIdentityStatus } from "@/hooks/useIdentityStatus"
 import { useRouter } from "next/navigation"
-import HistoryPage from "./history/HistoryPage"
+// import HistoryPage from "./history/HistoryPage"
 import { useTranslation } from "react-i18next"
 import { authStore } from "@/contexts/authStore"
-import { WILAYAS } from "@/constants/wilayas"
+// import { WILAYAS } from "@/constants/wilayas"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import ProfileSkeleton from "@/components/skeletons/ProfileSkeleton"
 import VerificationPopup from "@/components/VerificationPopup"
 import UserActivitiesSection from "@/components/profile/UserActivitiesSection"
+import ImageCropper from "@/components/common/ImageCropper"
 import { normalizeImageUrl } from "@/utils/url"
 
 // Local constants removed in favor of @/utils/url
@@ -90,6 +91,116 @@ function ProfilePage() {
     const coverInputRef = useRef<HTMLInputElement>(null);
     const documentFileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
+    // Cropper State
+    const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+    const [isCropping, setIsCropping] = useState(false);
+    const [cropType, setCropType] = useState<'avatar' | 'cover'>('avatar');
+
+    const handleCropSave = async (croppedBlob: Blob) => {
+        setIsCropping(false);
+        if (cropType === 'avatar') {
+            await uploadAvatar(croppedBlob);
+        } else {
+            await uploadCover(croppedBlob);
+        }
+    };
+
+    const uploadCover = async (fileBlob: Blob) => {
+        setIsUploadingCover(true);
+        const formData = new FormData();
+        formData.append("cover", fileBlob, "cover.jpg");
+
+        try {
+            const response = await UserAPI.uploadCover(formData);
+            if (response.success) {
+                enqueueSnackbar(t("profile.hero.coverSuccess") || "Cover updated successfully", { variant: "success" });
+                await auth.fetchFreshUserData();
+                setCoverKey(Date.now());
+            } else {
+                 enqueueSnackbar(t("profile.hero.coverError") || "Failed to update cover", { variant: "error" });
+            }
+        } catch (error) {
+            console.error("Cover upload error:", error);
+            enqueueSnackbar(t("profile.hero.coverError") || "Failed to update cover", { variant: "error" });
+        } finally {
+             setIsUploadingCover(false);
+        }
+    };
+
+    const uploadAvatar = async (fileBlob: Blob) => {
+        setIsUploadingAvatar(true);
+
+        try {
+            console.log('🖼️ Uploading avatar...');
+            const formDataToUpload = new FormData();
+            formDataToUpload.append('avatar', fileBlob, "avatar.jpg");
+            const response = await UserAPI.uploadAvatar(formDataToUpload);
+
+            console.log('✅ Avatar upload response:', response);
+
+            if (response && response.success && (response.user || response.data)) {
+                const updatedUser = (response.user || response.data) as any;
+                const responseWithAttachment = response as any;
+                
+                // Get the updated user data and merge
+                let avatarObj = updatedUser.avatar;
+                if (responseWithAttachment?.attachment) {
+                    const attachment = responseWithAttachment.attachment;
+                    const normalizedUrl = normalizeImageUrl(attachment.url);
+                    avatarObj = {
+                        _id: attachment._id,
+                        url: attachment.url,
+                        filename: attachment.filename,
+                        fullUrl: attachment.fullUrl ? normalizeImageUrl(attachment.fullUrl) : normalizedUrl
+                    };
+                }
+
+                let photoURL = updatedUser.photoURL;
+                if (!photoURL && avatarObj) {
+                    const avatar = avatarObj as any;
+                    if (avatar.fullUrl) photoURL = normalizeImageUrl(avatar.fullUrl);
+                    else if (avatar.url) photoURL = normalizeImageUrl(avatar.url);
+                    else if (avatar.filename) photoURL = normalizeImageUrl(avatar.filename);
+                } else if (photoURL) {
+                     photoURL = normalizeImageUrl(photoURL);
+                }
+
+                const mergedUser = {
+                    ...auth.user,
+                    ...updatedUser,
+                    avatar: avatarObj || auth.user?.avatar,
+                    photoURL: photoURL || auth.user?.photoURL,
+                    type: (updatedUser.type || updatedUser.accountType || auth.user?.type || 'CLIENT') as any,
+                };
+
+                set({
+                    user: mergedUser as any,
+                    tokens: auth.tokens
+                });
+
+                setAvatarKey(Date.now());
+                enqueueSnackbar(response.message || t("avatarUpdated") || "Avatar updated successfully", { variant: "success" });
+
+                // Refresh fresh data
+                setTimeout(async () => {
+                    try {
+                        await fetchFreshUserData();
+                    } catch (err) {
+                        console.warn('⚠️ Error refreshing user data after avatar upload:', err);
+                    }
+                }, 500);
+            } else {
+                enqueueSnackbar(response?.message || 'Avatar upload failed', { variant: "error" });
+            }
+        } catch (error: any) {
+            console.error('❌ Error uploading avatar:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to upload avatar';
+            enqueueSnackbar(errorMessage, { variant: "error" });
+        } finally {
+            setIsUploadingAvatar(false);
+        }
+    };
+
 
 
     // Helper to refresh user data
@@ -109,54 +220,246 @@ function ProfilePage() {
 
     const [showCompleteProfile, setShowCompleteProfile] = useState(false); 
     
-
+    console.log('🏗️ ProfilePage Rendering', { 
+        showCompleteProfile, 
+        hasUser: !!auth.user, 
+        loginCount: auth.user?.loginCount 
+    });
 
     // ... existing refs ...
 
     // Initialize form data when auth.user changes
     useEffect(() => {
+        console.log('🔄 useEffect [auth.user] triggered', { 
+            hasUser: !!auth.user, 
+            loginCount: auth.user?.loginCount 
+        });
+        
+        // DEVELOPMENT: Force show for testing
+        if (typeof window !== 'undefined' && sessionStorage.getItem('force_show_profile_note') === 'true') {
+            console.log('🔧 FORCE SHOW ACTIVE via sessionStorage');
+            setShowCompleteProfile(true);
+            return;
+        }
+
         // Check for Complete Profile Note
         checkProfileCompletion(auth.user);
     }, [auth.user]);
 
     const checkProfileCompletion = (user: any) => {
-        // Logic to determining if profile is complete (example: missing company attributes for pro/corporate)
-        // Or generic "Fill more details"
+        console.log('🎯 ===== PROFILE COMPLETION CHECK STARTED =====');
+        console.log('🔍 Initial check:', {
+            hasUser: !!user,
+            userObject: user,
+            loginCount: user?.loginCount,
+            dismissed: user?.profileCompletionNote?.dismissed,
+        });
         
-        // Check if note is dismissed or postponed max times
-        const noteStatus = user.profileCompletionNote || { dismissed: false, postponedCount: 0 };
-        if (noteStatus.dismissed || noteStatus.postponedCount >= 5) {
+        console.log('💾 SessionStorage state:', {
+            profile_note_shown: sessionStorage.getItem('profile_note_shown_session'),
+            allKeys: Object.keys(sessionStorage),
+            allValues: Object.entries(sessionStorage).reduce((acc, [key, val]) => ({ ...acc, [key]: val }), {})
+        });
+
+        console.log('👤 Full user data:', {
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+            email: user?.email,
+            phone: user?.phone,
+            wilaya: user?.wilaya,
+            type: user?.type,
+            companyName: user?.companyName,
+            activitySector: user?.activitySector,
+            post: user?.post,
+            isVerified: user?.isVerified,
+            isCertified: user?.isCertified,
+            isHasIdentity: user?.isHasIdentity,
+        });
+
+        if (!user) {
+            console.log('❌ BLOCKED: No user object');
             setShowCompleteProfile(false);
             return;
         }
 
-        // Define what constitutes an "incomplete" profile (Example: missing companyName/activitySector)
-        // Adjust condition as per requirement. 
-        // User request says: "Display a note... show 'Complete Profile', 'Later', 'Never'"
-        // Assuming we show it if some specific optional fields are empty? 
-        // Or just general "Complete your profile to get more trust"? 
-        // Let's assume broad check: key fields missing?
-        const isProfileIncomplete = !user.companyName || !user.activitySector || !user.jobTitle || !user.wilaya;
-
-        if (isProfileIncomplete) {
-            setShowCompleteProfile(true);
+        // 1. Check if user has permanently dismissed
+        if (user.profileCompletionNote?.dismissed) {
+            console.log('❌ BLOCKED: Profile notice permanently dismissed');
+            setShowCompleteProfile(false);
+            return;
         }
+
+        // 2. Check login count limit from database
+        // Show notice for first 5 logins (handle undefined as 0)
+        const loginCount = user.loginCount ?? 0;
+        console.log('📊 Login count check:', { 
+            loginCount, 
+            isUndefined: user.loginCount === undefined,
+            shouldShow: loginCount <= 5 
+        });
+        
+        if (loginCount > 5) {
+             console.log('❌ BLOCKED: Login count exceeded limit (> 5)');
+             setShowCompleteProfile(false);
+             return;
+        }
+
+        // 3. Check if user postponed in this SPECIFIC login session
+        // We compare the postponed login count with the current login count
+        const lastPostponedCount = sessionStorage.getItem('profile_note_postponed_logincount');
+        const currentLoginCount = user.loginCount ?? 0;
+        
+        if (lastPostponedCount && parseInt(lastPostponedCount) === currentLoginCount) {
+            console.log('❌ BLOCKED: User postponed in this specific login session (Count: ' + currentLoginCount + ')');
+            setShowCompleteProfile(false);
+            return;
+        }
+
+        // 4. Determine what to show based on profile status
+        const isProfessional = user.type === 'PROFESSIONAL';
+        
+        // Check all personal information fields
+        const basicFieldsMissing = !user.firstName || 
+                                   !user.lastName || 
+                                   !user.email || 
+                                   !user.phone || 
+                                   !user.wilaya;
+        
+        // Additional checks for professional users
+        const professionalFieldsMissing = isProfessional && (
+            !user.companyName || 
+            !user.activitySector ||
+            !user.post
+        );
+        
+        const isProfileIncomplete = basicFieldsMissing || professionalFieldsMissing;
+        const isVerified = user.isVerified || false;
+        const isCertified = user.isCertified || false;
+        const hasIdentity = user.isHasIdentity || false;
+        
+        console.log('📋 Profile status check:', {
+            isProfessional,
+            basicFieldsMissing,
+            professionalFieldsMissing,
+            isProfileIncomplete,
+            isVerified,
+            isCertified,
+            hasIdentity
+        });
+
+        // Always show notice for first 5 logins, but with different messages
+        setShowCompleteProfile(true);
+        // sessionStorage.setItem('profile_note_shown_session', 'true'); // No longer automatically creating session block
+        console.log('✅ ===== NOTICE WILL BE DISPLAYED =====');
+        console.log('✅ Session storage set to prevent re-display this session');
+    };
+
+    // Get dynamic notice content based on profile status
+    const getNoticeContent = () => {
+        if (!auth.user) return null;
+        
+        const isProfessional = auth.user.type === 'PROFESSIONAL';
+        
+        // Check all personal information fields
+        const basicFieldsMissing = !auth.user.firstName || 
+                                   !auth.user.lastName || 
+                                   !auth.user.email || 
+                                   !auth.user.phone || 
+                                   !auth.user.wilaya;
+        
+        // Additional checks for professional users
+        const professionalFieldsMissing = isProfessional && (
+            !auth.user.companyName || 
+            !auth.user.secteur ||
+            !auth.user.jobTitle
+        );
+        
+        const isProfileIncomplete = basicFieldsMissing || professionalFieldsMissing;
+        const isVerified = auth.user.isVerified || false;
+        const isCertified = auth.user.isCertified || false;
+        const hasIdentity = auth.user.isHasIdentity || false;
+
+        // Priority 1: Incomplete profile - personal information missing
+        if (isProfileIncomplete) {
+            const message = isProfessional 
+                ? 'Ajoutez vos informations (nom, prénom, téléphone, localisation, entreprise, poste) pour vérifier votre compte.'
+                : 'Ajoutez vos informations (nom, prénom, téléphone, localisation) pour vérifier votre compte.';
+            
+            return {
+                icon: 'bi-person-lines-fill',
+                title: 'Complétez vos informations personnelles',
+                message: message,
+                primaryButton: { text: 'Compléter', action: 'complete' as const },
+                gradient: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)'
+            };
+        }
+        
+        // Priority 2: No identity documents
+        if (!hasIdentity) {
+            return {
+                icon: 'bi-file-earmark-text',
+                title: 'Vérifiez votre compte',
+                message: 'Soumettez vos documents d\'identité pour la vérification.',
+                primaryButton: { text: 'Ajouter documents', action: 'complete' as const },
+                gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+            };
+        }
+        
+        // Priority 3: Not verified
+        if (!isVerified) {
+            return {
+                icon: 'bi-shield-check',
+                title: 'Vérification en attente',
+                message: 'Vos documents sont en cours de révision par notre équipe.',
+                primaryButton: { text: 'Voir statut', action: 'complete' as const },
+                gradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
+            };
+        }
+        
+        // Priority 4: Verified but not certified
+        if (!isCertified) {
+            return {
+                icon: 'bi-award',
+                title: 'Obtenir la certification',
+                message: 'Votre compte est vérifié ! Demandez la certification pour plus de crédibilité.',
+                primaryButton: { text: 'Demander certification', action: 'complete' as const },
+                gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
+            };
+        }
+        
+        // Priority 5: Everything complete!
+        return {
+            icon: 'bi-check-circle-fill',
+            title: 'Bienvenue !',
+            message: 'Votre profil est complet et vérifié. Explorez toutes nos fonctionnalités.',
+            primaryButton: { text: 'Explorer', action: 'postpone' as const },
+            gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+        };
     };
 
     const handleNoteAction = async (action: 'complete' | 'postpone' | 'dismiss') => {
         if (action === 'complete') {
              router.push('/settings');
-             setShowCompleteProfile(false); // Hide note as we are acting on it
-        } else {
-             // API Call to update preference
+             setShowCompleteProfile(false);
+        } else if (action === 'dismiss') {
+             // "Jamais" - Dismiss forever via backend API
              try {
-                await UserAPI.updateProfileCompletionNote(action);
-                setShowCompleteProfile(false);
-                // Update local user to reflect change avoid re-show
-                await fetchFreshUserData();
-             } catch (e) {
-                console.error("Failed to update note status", e);
+                 await UserAPI.updateProfileCompletionNote('dismiss');
+                 setShowCompleteProfile(false);
+                 // Refresh user data to get updated profileCompletionNote
+                 await fetchFreshUserData();
+                 enqueueSnackbar('Notification désactivée définitivement', { variant: 'success' });
+             } catch (error) {
+                 console.error('Error dismissing completion note:', error);
+                 enqueueSnackbar('Erreur lors de la désactivation de la notification', { variant: 'error' });
              }
+        } else {
+             // "Plus tard" - Hide for this session ONLY (bound to login count)
+             if (auth.user) {
+                 const currentCount = auth.user.loginCount ?? 0;
+                 sessionStorage.setItem('profile_note_postponed_logincount', currentCount.toString());
+             }
+             setShowCompleteProfile(false);
         }
     };
 
@@ -168,32 +471,21 @@ function ProfilePage() {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        // Validation for file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
             enqueueSnackbar(t("profile.hero.maxFileSize") || "File size too large (max 5MB)", { variant: "error" });
             return;
         }
 
-        setIsUploadingCover(true);
-        const formData = new FormData();
-        formData.append("cover", file);
-
-        try {
-            const response = await UserAPI.uploadCover(formData);
-            if (response.success) {
-                enqueueSnackbar(t("profile.hero.coverSuccess") || "Cover updated successfully", { variant: "success" });
-                // Refresh user data
-               await auth.fetchFreshUserData();
-               setCoverKey(Date.now());
-            } else {
-                 enqueueSnackbar(t("profile.hero.coverError") || "Failed to update cover", { variant: "error" });
-            }
-        } catch (error) {
-            console.error("Cover upload error:", error);
-            enqueueSnackbar(t("profile.hero.coverError") || "Failed to update cover", { variant: "error" });
-        } finally {
-             setIsUploadingCover(false);
-        }
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+            setCropImageSrc(reader.result?.toString() || '');
+            setCropType('cover');
+            setIsCropping(true);
+        });
+        reader.readAsDataURL(file);
+        
+        // Reset input
+        event.target.value = '';
     };
 
 
@@ -237,24 +529,12 @@ function ProfilePage() {
 
     const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) {
-            console.log('❌ No file selected');
-            return;
-        }
+        if (!file) return;
 
-        console.log('📄 Selected file:', {
-            name: file.name,
-            size: file.size,
-            type: file.type
-        });
-
-        // Validate file size (max 5MB)
         const maxSize = 5 * 1024 * 1024; // 5MB
         if (file.size > maxSize) {
             enqueueSnackbar('File size too large. Please select an image smaller than 5MB', { variant: 'error' });
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-            }
+            if (fileInputRef.current) fileInputRef.current.value = '';
             return;
         }
 
@@ -264,113 +544,16 @@ function ProfilePage() {
             return;
         }
 
-        setIsUploadingAvatar(true);
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+             setCropImageSrc(reader.result?.toString() || '');
+             setCropType('avatar');
+             setIsCropping(true);
+        });
+        reader.readAsDataURL(file);
 
-        try {
-            console.log('🖼️ Uploading avatar...');
-
-            const formDataToUpload = new FormData();
-            formDataToUpload.append('avatar', file);
-            const response = await UserAPI.uploadAvatar(formDataToUpload);
-
-                console.log('✅ Avatar upload response:', response);
-                console.log('📦 Avatar user data:', response?.user?.avatar);
-
-                if (response && response.success) {
-                    // Clear the input immediately to prevent re-triggering
-                    if (fileInputRef.current) {
-                        fileInputRef.current.value = '';
-                    }
-
-                    // Get the updated user data
-                    const updatedUser = response.user || response.data;
-                    const responseWithAttachment = response as any; // Type assertion for attachment property
-                    console.log('✅ Avatar uploaded successfully. Updated user:', updatedUser);
-                    console.log('✅ Updated user avatar:', updatedUser?.avatar);
-                    console.log('✅ Response attachment:', (response as any)?.attachment);
-
-                    // Update auth state with new user data including avatar
-                    if (updatedUser) {
-                        const currentUser = auth.user;
-                        
-                        // Ensure avatar has proper URL format
-                        let avatarObj = updatedUser.avatar;
-                        
-                            // If response has attachment info, use it to construct proper avatar URL
-                        if (responseWithAttachment?.attachment) {
-                            const attachment = responseWithAttachment.attachment;
-                        const normalizedUrl = normalizeImageUrl(attachment.url);
-                        
-                        avatarObj = {
-                            _id: attachment._id,
-                            url: attachment.url,
-                            filename: attachment.filename,
-                            fullUrl: attachment.fullUrl ? normalizeImageUrl(attachment.fullUrl) : normalizedUrl
-                        };
-                    }
-                    
-                    // Construct photoURL from avatar if not present
-                    let photoURL = updatedUser.photoURL;
-                    if (!photoURL && avatarObj) {
-                        const avatar = avatarObj as any;
-                        if (avatar.fullUrl) {
-                            photoURL = normalizeUrl(avatar.fullUrl);
-                        } else if (avatar.url) {
-                            photoURL = normalizeUrl(avatar.url);
-                        } else if (avatar.filename) {
-                            photoURL = normalizeUrl(avatar.filename);
-                        }
-                    } else if (photoURL) {
-                        photoURL = normalizeUrl(photoURL);
-                    }
-                    
-                    const mergedUser = {
-                        ...currentUser,
-                        ...updatedUser,
-                        avatar: avatarObj || currentUser?.avatar,
-                        photoURL: photoURL || currentUser?.photoURL,
-                        type: (updatedUser.type || updatedUser.accountType || currentUser?.type || 'CLIENT') as any,
-                    };
-                    
-                    console.log('👤 Merged user with avatar:', mergedUser);
-                    console.log('👤 Merged user avatar:', mergedUser.avatar);
-                    console.log('👤 Merged user photoURL:', mergedUser.photoURL);
-                    
-                    set({
-                        user: mergedUser as any,
-                        tokens: auth.tokens
-                    });
-                }
-
-                // Force a cache-bust for the avatar by updating the key
-                setAvatarKey(Date.now());
-
-                // Show success message
-                enqueueSnackbar(response.message || t("avatarUpdated") || "Avatar updated successfully", { variant: "success" });
-
-                // Fetch fresh user data to ensure consistency
-                setTimeout(async () => {
-                    try {
-                await fetchFreshUserData();
-                    } catch (err) {
-                        console.warn('⚠️ Error refreshing user data after avatar upload:', err);
-                    }
-                }, 500);
-            } else {
-                console.error('❌ Upload response indicates failure:', response);
-                enqueueSnackbar(response?.message || 'Avatar upload failed - no success response', { variant: "error" });
-            }
-        } catch (error: any) {
-            console.error('❌ Error uploading avatar:', error);
-            const errorMessage = error.response?.data?.message || error.message || 'Failed to upload avatar';
-            enqueueSnackbar(errorMessage, { variant: "error" });
-        } finally {
-            setIsUploadingAvatar(false);
-            // Ensure input is cleared
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-            }
-        }
+        // Reset input
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     const handleStartResellerConversion = () => {
@@ -549,7 +732,7 @@ function ProfilePage() {
                 
                 <div className="modern-document-grid">
                     {documents.map((field, index) => {
-                        const document = identity ? identity[field.key] : null;
+                        const document = identity ? (identity as any)[field.key] : null;
                         const isUploadingThisField = isUploadingDocument === field.key;
                         const hasDocument = document && document.url;
 
@@ -734,7 +917,7 @@ function ProfilePage() {
                     // Check if any optional document is uploaded
                     const optionalDocKeys = ['nis', 'art', 'c20', 'misesAJourCnas', 'last3YearsBalanceSheet', 'certificates', 'identityCard'];
                     const hasAnyOptionalDoc = optionalDocKeys.some(key => {
-                        const doc = identity[key];
+                        const doc = (identity as any)[key];
                         return doc && ((doc as any).url || (doc as any).fullUrl);
                     });
                     
@@ -1191,6 +1374,28 @@ function ProfilePage() {
                                         </motion.div>
                                     )}
                                     
+                                    {(auth.user as any)?.isCertified && (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                                padding: '4px 10px',
+                                                background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+                                                color: 'white',
+                                                borderRadius: '20px',
+                                                fontSize: '12px',
+                                                fontWeight: '600',
+                                                boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)'
+                                            }}
+                                        >
+                                            <i className="bi bi-shield-check-fill" style={{ fontSize: '10px' }}></i>
+                                            <span>CERTIFIED</span>
+                                        </motion.div>
+                                    )}
+
                                     {(auth.user as any)?.isVerified && (
                                         <motion.div
                                             initial={{ opacity: 0, scale: 0.8 }}
@@ -1224,13 +1429,11 @@ function ProfilePage() {
                     <div className="modern-content-grid">
                        {/* Complete Profile Note */}
                        {showCompleteProfile && (
-                           <motion.div 
-                             initial={{ opacity: 0, y: -20 }}
-                             animate={{ opacity: 1, y: 0 }}
+                           <div 
                              className="modern-alert-note"
                              style={{ 
                                  gridColumn: '1 / -1',
-                                 background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                                  background: getNoticeContent()?.gradient || 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                                  borderRadius: '16px',
                                  padding: '20px',
                                  marginBottom: '30px',
@@ -1248,56 +1451,56 @@ function ProfilePage() {
                                       padding: '10px',
                                       display: 'flex'
                                   }}>
-                                      <i className="bi bi-person-lines-fill" style={{ fontSize: '24px' }}></i>
-                                  </div>
-                                  <div>
-                                      <h4 style={{ margin: 0, fontWeight: 600, fontSize: '1.1rem' }}>Complétez votre profil</h4>
-                                      <p style={{ margin: '4px 0 0 0', opacity: 0.9, fontSize: '0.9rem' }}>Ajoutez vos documents et informations pour vérifier votre compte.</p>
-                                  </div>
-                              </div>
-                              <div style={{ display: 'flex', gap: '10px' }}>
-                                  <button 
-                                    onClick={() => handleNoteAction('complete')}
-                                    style={{ 
-                                        padding: '8px 16px', 
-                                        borderRadius: '8px', 
-                                        border: 'none', 
-                                        background: 'white', 
-                                        color: '#4f46e5', 
-                                        fontWeight: 600, 
-                                        cursor: 'pointer' 
-                                    }}
-                                  >
-                                    Compléter
-                                  </button>
-                                  <button 
-                                    onClick={() => handleNoteAction('postpone')}
-                                    style={{ 
-                                        padding: '8px 16px', 
-                                        borderRadius: '8px', 
-                                        border: '1px solid rgba(255,255,255,0.3)', 
-                                        background: 'rgba(255,255,255,0.1)', 
-                                        color: 'white', 
-                                        cursor: 'pointer' 
-                                    }}
-                                  >
-                                    Plus tard
-                                  </button>
+                                       <i className={`bi ${getNoticeContent()?.icon || 'bi-person-lines-fill'}`} style={{ fontSize: '24px' }}></i>
+                                   </div>
+                                   <div>
+                                       <h4 style={{ margin: 0, fontWeight: 600, fontSize: '1.1rem' }}>{getNoticeContent()?.title}</h4>
+                                       <p style={{ margin: '4px 0 0 0', opacity: 0.9, fontSize: '0.9rem' }}>{getNoticeContent()?.message}</p>
+                                   </div>
+                               </div>
+                               <div style={{ display: 'flex', gap: '10px' }}>
                                    <button 
-                                    onClick={() => handleNoteAction('dismiss')}
-                                    style={{ 
-                                        padding: '8px 16px', 
-                                        borderRadius: '8px', 
-                                        border: 'none', 
-                                        background: 'transparent', 
-                                        color: 'rgba(255,255,255,0.7)', 
-                                        cursor: 'pointer' 
-                                    }}
-                                  >
-                                    Jamais
-                                  </button>
-                              </div>
-                           </motion.div>
+                                     onClick={() => handleNoteAction(getNoticeContent()?.primaryButton.action || 'complete')}
+                                     style={{ 
+                                         padding: '8px 16px', 
+                                         borderRadius: '8px', 
+                                         border: 'none', 
+                                         background: 'white', 
+                                         color: '#4f46e5', 
+                                         fontWeight: 600, 
+                                         cursor: 'pointer' 
+                                     }}
+                                   >
+                                     {getNoticeContent()?.primaryButton.text}
+                                   </button>
+                                   <button 
+                                     onClick={() => handleNoteAction('postpone')}
+                                     style={{ 
+                                         padding: '8px 16px', 
+                                         borderRadius: '8px', 
+                                         border: '1px solid rgba(255,255,255,0.3)', 
+                                         background: 'rgba(255,255,255,0.1)', 
+                                         color: 'white', 
+                                         cursor: 'pointer' 
+                                     }}
+                                   >
+                                     Plus tard
+                                   </button>
+                                    <button 
+                                     onClick={() => handleNoteAction('dismiss')}
+                                     style={{ 
+                                         padding: '8px 16px', 
+                                         borderRadius: '8px', 
+                                         border: 'none', 
+                                         background: 'transparent', 
+                                         color: 'rgba(255,255,255,0.7)', 
+                                         cursor: 'pointer' 
+                                     }}
+                                   >
+                                     Jamais
+                                   </button>
+                               </div>
+                           </div>
                        )}
                         {/* Reseller Status Cards Section */}
                         {/* <motion.div
@@ -1446,8 +1649,7 @@ function ProfilePage() {
                             <div className="modern-tab-nav">
                                 {[
                                     { id: "activities", icon: "bi-activity", label: t("profile.tabs.myActivities") || "Mes Activités" },
-                                    { id: "documents", icon: "bi-file-earmark-text-fill", label: t("profile.tabs.documents") || "Documents" },
-                                    { id: "history", icon: "bi-clock-history", label: t("profile.tabs.history") || "Offer history" }
+                                    { id: "documents", icon: "bi-file-earmark-text-fill", label: t("profile.tabs.documents") || "Documents" }
                                 ].map((tab, index) => (
                                     <motion.button
                                         key={tab.id}
@@ -1534,12 +1736,26 @@ function ProfilePage() {
                                                             </motion.button>
                                                             <motion.button
                                                                 className={`modern-upgrade-btn ${activeUpgradeSection === 'certified' ? 'active' : ''}`}
-                                                                onClick={() => setActiveUpgradeSection(activeUpgradeSection === 'certified' ? null : 'certified')}
-                                                                whileHover={{ scale: 1.02 }}
-                                                                whileTap={{ scale: 0.98 }}
+                                                                onClick={() => {
+                                                                    if (!(auth.user as any)?.isVerified) {
+                                                                         enqueueSnackbar(t("profile.documents.mustBeVerified") || "Vous devez être vérifié avant de demander la certification.", { variant: "warning" });
+                                                                         return;
+                                                                    }
+                                                                    setActiveUpgradeSection(activeUpgradeSection === 'certified' ? null : 'certified');
+                                                                }}
+                                                                whileHover={(auth.user as any)?.isVerified ? { scale: 1.02 } : {}}
+                                                                whileTap={(auth.user as any)?.isVerified ? { scale: 0.98 } : {}}
+                                                                style={{ 
+                                                                    opacity: (auth.user as any)?.isVerified ? 1 : 0.6, 
+                                                                    cursor: (auth.user as any)?.isVerified ? 'pointer' : 'not-allowed',
+                                                                    background: !(auth.user as any)?.isVerified ? '#e5e7eb' : undefined,
+                                                                    color: !(auth.user as any)?.isVerified ? '#9ca3af' : undefined,
+                                                                    boxShadow: !(auth.user as any)?.isVerified ? 'none' : undefined
+                                                                }}
                                                             >
                                                                 <i className="bi-award"></i>
                                                                 {t("profile.documents.upgradeToCertified") || "Passer à Certifié"}
+                                                                {!(auth.user as any)?.isVerified && <i className="bi bi-lock-fill" style={{ marginLeft: '8px' }}></i>}
                                                             </motion.button>
                                                         </div>
 
@@ -1595,18 +1811,7 @@ function ProfilePage() {
                                     )}
 
                                     {/* History Tab */}
-                                    {activeTab === "history" && (
-                                        <motion.div
-                                            key="history"
-                                            className="modern-tab-content"
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -20 }}
-                                            transition={{ duration: 0.6, type: "spring" }}
-                                        >
-                                            <HistoryPage />
-                                        </motion.div>
-                                    )}
+
 
 
                                 </AnimatePresence>
@@ -1625,6 +1830,17 @@ function ProfilePage() {
                         setShowVerificationPopup(false);
                         setActiveTab('documents');
                     }}
+                />
+            )}
+
+            {/* Image Cropper Modal */}
+            {isCropping && cropImageSrc && (
+                <ImageCropper
+                    imageSrc={cropImageSrc}
+                    aspectRatio={cropType === 'avatar' ? 1 : 16/9}
+                    cropShape={cropType === 'avatar' ? 'round' : 'rect'}
+                    onCancel={() => setIsCropping(false)}
+                    onCropComplete={handleCropSave}
                 />
             )}
         </div>

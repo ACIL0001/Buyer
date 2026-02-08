@@ -262,6 +262,7 @@ export default function RegisterForm() {
     birthDate: Yup.date().required('La date de naissance est requise').max(new Date(), 'La date doit être dans le passé'),
     wilaya: Yup.string().required('La wilaya est requise'),
     socialReason: Yup.string().nullable(),
+    activitySector: Yup.array().of(Yup.string()).nullable(),
     jobTitle: Yup.string().nullable(),
     entity: Yup.string().nullable(),
     promoCode: Yup.string().nullable(),
@@ -277,6 +278,7 @@ export default function RegisterForm() {
       birthDate: '',
       wilaya: '',
       socialReason: '',
+      activitySector: [],
       jobTitle: '',
       entity: '',
       promoCode: '',
@@ -306,6 +308,7 @@ export default function RegisterForm() {
             birthDate: values.birthDate,
             wilaya: values.wilaya,
             companyName: values.socialReason, // Mapped to new backend field
+            activitySector: Array.isArray(values.activitySector) ? values.activitySector.join(', ') : values.activitySector,
             // socialReason: values.socialReason, // Deprecated/Removed from backend
             jobTitle: values.jobTitle,
             // entity: values.entity, // Removed
@@ -355,6 +358,30 @@ export default function RegisterForm() {
       }
     },
   });
+
+  /* State for categories */
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoadingCategories(true);
+      try {
+        const response = await CategoryAPI.getCategories();
+        if (response.success && Array.isArray(response.data)) {
+          setCategories(response.data);
+        } else if (Array.isArray(response)) {
+            // Handle case where response might be the array directly (legacy)
+             setCategories(response);
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const { errors, touched, handleSubmit, isSubmitting, getFieldProps, setFieldValue, values } = formik;
 
@@ -418,8 +445,6 @@ export default function RegisterForm() {
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
         <Stack spacing={1.5}>
           
-
-
           {/* Section 1: Informations Personnelles */}
           <Grid container spacing={1}>
             <Grid size={{ xs: 12, sm: 12 }}>
@@ -558,6 +583,33 @@ export default function RegisterForm() {
                     {...getFieldProps('socialReason')}
                     error={Boolean(touched.socialReason && errors.socialReason)}
                     helperText={touched.socialReason && errors.socialReason}
+                />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 12 }}>
+                <Autocomplete
+                    multiple
+                    options={categories.map(c => c.name)}
+                    loading={loadingCategories}
+                    renderInput={(params) => (
+                        <StyledTextField
+                            {...params}
+                            label="Secteur d'activité"
+                            error={Boolean(touched.activitySector && errors.activitySector)}
+                            helperText={touched.activitySector && errors.activitySector}
+                            InputProps={{
+                                ...params.InputProps,
+                                endAdornment: (
+                                    <>
+                                        {loadingCategories ? <CircularProgress color="inherit" size={20} /> : null}
+                                        {params.InputProps.endAdornment}
+                                    </>
+                                ),
+                            }}
+                        />
+                    )}
+                    onChange={(_, value) => setFieldValue('activitySector', value)}
+                    value={values.activitySector || []}
+                    filterSelectedOptions
                 />
             </Grid>
             {/* Entity field removed */}

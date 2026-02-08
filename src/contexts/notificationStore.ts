@@ -72,8 +72,31 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
     })),
 
     addNotification: (notification) => set((state) => {
-        // Prevent duplicates
+        // Prevent duplicates by ID
         if (state.notifications.some(n => n._id === notification._id)) {
+            return state;
+        }
+
+        // Prevent duplicates by content (title + message) within specific time window (e.g. 10 seconds)
+        // This handles cases where socket sends an event that might also be fetched or pushed twice
+        const isDuplicateContent = state.notifications.some(n => {
+            if (n.title !== notification.title || n.message !== notification.message) {
+                return false;
+            }
+
+            const timeA = new Date(n.createdAt).getTime();
+            const timeB = new Date(notification.createdAt).getTime();
+
+            // If either date is invalid, assume it's a duplicate based on content match
+            if (isNaN(timeA) || isNaN(timeB)) {
+                return true;
+            }
+
+            // Check if created within 10 seconds of each other
+            return Math.abs(timeA - timeB) < 10000;
+        });
+
+        if (isDuplicateContent) {
             return state;
         }
 

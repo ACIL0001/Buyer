@@ -83,11 +83,37 @@ export default function Login() {
   const { width } = useResponsive();
   const smUp = width >= 600;
 
+
   useEffect(() => {
     if (isLogged) {
-        if (!user?.loginCount || user.loginCount <= 1) {
+        console.log('🔐 ===== LOGIN SUCCESS - REDIRECT LOGIC =====');
+        console.log('💾 Before clear - SessionStorage:', {
+            profile_note_shown: sessionStorage.getItem('profile_note_shown_session'),
+        });
+        
+        // Clear session storage so profile notice shows fresh on this login
+        sessionStorage.removeItem('profile_note_shown_session');
+        
+        console.log('💾 After clear - SessionStorage:', {
+            profile_note_shown: sessionStorage.getItem('profile_note_shown_session'),
+            cleared: sessionStorage.getItem('profile_note_shown_session') === null
+        });
+        
+        // First 5 logins: redirect to profile page to encourage profile completion
+        // After 5 logins: redirect to home page
+        const loginCount = user?.loginCount ?? 0;
+        
+        console.log('🔄 Login redirect logic:', { 
+            loginCount, 
+            isUndefined: user?.loginCount === undefined,
+            redirectTo: loginCount <= 5 ? '/profile' : '/' 
+        });
+        
+        if (loginCount <= 5) {
+            console.log('➡️ Redirecting to /profile (loginCount <= 5)');
             router.replace('/profile');
         } else {
+            console.log('➡️ Redirecting to / (loginCount > 5)');
             router.replace('/');
         }
     }

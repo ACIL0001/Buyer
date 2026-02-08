@@ -81,6 +81,9 @@ export default function ProfilePage() {
     const [isUploadingCover, setIsUploadingCover] = useState(false);
     const [coverKey, setCoverKey] = useState(Date.now());
 
+    // Profile Note State - Shows once per session
+    const [showProfileNote, setShowProfileNote] = useState(true);
+
     // Document field configurations
     const requiredDocuments = [
         {
@@ -163,6 +166,28 @@ export default function ProfilePage() {
             }
         }
     }, [auth.user]);
+
+    // Check for profile note visibility
+    useEffect(() => {
+        // DIAGNOSTIC START
+        console.log('DEBUG: Mount ProfilePage');
+        const hasSeenNote = localStorage.getItem('profile_notice_v2');
+        console.log('DEBUG: hasSeenNote value:', hasSeenNote);
+        
+        // Forced to TRUE for debugging
+        setShowProfileNote(true); 
+        console.log('DEBUG: setShowProfileNote(true) called');
+        
+        // if (hasSeenNote) {
+        //     setShowProfileNote(false);
+        // }
+        // DIAGNOSTIC END
+    }, []);
+
+    const dismissProfileNote = () => {
+        setShowProfileNote(false);
+        localStorage.setItem('profile_notice_v2', 'true');
+    };
 
     const readFile = (file: File): Promise<string> => {
         return new Promise((resolve) => {
@@ -1184,6 +1209,70 @@ export default function ProfilePage() {
 
                 {/* Main Content Grid */}
                 <div className="modern-content-grid">
+                    {/* Profile Notice */}
+                    {/* DIAGNOSTIC: Modified to standard div */}
+                    {showProfileNote && (
+                        <div 
+                            className="profile-note-banner"
+                            style={{
+                                marginBottom: '20px',
+                                background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+                                borderRadius: '16px',
+                                padding: '20px',
+                                position: 'relative',
+                                boxShadow: '0 4px 15px rgba(33, 150, 243, 0.1)',
+                                border: '1px solid rgba(255, 255, 255, 0.6)',
+                                display: 'flex',
+                                alignItems: 'start',
+                                gap: '15px',
+                                zIndex: 10
+                            }}
+                        >
+                            <div style={{ 
+                                background: 'white', 
+                                borderRadius: '50%', 
+                                width: '40px', 
+                                height: '40px', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                                color: '#1976d2'
+                            }}>
+                                <i className="bi bi-info-circle-fill" style={{ fontSize: '20px' }}></i>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <h4 style={{ margin: '0 0 5px 0', color: '#0d47a1', fontSize: '16px', fontWeight: '700' }}>
+                                    Complétez votre profil
+                                </h4>
+                                <p style={{ margin: 0, color: '#1565c0', fontSize: '14px', lineHeight: '1.5' }}>
+                                    Vous pouvez compléter votre profil plus tard, mais cela est nécessaire pour avoir un statut "Terminé" et débloquer toutes les fonctionnalités.
+                                </p>
+                            </div>
+                            <button 
+                                onClick={dismissProfileNote}
+                                style={{
+                                    background: 'rgba(255,255,255,0.5)',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    width: '30px',
+                                    height: '30px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    color: '#0d47a1',
+                                    marginLeft: '10px',
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.background = 'white'}
+                                onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.5)'}
+                            >
+                                <i className="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    )}
                     {/* Profile Tabs Section */}
                     <motion.div
                         className="modern-tabs-section"

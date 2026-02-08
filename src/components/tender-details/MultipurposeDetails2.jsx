@@ -18,7 +18,7 @@ import useAuth from "@/hooks/useAuth";
 import app, { getSellerUrl } from "@/config"; // Import the app config
 import { calculateTimeRemaining } from "../live-auction/Home1LiveAuction";
 import { ReviewAPI } from "@/app/api/review"; // Import Review API
-import { CommentAPI } from "@/app/api/comment";
+import commentsApi from "@/app/api/comments";
 import { useTranslation } from 'react-i18next';
 import { motion } from "framer-motion";
 
@@ -112,6 +112,10 @@ function getTimeRemaining(endDate) {
   };
 }
 
+import CommentItem from "@/components/common/CommentItem";
+
+// ... existing imports
+
 const MultipurposeDetails2 = () => {
   const { t } = useTranslation();
   const router = useRouter();
@@ -150,6 +154,7 @@ const MultipurposeDetails2 = () => {
   const [showCongrats, setShowCongrats] = useState(false); // Winner banner visibility
   const [showAcceptedModal, setShowAcceptedModal] = useState(false); // Owner accepted offer modal
   const [showBidConfirmation, setShowBidConfirmation] = useState(false); // State for bid confirmation modal
+  const [refreshKey, setRefreshKey] = useState(0); // Key to trigger re-fetch
 
   // Get tender ID from URL params or search params
   const routeId = params?.id;
@@ -184,12 +189,12 @@ const MultipurposeDetails2 = () => {
           <div className="row">
             <div className="col-12 text-center">
               <div className="alert alert-danger">
-                <h3>Une erreur s'est produite</h3>
+                <h3>{t('details.errorOccurred') || 'Une erreur s\'est produite'}</h3>
                 <p>{error}</p>
                 {errorDetails && (
                   <details style={{ marginTop: '10px', textAlign: 'left' }}>
                     <summary style={{ cursor: 'pointer', color: '#721c24' }}>
-                      Détails techniques (pour le débogage)
+                      {t('details.technicalDetails') || 'Détails techniques (pour le débogage)'}
                     </summary>
                     <pre style={{ 
                       background: '#f8f9fa', 
@@ -209,13 +214,13 @@ const MultipurposeDetails2 = () => {
                     className="btn btn-primary me-2"
                     onClick={() => window.location.reload()}
                   >
-                    Réessayer
+                    {t('details.retry') || 'Réessayer'}
                   </button>
                   <button 
                     className="btn btn-secondary"
                     onClick={() => router.push('/tenders')}
                   >
-                    Retour aux appels d'offres
+                    {t('details.back') || 'Retour aux appels d\'offres'}
                   </button>
                 </div>
               </div>
@@ -346,6 +351,26 @@ const MultipurposeDetails2 = () => {
         if (data?.offers) {
           setOffers(data.offers);
         }
+
+        // Handle Comment Redirection
+        const commentId = searchParams.get('commentId');
+        if (commentId) {
+             console.log("💬 Detected commentId in URL:", commentId);
+             setActiveTab('reviews');
+             setShowAllComments(true); // Ensure all comments are loaded so scrolling works
+             // Use setTimeout to allow tab switch and rendering to complete
+             setTimeout(() => {
+                 const element = document.getElementById(`comment-${commentId}`);
+                 if (element) {
+                     console.log("📍 Scrolling to comment:", commentId);
+                     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     element.classList.add('highlight-comment'); // Optional: Add CSS class for visual highlight
+                 } else {
+                     console.warn("❌ Comment element not found in DOM:", commentId);
+                 }
+             }, 800); // 800ms delay to ensure tab content is rendered
+        }
+
         setLoading(false);
       } catch (err) {
         console.error("Error fetching tender details:", err);
@@ -361,17 +386,17 @@ const MultipurposeDetails2 = () => {
           // Server responded with error status
           const status = err.response.status;
           if (status === 404) {
-            errorMessage = "Appel d'offres introuvable. Il a peut-être été supprimé.";
+            errorMessage = t('details.notFound') || "Appel d'offres introuvable. Il a peut-être été supprimé.";
             errorType = "NOT_FOUND";
           } else if (status === 401) {
-            errorMessage = "Accès non autorisé. Veuillez vous reconnecter.";
+            errorMessage = t('details.unauthorized') || "Accès non autorisé. Veuillez vous reconnecter.";
             errorType = "UNAUTHORIZED";
           } else if (status >= 500) {
-            errorMessage = "Erreur serveur. Veuillez réessayer plus tard.";
+            errorMessage = t('details.serverError') || "Erreur serveur. Veuillez réessayer plus tard.";
             errorType = "SERVER_ERROR";
           }
         } else if (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND') {
-          errorMessage = "Serveur inaccessible. Vérifiez que le serveur est en cours d'exécution.";
+          errorMessage = t('details.serverUnreachable') || "Serveur inaccessible. Vérifiez que le serveur est en cours d'exécution.";
           errorType = "SERVER_UNREACHABLE";
         }
         
@@ -390,7 +415,7 @@ const MultipurposeDetails2 = () => {
     };
 
     fetchTenderDetails();
-  }, [tenderId, params, searchParams]);
+  }, [tenderId, params, searchParams, refreshKey]);
 
   // Extract fetchAutoBidData as a reusable function
   const fetchAutoBidData = async () => {
@@ -578,7 +603,7 @@ const MultipurposeDetails2 = () => {
       const hasAccepted = myOffers.some(bid => (bid.status === 'accepted' || bid.status === 'ACCEPTED'));
       if (hasAccepted && !showAcceptedModal) {
         setShowAcceptedModal(true);
-        toast.success("🎉 Votre offre a été acceptée ! Un chat avec l'acheteur va s'ouvrir.");
+        toast.success("🎉 " + t('tender.offerAccepted'));
         // Auto open chat after short delay
         setTimeout(() => router.push('/messages'), 1500);
       }
@@ -631,12 +656,12 @@ const MultipurposeDetails2 = () => {
   
   const safeAttachments = safeTenderData.attachments || safeTenderData.images || [];
   const safeVideos = safeTenderData.videos || [];
-  const safeTitle = safeTenderData.title || safeTenderData.name || "Appel d'offres";
+  const safeTitle = safeTenderData.title || safeTenderData.name || t('details.service');
   const safeMaxBudget = safeTenderData.maxBudget || safeTenderData.budget || safeTenderData.maximumBudget || 0;
   const safeOwner = safeTenderData.owner || safeTenderData.seller || null;
   const safeEndingAt = safeTenderData.endingAt || safeTenderData.endDate || safeTenderData.endTime;
   const safeStartingAt = safeTenderData.startingAt || safeTenderData.startDate || safeTenderData.startTime;
-  const safeDescription = safeTenderData.description || safeTenderData.details || "Aucune description disponible.";
+  const safeDescription = safeTenderData.description || safeTenderData.details || t('details.noDescription');
   const safeCategory = safeTenderData.category || null;
   const safeSubCategory = safeTenderData.subCategory || safeTenderData.subcategory || null;
   const safeTenderType = safeTenderData.tenderType || safeTenderData.type || "SERVICE";
@@ -660,7 +685,7 @@ const MultipurposeDetails2 = () => {
       const isWinner = awardedId && awardedId === auth.user._id;
       if (isWinner && safeStatus === 'AWARDED' && !showCongrats) {
         setShowCongrats(true);
-        toast.success("🎉 Félicitations ! Vous avez remporté cet appel d'offres. Un chat avec l'acheteur est disponible.");
+        toast.success("🎉 " + t('tender.congratsWinner'));
       }
     } catch (_) {}
   }, [isLogged, auth?.user?._id, safeAwardedTo, safeStatus, showCongrats]);
@@ -2141,6 +2166,7 @@ const MultipurposeDetails2 = () => {
                               <td className="fw-bold">Localisation</td>
                               <td>{safeLocation} {safeWilaya && `, ${safeWilaya}`}</td>
                             </tr>
+
                             <tr>
                               <td className="fw-bold">Statut</td>
                               <td>
@@ -2153,7 +2179,7 @@ const MultipurposeDetails2 = () => {
                               <tr>
                                 <td className="fw-bold">Acheteur</td>
                                 <td>
-                                  {safeOwner.hidden === true ? (
+                                  {safeTenderData.hidden === true ? (
                                     <span>{t('common.anonymous') || 'Anonyme'}</span>
                                   ) : (
                                     <Link
@@ -2661,42 +2687,7 @@ const MultipurposeDetails2 = () => {
                       </div>
                     )}
 
-                    <ul className="question-and-wishlist-area">
-                      <li>
-                        <Link href="/how-to-bid">
-                          <span>
-                            <svg
-                              width={11}
-                              height={11}
-                              viewBox="0 0 11 11"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <g>
-                                <path d="M5.5 0C2.46015 0 0 2.45988 0 5.5C0 8.5398 2.45988 11 5.5 11C8.53985 11 11 8.54012 11 5.5C11 2.46015 8.54012 0 5.5 0ZM5.5 10.2326C2.89046 10.2326 0.767443 8.10956 0.767443 5.5C0.767443 2.89044 2.89046 0.767443 5.5 0.767443C8.10956 0.767443 10.2326 2.89044 10.2326 5.5C10.2326 8.10956 8.10956 10.2326 5.5 10.2326Z" />
-                              </g>
-                            </svg>
-                          </span>
-                          Poser une question
-                        </Link>
-                      </li>
-                      <li>
-                        <a href="#">
-                          <span>
-                            <svg
-                              width={11}
-                              height={11}
-                              viewBox="0 0 18 18"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <g clipPath="url(#clip0_168_378)">
-                                <path d="M16.528 2.20919C16.0674 1.71411 15.5099 1.31906 14.8902 1.04859C14.2704 0.778112 13.6017 0.637996 12.9255 0.636946C12.2487 0.637725 11.5794 0.777639 10.959 1.048C10.3386 1.31835 9.78042 1.71338 9.31911 2.20854L9.00132 2.54436L8.68352 2.20854C6.83326 0.217151 3.71893 0.102789 1.72758 1.95306C1.63932 2.03507 1.5541 2.12029 1.47209 2.20854C-0.490696 4.32565 -0.490696 7.59753 1.47209 9.71463L8.5343 17.1622C8.77862 17.4201 9.18579 17.4312 9.44373 17.1868C9.45217 17.1788 9.46039 17.1706 9.46838 17.1622L16.528 9.71463C18.4907 7.59776 18.4907 4.32606 16.528 2.20919ZM15.5971 8.82879H15.5965L9.00132 15.7849L2.40553 8.82879C0.90608 7.21113 0.90608 4.7114 2.40553 3.09374C3.76722 1.61789 6.06755 1.52535 7.5434 2.88703C7.61505 2.95314 7.68401 3.0221 7.75012 3.09374L8.5343 3.92104C8.79272 4.17781 9.20995 4.17781 9.46838 3.92104L10.2526 3.09438C11.6142 1.61853 13.9146 1.52599 15.3904 2.88767C15.4621 2.95378 15.531 3.02274 15.5971 3.09438C17.1096 4.71461 17.1207 7.2189 15.5971 8.82879Z" />
-                              </g>
-                            </svg>
-                          </span>
-                          Ajouter aux favoris
-                        </a>
-                      </li>
-                    </ul>
+                    <ul className="question-and-wishlist-area" style={{ display: 'none' }}></ul>
                   </div>
                 </div>
               </div>
@@ -2728,20 +2719,9 @@ const MultipurposeDetails2 = () => {
                         aria-controls="nav-reviews"
                         aria-selected={activeTab === "reviews"}
                       >
-                        Commentaires ({tenderData?.reviews?.length || 0})
+                        Commentaires ({tenderData?.comments?.length || 0})
                       </button>
-                      <button
-                        className={`tab-button ${
-                          activeTab === "offers" ? "active" : ""
-                        }`}
-                        onClick={() => setActiveTab("offers")}
-                        type="button"
-                        role="tab"
-                        aria-controls="nav-offers"
-                        aria-selected={activeTab === "offers"}
-                      >
-                        Offres ({offers?.length || 0})
-                      </button>
+
                     </div>
 
                     <div className="tab-content" id="nav-tabContent">
@@ -2843,103 +2823,7 @@ const MultipurposeDetails2 = () => {
                         aria-labelledby="nav-reviews-tab"
                       >
                         <div className="reviews-area">
-                          <div className="number-of-review mb-4">
-                            <h4>{t('auctionDetails.reviews')} ({tenderData?.reviews?.length || 0})</h4>
-                          </div>
 
-                          {/* Warning Message */}
-                          <div
-                            className="alert alert-warning"
-                            style={{
-                              fontSize: "0.875rem",
-                              color: "#856404",
-                              backgroundColor: "#fff3cd",
-                              fontWeight: "normal",
-                              border: "1px solid #ffeaa7",
-                              borderRadius: "5px",
-                              padding: "12px",
-                              marginBottom: "20px",
-                            }}
-                          >
-                            {t('auctionDetails.reviewWarning')}
-                          </div>
-
-                          <div className="review-list-area mb-40">
-                            <ul className="comment p-0">
-                              {tenderData?.reviews &&
-                              tenderData.reviews.length > 0 ? (
-                                tenderData.reviews.map((review, index) => (
-                                  <li key={index}>
-                                    <div className="single-comment-area">
-                                      <div className="author-img">
-                                        <img
-                                          src={
-                                            review.user?.photoURL ||
-                                            DEFAULT_USER_AVATAR
-                                          }
-                                          alt={
-                                            review.user?.fullName || "Reviewer"
-                                          }
-                                          onError={(e) => {
-                                            e.target.onerror = null;
-                                            e.target.src = DEFAULT_USER_AVATAR;
-                                          }}
-                                        />
-                                      </div>
-                                      <div className="comment-content">
-                                        <div className="author-and-review">
-                                          <div className="author-name-deg">
-                                            <h6>
-                                              {review.user?.fullName ||
-                                                "Utilisateur Anonyme"}
-                                            </h6>
-                                            <span>
-                                              {new Date(
-                                                review.createdAt
-                                              ).toLocaleDateString("fr-FR", {
-                                                year: "numeric",
-                                                month: "long",
-                                                day: "numeric",
-                                              })}
-                                            </span>
-                                          </div>
-                                          {/* Modified for enhanced star display */}
-                                          <ul className="review d-flex flex-row align-items-center review-star-container">
-                                            {[...Array(5)].map((_, i) => (
-                                              <li key={i}>
-                                                <i
-                                                  className={`bi bi-star${
-                                                    i < review.rating
-                                                      ? "-fill"
-                                                      : ""
-                                                  } review-star ${
-                                                    i < review.rating
-                                                      ? "filled"
-                                                      : ""
-                                                  }`}
-                                                ></i>
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        </div>
-                                        <p>{review.comment}</p>
-                                      </div>
-                                    </div>
-                                  </li>
-                                ))
-                              ) : (
-                                <li>
-                                  <div className="single-comment-area">
-                                    <div className="comment-content text-center w-100">
-                                      <p>
-                                        Pas d'avis disponibles pour le moment.
-                                      </p>
-                                    </div>
-                                  </div>
-                                </li>
-                              )}
-                            </ul>
-                          </div>
 
                           {/* --- Comments Section (from backend) --- */}
                           <div
@@ -2991,10 +2875,11 @@ const MultipurposeDetails2 = () => {
                                         bid: tenderId,
                                       });
                                       const response =
-                                        await CommentAPI.setForBid(tenderId, {
-                                          comment: newComment,
-                                          user: auth.user._id,
-                                        });
+                                        await commentsApi.createCommentForTender(
+                                          tenderId,
+                                          newComment,
+                                          auth.user._id
+                                        );
                                       console.log(
                                         "[Comment Submit] Success:",
                                         response
@@ -3125,107 +3010,13 @@ const MultipurposeDetails2 = () => {
                                     ? tenderData.comments
                                     : tenderData.comments.slice(0, 5)
                                   ).map((c, index) => (
-                                    <div
+                                    <CommentItem
                                       key={c._id}
-                                      style={{
-                                        display: "flex",
-                                        gap: "12px",
-                                        padding: "12px",
-                                        marginBottom: "8px",
-                                        background:
-                                          index % 2 === 0
-                                            ? "#ffffff"
-                                            : "#f8f9fa",
-                                        borderRadius: "8px",
-                                        border: "1px solid #e9ecef",
-                                        transition:
-                                          "transform 0.2s ease, box-shadow 0.2s ease",
-                                      }}
-                                      onMouseEnter={(e) => {
-                                        e.currentTarget.style.transform =
-                                          "translateY(-2px)";
-                                        e.currentTarget.style.boxShadow =
-                                          "0 4px 12px rgba(0,0,0,0.1)";
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        e.currentTarget.style.transform =
-                                          "translateY(0)";
-                                        e.currentTarget.style.boxShadow =
-                                          "none";
-                                      }}
-                                    >
-                                      <img
-                                        src={
-                                          c.user?.photoURL ||
-                                          DEFAULT_USER_AVATAR
-                                        }
-                                        alt="User avatar"
-                                        style={{
-                                          width: "32px",
-                                          height: "32px",
-                                          borderRadius: "50%",
-                                          objectFit: "cover",
-                                          border: "1px solid #ddd",
-                                          flexShrink: 0,
-                                        }}
-                                        onError={(e) => {
-                                          e.target.onerror = null;
-                                          e.target.src = DEFAULT_USER_AVATAR;
-                                        }}
-                                      />
-                                      <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div
-                                          style={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            alignItems: "flex-start",
-                                            marginBottom: "6px",
-                                          }}
-                                        >
-                                          <span
-                                            style={{
-                                              fontWeight: "600",
-                                              fontSize: "13px",
-                                              color: "#333",
-                                              marginRight: "8px",
-                                            }}
-                                          >
-                                            {c.user?.fullName ||
-                                              c.user?.email ||
-                                              "Utilisateur"}
-                                          </span>
-                                          <span
-                                            style={{
-                                              fontSize: "11px",
-                                              color: "#888",
-                                              flexShrink: 0,
-                                            }}
-                                          >
-                                            {c.createdAt
-                                              ? new Date(
-                                                  c.createdAt
-                                                ).toLocaleDateString("fr-FR", {
-                                                  day: "numeric",
-                                                  month: "short",
-                                                  hour: "2-digit",
-                                                  minute: "2-digit",
-                                                })
-                                              : ""}
-                                          </span>
-                                        </div>
-                                        <p
-                                          style={{
-                                            margin: 0,
-                                            fontSize: "14px",
-                                            lineHeight: "1.4",
-                                            color: "#555",
-                                            wordBreak: "break-word",
-                                          }}
-                                        >
-                                          {c.comment}
-                                        </p>
-                                      </div>
-                                    </div>
+                                      comment={c}
+                                      isLogged={isLogged}
+                                      authUser={auth.user}
+                                      onReplySuccess={() => setRefreshKey(prev => prev + 1)}
+                                    />
                                   ))}
                                 </div>
 
@@ -3314,330 +3105,7 @@ const MultipurposeDetails2 = () => {
                         </div>
                       </div>
 
-                      {/* --- Offers Section --- */}
-                      <div
-                        className={`tab-pane fade ${
-                          activeTab === "offers" ? "show active" : ""
-                        }`}
-                        id="nav-offers"
-                        role="tabpanel"
-                        aria-labelledby="nav-offers-tab"
-                      >
-                        <div className="offers-area">
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              marginBottom: "20px",
-                              borderBottom: "2px solid #f0f0f0",
-                              paddingBottom: "10px",
-                            }}
-                          >
-                            <h4
-                              style={{
-                                margin: 0,
-                                color: "#333",
-                                fontSize: "18px",
-                              }}
-                            >
-                              💰 Offres ({offers?.length || 0})
-                            </h4>
-                          </div>
 
-                          {/* User's Offers Section */}
-                          {isLogged && myOffers && myOffers.length > 0 && (
-                            <div style={{ marginBottom: '30px' }}>
-                              <h5 style={{
-                                color: '#0063b1',
-                                marginBottom: '15px',
-                                fontSize: '16px',
-                                fontWeight: '600',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px'
-                              }}>
-                                🎯 Mes Offres ({myOffers.length})
-                              </h5>
-                              <div className="my-offers-list">
-                                {myOffers.map((offer, index) => (
-                                  <div
-                                    key={offer._id || offer.id || index}
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: "15px",
-                                      padding: "15px",
-                                      marginBottom: "10px",
-                                      background: "linear-gradient(135deg, #e3f2fd, #f3e5f5)",
-                                      borderRadius: "10px",
-                                      border: "2px solid #0063b1",
-                                      boxShadow: "0 4px 12px rgba(0, 99, 177, 0.15)",
-                                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      e.currentTarget.style.transform = "translateY(-3px)";
-                                      e.currentTarget.style.boxShadow = "0 8px 20px rgba(0, 99, 177, 0.25)";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.currentTarget.style.transform = "translateY(0)";
-                                      e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 99, 177, 0.15)";
-                                    }}
-                                  >
-                                    <div style={{
-                                      width: "45px",
-                                      height: "45px",
-                                      borderRadius: "50%",
-                                      background: "linear-gradient(135deg, #0063b1, #00a3e0)",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      color: "white",
-                                      fontSize: "18px",
-                                      fontWeight: "bold",
-                                      flexShrink: 0,
-                                    }}>
-                                      👤
-                                    </div>
-                                    <div style={{ flexGrow: 1 }}>
-                                      <p style={{
-                                        margin: 0,
-                                        fontSize: "15px",
-                                        fontWeight: "600",
-                                        color: "#333",
-                                      }}>
-                                        Votre Offre
-                                      </p>
-                                      <p style={{
-                                        margin: "4px 0 0 0",
-                                        fontSize: "13px",
-                                        color: "#666",
-                                      }}>
-                                        Soumise le: {new Date(offer.createdAt || offer.created_at).toLocaleDateString("fr-FR", {
-                                          day: "numeric",
-                                          month: "short",
-                                          year: "numeric",
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })}
-                                      </p>
-                                    </div>
-                                    <div style={{
-                                      fontSize: "18px",
-                                      fontWeight: "700",
-                                      color: "#0063b1",
-                                      flexShrink: 0,
-                                    }}>
-                                      {formatPrice(offer.price || offer.amount)}
-                                    </div>
-                                    <div style={{
-                                      padding: "4px 8px",
-                                      background: offer.status === 'accepted' ? '#d4edda' : 
-                                                 offer.status === 'rejected' ? '#f8d7da' : '#fff3cd',
-                                      color: offer.status === 'accepted' ? '#155724' : 
-                                            offer.status === 'rejected' ? '#721c24' : '#856404',
-                                      borderRadius: "12px",
-                                      fontSize: "11px",
-                                      fontWeight: "600",
-                                      textTransform: "uppercase",
-                                    }}>
-                                      {offer.status || 'En attente'}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* All Offers Section */}
-                          <div style={{ marginBottom: '20px' }}>
-                            <h5 style={{
-                              color: '#333',
-                              marginBottom: '15px',
-                              fontSize: '16px',
-                              fontWeight: '600',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px'
-                            }}>
-                              💰 Toutes les Offres ({offers?.length || 0})
-                              {loadingOffers && (
-                                <span style={{
-                                  fontSize: '12px',
-                                  color: '#666',
-                                  fontWeight: 'normal'
-                                }}>
-                                  (Chargement...)
-                                </span>
-                              )}
-                            </h5>
-                          </div>
-
-                          {offers && offers.length > 0 ? (
-                            <div className="offers-list">
-                              {offers.map((offer, index) => (
-                                <div
-                                  key={offer._id || index}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "15px",
-                                    padding: "15px",
-                                    marginBottom: "10px",
-                                    background:
-                                      index % 2 === 0 ? "#ffffff" : "#f8f9fa",
-                                    borderRadius: "10px",
-                                    border: "1px solid #e9ecef",
-                                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                                    transition:
-                                      "transform 0.2s ease, box-shadow 0.2s ease",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform =
-                                      "translateY(-3px)";
-                                    e.currentTarget.style.boxShadow =
-                                      "0 6px 16px rgba(0,0,0,0.1)";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform =
-                                      "translateY(0)";
-                                    e.currentTarget.style.boxShadow =
-                                      "0 2px 8px rgba(0,0,0,0.05)";
-                                  }}
-                                >
-                                  <img
-                                    src={
-                                      offer.user?.avatar?.url
-                                        ? `${app.route}${offer.user.avatar.url}`
-                                        : DEFAULT_USER_AVATAR
-                                    }
-                                    alt={offer.user?.firstName || "User"}
-                                    style={{
-                                      width: "45px",
-                                      height: "45px",
-                                      borderRadius: "50%",
-                                      objectFit: "cover",
-                                      border: "2px solid #0063b1",
-                                      flexShrink: 0,
-                                    }}
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = DEFAULT_USER_AVATAR;
-                                    }}
-                                    crossOrigin="use-credentials"
-                                  />
-                                  <div style={{ flexGrow: 1 }}>
-                                    <p
-                                      style={{
-                                        margin: 0,
-                                        fontSize: "15px",
-                                        fontWeight: "600",
-                                        color: "#333",
-                                      }}
-                                    >
-                                      {offer.user?.firstName}{" "}
-                                      {offer.user?.lastName ||
-                                        "Utilisateur Anonyme"}
-                                    </p>
-                                    <p
-                                      style={{
-                                        margin: "4px 0 0 0",
-                                        fontSize: "13px",
-                                        color: "#666",
-                                      }}
-                                    >
-                                      Offre placée le:{" "}
-                                      {new Date(
-                                        offer.createdAt
-                                      ).toLocaleDateString("fr-FR", {
-                                        day: "numeric",
-                                        month: "short",
-                                        year: "numeric",
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      })}
-                                    </p>
-                                  </div>
-                                  <div
-                                    style={{
-                                      fontSize: tenderData?.evaluationType === 'MIEUX_DISANT' ? "14px" : "18px",
-                                      fontWeight: tenderData?.evaluationType === 'MIEUX_DISANT' ? "600" : "700",
-                                      color: "#0063b1",
-                                      flexShrink: 0,
-                                      maxWidth: tenderData?.evaluationType === 'MIEUX_DISANT' ? "200px" : "auto",
-                                    }}
-                                  >
-                                    {tenderData?.evaluationType === 'MIEUX_DISANT' ? (
-                                      <div
-                                        style={{
-                                          fontSize: "13px",
-                                          color: "#666",
-                                          textAlign: "right",
-                                          maxHeight: "60px",
-                                          overflow: "hidden",
-                                          textOverflow: "ellipsis",
-                                          display: "-webkit-box",
-                                          WebkitLineClamp: 3,
-                                          WebkitBoxOrient: "vertical",
-                                          lineHeight: "1.4",
-                                        }}
-                                        title={offer.proposal || 'Aucune proposition'}
-                                      >
-                                        {offer.proposal ? (
-                                          <>
-                                            <span style={{ fontWeight: "600", color: "#0063b1", fontSize: "11px", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>
-                                              📝 Proposition
-                                            </span>
-                                            {offer.proposal}
-                                          </>
-                                        ) : (
-                                          <span style={{ fontStyle: "italic", color: "#999" }}>
-                                            Aucune proposition
-                                          </span>
-                                        )}
-                                      </div>
-                                    ) : (
-                                      formatPrice(offer.bidAmount || offer.price)
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div
-                              style={{
-                                textAlign: "center",
-                                padding: "40px 20px",
-                                color: "#888",
-                                background: "#f8f9fa",
-                                borderRadius: "12px",
-                                border: "1px dashed #ddd",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontSize: "48px",
-                                  marginBottom: "16px",
-                                }}
-                              >
-                                💸
-                              </div>
-                              <p style={{ margin: 0, fontSize: "16px" }}>
-                                Aucune offre n'a été soumise pour cet appel d'offres.
-                              </p>
-                              <p
-                                style={{
-                                  margin: "8px 0 0 0",
-                                  fontSize: "14px",
-                                  color: "#aaa",
-                                }}
-                              >
-                                Soyez le premier à soumettre une offre !
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>

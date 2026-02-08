@@ -127,10 +127,16 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
   }, [notifications, totalUnreadCount, generalUnreadCount, adminUnreadCount]);
 
   const formatTime = (dateString: string | Date) => {
+    if (!dateString) return t('notifications.justNow');
+    
     const date = new Date(dateString);
+    // Check for invalid date
+    if (isNaN(date.getTime())) return t('notifications.justNow');
+
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
     
+    // Handle future dates or very small diffs
     if (diffInMinutes < 1) return t('notifications.justNow');
     if (diffInMinutes < 60) return t('notifications.minutesAgo', { minutes: diffInMinutes });
     if (diffInMinutes < 1440) return t('notifications.hoursAgo', { hours: Math.floor(diffInMinutes / 60) });
@@ -225,13 +231,38 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
                console.error('❌ DIRECT_SALE_CREATED matched but NO ID found in data:', data);
             }
         }
-        // 2. CHAT REDIRECTION
+        // 2. COMMENT REDIRECTION
+        else if (notification.type === 'COMMENT_RECEIVED' || notification.type === 'COMMENT_REPLY') {
+            console.log('💬 Type matched COMMENT notification');
+            
+            // Extract IDs with multiple fallback options
+            const auctionId = data?.auctionId || (data?.entityType === 'BID' ? data?.entityId : null);
+            const tenderId = data?.tenderId || (data?.entityType === 'TENDER' ? data?.entityId : null);
+            const directSaleId = data?.directSaleId || (data?.entityType === 'DIRECT_SALE' ? data?.entityId : null);
+            
+            const commentId = data?.commentId || data?._id;
+
+            if (auctionId) {
+                redirectPath = `/auction-details/${auctionId}${commentId ? `?commentId=${commentId}` : ''}`;
+            } else if (tenderId) {
+                redirectPath = `/tender-details/${tenderId}${commentId ? `?commentId=${commentId}` : ''}`;
+            } else if (directSaleId) {
+                redirectPath = `/direct-sale/${directSaleId}${commentId ? `?commentId=${commentId}` : ''}`;
+            } 
+            
+            if (redirectPath) {
+                 console.log('🚀 Redirecting to Comment:', redirectPath);
+            } else {
+                 console.error('❌ COMMENT matched but could not determine Entity Type/ID:', data);
+            }
+        }
+        // 3. CHAT REDIRECTION
         else if (data?.chatId) {
             console.log('🚀 Redirecting to Chat:', data.chatId);
             redirectPath = `/dashboard/chat?conversationId=${data.chatId}`;
         }
         else {
-            // 3. SELLER NOTIFICATIONS - Redirect to dashboard management pages with "received" tab
+            // 4. SELLER NOTIFICATIONS - Redirect to dashboard management pages with "received" tab
             
             const titleLower = notification.title?.toLowerCase() || '';
             const messageLower = notification.message?.toLowerCase() || '';

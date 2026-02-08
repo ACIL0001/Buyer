@@ -16,6 +16,7 @@ import { normalizeImageUrl } from '@/utils/url';
 import "../auction-details/st.css";
 import "../auction-details/modern-details.css";
 import { useRouter } from "next/navigation";
+import ShareButton from '@/components/common/ShareButton';
 
 // Default image constants
 const DEFAULT_DIRECT_SALE_IMAGE = "/assets/images/logo-white.png";
@@ -748,6 +749,22 @@ const Home1LiveDirectSales = () => {
                               {t('liveDirectSales.yourSale')}
                             </div>
                           )}
+
+                          {/* Share Button - Positioned in bottom-right of image */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '10px',
+                            right: '10px',
+                            zIndex: 10,
+                          }}>
+                            <ShareButton
+                              type="directSale"
+                              id={directSale._id}
+                              title={directSale.title}
+                              description={directSale.description}
+                              imageUrl={getDirectSaleImageUrl(directSale)}
+                            />
+                          </div>
                         </div>
 
                         {/* Direct Sale Details */}

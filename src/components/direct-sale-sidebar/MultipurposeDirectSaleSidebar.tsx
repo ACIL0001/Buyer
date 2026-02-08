@@ -915,7 +915,7 @@ const MultipurposeDirectSaleSidebar = () => {
                   pointerEvents: 'auto',
                 }}
               >
-                Toutes
+                {t('common.all') || 'Toutes'}
               </button>
               <button
                 type="button"
@@ -941,7 +941,7 @@ const MultipurposeDirectSaleSidebar = () => {
                   pointerEvents: 'auto',
                 }}
               >
-                En Cours
+                {t('common.active') || 'En Cours'}
               </button>
               <button
                 type="button"
@@ -967,7 +967,7 @@ const MultipurposeDirectSaleSidebar = () => {
                   pointerEvents: 'auto',
                 }}
               >
-                Terminées
+                {t('common.finished') || 'Terminées'}
               </button>
             </div>
           </div>
@@ -1119,7 +1119,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                 border: '1px solid rgba(255, 255, 255, 0.2)',
                               }}
                             >
-                              {itemType === 'PRODUCT' ? 'Produit' : itemType === 'SERVICE' ? 'Service' : 'Vente Directe'}
+                              {itemType === 'PRODUCT' ? t('common.product') : itemType === 'SERVICE' ? t('common.service') : t('common.directSale')}
                             </div>
 
                             {/* Sold Out Overlay / Badge */}
@@ -1137,7 +1137,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                   fontWeight: '700',
                                 }}
                               >
-                                Épuisé
+                                {t('directSale.soldOut')}
                               </div>
                             )}
                           </div>
@@ -1178,7 +1178,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                   navigateWithTop(`/direct-sale/${directSale._id}`);
                                 }}
                               >
-                                {directSale.title || t('directSale.noTitle') || 'Sans titre'}
+                                {directSale.title || t('common.noTitle')}
                               </Link>
                             </h3>
 
@@ -1206,7 +1206,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                       }}>
-                                          📦 Quantité
+                                          📦 {t('common.quantity')}
                                       </p>
                                       <p style={{
                                           fontSize: '11px',
@@ -1216,7 +1216,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                       }}>
-                                          {directSale.quantity || 'Non spécifiée'}
+                                          {directSale.quantity || t('common.notSpecified')}
                                       </p>
                                   </div>
                                 )}
@@ -1237,7 +1237,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                 }}>
-                                  📍 Localisation
+                                  📍 {t('common.location')}
                                 </p>
                                 <p style={{
                                   fontSize: '11px',
@@ -1255,7 +1255,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                     const wilaya = directSale.wilaya || '';
                                     const parts = [place, address, location, wilaya].filter(Boolean);
                                     const uniqueParts = [...new Set(parts)];
-                                    return uniqueParts.length > 0 ? uniqueParts.join(', ') : 'Non spécifiée';
+                                    return uniqueParts.length > 0 ? uniqueParts.join(', ') : t('common.notSpecified');
                                   })()}
                                 </p>
                               </div>
@@ -1277,7 +1277,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                 margin: '0 0 2px 0',
                                   fontWeight: '600',
                               }}>
-                                💰 Prix fixe
+                                💰 {t('directSale.fixedPrice')}
                               </p>
                                 <p style={{
                                 fontSize: '12px',
@@ -1299,6 +1299,9 @@ const MultipurposeDirectSaleSidebar = () => {
                             }}>
                                 <img
                                 src={(() => {
+                                    if (directSale.hidden) {
+                                        return DEFAULT_PROFILE_IMAGE;
+                                    }
                                     if (directSale.owner?.avatar?.url) {
                                         return normalizeImageUrl(directSale.owner.avatar.url);
                                     }
@@ -1425,7 +1428,7 @@ const MultipurposeDirectSaleSidebar = () => {
                                 navigateWithTop(`/direct-sale/${directSale._id}`);
                               }}
                             >
-                              {isSoldOut ? 'Épuisé' : 'Voir les détails'}
+                              {isSoldOut ? t('directSale.soldOut') : t('common.viewDetails')}
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
                               </svg>

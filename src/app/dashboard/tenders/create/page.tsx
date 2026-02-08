@@ -30,6 +30,7 @@ import {
     MdLocationOn,
     MdEmail,
     MdPaid,
+    MdPhone,
 } from 'react-icons/md';
 import useAuth from '@/hooks/useAuth';
 
@@ -89,6 +90,10 @@ export default function CreateTenderPage() {
         duration: Yup.number().nullable().required(t('createTender.errors.durationRequired')),
         wilaya: Yup.string().required(t('createTender.errors.wilayaRequired')),
         location: Yup.string().required(t('createTender.errors.locationRequired')),
+        contactNumber: Yup.string().matches(
+            /^[0-9]{10}$/,
+            'Le numéro de contact doit contenir 10 chiffres'
+        ).optional(),
     });
 
     const formik = useFormik({
@@ -105,8 +110,9 @@ export default function CreateTenderPage() {
             quantity: '',
             isPro: false,
             hidden: false,
-            visibleToVerified: false,
+            professionalOnly: false,
             price: '', // Budget
+            contactNumber: '',
         },
         validationSchema,
         validateOnChange: false,
@@ -199,6 +205,9 @@ export default function CreateTenderPage() {
                 startingAt: startDate.toISOString(),
                 endingAt: endDate.toISOString(),
                 owner: auth?.user?._id,
+                professionalOnly: values.professionalOnly,
+                hidden: values.hidden === true,
+                maxBudget: values.price ? Number(values.price) : undefined,
             };
 
             const formData = new FormData();
@@ -386,22 +395,24 @@ export default function CreateTenderPage() {
                         <Grid size={{ xs: 12, md: 4 }}>
                             <Typography variant="h6" gutterBottom fontWeight="bold">{t('createTender.budgetAndDetails')}</Typography>
                             <Box sx={{ p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                <TextField
-                                    fullWidth
-                                    type="number"
-                                    label={t('createTender.budgetEstimate')}
-                                    placeholder={t('createTender.optional')}
-                                    InputProps={{ endAdornment: <InputAdornment position="end">DA</InputAdornment> }}
-                                    variant="outlined"
-                                    {...formik.getFieldProps('price')}
-                                    error={formik.touched.price && !!formik.errors.price}
-                                    helperText={formik.touched.price && formik.errors.price}
-                                />
+                                {formik.values.evaluationType !== TENDER_EVALUATION_TYPES.MIEUX_DISANT && (
+                                    <TextField
+                                        fullWidth
+                                        type="number"
+                                        label={t('createTender.budgetEstimate')}
+                                        placeholder={t('createTender.optional')}
+                                        InputProps={{ endAdornment: <InputAdornment position="end">DA</InputAdornment> }}
+                                        variant="outlined"
+                                        {...formik.getFieldProps('price')}
+                                        error={formik.touched.price && !!formik.errors.price}
+                                        helperText={formik.touched.price && formik.errors.price}
+                                    />
+                                )}
                                  {formik.values.tenderType === TENDER_TYPES.PRODUCT && (
                                      <TextField
                                         fullWidth
                                         label={t('createTender.quantity')}
-                                        type="number"
+                                        type="text"
                                         variant="outlined"
                                         {...formik.getFieldProps('quantity')}
                                         error={formik.touched.quantity && !!formik.errors.quantity}
@@ -439,6 +450,8 @@ export default function CreateTenderPage() {
                              </Box>
                         </Grid>
 
+
+
                         {/* SETTINGS */}
                         <Grid size={{ xs: 12, md: 6 }}>
                             <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>{t('createTender.settings')}</Typography>
@@ -453,22 +466,13 @@ export default function CreateTenderPage() {
                                     }
                                     sx={{ mb: 2, width: '100%', alignItems: 'flex-start' }}
                                 />
+
                                 <FormControlLabel
-                                    control={<Switch checked={formik.values.isPro} onChange={formik.handleChange} name="isPro" />}
+                                    control={<Switch checked={formik.values.professionalOnly} onChange={formik.handleChange} name="professionalOnly" />}
                                     label={
                                         <Box>
-                                            <Typography variant="body1" fontWeight="bold">{t('createTender.proOnly')}</Typography>
-                                            <Typography variant="caption" color="text.secondary">{t('createTender.proOnlyDesc')}</Typography>
-                                        </Box>
-                                    }
-                                    sx={{ mb: 2, width: '100%', alignItems: 'flex-start' }}
-                                />
-                                <FormControlLabel
-                                    control={<Switch checked={formik.values.visibleToVerified} onChange={formik.handleChange} name="visibleToVerified" />}
-                                    label={
-                                        <Box>
-                                            <Typography variant="body1" fontWeight="bold">{t('createTender.verifiedOnly')}</Typography>
-                                            <Typography variant="caption" color="text.secondary">{t('createTender.verifiedOnlyDesc')}</Typography>
+                                            <Typography variant="body1" fontWeight="bold">Professionnels uniquement</Typography>
+                                            <Typography variant="caption" color="text.secondary">Visible uniquement par les comptes professionnels</Typography>
                                         </Box>
                                     }
                                     sx={{ width: '100%', alignItems: 'flex-start' }}

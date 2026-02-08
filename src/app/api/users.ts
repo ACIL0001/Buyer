@@ -325,6 +325,7 @@ interface User {
     dismissed: boolean;
     postponedCount: number;
   };
+  isProfileVisible?: boolean;
   // Deprecated fields for backward compatibility if needed
   secteur?: string;
   socialReason?: string;
@@ -406,7 +407,7 @@ export const UserAPI = {
 
     try {
       // Filter out undefined values and only allow certain fields
-      const allowedFields: Array<keyof User> = ['firstName', 'lastName', 'phone', 'wilaya', 'activitySector', 'companyName', 'jobTitle', 'secteur', 'socialReason']; // Added new fields, kept old for safe transition
+      const allowedFields: Array<keyof User> = ['firstName', 'lastName', 'phone', 'wilaya', 'activitySector', 'companyName', 'jobTitle', 'secteur', 'socialReason', 'isProfileVisible']; // Added new fields, kept old for safe transition
       const filteredData: Partial<User> = {};
 
       for (const field of allowedFields) {

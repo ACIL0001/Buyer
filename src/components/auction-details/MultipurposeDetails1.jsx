@@ -18,7 +18,7 @@ import useAuth from "@/hooks/useAuth";
 import app, { getSellerUrl } from "@/config"; // Import the app config
 import { calculateTimeRemaining } from "../live-auction/Home1LiveAuction";
 import { ReviewAPI } from "@/app/api/review"; // Import Review API
-import { CommentAPI } from "@/app/api/comment";
+import commentsApi from "@/app/api/comments";
 import { useTranslation } from 'react-i18next';
 import { motion } from "framer-motion";
 
@@ -102,12 +102,12 @@ const MultipurposeDetails1 = () => {
           <div className="row">
             <div className="col-12 text-center">
               <div className="alert alert-danger">
-                <h3>{t('auctionDetails.errorOccurred') || 'Une erreur s\'est produite'}</h3>
+                <h3>{t('details.errorOccurred') || 'Une erreur s\'est produite'}</h3>
                 <p>{error}</p>
                 {errorDetails && (
                   <details style={{ marginTop: '10px', textAlign: 'left' }}>
                     <summary style={{ cursor: 'pointer', color: '#721c24' }}>
-                      {t('auctionDetails.technicalDetails') || 'Détails techniques (pour le débogage)'}
+                      {t('details.technicalDetails') || 'Détails techniques (pour le débogage)'}
                     </summary>
                     <pre style={{ 
                       background: '#f8f9fa', 
@@ -127,7 +127,7 @@ const MultipurposeDetails1 = () => {
                     className="btn btn-primary me-2"
                     onClick={() => window.location.reload()}
                   >
-                    {t('auctionDetails.retry') || 'Réessayer'}
+                    {t('details.retry') || 'Réessayer'}
                   </button>
                   <button 
                     className="btn btn-secondary"
@@ -233,6 +233,26 @@ const MultipurposeDetails1 = () => {
         if (data?.offers) {
           setOffers(data.offers);
         }
+
+        // Handle Comment Redirection
+        const commentId = searchParams.get('commentId');
+        if (commentId) {
+             console.log("💬 Detected commentId in URL:", commentId);
+             setActiveTab('reviews');
+             setShowAllComments(true); // Ensure all comments are loaded so scrolling works
+             // Use setTimeout to allow tab switch and rendering to complete
+             setTimeout(() => {
+                 const element = document.getElementById(`comment-${commentId}`);
+                 if (element) {
+                     console.log("📍 Scrolling to comment:", commentId);
+                     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     element.classList.add('highlight-comment'); // Optional: Add CSS class for visual highlight
+                 } else {
+                     console.warn("❌ Comment element not found in DOM:", commentId);
+                 }
+             }, 800); // 800ms delay to ensure tab content is rendered
+        }
+
         setLoading(false);
       } catch (err) {
         console.error("Error fetching auction details:", err);
@@ -368,7 +388,7 @@ const MultipurposeDetails1 = () => {
   const safeAuctionData = auctionData || {};
   const safeThumbs = safeAuctionData.thumbs || [];
   const safeVideos = safeAuctionData.videos || [];
-  const safeTitle = safeAuctionData.title || safeAuctionData.name || "Article d'enchère";
+  const safeTitle = safeAuctionData.title || safeAuctionData.name || t('details.product');
   const safeStartingPrice = safeAuctionData.startingPrice || 0;
   const safeCurrentPrice = safeAuctionData.currentPrice || 0;
   const safeOwner = safeAuctionData.owner || null;
@@ -511,7 +531,7 @@ const MultipurposeDetails1 = () => {
   try {
     // Check if user is logged in
     if (!isLogged || !auth.tokens) {
-      toast.error("Veuillez vous connecter pour placer une enchère");
+      toast.error(t('details.pleaseLoginToBuy'));
       router.push('/auth/login');
       return;
     }
@@ -519,7 +539,7 @@ const MultipurposeDetails1 = () => {
     // Get bid amount from the quantity input
     const bidInput = document.querySelector(".quantity__input");
     if (!bidInput || !bidInput.value) {
-      toast.error("Veuillez entrer un montant d'enchère valide");
+      toast.error(t('auction.bidError'));
       return;
     }
 
@@ -544,20 +564,20 @@ const MultipurposeDetails1 = () => {
     const numericBidAmount = parseFloat(cleanBidAmount);
     
     if (isNaN(numericBidAmount) || numericBidAmount <= 0) {
-      toast.error("Veuillez entrer un montant valide pour votre enchère");
+      toast.error(t('auction.bidError'));
       return;
     }
     
     // Check minimum bid amount
     if (numericBidAmount < 1) {
-      toast.error("Le montant minimum pour une enchère est de 1 DA");
+      toast.error(t('auction.bidError'));
       return;
     }
 
     // Ensure the bid is higher than current price
     const currentPrice = auctionData?.currentPrice || auctionData?.startingPrice || 0;
     if (numericBidAmount <= currentPrice) {
-      toast.error(`Votre enchère doit être supérieure au prix actuel de ${formatPrice(currentPrice)}`);
+      toast.error(`${t('auction.bidMustBeHigher')} ${formatPrice(currentPrice)}`);
       return;
     }
 
@@ -595,7 +615,7 @@ const MultipurposeDetails1 = () => {
       console.log("[MultipurposeDetails1] Offer submission response:", offerResponse);
       
       // Always show success message if we got here (no exception thrown)
-      toast.success("Votre enchère a été placée avec succès !");
+      toast.success(t('auction.bidSuccess'));
       
       // Clear the input
       if (bidInput) {
@@ -623,7 +643,7 @@ const MultipurposeDetails1 = () => {
       
       // If we have a success status code, treat it as success
       if (hasSuccessStatus) {
-        toast.success("Votre enchère a été placée avec succès !");
+        toast.success(t('auction.bidSuccess'));
         
         // Clear the input
         if (bidInput) {
@@ -653,7 +673,7 @@ const MultipurposeDetails1 = () => {
     // This handles cases where the offer was saved but error was thrown anyway
     if (err?.response?.data?.success === true) {
       console.log("[MultipurposeDetails1] Detected successful operation despite error:", err);
-      toast.success("Votre enchère a été placée avec succès !");
+      toast.success(t('auction.bidSuccess'));
       
       // Refresh the auction data
       try {
@@ -669,7 +689,7 @@ const MultipurposeDetails1 = () => {
     }
     
     // Extract user-friendly error message
-    let errorMessage = "Échec de l'enchère. Veuillez réessayer.";
+    let errorMessage = t('auction.bidError');
     
     if (err?.response?.data?.message) {
       const serverMessage = err.response.data.message;
@@ -677,16 +697,16 @@ const MultipurposeDetails1 = () => {
       // Handle specific error messages from server
       switch (serverMessage) {
         case 'OFFER.INVALID_PRICE':
-          errorMessage = "Montant d'enchère invalide. Vérifiez que votre enchère est supérieure au prix actuel.";
+          errorMessage = t('auction.invalidPrice');
           break;
         case 'OFFER.AUCTION_ENDED':
-          errorMessage = "Cette enchère est terminée.";
+          errorMessage = t('auction.auctionEnded');
           break;
         case 'OFFER.INSUFFICIENT_AMOUNT':
-          errorMessage = "Le montant de votre enchère est insuffisant.";
+          errorMessage = t('auction.insufficientAmount');
           break;
         case 'OFFER.OWNER_CANNOT_BID':
-          errorMessage = "Vous ne pouvez pas enchérir sur votre propre enchère.";
+          errorMessage = t('auctionDetails.cannotBidOwn');
           break;
         default:
           errorMessage = serverMessage;
@@ -702,7 +722,7 @@ const MultipurposeDetails1 = () => {
       // If the data contains a valid offer object, consider it a success
       if (err.response.data.price || err.response.data._id) {
         console.log("[MultipurposeDetails1] Found offer data in error response, treating as success");
-        toast.success("Votre enchère a été placée avec succès !");
+        toast.success(t('auction.bidSuccess'));
         
         // Try to refresh auction data
         try {
@@ -727,7 +747,7 @@ const MultipurposeDetails1 = () => {
     try {
       // Check if user is logged in
       if (!isLogged || !auth.tokens) {
-        toast.error("Veuillez vous connecter pour placer une enchère");
+        toast.error(t('details.pleaseLoginToBuy'));
       router.push('/auth/login');
         return;
       }
@@ -735,14 +755,14 @@ const MultipurposeDetails1 = () => {
       // Check if auction has ended
       const auctionEndDate = similarAuction.endDate || similarAuction.endingAt;
       if (auctionEndDate && new Date(auctionEndDate) <= new Date()) {
-        toast.error("Cette enchère est terminée");
+        toast.error(t('auction.auctionEnded'));
         return;
       }
 
       // Check if user is the owner of the auction
       const isOwner = isLogged && auth.user._id === (similarAuction.owner?._id || similarAuction.owner);
       if (isOwner) {
-        toast.error("Vous ne pouvez pas enchérir sur votre propre enchère");
+        toast.error(t('auctionDetails.cannotBidOwn'));
         return;
       }
 
@@ -776,7 +796,7 @@ const MultipurposeDetails1 = () => {
         console.log("[MultipurposeDetails1] Similar auction bid response:", offerResponse);
         
         // Always show success message if we got here (no exception thrown)
-        toast.success("Votre enchère a été placée avec succès !");
+        toast.success(t('auction.bidSuccess'));
         
         // Refresh the similar auctions data
         try {
@@ -795,7 +815,7 @@ const MultipurposeDetails1 = () => {
         
         // If we have a success status code, treat it as success
         if (hasSuccessStatus) {
-          toast.success("Votre enchère a été placée avec succès !");
+          toast.success(t('auction.bidSuccess'));
           
           // Try to refresh the auction data
           try {
@@ -925,6 +945,50 @@ const MultipurposeDetails1 = () => {
     if (amount < safeStartingPrice) {
       toast.error(`Le montant doit être au moins ${formatPrice(safeStartingPrice)}`);
       return;
+    }
+
+    // Check if user has placed a manual bid first (only for new auto-bids)
+    if (!hasExistingAutoBid) {
+        let currentOffers = offers;
+        try {
+            // Fetch fresh offers directly from OfferAPI
+            const freshOffersResponse = await OfferAPI.getOffersByBidId(auctionId);
+            
+            // Handle different response structures
+            if (freshOffersResponse && Array.isArray(freshOffersResponse)) {
+                currentOffers = freshOffersResponse;
+            } else if (freshOffersResponse && freshOffersResponse.data && Array.isArray(freshOffersResponse.data)) {
+                currentOffers = freshOffersResponse.data;
+            } else if (freshOffersResponse && freshOffersResponse.success && Array.isArray(freshOffersResponse.data)) {
+                 currentOffers = freshOffersResponse.data;
+            }
+        } catch (err) {
+            console.error("Failed to fetch fresh offers for check:", err);
+        }
+
+        console.log("Checking for manual bid. User ID:", auth.user._id);
+        console.log("Current offers (fresh - processed):", currentOffers);
+        
+        const hasPlacedBid = currentOffers && currentOffers.some(offer => {
+            if (!offer.user) return false;
+            
+            // Log for debugging
+            // console.log("Checking offer:", offer._id, "User:", offer.user);
+            
+            const offerUserId = (offer.user._id || offer.user).toString();
+            const currentUserId = auth.user._id.toString();
+            return offerUserId === currentUserId;
+        });
+
+        if (!hasPlacedBid) {
+            console.warn("User has not placed a manual bid yet.");
+            console.warn("User ID:", auth.user._id);
+            if (currentOffers && currentOffers.length > 0) {
+                 console.warn("First offer user:", currentOffers[0].user);
+            }
+            toast.warn("Vous devez d'abord faire une offre manuelle pour pouvoir faire une enchère automatique");
+            return;
+        }
     }
 
     try {
@@ -1690,7 +1754,7 @@ const MultipurposeDetails1 = () => {
                               <tr>
                                 <td className="fw-bold">{t('common.seller')}</td>
                                 <td>
-                                  {safeOwner.hidden === true ? (
+                                  {safeAuctionData.hidden === true ? (
                                     <span>{t('common.anonymous') || 'Anonyme'}</span>
                                   ) : (
                                     <Link
@@ -1723,6 +1787,15 @@ const MultipurposeDetails1 = () => {
                                 </td>
                               </tr>
                             )}
+                            <tr>
+                              <td className="fw-bold">{t('common.location') || 'Localisation'}</td>
+                              <td>
+                                {auctionData?.wilaya && auctionData?.place 
+                                  ? `${auctionData.place}, ${auctionData.wilaya}`
+                                  : auctionData?.wilaya || auctionData?.place || 'Non spécifiée'}
+                              </td>
+                            </tr>
+
                           </tbody>
                         </table>
                       </div>
@@ -2027,13 +2100,13 @@ const MultipurposeDetails1 = () => {
                                 </button>
                               </>
                             ) : (
-                              /* Update/Delete Auto-Bid Buttons */
+                              /* Update Auto-Bid Button */
                               <>
                                 <button
                                   onClick={handleAutoBidSave}
                                   disabled={savingAutoBid || loadingAutoBid}
                                   style={{
-                                    flex: 1,
+                                    width: '100%',
                                     padding: '12px 20px',
                                     borderRadius: '8px',
                                     border: 'none',
@@ -2060,36 +2133,6 @@ const MultipurposeDetails1 = () => {
                                 >
                                   {savingAutoBid ? 'Mise à jour...' : 'Mettre à jour'}
                                 </button>
-                                <button
-                                  onClick={handleAutoBidDelete}
-                                  disabled={deletingAutoBid || loadingAutoBid}
-                                  style={{
-                                    padding: '12px 20px',
-                                    borderRadius: '8px',
-                                    border: 'none',
-                                    background: (deletingAutoBid || loadingAutoBid) ? '#ccc' : 'linear-gradient(90deg, #dc3545, #c82333)',
-                                    color: 'white',
-                                    fontSize: '14px',
-                                    fontWeight: '600',
-                                    cursor: (deletingAutoBid || loadingAutoBid) ? 'not-allowed' : 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    boxShadow: (deletingAutoBid || loadingAutoBid) ? 'none' : '0 4px 12px rgba(220, 53, 69, 0.3)'
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (!deletingAutoBid && !loadingAutoBid) {
-                                      e.target.style.transform = 'translateY(-2px)';
-                                      e.target.style.boxShadow = '0 6px 16px rgba(220, 53, 69, 0.4)';
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (!deletingAutoBid && !loadingAutoBid) {
-                                      e.target.style.transform = 'translateY(0)';
-                                      e.target.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.3)';
-                                    }
-                                  }}
-                                >
-                                  {deletingAutoBid ? 'Suppression...' : 'Supprimer'}
-                                </button>
                               </>
                             )}
                           </div>
@@ -2097,42 +2140,9 @@ const MultipurposeDetails1 = () => {
                       </div>
                     )}
 
-                    <ul className="question-and-wishlist-area">
-                      <li>
-                        <Link href="/how-to-bid">
-                          <span>
-                            <svg
-                              width={11}
-                              height={11}
-                              viewBox="0 0 11 11"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <g>
-                                <path d="M5.5 0C2.46015 0 0 2.45988 0 5.5C0 8.5398 2.45988 11 5.5 11C8.53985 11 11 8.54012 11 5.5C11 2.46015 8.54012 0 5.5 0ZM5.5 10.2326C2.89046 10.2326 0.767443 8.10956 0.767443 5.5C0.767443 2.89044 2.89046 0.767443 5.5 0.767443C8.10956 0.767443 10.2326 2.89044 10.2326 5.5C10.2326 8.10956 8.10956 10.2326 5.5 10.2326Z" />
-                              </g>
-                            </svg>
-                          </span>
-                          Poser une question
-                        </Link>
-                      </li>
-                      <li>
-                        <a href="#">
-                          <span>
-                            <svg
-                              width={11}
-                              height={11}
-                              viewBox="0 0 18 18"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <g clipPath="url(#clip0_168_378)">
-                                <path d="M16.528 2.20919C16.0674 1.71411 15.5099 1.31906 14.8902 1.04859C14.2704 0.778112 13.6017 0.637996 12.9255 0.636946C12.2487 0.637725 11.5794 0.777639 10.959 1.048C10.3386 1.31835 9.78042 1.71338 9.31911 2.20854L9.00132 2.54436L8.68352 2.20854C6.83326 0.217151 3.71893 0.102789 1.72758 1.95306C1.63932 2.03507 1.5541 2.12029 1.47209 2.20854C-0.490696 4.32565 -0.490696 7.59753 1.47209 9.71463L8.5343 17.1622C8.77862 17.4201 9.18579 17.4312 9.44373 17.1868C9.45217 17.1788 9.46039 17.1706 9.46838 17.1622L16.528 9.71463C18.4907 7.59776 18.4907 4.32606 16.528 2.20919ZM15.5971 8.82879H15.5965L9.00132 15.7849L2.40553 8.82879C0.90608 7.21113 0.90608 4.7114 2.40553 3.09374C3.76722 1.61789 6.06755 1.52535 7.5434 2.88703C7.61505 2.95314 7.68401 3.0221 7.75012 3.09374L8.5343 3.92104C8.79272 4.17781 9.20995 4.17781 9.46838 3.92104L10.2526 3.09438C11.6142 1.61853 13.9146 1.52599 15.3904 2.88767C15.4621 2.95378 15.531 3.02274 15.5971 3.09438C17.1096 4.71461 17.1207 7.2189 15.5971 8.82879Z" />
-                              </g>
-                            </svg>
-                          </span>
-                          Ajouter aux favoris
-                        </a>
-                      </li>
-                    </ul>
+
+                    <ul className="question-and-wishlist-area" style={{ display: 'none' }}></ul>
+
                   </div>
                 </div>
               </div>
@@ -2164,20 +2174,9 @@ const MultipurposeDetails1 = () => {
                         aria-controls="nav-reviews"
                         aria-selected={activeTab === "reviews"}
                       >
-                        {t('auctionDetails.reviews') || 'Avis'} ({auctionData?.reviews?.length || 0})
+                        {t('common.comments') || 'Commentaires'} ({auctionData?.comments?.length || 0})
                       </button>
-                      <button
-                        className={`tab-button ${
-                          activeTab === "offers" ? "active" : ""
-                        }`}
-                        onClick={() => setActiveTab("offers")}
-                        type="button"
-                        role="tab"
-                        aria-controls="nav-offers"
-                        aria-selected={activeTab === "offers"}
-                      >
-                        {t('auctionDetails.offers') || 'Offres'} ({offers?.length || 0})
-                      </button>
+
                     </div>
 
                     <div className="tab-content" id="nav-tabContent">
@@ -2242,103 +2241,7 @@ const MultipurposeDetails1 = () => {
                         aria-labelledby="nav-reviews-tab"
                       >
                         <div className="reviews-area">
-                          <div className="number-of-review mb-4">
-                            <h4>{t('auctionDetails.reviews')} ({auctionData?.reviews?.length || 0})</h4>
-                          </div>
 
-                          {/* Warning Message */}
-                          <div
-                            className="alert alert-warning"
-                            style={{
-                              fontSize: "0.875rem",
-                              color: "#856404",
-                              backgroundColor: "#fff3cd",
-                              fontWeight: "normal",
-                              border: "1px solid #ffeaa7",
-                              borderRadius: "5px",
-                              padding: "12px",
-                              marginBottom: "20px",
-                            }}
-                          >
-                            {t('auctionDetails.reviewWarning')}
-                          </div>
-
-                          <div className="review-list-area mb-40">
-                            <ul className="comment p-0">
-                              {auctionData?.reviews &&
-                              auctionData.reviews.length > 0 ? (
-                                auctionData.reviews.map((review, index) => (
-                                  <li key={index}>
-                                    <div className="single-comment-area">
-                                      <div className="author-img">
-                                        <img
-                                          src={
-                                            review.user?.photoURL ||
-                                            DEFAULT_USER_AVATAR
-                                          }
-                                          alt={
-                                            review.user?.fullName || "Reviewer"
-                                          }
-                                          onError={(e) => {
-                                            e.target.onerror = null;
-                                            e.target.src = DEFAULT_USER_AVATAR;
-                                          }}
-                                        />
-                                      </div>
-                                      <div className="comment-content">
-                                        <div className="author-and-review">
-                                          <div className="author-name-deg">
-                                            <h6>
-                                              {review.user?.fullName ||
-                                                "Utilisateur Anonyme"}
-                                            </h6>
-                                            <span>
-                                              {new Date(
-                                                review.createdAt
-                                              ).toLocaleDateString("fr-FR", {
-                                                year: "numeric",
-                                                month: "long",
-                                                day: "numeric",
-                                              })}
-                                            </span>
-                                          </div>
-                                          {/* Modified for enhanced star display */}
-                                          <ul className="review d-flex flex-row align-items-center review-star-container">
-                                            {[...Array(5)].map((_, i) => (
-                                              <li key={i}>
-                                                <i
-                                                  className={`bi bi-star${
-                                                    i < review.rating
-                                                      ? "-fill"
-                                                      : ""
-                                                  } review-star ${
-                                                    i < review.rating
-                                                      ? "filled"
-                                                      : ""
-                                                  }`}
-                                                ></i>
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        </div>
-                                        <p>{review.comment}</p>
-                                      </div>
-                                    </div>
-                                  </li>
-                                ))
-                              ) : (
-                                <li>
-                                  <div className="single-comment-area">
-                                    <div className="comment-content text-center w-100">
-                                      <p>
-                                        Pas d'avis disponibles pour le moment.
-                                      </p>
-                                    </div>
-                                  </div>
-                                </li>
-                              )}
-                            </ul>
-                          </div>
 
                           {/* --- Comments Section (from backend) --- */}
                           <div
@@ -2390,10 +2293,11 @@ const MultipurposeDetails1 = () => {
                                         bid: auctionId,
                                       });
                                       const response =
-                                        await CommentAPI.setForBid(auctionId, {
-                                          comment: newComment,
-                                          user: auth.user._id,
-                                        });
+                                        await commentsApi.createCommentForBid(
+                                          auctionId,
+                                          newComment,
+                                          auth.user._id
+                                        );
                                       console.log(
                                         "[Comment Submit] Success:",
                                         response
@@ -2507,402 +2411,63 @@ const MultipurposeDetails1 = () => {
                               </div>
                             )}
 
-                            {/* Comments List */}
-                            {auctionData?.comments?.length > 0 ? (
-                              <div>
-                                <div
-                                  className="comments-list"
-                                  style={{
-                                    maxHeight: showAllComments
-                                      ? "none"
-                                      : "400px",
-                                    overflow: "hidden",
-                                    transition: "all 0.3s ease",
-                                  }}
-                                >
+                             {/* Comments List */}
+                            <div className="comments-list">
+                              {auctionData?.comments &&
+                              auctionData.comments.length > 0 ? (
+                                <ul style={{ listStyle: "none", padding: 0 }}>
                                   {(showAllComments
                                     ? auctionData.comments
-                                    : auctionData.comments.slice(0, 5)
-                                  ).map((c, index) => (
-                                    <div
-                                      key={c._id}
-                                      style={{
-                                        display: "flex",
-                                        gap: "12px",
-                                        padding: "12px",
-                                        marginBottom: "8px",
-                                        background:
-                                          index % 2 === 0
-                                            ? "#ffffff"
-                                            : "#f8f9fa",
-                                        borderRadius: "8px",
-                                        border: "1px solid #e9ecef",
-                                        transition:
-                                          "transform 0.2s ease, box-shadow 0.2s ease",
-                                      }}
-                                      onMouseEnter={(e) => {
-                                        e.currentTarget.style.transform =
-                                          "translateY(-2px)";
-                                        e.currentTarget.style.boxShadow =
-                                          "0 4px 12px rgba(0,0,0,0.1)";
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        e.currentTarget.style.transform =
-                                          "translateY(0)";
-                                        e.currentTarget.style.boxShadow =
-                                          "none";
-                                      }}
-                                    >
-                                      <img
-                                        src={
-                                          c.user?.photoURL ||
-                                          DEFAULT_USER_AVATAR
-                                        }
-                                        alt="User avatar"
-                                        style={{
-                                          width: "32px",
-                                          height: "32px",
-                                          borderRadius: "50%",
-                                          objectFit: "cover",
-                                          border: "1px solid #ddd",
-                                          flexShrink: 0,
-                                        }}
-                                        onError={(e) => {
-                                          e.target.onerror = null;
-                                          e.target.src = DEFAULT_USER_AVATAR;
-                                        }}
-                                      />
-                                      <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div
-                                          style={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            alignItems: "flex-start",
-                                            marginBottom: "6px",
-                                          }}
-                                        >
-                                          <span
-                                            style={{
-                                              fontWeight: "600",
-                                              fontSize: "13px",
-                                              color: "#333",
-                                              marginRight: "8px",
-                                            }}
-                                          >
-                                            {c.user?.fullName ||
-                                              c.user?.email ||
-                                              "Utilisateur"}
-                                          </span>
-                                          <span
-                                            style={{
-                                              fontSize: "11px",
-                                              color: "#888",
-                                              flexShrink: 0,
-                                            }}
-                                          >
-                                            {c.createdAt
-                                              ? new Date(
-                                                  c.createdAt
-                                                ).toLocaleDateString("fr-FR", {
-                                                  day: "numeric",
-                                                  month: "short",
-                                                  hour: "2-digit",
-                                                  minute: "2-digit",
-                                                })
-                                              : ""}
-                                          </span>
-                                        </div>
-                                        <p
-                                          style={{
-                                            margin: 0,
-                                            fontSize: "14px",
-                                            lineHeight: "1.4",
-                                            color: "#555",
-                                            wordBreak: "break-word",
-                                          }}
-                                        >
-                                          {c.comment}
-                                        </p>
-                                      </div>
-                                    </div>
+                                    : auctionData.comments.slice(0, 3)
+                                  ).map((comment) => (
+                                    <CommentItem 
+                                       key={comment._id} 
+                                       comment={comment} 
+                                       isLogged={isLogged} 
+                                       authUser={auth.user} 
+                                       onReplySuccess={async () => {
+                                          const data = await AuctionsAPI.getAuctionById(auctionId);
+                                          setAuctionData(data);
+                                       }}
+                                    />
                                   ))}
-                                </div>
-
-                                {/* Show More/Less Button */}
-                                {auctionData.comments.length > 5 && (
-                                  <div
-                                    style={{
-                                      textAlign: "center",
-                                      marginTop: "16px",
-                                    }}
-                                  >
-                                    <button
-                                      onClick={() =>
-                                        setShowAllComments(!showAllComments)
-                                      }
-                                      style={{
-                                        background:
-                                          "linear-gradient(135deg, #0063b1, #004c8c)",
-                                        color: "white",
-                                        border: "none",
-                                        borderRadius: "20px",
-                                        padding: "8px 20px",
-                                        fontSize: "13px",
-                                        fontWeight: "500",
-                                        cursor: "pointer",
-                                        transition: "all 0.3s ease",
-                                        boxShadow:
-                                          "0 2px 8px rgba(0,99,177,0.3)",
-                                      }}
-                                      onMouseEnter={(e) => {
-                                        e.target.style.transform =
-                                          "translateY(-2px)";
-                                        e.target.style.boxShadow =
-                                          "0 4px 12px rgba(0,99,177,0.4)";
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        e.target.style.transform =
-                                          "translateY(0)";
-                                        e.target.style.boxShadow =
-                                          "0 2px 8px rgba(0,99,177,0.3)";
-                                      }}
-                                    >
-                                      {showAllComments
-                                        ? `Voir moins de commentaires ▲`
-                                        : `Voir ${
-                                            auctionData.comments.length - 5
-                                          } commentaires supplémentaires ▼`}
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <div
-                                style={{
-                                  textAlign: "center",
-                                  padding: "40px 20px",
-                                  color: "#888",
-                                  background: "#f8f9fa",
-                                  borderRadius: "12px",
-                                  border: "1px dashed #ddd",
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    fontSize: "48px",
-                                    marginBottom: "16px",
-                                  }}
-                                >
-                                  💬
-                                </div>
-                                <p style={{ margin: 0, fontSize: "16px" }}>
-                                  Aucun commentaire pour cette enchère.
-                                </p>
+                                </ul>
+                              ) : (
                                 <p
                                   style={{
-                                    margin: "8px 0 0 0",
-                                    fontSize: "14px",
-                                    color: "#aaa",
+                                    textAlign: "center",
+                                    color: "#999",
+                                    padding: "20px",
+                                    background: "#f9f9f9",
+                                    borderRadius: "8px",
                                   }}
                                 >
-                                  Soyez le premier à partager votre avis !
+                                  Soyez le premier à commenter !
                                 </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                              )}
 
-                      {/* --- Offers Section --- */}
-                      <div
-                        className={`tab-pane fade ${
-                          activeTab === "offers" ? "show active" : ""
-                        }`}
-                        id="nav-offers"
-                        role="tabpanel"
-                        aria-labelledby="nav-offers-tab"
-                      >
-                        <div className="offers-area">
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              marginBottom: "20px",
-                              borderBottom: "2px solid #f0f0f0",
-                              paddingBottom: "10px",
-                            }}
-                          >
-                            <h4
-                              style={{
-                                margin: 0,
-                                color: "#333",
-                                fontSize: "18px",
-                              }}
-                            >
-                              💰 {t('auctionDetails.offers') || 'Offres'} ({offers?.length || 0})
-                            </h4>
-                          </div>
-
-                          {offers && offers.length > 0 ? (
-                            <div className="offers-list">
-                              {offers.map((offer, index) => (
-                                <div
-                                  key={offer._id || index}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "15px",
-                                    padding: "15px",
-                                    marginBottom: "10px",
-                                    background:
-                                      index % 2 === 0 ? "#ffffff" : "#f8f9fa",
-                                    borderRadius: "10px",
-                                    border: "1px solid #e9ecef",
-                                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                                    transition:
-                                      "transform 0.2s ease, box-shadow 0.2s ease",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.currentTarget.style.transform =
-                                      "translateY(-3px)";
-                                    e.currentTarget.style.boxShadow =
-                                      "0 6px 16px rgba(0,0,0,0.1)";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform =
-                                      "translateY(0)";
-                                    e.currentTarget.style.boxShadow =
-                                      "0 2px 8px rgba(0,0,0,0.05)";
-                                  }}
-                                >
-                                  <img
-                                    src={(() => {
-                                      if (offer.user?.avatar?.url) {
-                                        const imageUrl = offer.user.avatar.url;
-                                        if (imageUrl.startsWith('http')) {
-                                          return imageUrl;
-                                        } else if (imageUrl.startsWith('/static/')) {
-                                          const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                          console.log('🎯 USER AVATAR IMAGE:', {
-                                            originalUrl: imageUrl,
-                                            finalUrl: finalUrl,
-                                            userId: offer.user._id
-                                          });
-                                          return finalUrl;
-                                        } else if (imageUrl.startsWith('/')) {
-                                          const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                          console.log('🎯 USER AVATAR IMAGE:', {
-                                            originalUrl: imageUrl,
-                                            finalUrl: finalUrl,
-                                            userId: offer.user._id
-                                          });
-                                          return finalUrl;
-                                        } else {
-                                          const finalUrl = `${app.baseURL}${imageUrl}`;
-                                          console.log('🎯 USER AVATAR IMAGE:', {
-                                            originalUrl: imageUrl,
-                                            finalUrl: finalUrl,
-                                            userId: offer.user._id
-                                          });
-                                          return finalUrl;
-                                        }
-                                      }
-                                      return DEFAULT_USER_AVATAR;
-                                    })()}
-                                    alt={offer.user?.firstName || "User"}
+                              {auctionData?.comments?.length > 3 && (
+                                <div style={{ textAlign: "center", marginTop: "15px" }}>
+                                  <button
+                                    onClick={() => setShowAllComments(!showAllComments)}
                                     style={{
-                                      width: "45px",
-                                      height: "45px",
-                                      borderRadius: "50%",
-                                      objectFit: "cover",
-                                      border: "2px solid #0063b1",
-                                      flexShrink: 0,
-                                    }}
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = DEFAULT_USER_AVATAR;
-                                    }}
-                                    crossOrigin="use-credentials"
-                                  />
-                                  <div style={{ flexGrow: 1 }}>
-                                    <p
-                                      style={{
-                                        margin: 0,
-                                        fontSize: "15px",
-                                        fontWeight: "600",
-                                        color: "#333",
-                                      }}
-                                    >
-                                      {offer.user?.firstName}{" "}
-                                      {offer.user?.lastName ||
-                                        "Utilisateur Anonyme"}
-                                    </p>
-                                    <p
-                                      style={{
-                                        margin: "4px 0 0 0",
-                                        fontSize: "13px",
-                                        color: "#666",
-                                      }}
-                                    >
-                                      {t('auctionDetails.offerPlacedOn') || 'Offre placée le'}:{" "}
-                                      {new Date(
-                                        offer.createdAt
-                                      ).toLocaleDateString("fr-FR", {
-                                        day: "numeric",
-                                        month: "short",
-                                        year: "numeric",
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      })}
-                                    </p>
-                                  </div>
-                                  <div
-                                    style={{
-                                      fontSize: "18px",
-                                      fontWeight: "700",
+                                      background: "transparent",
+                                      border: "1px solid #0063b1",
                                       color: "#0063b1",
-                                      flexShrink: 0,
+                                      padding: "8px 16px",
+                                      borderRadius: "20px",
+                                      cursor: "pointer",
+                                      fontSize: "14px",
+                                      fontWeight: "600",
+                                      transition: "all 0.3s ease",
                                     }}
                                   >
-                                    {formatPrice(offer.price)}
-                                  </div>
+                                    {showAllComments ? "Voir moins" : "Voir tous les commentaires"}
+                                  </button>
                                 </div>
-                              ))}
+                              )}
                             </div>
-                          ) : (
-                            <div
-                              style={{
-                                textAlign: "center",
-                                padding: "40px 20px",
-                                color: "#888",
-                                background: "#f8f9fa",
-                                borderRadius: "12px",
-                                border: "1px dashed #ddd",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontSize: "48px",
-                                  marginBottom: "16px",
-                                }}
-                              >
-                                💸
-                              </div>
-                              <p style={{ margin: 0, fontSize: "16px" }}>
-                                Aucune offre n'a été faite pour cette enchère.
-                              </p>
-                              <p
-                                style={{
-                                  margin: "8px 0 0 0",
-                                  fontSize: "14px",
-                                  color: "#aaa",
-                                }}
-                              >
-                                Soyez le premier à faire une offre !
-                              </p>
-                            </div>
-                          )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -3744,4 +3309,7 @@ const MultipurposeDetails1 = () => {
   );
 };
 
+import CommentItem from "@/components/common/CommentItem";
+
 export default MultipurposeDetails1;
+

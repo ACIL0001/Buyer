@@ -1420,7 +1420,7 @@ const MultipurposeTenderSidebar = () => {
                                     pointerEvents: 'auto',
                                 }}
                             >
-                                {t('common.all')}
+                                {t('common.all') || 'Toutes'}
                             </button>
                             <button
                                 type="button"
@@ -1446,7 +1446,7 @@ const MultipurposeTenderSidebar = () => {
                                     pointerEvents: 'auto',
                                 }}
                             >
-                                {t('common.active')}
+                                {t('common.active') || 'En Cours'}
                             </button>
                             <button
                                 type="button"
@@ -1472,7 +1472,7 @@ const MultipurposeTenderSidebar = () => {
                                     pointerEvents: 'auto',
                                 }}
                             >
-                                {t('common.finished')}
+                                {t('common.finished') || 'Terminées'}
                             </button>
                         </div>
                     </div>
@@ -1508,12 +1508,17 @@ const MultipurposeTenderSidebar = () => {
                                         const hasTenderEnded = timer.hasEnded || false;
 
                                         // Determine the display name for the tender owner
-                                        // Prioritize company name over personal name
-                                        const companyName = tender.owner?.entreprise || tender.owner?.companyName;
-                                        const ownerName = tender.owner?.firstName && tender.owner?.lastName
-                                            ? `${tender.owner.firstName} ${tender.owner.lastName}`.trim()
-                                            : tender.owner?.name;
-                                        const displayName = companyName || ownerName || t('common.buyer');
+                                        let displayName;
+                                        if (tender.hidden) {
+                                            displayName = t('common.anonymous') || 'Anonyme';
+                                        } else {
+                                            // Prioritize company name over personal name
+                                            const companyName = tender.owner?.entreprise || tender.owner?.companyName;
+                                            const ownerName = tender.owner?.firstName && tender.owner?.lastName
+                                                ? `${tender.owner.firstName} ${tender.owner.lastName}`.trim()
+                                                : tender.owner?.name;
+                                            displayName = companyName || ownerName || t('common.buyer');
+                                        }
 
                                         return (
                                             <div
@@ -1859,7 +1864,7 @@ const MultipurposeTenderSidebar = () => {
                                                             marginBottom: '16px',
                                                         }}>
                                                             <img
-                                                                src={normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
+                                                                src={tender.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE)}
                                                                 alt={displayName}
                                                                 style={{
                                                                     width: '32px',

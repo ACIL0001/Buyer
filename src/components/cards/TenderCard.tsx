@@ -91,11 +91,16 @@ const TenderCard = ({ tender }: TenderCardProps) => {
   const isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30 && parseInt(timer.days) === 0;
 
   // Determine the display name for the tender owner
-  const companyName = tender.owner?.entreprise || tender.owner?.companyName;
-  const ownerName = tender.owner?.firstName && tender.owner?.lastName
-    ? `${tender.owner.firstName} ${tender.owner.lastName}`.trim()
-    : tender.owner?.name;
-  const displayName = companyName || ownerName || t('common.buyer');
+  let displayName;
+  if(tender.hidden) {
+    displayName = t('common.anonymous') || 'Anonyme';
+  } else {
+    const companyName = tender.owner?.entreprise || tender.owner?.companyName;
+    const ownerName = tender.owner?.firstName && tender.owner?.lastName
+      ? `${tender.owner.firstName} ${tender.owner.lastName}`.trim()
+      : tender.owner?.name;
+    displayName = companyName || ownerName || t('common.buyer');
+  }
 
   return (
     <div
@@ -379,7 +384,7 @@ const TenderCard = ({ tender }: TenderCardProps) => {
           marginTop: 'auto'
         }}>
           <img
-            src={normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
+            src={tender.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE)}
             alt={displayName}
             style={{
               width: '28px',

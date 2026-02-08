@@ -55,14 +55,14 @@ export const OfferAPI = {
       } as ApiResponse<Offer>;
     } catch (error: unknown) {
       console.error('Error sending offer:', error);
-      
+
       // Check if the error response contains data that indicates success
       const errorResponse = (error as any)?.response?.data;
       if (errorResponse && (errorResponse.success === true || errorResponse.data)) {
         console.log('Offer API detected successful response despite error:', errorResponse);
         return errorResponse;
       }
-      
+
       throw error;
     }
   },
@@ -100,6 +100,31 @@ export const OfferAPI = {
       } as ApiResponse<Offer[]>;
     } catch (error: unknown) {
       console.error('Error getting offers by tender ID:', error);
+      throw error;
+    }
+  },
+
+  // Get offers for a specific bid
+  getOffersByBidId: async (bidId: string): Promise<ApiResponse<Offer[]>> => {
+    try {
+      console.log('Getting offers for bid:', bidId);
+      const res = await requests.get(`offers/${bidId}`);
+      if ('success' in res) {
+        return res as ApiResponse<Offer[]>;
+      }
+      // Handle the response format from OfferController.getOffersByBidId
+      // It returns the array directly, so we need to wrap it appropriately
+      // But looking at requests.get implementation (implied), it might return the axios response
+
+      const responseData = (res as any)?.data?.data ?? (res as any)?.data ?? (Array.isArray(res) ? res : []);
+
+      return {
+        success: (res as any)?.status >= 200 && (res as any)?.status < 300,
+        data: responseData,
+        message: (res as any)?.data?.message,
+      } as ApiResponse<Offer[]>;
+    } catch (error: unknown) {
+      console.error('Error getting offers by bid ID:', error);
       throw error;
     }
   },

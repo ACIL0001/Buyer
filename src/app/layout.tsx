@@ -34,6 +34,10 @@ import { usePathname } from "next/navigation";
 import Head from "./head";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+// Import notification service
+import { notificationManager } from "@/services/notifications";
+import { Capacitor } from "@capacitor/core";
+
 function ScrollManager() {
   const pathname = usePathname();
 
@@ -78,6 +82,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       },
     },
   }));
+
+  // Initialize notifications on app load
+  useEffect(() => {
+    // Check if running in Capacitor native app
+    if (Capacitor.isNativePlatform()) {
+      console.log('Initializing push notifications...');
+      notificationManager.initialize().catch(error => {
+        console.error('Failed to initialize notifications:', error);
+      });
+    }
+  }, []);
 
   // useEffect for initializing authentication state
   useEffect(() => {
@@ -141,6 +156,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                         <GlobalLoader />
                         <BidChecker />
                         <WinnerAnnouncement />
+                        
+                        {/* Notification Handler Component */}
+                        <NotificationHandler />
+                        
                         <ScrollManager />
                         {children}
                       </TokenHandler>
@@ -157,4 +176,24 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </body>
     </html>
   );
+}
+
+// Notification Handler Component
+function NotificationHandler() {
+  useEffect(() => {
+    // Handle notification permissions
+    const handleNotificationPermission = async () => {
+      if ('Notification' in window && Capacitor.getPlatform() === 'web') {
+        if (Notification.permission === 'default') {
+          // Request permission on web
+          const permission = await Notification.requestPermission();
+          console.log('Notification permission:', permission);
+        }
+      }
+    };
+
+    handleNotificationPermission();
+  }, []);
+
+  return null;
 }

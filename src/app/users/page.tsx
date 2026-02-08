@@ -589,8 +589,8 @@ export default function UsersPage() {
   };
 
   const handleLoginClick = () => {
-    // Redirect to login page using the seller URL from config
-    window.location.href = `${process.env.NEXT_PUBLIC_SELLER_URL || 'https://dashbord.seller.mazad.click/'}login`;
+    // Redirect to login page
+    window.location.href = 'https://mazadclick.com/auth/login/';
   };
 
   // Show login prompt if user is not authenticated
@@ -791,7 +791,7 @@ export default function UsersPage() {
                     marginTop: '30px',
                     marginBottom: '0'
                   }}>
-                    Don't have an account? <span style={{ color: '#0063b1', fontWeight: '600' }}>Sign up</span> to join our community!
+                    Don't have an account? <a href="https://mazadclick.com/auth/register/" style={{ color: '#0063b1', fontWeight: '600', textDecoration: 'none' }}>Sign up</a> to join our community!
                   </p>
                 </div>
               </div>

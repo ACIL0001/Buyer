@@ -100,6 +100,7 @@ interface Auction {
     endingAt: string;
     winner?: User;
     owner?: User;
+    contactNumber?: string;
 }
 
 interface Participant {
@@ -136,6 +137,8 @@ export default function AuctionDetailPage() {
       console.log("Auction details response:", response);
       
       if (response) {
+        console.log('📞 Auction response:', response);
+        console.log('📞 Contact Number:', response?.contactNumber);
         setAuction(response);
       }
     } catch (error: any) {
@@ -390,58 +393,6 @@ export default function AuctionDetailPage() {
               </Grid>
             </Stack>
           </Card>
-
-          <Card sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>{t('participants')}</Typography>
-            {participantsLoading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight="60px">
-                <CircularProgress size={24} />
-              </Box>
-            ) : participants && participants.length > 0 ? (
-              <Stack spacing={2}>
-                {participants.map((participant, index) => (
-                  <Paper
-                    key={index}
-                    variant="outlined"
-                    sx={{ 
-                      p: 2, 
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease-in-out',
-                      '&:hover': { 
-                        bgcolor: 'action.hover',
-                        transform: 'translateY(-2px)',
-                        boxShadow: 2
-                      }
-                    }}
-                  >
-                      <Link href={`/profile/${participant.user?._id}`} style={{ textDecoration: 'none', color: 'inherit', width: '100%' }}>
-                        <Stack direction="row" alignItems="center" spacing={2}>
-                          <Avatar src={participant.avatar} alt={participant.name}>{participant.name.charAt(0)}</Avatar>
-                          <Box flex={1}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{participant.name}</Typography>
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                                <Typography variant="body2" color="text.secondary">
-                                    Offre: {participant.bidAmount?.toFixed(2) || '0.00'} DA
-                                </Typography>
-                                {participant.user?.phone && (
-                                    <Chip label={participant.user.phone} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
-                                )}
-                            </Stack>
-                          </Box>
-                          <Box textAlign="right">
-                            <Typography variant="caption" color="text.secondary">{formatDate(participant.bidDate)}</Typography>
-                          </Box>
-                        </Stack>
-                      </Link>
-                  </Paper>
-                ))}
-              </Stack>
-            ) : (
-              <Typography variant="body2" color="text.secondary" align="center">
-                {t('noParticipants')}
-              </Typography>
-            )}
-          </Card>
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
@@ -464,6 +415,12 @@ export default function AuctionDetailPage() {
                     : t('modeClassic')}
                 </Label>
               </Box>
+              {auction.contactNumber && (
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Numéro de contact</Typography>
+                  <Typography variant="body1" fontWeight="600">{auction.contactNumber}</Typography>
+                </Box>
+              )}
             </Stack>
           </Card>
 

@@ -1,4 +1,5 @@
 
+import { Suspense } from "react";
 import TenderDetailsClient from "./TenderDetailsClient";
 import app, { getFrontendUrl } from "@/config";
 import { normalizeImageUrlForMetadata } from "@/utils/url";
@@ -147,9 +148,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   }
 }
 
-import { Suspense } from 'react';
 
-// ...
 
 export default async function TenderDetailsPage(props: { params: Promise<{ id: string }> }) {
   // We await params just to satisfy Next.js server component requirements,

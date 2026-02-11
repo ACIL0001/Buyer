@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import AuctionDetailsClient from "./AuctionDetailsClient";
 import app, { getFrontendUrl } from "@/config";
 import { normalizeImageUrlForMetadata } from "@/utils/url";
@@ -171,9 +172,7 @@ export async function generateMetadata(props) {
   }
 }
 
-import { Suspense } from 'react';
 
-// ...
 
 export default async function AuctionDetailsPage(props) {
   const params = await props.params;

@@ -70,20 +70,66 @@ class ErrorBoundary extends React.Component {
 export default function AuctionDetailsClient({ params }) {
   const { t } = useTranslation();
   const { initializeAuth, isReady } = useAuth();
+  const [isMounted, setIsMounted] = useState(false);
   const [show, setShow] = useState(false);
   const [check, setCheck] = useState(false);
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+    initializeAuth();
+  }, []);
+
+  useEffect(() => {
+    if (isMounted) {
+      if (typeof window !== "undefined") {
+        setCheck(true);
+      }
+    }
+  }, [isMounted]);
+
+  useEffect(() => {
     try {
-      initializeAuth();
       // Log params for debugging
       console.log("Auction Details Client Params:", params);
     } catch (error) {
       console.error("Error in AuctionDetailsClient:", error);
       setHasError(true);
     }
-  }, [initializeAuth, params]);
+  }, [params]);
+
+  if (!isMounted) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        fontFamily: 'Inter, sans-serif',
+        color: '#666'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            display: 'inline-block',
+            width: '40px',
+            height: '40px',
+            border: '3px solid #f3f3f3',
+            borderTop: '3px solid #FFD700',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            marginBottom: '15px'
+          }}></div>
+          <p>{t('common.loading') || 'Chargement...'}</p>
+        </div>
+        <style jsx>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   if (hasError) {
     return (

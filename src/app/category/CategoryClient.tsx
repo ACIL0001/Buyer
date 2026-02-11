@@ -1306,7 +1306,7 @@ export default function CategoryClient() {
         {viewMode === 'categories' ? (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
             gap: '32px',
             maxWidth: '1400px',
             margin: '0 auto',
@@ -1341,7 +1341,7 @@ export default function CategoryClient() {
                         filteredAuctions.length > 0 ? (
                             <div style={{
                                 display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
                                 gap: '24px',
                                 maxWidth: '1400px',
                                 margin: '0 auto',
@@ -1365,7 +1365,7 @@ export default function CategoryClient() {
                         filteredTenders.length > 0 ? (
                             <div style={{
                                 display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
                                 gap: '24px',
                                 maxWidth: '1400px',
                                 margin: '0 auto',
@@ -1389,7 +1389,7 @@ export default function CategoryClient() {
                         filteredDirectSales.length > 0 ? (
                             <div style={{
                                 display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
                                 gap: '24px',
                                 maxWidth: '1400px',
                                 margin: '0 auto',

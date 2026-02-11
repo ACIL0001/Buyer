@@ -119,6 +119,11 @@ const ShareButton: React.FC<ShareButtonProps> = ({ type, id, title, description,
   };
 
   const handleShare = (platform: string) => {
+    // Check for localhost and warn about previews
+    if ((detailUrl.includes('localhost') || detailUrl.includes('127.0.0.1')) && (platform === 'facebook' || platform === 'linkedin')) {
+       enqueueSnackbar('Note: Social media previews (image/title) do not work on localhost. Please deploy your app to test the preview card.', { variant: 'warning', autoHideDuration: 6000 });
+    }
+
     const url = shareUrls[platform as keyof typeof shareUrls];
     if (url) {
       window.open(url, '_blank', 'noopener,noreferrer');

@@ -10,6 +10,7 @@ import app from '@/config'; // Import the app config
 import { normalizeImageUrl } from '@/utils/url';
 import { useTranslation } from 'react-i18next';
 import useAuth from '@/hooks/useAuth';
+import ShareButton from '../common/ShareButton';
 
 // Define BID_TYPE enum to match server definition
 const BID_TYPE = {
@@ -1315,6 +1316,29 @@ const MultipurposeAuctionSidebar = () => {
                                                                 crossOrigin="use-credentials"
                                                             />
                                                         </Link>
+
+                                                        {/* Share Button - Positioned in bottom-right of image */}
+                                                        <div style={{
+                                                            position: 'absolute',
+                                                            bottom: '10px',
+                                                            right: '10px',
+                                                            zIndex: 10,
+                                                        }}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <ShareButton
+                                                                type="auction"
+                                                                id={auction._id}
+                                                                title={auction.title}
+                                                                description={auction.description}
+                                                                imageUrl={(() => {
+                                                                    if (auction.thumbs && auction.thumbs.length > 0) {
+                                                                        return normalizeImageUrl(auction.thumbs[0].url);
+                                                                    }
+                                                                    return DEFAULT_AUCTION_IMAGE;
+                                                                })()}
+                                                            />
+                                                        </div>
 
                                                         {/* Auction Type Badge */}
                                                             <div

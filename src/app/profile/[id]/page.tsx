@@ -438,12 +438,14 @@ export default function PublicProfilePage() {
                                         <div className="modern-section-card">
                                             {canViewInfo ? (
                                             <div className="modern-form-grid">
-                                                <div className="modern-form-field">
-                                                    <label>Full Name</label>
-                                                    <div style={{ padding: '0.75rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                                                        {user.firstName} {user.lastName}
+                                                {isOwner && (
+                                                    <div className="modern-form-field">
+                                                        <label>Full Name</label>
+                                                        <div style={{ padding: '0.75rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                                                            {user.firstName} {user.lastName}
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                )}
                                                 {user.email && (
                                                     <div className="modern-form-field">
                                                         <label>Email</label>

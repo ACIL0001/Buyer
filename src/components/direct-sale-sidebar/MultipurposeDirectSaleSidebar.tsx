@@ -9,6 +9,7 @@ import app from '@/config'
 import { useTranslation } from 'react-i18next'
 import useAuth from '@/hooks/useAuth'
 import { normalizeImageUrl } from '@/utils/url'
+import ShareButton from '../common/ShareButton'
 
 // Define SALE_TYPE enum
 const SALE_TYPE = {
@@ -1100,6 +1101,29 @@ const MultipurposeDirectSaleSidebar = () => {
                                 crossOrigin="use-credentials"
                               />
                             </Link>
+
+                            {/* Share Button - Positioned in bottom-right of image */}
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '10px',
+                                right: '10px',
+                                zIndex: 10,
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            >
+                                <ShareButton
+                                    type="directSale"
+                                    id={directSale._id}
+                                    title={directSale.title}
+                                    description={directSale.description}
+                                    imageUrl={(() => {
+                                        if (directSale.thumbs && directSale.thumbs.length > 0) {
+                                            return normalizeImageUrl(directSale.thumbs[0].url);
+                                        }
+                                        return DEFAULT_DIRECT_SALE_IMAGE;
+                                    })()}
+                                />
+                            </div>
 
                             {/* Badge */}
                             <div

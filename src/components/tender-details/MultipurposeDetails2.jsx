@@ -21,6 +21,7 @@ import { ReviewAPI } from "@/app/api/review"; // Import Review API
 import commentsApi from "@/app/api/comments";
 import { useTranslation } from 'react-i18next';
 import { motion } from "framer-motion";
+import ShareButton from "@/components/common/ShareButton";
 
 // Helper function to get the correct tender image URL
 const getTenderImageUrl = (tender) => {
@@ -1732,6 +1733,22 @@ const MultipurposeDetails2 = () => {
                 {/* Left Column - Image Section */}
                 <div className="col-xl-7 image-column-top-spacing" style={{ paddingTop: '0' }}>
                   <div className="main-image-container" style={{ position: 'relative', marginTop: '0' }}>
+                    <div style={{
+                        position: 'absolute',
+                        top: '10px',
+                        left: '10px',
+                        zIndex: 10,
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    >
+                      <ShareButton
+                        type="tender"
+                        id={safeTenderData._id || tenderId}
+                        title={safeTitle}
+                        description={safeDescription}
+                        imageUrl={safeAttachments.length > 0 ? (safeAttachments[0].url.startsWith('http') ? safeAttachments[0].url : `${app.baseURL}${safeAttachments[0].url.startsWith('/') ? safeAttachments[0].url.substring(1) : safeAttachments[0].url}`) : DEFAULT_TENDER_IMAGE}
+                      />
+                    </div>
                     {showVideo && safeVideos.length > 0 ? (
                       <video
                         src={`${app.route}${safeVideos[selectedVideoIndex]?.url}`}

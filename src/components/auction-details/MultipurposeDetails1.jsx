@@ -21,6 +21,7 @@ import { ReviewAPI } from "@/app/api/review"; // Import Review API
 import commentsApi from "@/app/api/comments";
 import { useTranslation } from 'react-i18next';
 import { motion } from "framer-motion";
+import ShareButton from "@/components/common/ShareButton";
 
 // Helper function to calculate time remaining and format with leading zeros
 function getTimeRemaining(endDate) {
@@ -1233,6 +1234,22 @@ const MultipurposeDetails1 = () => {
                 {/* Left Column - Image Section */}
                 <div className="col-xl-7 image-column-top-spacing" style={{ paddingTop: '0' }}>
                   <div className="main-image-container" style={{ position: 'relative', marginTop: '0' }}>
+                    <div style={{
+                        position: 'absolute',
+                        top: '10px',
+                        left: '10px',
+                        zIndex: 10,
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    >
+                      <ShareButton
+                        type="auction"
+                        id={safeAuctionData._id || auctionId}
+                        title={safeTitle}
+                        description={safeDescription}
+                        imageUrl={safeThumbs.length > 0 ? (safeThumbs[0].url.startsWith('http') ? safeThumbs[0].url : `${app.baseURL}${safeThumbs[0].url.startsWith('/') ? safeThumbs[0].url.substring(1) : safeThumbs[0].url}`) : DEFAULT_AUCTION_IMAGE}
+                      />
+                    </div>
                     {showVideo && safeVideos.length > 0 ? (
                       <video
                         src={(() => {

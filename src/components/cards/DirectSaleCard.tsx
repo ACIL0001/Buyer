@@ -6,6 +6,7 @@ import { useState, useCallback } from 'react';
 import app from '@/config';
 import { useRouter } from 'next/navigation';
 import useAuth from '@/hooks/useAuth';
+import ShareButton from '@/components/common/ShareButton';
 
 // Default image constants
 const DEFAULT_DIRECT_SALE_IMAGE = "/assets/images/logo-white.png";
@@ -189,6 +190,24 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
               {t('liveDirectSales.yourSale')}
             </div>
           )}
+
+        {/* Share Button - Bottom Right */}
+        <div style={{
+          position: 'absolute',
+          bottom: '10px',
+          right: '10px',
+          zIndex: 5
+        }}
+        onClick={(e) => e.stopPropagation()} // Prevent card click
+        >
+          <ShareButton 
+            type="directSale" 
+            id={sale._id} 
+            title={sale.title} 
+            imageUrl={getDirectSaleImageUrl(sale)}
+            description={sale.description}
+          />
+        </div>
       </div>
 
       {/* Direct Sale Details */}

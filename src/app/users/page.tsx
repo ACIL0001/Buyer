@@ -302,37 +302,8 @@ export default function UsersPage() {
         };
       case USER_TYPE.RESELLER:
         return {
-          badge: (
-            <span className="badge d-flex align-items-center animated-badge" style={{
-              fontSize: '11px',
-              padding: '6px 12px',
-              background: 'linear-gradient(135deg, #F59E0B 0%, #F97316 100%)',
-              border: 'none',
-              color: 'white',
-              fontWeight: '600',
-              borderRadius: '20px'
-            }}>
-              <i className="bi bi-shop me-1" style={{ fontSize: '10px' }}></i>
-              RESELLER
-            </span>
-          ),
-          avatarBadges: (
-            <div className="position-absolute avatar-badge-creative" style={{ top: '-2px', right: '-2px' }}>
-              <div style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #F59E0B 0%, #F97316 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '2px solid white',
-                boxShadow: '0 2px 6px rgba(245, 158, 11, 0.3)'
-              }}>
-                <i className="bi bi-shop text-white" style={{ fontSize: '10px' }}></i>
-              </div>
-            </div>
-          ),
+          badge: null,
+          avatarBadges: null,
           color: '#F59E0B'
         };
       case USER_TYPE.CLIENT:
@@ -1109,15 +1080,6 @@ export default function UsersPage() {
                 >
                   <i className="bi bi-award me-2"></i>
                   Professionals ({professionalCount})
-                </button>
-                <button
-                  onClick={() => setActiveUserType(USER_TYPE.RESELLER)}
-                  style={getFilterButtonStyle(activeUserType === USER_TYPE.RESELLER, USER_TYPE.RESELLER)}
-                  className="btn"
-                  disabled={loading}
-                >
-                  <i className="bi bi-briefcase me-2"></i>
-                  Resellers ({resellerCount})
                 </button>
                 <button
                   onClick={() => setActiveUserType(USER_TYPE.CLIENT)}

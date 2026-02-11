@@ -17,6 +17,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
+import ShareButton from '@/components/common/ShareButton';
 
 // Define BID_TYPE enum to match server definition
 const BID_TYPE = {
@@ -1670,6 +1671,32 @@ const MultipurposeTenderSidebar = () => {
                                                             <span>{timer.hours || "00"}h</span>:
                                                             <span>{timer.minutes || "00"}m</span>:
                                                             <span>{timer.seconds || "00"}s</span>
+                                                        </div>
+
+                                                        {/* Share Button - Bottom Right */}
+                                                        <div style={{
+                                                            position: 'absolute',
+                                                            bottom: '8px',
+                                                            right: '8px',
+                                                            zIndex: 5
+                                                        }}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <ShareButton 
+                                                                type="tender" 
+                                                                id={tender._id} 
+                                                                title={tender.title} 
+                                                                description={tender.description}
+                                                                imageUrl={(() => {
+                                                                    let imageUrl = null;
+                                                                    if (tender.attachments && tender.attachments.length > 0 && tender.attachments[0].url) imageUrl = tender.attachments[0].url;
+                                                                    else if (tender.attachments && tender.attachments.length > 0 && tender.attachments[0].path) imageUrl = tender.attachments[0].path;
+                                                                    else if (tender.thumbs && tender.thumbs.length > 0 && tender.thumbs[0].url) imageUrl = tender.thumbs[0].url;
+                                                                    else if (tender.images && tender.images.length > 0 && tender.images[0].url) imageUrl = tender.images[0].url;
+                                                                    else if (tender.image) imageUrl = tender.image;
+                                                                    return imageUrl ? normalizeImageUrl(imageUrl) : DEFAULT_TENDER_IMAGE;
+                                                                })()}
+                                                            />
                                                         </div>
                                                     </div>
 

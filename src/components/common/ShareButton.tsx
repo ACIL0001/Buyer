@@ -1,17 +1,5 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-  FacebookShareButton, 
-  TwitterShareButton, 
-  LinkedinShareButton, 
-  WhatsappShareButton, 
-  EmailShareButton,
-  FacebookIcon,
-  TwitterIcon,
-  LinkedinIcon,
-  WhatsappIcon,
-  EmailIcon
-} from 'react-share';
 import { useTranslation } from 'react-i18next';
 import { getFrontendUrl } from '@/config';
 import { useSnackbar } from 'notistack';
@@ -22,7 +10,7 @@ interface ShareButtonProps {
   title?: string;
   description?: string;
   imageUrl?: string;
-  className?: string; // Allow custom styling
+  className?: string;
 }
 
 const ShareButton: React.FC<ShareButtonProps> = ({ 
@@ -35,7 +23,6 @@ const ShareButton: React.FC<ShareButtonProps> = ({
 }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { enqueueSnackbar } = useSnackbar();
 
@@ -76,125 +63,73 @@ const ShareButton: React.FC<ShareButtonProps> = ({
   const detailUrl = getDetailUrl();
   const encodedUrl = encodeURIComponent(detailUrl);
   const encodedTitle = encodeURIComponent(title);
-  
-  // Platform share URLs for manual opening (fallback)
-  const shareUrls = {
-    whatsapp: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`,
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
-    twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
-    messenger: `https://www.facebook.com/dialog/send?link=${encodedUrl}&app_id=966242223397117&redirect_uri=${encodedUrl}`,
-    telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`,
-    viber: `viber://forward?text=${encodedTitle}%20${encodedUrl}`,
-  };
+  const encodedText = encodeURIComponent(description || title);
 
-
-  const handleShareClick = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent triggering parent click events (like card navigation)
-    
-     // Check for native Web Share API support
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: title,
-          text: description,
-          url: detailUrl,
-        });
-        console.log('Shared successfully via Web Share API');
-        return; // Exit if successful
-      } catch (error) {
-         if ((error as any).name !== 'AbortError') {
-             console.error('Error sharing via Web Share API:', error);
-         }
-         // If user cancelled or other error, fallback to dropdown could be an option, 
-         // but usually if they cancel native share, they don't want to share.
-         // Let's just return. If it failed due to not being supported (unlikely if we check navigator.share), 
-         // then we might want fallback, but we checked it.
-         return; 
-      }
-    }
-    
-    // Fallback to custom dropdown
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsOpen(!isOpen);
   };
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(detailUrl).then(() => {
-        enqueueSnackbar(t('common.copied') || 'Lien copié!', { variant: 'success' });
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+  const handlePlatformShare = (platform: string) => {
+    let shareUrl = '';
+    
+    switch (platform) {
+      case 'whatsapp':
+        shareUrl = `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`;
+        break;
+      case 'linkedin':
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+        break;
+      case 'tiktok':
+        // TikTok doesn't have direct share URL, copy link and open TikTok
+        navigator.clipboard.writeText(detailUrl).then(() => {
+          window.open('https://www.tiktok.com/upload', '_blank', 'noopener,noreferrer');
+          enqueueSnackbar('Lien copié! Ouvrez TikTok pour partager', { variant: 'info', autoHideDuration: 3000 });
+        });
         setIsOpen(false);
-    }).catch(() => {
-        enqueueSnackbar('Erreur lors de la copie du lien', { variant: 'error' });
-    });
-  };
-  
-    const handleInstagramShare = () => {
-    // Copy link first
-    navigator.clipboard.writeText(detailUrl).then(() => {
-      // Open Instagram website
-      window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
-      enqueueSnackbar('Instagram ouvert! Lien copié - collez-le dans votre post', { variant: 'info', autoHideDuration: 4000 });
-    }).catch(() => {
-      // If copy fails, still open Instagram
-      window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
-      enqueueSnackbar('Instagram ouvert!', { variant: 'info' });
-    });
-    
-    setIsOpen(false);
-  };
-
-  const handleTikTokShare = () => {
-    // Copy link first
-    navigator.clipboard.writeText(detailUrl).then(() => {
-      // Open TikTok website
-      window.open('https://www.tiktok.com/upload', '_blank', 'noopener,noreferrer');
-      enqueueSnackbar('TikTok ouvert! Lien copié - collez-le dans votre vidéo', { variant: 'info', autoHideDuration: 4000 });
-    }).catch(() => {
-      // If copy fails, still open TikTok
-      window.open('https://www.tiktok.com/upload', '_blank', 'noopener,noreferrer');
-      enqueueSnackbar('TikTok ouvert!', { variant: 'info' });
-    });
-    
-    setIsOpen(false);
-  };
-
-  const handleViberShare = () => {
-     // Copy link and open Viber web
-    navigator.clipboard.writeText(detailUrl).then(() => {
-      // Open Viber web
-      window.open('https://www.viber.com/', '_blank', 'noopener,noreferrer');
-      enqueueSnackbar('Lien copié! Ouvrez Viber pour partager', { variant: 'info', autoHideDuration: 3000 });
-    }).catch(() => {
-      window.open('https://www.viber.com/', '_blank', 'noopener,noreferrer');
-      enqueueSnackbar('Viber ouvert!', { variant: 'info' });
-    });
-    
-    setIsOpen(false);
-  };
-
-  const handleShare = (platform: string) => {
-    // Check for localhost and warn about previews
-    if ((detailUrl.includes('localhost') || detailUrl.includes('127.0.0.1')) && (platform === 'facebook' || platform === 'linkedin')) {
-       enqueueSnackbar('Note: Social media previews (image/title) do not work on localhost.', { variant: 'warning', autoHideDuration: 3000 });
+        return;
+      case 'instagram':
+        // Instagram doesn't have direct share URL, copy link and open Instagram
+        navigator.clipboard.writeText(detailUrl).then(() => {
+          window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+          enqueueSnackbar('Lien copié! Ouvrez Instagram pour partager', { variant: 'info', autoHideDuration: 3000 });
+        });
+        setIsOpen(false);
+        return;
+      case 'telegram':
+        shareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`;
+        break;
+      case 'viber':
+        shareUrl = `viber://forward?text=${encodedTitle}%20${encodedUrl}`;
+        break;
+      case 'messenger':
+        shareUrl = `https://www.facebook.com/dialog/send?link=${encodedUrl}&app_id=966242223397117&redirect_uri=${encodedUrl}`;
+        break;
     }
 
-    const url = shareUrls[platform as keyof typeof shareUrls];
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
+    if (shareUrl) {
+      window.open(shareUrl, '_blank', 'noopener,noreferrer');
       setIsOpen(false);
     }
   };
 
+  const platforms = [
+    { name: 'WhatsApp', key: 'whatsapp', icon: '📱', color: '#25D366' },
+    { name: 'LinkedIn', key: 'linkedin', icon: '💼', color: '#0A66C2' },
+    { name: 'TikTok', key: 'tiktok', icon: '🎵', color: '#000000' },
+    { name: 'Instagram', key: 'instagram', icon: '📷', color: '#E4405F' },
+    { name: 'Telegram', key: 'telegram', icon: '✈️', color: '#0088cc' },
+    { name: 'Viber', key: 'viber', icon: '📞', color: '#7360f2' },
+    { name: 'Messenger', key: 'messenger', icon: '💬', color: '#00B2FF' },
+  ];
+
   return (
-    <div className={`share-button-container ${className || ''}`} style={{ position: 'relative', display: 'inline-block' }} ref={dropdownRef}>
-      <button 
-        className="share-btn"
+    <div style={{ position: 'relative', display: 'inline-block' }} ref={dropdownRef}>
+      <button
         onClick={handleShareClick}
-        title={t('common.share') || "Partager"}
         style={{
-          background: 'rgba(255, 255, 255, 0.9)',
-          border: '1px solid #e0e0e0',
+          background: 'rgba(255, 255, 255, 0.95)',
+          border: 'none',
           borderRadius: '50%',
           width: '40px',
           height: '40px',
@@ -202,108 +137,92 @@ const ShareButton: React.FC<ShareButtonProps> = ({
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          transition: 'all 0.2s',
-          boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-          color: '#555',
-          fontSize: '18px'
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+          transition: 'all 0.3s ease',
+          color: '#333',
+          fontSize: '18px',
         }}
+        onMouseOver={(e) => {
+          e.currentTarget.style.transform = 'scale(1.1)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.25)';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+        }}
+        title="Partager"
       >
-        <i className="bi bi-share-fill"></i>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+        </svg>
       </button>
 
       {isOpen && (
         <div
           style={{
-            position: 'absolute', // Changed from fixed to absolute for better context positioning if needed, or keep fixed for mobile centered
-            // For now, keeping the design from previous version which seemed attempting to be a bottom sheet or centered modal on mobile, 
-            // but let's make it a dropdown relative to button for desktop consistency or fallback.
-            // Actually, the previous code had a specific mobile-like design. Let's stick to a dropdown for simplicity and robustness.
-            top: '110%',
+            position: 'absolute',
+            top: '50px',
             left: '50%',
             transform: 'translateX(-50%)',
             background: 'white',
-            border: '1px solid #e0e0e0',
-            borderRadius: '12px',
-            boxShadow: '0 5px 20px rgba(0,0,0,0.15)',
-            padding: '15px',
-            zIndex: 1000,
-            width: '280px',
-            animation: 'fadeIn 0.2s ease-out'
+            borderRadius: '16px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+            padding: '12px',
+            zIndex: 9999,
+            display: 'flex',
+            gap: '8px',
+            alignItems: 'center',
+            minWidth: '300px',
+            justifyContent: 'center',
+            animation: 'fadeIn 0.2s ease-out',
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div style={{ paddingBottom: '10px',marginBottom: '10px', borderBottom: '1px solid #f0f0f0', fontWeight: 600, fontSize: '14px' }}>
-            {t('common.shareVia') || "Partager via"}
-          </div>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '15px' }}>
-            <WhatsappShareButton url={detailUrl} title={title} separator=" - ">
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                <WhatsappIcon size={40} round />
-                <span style={{ fontSize: '11px', color: '#555' }}>WhatsApp</span>
-              </div>
-            </WhatsappShareButton>
-
-            <FacebookShareButton url={detailUrl} hashtag="#MazadClick">
-               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                <FacebookIcon size={40} round />
-                <span style={{ fontSize: '11px', color: '#555' }}>Facebook</span>
-              </div>
-            </FacebookShareButton>
-            
-            <TwitterShareButton url={detailUrl} title={title}>
-               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                <TwitterIcon size={40} round />
-                <span style={{ fontSize: '11px', color: '#555' }}>X</span>
-              </div>
-            </TwitterShareButton>
-
-            <LinkedinShareButton url={detailUrl} title={title} summary={description} source="MazadClick">
-               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                <LinkedinIcon size={40} round />
-                <span style={{ fontSize: '11px', color: '#555' }}>LinkedIn</span>
-              </div>
-            </LinkedinShareButton>
-
-             <EmailShareButton url={detailUrl} subject={title} body={description}>
-               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                <EmailIcon size={40} round />
-                <span style={{ fontSize: '11px', color: '#555' }}>Email</span>
-              </div>
-            </EmailShareButton>
-            
-             {/* Viber Manual */}
-             <button onClick={handleViberShare} style={{background: 'none', border:'none', padding: 0, cursor: 'pointer'}}>
-                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                     <div style={{width: 40, height: 40, borderRadius: '50%', background: '#7360f2', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white'}}>
-                        <i className="bi bi-telephone-fill"></i>
-                     </div>
-                    <span style={{ fontSize: '11px', color: '#555' }}>Viber</span>
-                 </div>
-             </button>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', background: '#f5f5f5', padding: '8px', borderRadius: '6px' }}>
-            <input 
-              type="text" 
-              readOnly 
-              value={detailUrl} 
-              style={{ flex: 1, background: 'transparent', border: 'none', fontSize: '12px', color: '#666', outline: 'none', textOverflow: 'ellipsis' }}
-            />
-            <button 
-              onClick={handleCopyLink}
-              style={{ background: 'none', border: 'none', color: copied ? 'green' : '#0063b1', fontWeight: 600, fontSize: '12px', cursor: 'pointer', marginLeft: '5px' }}
+          {platforms.map((platform) => (
+            <button
+              key={platform.key}
+              onClick={() => handlePlatformShare(platform.key)}
+              style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                border: 'none',
+                background: platform.color,
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '20px',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'scale(1.15)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+              }}
+              title={platform.name}
             >
-              {copied ? (t('common.copied') || "Copié!") : (t('common.copy') || "Copier")}
+              {platform.icon}
             </button>
-          </div>
+          ))}
         </div>
       )}
 
       <style jsx>{`
         @keyframes fadeIn {
-          from { opacity: 0; transform: translate(-50%, -10px); }
-          to { opacity: 1; transform: translate(-50%, 0); }
+          from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-5px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+          }
         }
       `}</style>
     </div>

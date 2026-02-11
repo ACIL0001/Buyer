@@ -199,7 +199,19 @@
   },
   "profile": {
     "title": "Profile",
-    "personalInfo": "Personal Information",
+    "personalInfo": {
+      "title": "Personal Information",
+      "subtitle": "Manage your personal information and profile details",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "phone": "Phone",
+      "jobTitle": "Job Title",
+      "secteur": "Activity Sector",
+      "companyName": "Company Name",
+      "isProfileVisible": "Personal information visible",
+      "isProfileVisibleDesc": "Make your personal information visible to other users"
+    },
     "accountSettings": "Account Settings",
     "security": "Security",
     "notifications": "Notifications",

@@ -194,6 +194,8 @@
   },
   "profile": {
     "title": "الملف الشخصي",
+    "lastName": "اللقب",
+    "wilaya": "الولاية",
     "personalInfo": {
       "title": "المعلومات الشخصية",
       "subtitle": "إدارة معلوماتك الشخصية وتفاصيل ملفك الشخصي",
@@ -212,7 +214,10 @@
       "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
       "updateSuccess": "تم تحديث الملف الشخصي بنجاح",
       "sessionExpired": "انتهت الجلسة",
-      "updateFailed": "فشل تحديث الملف الشخصي"
+      "updateFailed": "فشل تحديث الملف الشخصي",
+      "isProfileVisible": "معلومات شخصية مرئية",
+      "isProfileVisibleDesc": "اجعل معلوماتك الشخصية مرئية للمستخدمين الآخرين",
+      "privateProfile": "اختار هذا المستخدم إبقاء معلوماته الشخصية خاصة."
     },
     "security": {
       "title": "الأمان",

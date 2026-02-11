@@ -1,0 +1,64 @@
+/* Document Section Tabs - Specific Overrides */
+.modern-upgrade-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.modern-upgrade-btn {
+    flex: 1;
+    padding: 1.25rem;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-upgrade-btn:hover:not(:disabled) {
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.modern-upgrade-btn i {
+    font-size: 1.25rem;
+}
+
+.modern-upgrade-btn.verified.active {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #2563eb;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.modern-upgrade-btn.certified.active {
+    background: #fdf4ff;
+    /* Slightly warmer purple/pink/rose context might be better, but sticking to purple */
+    background: #f5f3ff;
+    border-color: #ddd6fe;
+    color: #7c3aed;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+}
+
+.modern-upgrade-btn:disabled,
+.modern-upgrade-btn[disabled],
+.modern-upgrade-btn.disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background: #f8fafc;
+    color: #94a3b8;
+    border-color: #e2e8f0;
+    box-shadow: none;
+    transform: none;
+}

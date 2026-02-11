@@ -125,6 +125,8 @@ export default function SettingsPage() {
         retry: 1
     });
 
+    const isVerified = ['verified', 'certified', 'done'].includes(identity?.status?.toLowerCase());
+
     const isLoadingDocuments = isLoadingIdentity;
 
      // Document lists
@@ -136,7 +138,6 @@ export default function SettingsPage() {
 
     const optionalDocuments = [
         { key: 'nis', label: t('profile.documents.nis') || 'NIS' },
-        { key: 'art', label: t('profile.documents.art') || 'Article' },
         { key: 'c20', label: t('profile.documents.c20') || 'C20' },
         { key: 'misesAJourCnas', label: t('profile.documents.misesAJourCnas') || 'Mises à jour CNAS' },
         { key: 'last3YearsBalanceSheet', label: t('profile.documents.balanceSheet') || 'Bilans des 3 dernières années' },
@@ -711,7 +712,7 @@ export default function SettingsPage() {
                                                                     transition: 'all 0.2s ease'
                                                                 }}
                                                             >
-                                                                <option value="">Sélectionner un secteur</option>
+                                                                <option value="">{t("profile.personalInfo.selectSector") || "Sélectionner un secteur"}</option>
                                                                 {categories.map((cat) => (
                                                                     <option key={cat._id} value={cat.name}>
                                                                         {cat.name}
@@ -962,52 +963,32 @@ export default function SettingsPage() {
                                                 </div>
                                             ) : (
                                                 <div style={{ padding: '20px' }}>
-                                                    <div className="modern-upgrade-buttons" style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
+                                                    <div className="modern-upgrade-buttons">
                                                         <motion.button
-                                                            className={`modern-upgrade-btn ${activeUpgradeSection === 'verified' ? 'active' : ''}`}
+                                                            className={`modern-upgrade-btn verified ${activeUpgradeSection === 'verified' ? 'active' : ''}`}
                                                             onClick={() => setActiveUpgradeSection(activeUpgradeSection === 'verified' ? null : 'verified')}
                                                             whileHover={{ scale: 1.02 }}
                                                             whileTap={{ scale: 0.98 }}
-                                                            style={{
-                                                                flex: 1,
-                                                                padding: '15px',
-                                                                borderRadius: '12px',
-                                                                border: '1px solid #e2e8f0',
-                                                                background: activeUpgradeSection === 'verified' ? '#eff6ff' : 'white',
-                                                                color: activeUpgradeSection === 'verified' ? '#2563eb' : '#64748b',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                gap: '10px',
-                                                                cursor: 'pointer',
-                                                                fontWeight: 600
-                                                            }}
                                                         >
                                                             <i className="bi bi-shield-check"></i>
                                                             {t('dashboard.profile.documents.switchToVerified') || "Vérification (Obligatoire)"}
                                                         </motion.button>
                                                         <motion.button
-                                                            className={`modern-upgrade-btn ${activeUpgradeSection === 'certified' ? 'active' : ''}`}
-                                                            onClick={() => setActiveUpgradeSection(activeUpgradeSection === 'certified' ? null : 'certified')}
-                                                            whileHover={{ scale: 1.02 }}
-                                                            whileTap={{ scale: 0.98 }}
-                                                            style={{
-                                                                flex: 1,
-                                                                padding: '15px',
-                                                                borderRadius: '12px',
-                                                                border: '1px solid #e2e8f0',
-                                                                background: activeUpgradeSection === 'certified' ? '#f5f3ff' : 'white',
-                                                                color: activeUpgradeSection === 'certified' ? '#7c3aed' : '#64748b',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                gap: '10px',
-                                                                cursor: 'pointer',
-                                                                fontWeight: 600
+                                                            className={`modern-upgrade-btn certified ${activeUpgradeSection === 'certified' ? 'active' : ''}`}
+                                                            onClick={() => {
+                                                                if (!isVerified) {
+                                                                    enqueueSnackbar("Vous devez être vérifié pour accéder à la certification", { variant: 'warning' });
+                                                                    return;
+                                                                }
+                                                                setActiveUpgradeSection(activeUpgradeSection === 'certified' ? null : 'certified')
                                                             }}
+                                                            disabled={!isVerified}
+                                                            whileHover={isVerified ? { scale: 1.02 } : {}}
+                                                            whileTap={isVerified ? { scale: 0.98 } : {}}
                                                         >
                                                             <i className="bi bi-award"></i>
                                                             {t('dashboard.profile.documents.switchToCertified') || "Certification (Optionnel)"}
+                                                            {!isVerified && <i className="bi bi-lock-fill"></i>}
                                                         </motion.button>
                                                     </div>
 

@@ -224,6 +224,7 @@
       "phone": "Téléphone",
       "jobTitle": "Fonction",
       "secteur": "Secteur d'activité",
+      "selectSector": "Sélectionner un secteur",
       "companyName": "Nom de l'entreprise",
       "edit": "Modifier",
       "save": "Enregistrer",
@@ -234,8 +235,8 @@
       "updateSuccess": "Profil mis à jour avec succès",
       "sessionExpired": "Session expirée",
       "updateFailed": "Échec de la mise à jour du profil",
-      "isProfileVisible": "Profil visible",
-      "isProfileVisibleDesc": "Rendre votre profil visible aux autres utilisateurs",
+      "isProfileVisible": "Informations personnelles visibles",
+      "isProfileVisibleDesc": "Rendre votre information personnels visible aux autres utilisateurs",
       "privateProfile": "Cet utilisateur a choisi de garder ses informations personnelles privées."
     },
     "security": {

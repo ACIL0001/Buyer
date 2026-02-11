@@ -1,39 +1,34 @@
-
-import { Suspense } from "react";
 import DirectSaleDetailsClient from "./DirectSaleDetailsClient";
-import app, { getFrontendUrl } from "@/config";
-import { normalizeImageUrlForMetadata } from "@/utils/url";
+import app from "@/config";
+import { normalizeImageUrl } from "@/utils/url";
 
-export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<any> {
+export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
   
-  console.log('🔍 [DirectSale] Generating metadata for ID:', id);
-  
   if (!id) {
-    console.warn('⚠️ [DirectSale] No ID provided');
-    return { title: "Vente Directe - MazadClick" };
+    return { title: "Direct Sale Details - MazadClick" };
   }
 
   try {
-    // Import API dynamically to ensure server-side execution context is respected
-    const { DirectSaleAPI } = await import('@/app/api/direct-sale');
+    const res = await fetch(`${app.baseURL}direct-sales/${id}`, {
+      headers: { 
+        'x-access-key': app.apiKey,
+        'Content-Type': 'application/json'
+      },
+      next: { revalidate: 0 }
+    });
     
-    console.log('📡 [DirectSale] Fetching details...');
-    const directSaleData = await DirectSaleAPI.getDirectSaleById(id);
-    
-    // Check if data is wrapped or direct
-    const directSale = (directSaleData as any).data || directSaleData;
-    
-    if (!directSale) {
-        throw new Error('Direct Sale not found');
+    if (!res.ok) {
+       return { title: "Direct Sale Details - MazadClick" };
     }
 
-    console.log('✅ [DirectSale] Data fetched:', directSale?.title || directSale?.name);
+    const json = await res.json();
+    const directSale = json.data || json; 
 
     // Title and description
-    const title = directSale.title || directSale.name || "Vente Directe";
-    const description = directSale.description || "Découvrez cette opportunité sur MazadClick";
+    const title = directSale.title || directSale.name || "Direct Sale Details";
+    const description = directSale.description || "View this product on MazadClick";
 
     // Image logic
     let imageUrl = "/assets/images/logo-dark.png";
@@ -41,35 +36,31 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
         imageUrl = directSale.thumbs[0].url;
     }
     
-    // Normalize image URL for Open Graph metadata
-    const fullImageUrl = normalizeImageUrlForMetadata(imageUrl, getFrontendUrl());
-    console.log('🖼️ [DirectSale] Image URL:', fullImageUrl);
+    // Normalize image URL
+    const fullImageUrl = normalizeImageUrl(imageUrl);
 
     // Extract additional metadata
     const price = directSale.price || 0;
     const currency = directSale.currency || 'DZD';
     const stock = directSale.stock || directSale.quantity || 0;
     const category = directSale.category?.name || directSale.categoryName || '';
+    const location = directSale.location || '';
     const seller = directSale.seller?.name || directSale.sellerName || '';
-    const location = directSale.location || directSale.wilaya || '';
     const condition = directSale.condition || 'new';
     
-    // Create structured description
-    const enhancedDescription = `${description}${price ? ` | Prix: ${price} ${currency}` : ''}${stock ? ` | Quantité: ${stock}` : ''}`;
-
-    // Get production frontend URL for sharing
-    const productionFrontendUrl = getFrontendUrl().replace(/\/$/, '');
-    const pageUrl = `${productionFrontendUrl}/direct-sale/${id}`;
+    // Determine availability
+    const availability = stock > 0 ? 'in stock' : 'out of stock';
     
-    console.log('🌐 [DirectSale] Production URL:', pageUrl);
+    // Create structured description
+    const enhancedDescription = `${description}${price ? ` | Prix: ${price} ${currency}` : ''}${stock ? ` | ${stock} en stock` : ''}${category ? ` | Catégorie: ${category}` : ''}`;
 
-    const metadata = {
+    return {
       title: `${title} - Vente Directe MazadClick`,
       description: enhancedDescription,
       openGraph: {
         title: title,
         description: enhancedDescription,
-        url: pageUrl,
+        url: `https://mazadclick.com/direct-sale/${id}`,
         images: fullImageUrl ? [
           {
             url: fullImageUrl,
@@ -86,11 +77,14 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
           'product:price:amount': price.toString(),
           'product:price:currency': currency,
         }),
-        ...(condition && {
-          'product:condition': condition,
+        ...(availability && {
+          'product:availability': availability,
         }),
         ...(category && {
           'product:category': category,
+        }),
+        ...(condition && {
+          'product:condition': condition,
         }),
       },
       twitter: {
@@ -122,8 +116,8 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
             '@type': 'Offer',
             price: price,
             priceCurrency: currency,
-            availability: stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
-            url: pageUrl,
+            availability: stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            url: `https://mazadclick.com/direct-sale/${id}`,
             itemCondition: condition === 'new' ? 'https://schema.org/NewCondition' : 'https://schema.org/UsedCondition',
           },
           brand: {
@@ -141,56 +135,12 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
         }),
       },
     };
-    
-    console.log('✅ [DirectSale] Metadata generated successfully');
-    return metadata;
-
   } catch (error) {
-    console.error("❌ [DirectSale] Metadata error:", error);
-    const fallbackTitle = "Vente Directe - MazadClick";
-    const fallbackDesc = "Découvrez cette opportunité sur MazadClick";
-
-    return {
-      title: fallbackTitle,
-      description: fallbackDesc,
-      openGraph: {
-        title: fallbackTitle,
-        description: fallbackDesc,
-        url: `${getFrontendUrl().replace(/\/$/, '')}/direct-sale/${id || ''}`,
-        type: 'website',
-        siteName: 'MazadClick',
-      },
-    };
+    console.error("Direct Sale metadata error:", error);
+    return { title: "Direct Sale Details - MazadClick" };
   }
 }
 
-
-
-export default async function DirectSaleDetailsPage(props: { params: Promise<{ id: string }> }) {
-  // We await params just to satisfy Next.js server component requirements, 
-  // but the client component uses useParams() hook
-  await props.params;
-
-  return (
-    <Suspense fallback={
-       <div className="auction-details-section mb-110" style={{ 
-         marginTop: 0, 
-         paddingTop: 'clamp(120px, 15vw, 140px)',
-         minHeight: 'calc(100vh - 120px)'
-       }}>
-         <div className="container-fluid">
-           <div className="row">
-             <div className="col-12 text-center">
-               <div className="spinner-border text-primary" role="status">
-                 <span className="visually-hidden">Loading...</span>
-               </div>
-               <h3 className="mt-3">Chargement...</h3>
-             </div>
-           </div>
-         </div>
-       </div>
-    }>
-      <DirectSaleDetailsClient />
-    </Suspense>
-  );
+export default function DirectSaleDetailsPage() {
+  return <DirectSaleDetailsClient />;
 }

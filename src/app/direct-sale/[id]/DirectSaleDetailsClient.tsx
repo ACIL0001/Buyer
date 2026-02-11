@@ -957,22 +957,10 @@ function DirectSaleDetailContent() {
 
 export default function DirectSaleDetailsClient() {
   const { initializeAuth } = useAuth();
-  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
     initializeAuth();
   }, [initializeAuth]);
-
-  if (!isMounted) {
-    return (
-      <div className="auction-details-section mb-110" style={{ marginTop: 0, paddingTop: '120px', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>

@@ -21,13 +21,8 @@ export default function Head() {
         name="keywords"
         content="MazadClick, enchères, soumissions, B2B, entreprise, Algérie, marketplace"
       />
-      <meta property="og:title" content="MazadClick" />
-      <meta property="og:description" content={SITE_DESCRIPTION} />
-      <meta property="og:site_name" content="MazadClick" />
-      <meta property="twitter:title" content="MazadClick" />
-      <meta property="twitter:description" content={SITE_DESCRIPTION} />
+      {/* Note: Open Graph and Twitter Card tags are generated dynamically by individual pages */}
     </>
   );
 }
-
 

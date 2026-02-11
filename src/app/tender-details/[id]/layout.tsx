@@ -1,10 +1,4 @@
-import type { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: 'Détails de l\'appel d\'offres - MazadClick',
-  description: 'Consultez les détails de l\'appel d\'offres et soumettez votre offre',
-};
-
+// Layout for tender details - metadata is generated dynamically by the page
 export default function TenderDetailsLayout({
   children,
 }: {

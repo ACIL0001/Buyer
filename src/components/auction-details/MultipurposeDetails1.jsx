@@ -52,6 +52,31 @@ function getTimeRemaining(endDate) {
   };
 }
 
+// Helper function to get the correct auction image URL
+const getAuctionImageUrl = (auction) => {
+  const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-dark.png";
+  
+  if (auction?.thumbs && auction.thumbs.length > 0 && auction.thumbs[0].url) {
+    const imageUrl = auction.thumbs[0].url;
+    
+    // Handle different URL formats
+    if (imageUrl.startsWith('http')) {
+      return imageUrl; // Already a full URL
+    } else if (imageUrl.startsWith('/')) {
+      if (imageUrl.startsWith('/static/')) {
+        return `${app.baseURL}${imageUrl.substring(1)}`;
+      } else {
+        return `${app.baseURL}${imageUrl.substring(1)}`;
+      }
+    } else {
+      return `${app.baseURL}${imageUrl}`;
+    }
+  }
+  
+  return DEFAULT_AUCTION_IMAGE;
+};
+
+
 const MultipurposeDetails1 = () => {
   const { t } = useTranslation();
   const router = useRouter();
@@ -1247,7 +1272,7 @@ const MultipurposeDetails1 = () => {
                         id={safeAuctionData._id || auctionId}
                         title={safeTitle}
                         description={safeDescription}
-                        imageUrl={safeThumbs.length > 0 ? (safeThumbs[0].url.startsWith('http') ? safeThumbs[0].url : `${app.baseURL}${safeThumbs[0].url.startsWith('/') ? safeThumbs[0].url.substring(1) : safeThumbs[0].url}`) : DEFAULT_AUCTION_IMAGE}
+                        imageUrl={getAuctionImageUrl(safeAuctionData)}
                       />
                     </div>
                     {showVideo && safeVideos.length > 0 ? (

@@ -39,28 +39,100 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     // Normalize image URL
     const fullImageUrl = normalizeImageUrl(imageUrl);
 
+    // Extract additional metadata
+    const price = directSale.price || 0;
+    const currency = directSale.currency || 'DZD';
+    const stock = directSale.stock || directSale.quantity || 0;
+    const category = directSale.category?.name || directSale.categoryName || '';
+    const location = directSale.location || '';
+    const seller = directSale.seller?.name || directSale.sellerName || '';
+    const condition = directSale.condition || 'new';
+    
+    // Determine availability
+    const availability = stock > 0 ? 'in stock' : 'out of stock';
+    
+    // Create structured description
+    const enhancedDescription = `${description}${price ? ` | Prix: ${price} ${currency}` : ''}${stock ? ` | ${stock} en stock` : ''}${category ? ` | Catégorie: ${category}` : ''}`;
+
     return {
-      title: `${title} - MazadClick`,
-      description: description,
+      title: `${title} - Vente Directe MazadClick`,
+      description: enhancedDescription,
       openGraph: {
         title: title,
-        description: description,
+        description: enhancedDescription,
+        url: `https://mazadclick.com/direct-sale/${id}`,
         images: fullImageUrl ? [
           {
             url: fullImageUrl,
-            width: 800,
-            height: 600,
+            width: 1200,
+            height: 630,
             alt: title,
           },
         ] : [],
         siteName: 'MazadClick',
-        type: "website",
+        type: 'product',
+        locale: 'fr_DZ',
+        // Product-specific Open Graph tags
+        ...(price && {
+          'product:price:amount': price.toString(),
+          'product:price:currency': currency,
+        }),
+        ...(availability && {
+          'product:availability': availability,
+        }),
+        ...(category && {
+          'product:category': category,
+        }),
+        ...(condition && {
+          'product:condition': condition,
+        }),
       },
       twitter: {
-        card: "summary_large_image",
+        card: 'summary_large_image',
+        site: '@MazadClick',
         title: title,
-        description: description,
+        description: enhancedDescription,
         images: fullImageUrl ? [fullImageUrl] : [],
+        creator: seller ? `@${seller}` : undefined,
+      },
+      // Additional metadata for better SEO
+      keywords: [
+        'vente directe',
+        'direct sale',
+        'MazadClick',
+        category,
+        title,
+      ].filter(Boolean).join(', '),
+      authors: [{ name: seller || 'MazadClick' }],
+      // JSON-LD structured data
+      other: {
+        'structuredData': JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: title,
+          description: description,
+          image: fullImageUrl,
+          offers: {
+            '@type': 'Offer',
+            price: price,
+            priceCurrency: currency,
+            availability: stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            url: `https://mazadclick.com/direct-sale/${id}`,
+            itemCondition: condition === 'new' ? 'https://schema.org/NewCondition' : 'https://schema.org/UsedCondition',
+          },
+          brand: {
+            '@type': 'Brand',
+            name: 'MazadClick',
+          },
+          category: category,
+          ...(location && { location: location }),
+          ...(seller && { 
+            seller: {
+              '@type': 'Organization',
+              name: seller,
+            },
+          }),
+        }),
       },
     };
   } catch (error) {

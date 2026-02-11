@@ -51,28 +51,103 @@ export async function generateMetadata(props) {
     // Normalize image URL to be absolute
     const fullImageUrl = normalizeImageUrl(imageUrl);
 
+    // Extract additional metadata
+    const currentPrice = auction.currentPrice || auction.price || auction.startingPrice || 0;
+    const currency = auction.currency || 'DZD';
+    const endDate = auction.endDate || auction.endTime;
+    const startDate = auction.startDate || auction.startTime;
+    const bidsCount = auction.bidsCount || 0;
+    const category = auction.category?.name || auction.categoryName || '';
+    const location = auction.location || '';
+    const seller = auction.seller?.name || auction.sellerName || '';
+    
+    // Determine availability
+    const isEnded = endDate ? new Date(endDate) < new Date() : false;
+    const availability = isEnded ? 'sold out' : 'in stock';
+    
+    // Create structured description
+    const enhancedDescription = `${description}${currentPrice ? ` | Prix actuel: ${currentPrice} ${currency}` : ''}${bidsCount ? ` | ${bidsCount} enchères` : ''}${category ? ` | Catégorie: ${category}` : ''}`;
+
     return {
-      title: `${title} - MazadClick`,
-      description: description,
+      title: `${title} - Enchère MazadClick`,
+      description: enhancedDescription,
       openGraph: {
         title: title,
-        description: description,
+        description: enhancedDescription,
+        url: `https://mazadclick.com/auction-details/${id}`,
         images: fullImageUrl ? [
           {
             url: fullImageUrl,
-            width: 800,
-            height: 600,
+            width: 1200,
+            height: 630,
             alt: title,
           },
         ] : [],
         siteName: 'MazadClick',
-        type: "website",
+        type: 'product',
+        locale: 'fr_DZ',
+        // Product-specific Open Graph tags
+        ...(currentPrice && {
+          'product:price:amount': currentPrice.toString(),
+          'product:price:currency': currency,
+        }),
+        ...(availability && {
+          'product:availability': availability,
+        }),
+        ...(category && {
+          'product:category': category,
+        }),
       },
       twitter: {
-        card: "summary_large_image",
+        card: 'summary_large_image',
+        site: '@MazadClick',
         title: title,
-        description: description,
+        description: enhancedDescription,
         images: fullImageUrl ? [fullImageUrl] : [],
+        creator: seller ? `@${seller}` : undefined,
+      },
+      // Additional metadata for better SEO
+      keywords: [
+        'enchère',
+        'auction',
+        'MazadClick',
+        category,
+        title,
+      ].filter(Boolean).join(', '),
+      authors: [{ name: seller || 'MazadClick' }],
+      // JSON-LD structured data
+      other: {
+        'structuredData': JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: title,
+          description: description,
+          image: fullImageUrl,
+          offers: {
+            '@type': 'Offer',
+            price: currentPrice,
+            priceCurrency: currency,
+            availability: isEnded ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
+            url: `https://mazadclick.com/auction-details/${id}`,
+            validThrough: endDate,
+          },
+          brand: {
+            '@type': 'Brand',
+            name: 'MazadClick',
+          },
+          category: category,
+          ...(location && { location: location }),
+          ...(seller && { 
+            seller: {
+              '@type': 'Organization',
+              name: seller,
+            },
+          }),
+          aggregateRating: bidsCount > 0 ? {
+            '@type': 'AggregateRating',
+            ratingCount: bidsCount,
+          } : undefined,
+        }),
       },
     };
   } catch (error) {

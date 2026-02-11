@@ -1,6 +1,6 @@
 import DirectSaleDetailsClient from "./DirectSaleDetailsClient";
-import app from "@/config";
-import { normalizeImageUrl } from "@/utils/url";
+import app, { getFrontendUrl } from "@/config";
+import { normalizeImageUrlForMetadata } from "@/utils/url";
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -36,8 +36,8 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
         imageUrl = directSale.thumbs[0].url;
     }
     
-    // Normalize image URL
-    const fullImageUrl = normalizeImageUrl(imageUrl);
+    // Normalize image URL for Open Graph metadata
+    const fullImageUrl = normalizeImageUrlForMetadata(imageUrl, getFrontendUrl());
 
     // Extract additional metadata
     const price = directSale.price || 0;
@@ -54,13 +54,16 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     // Create structured description
     const enhancedDescription = `${description}${price ? ` | Prix: ${price} ${currency}` : ''}${stock ? ` | ${stock} en stock` : ''}${category ? ` | Catégorie: ${category}` : ''}`;
 
+    // Get production frontend URL for sharing
+    const productionFrontendUrl = getFrontendUrl().replace(/\/$/, '');
+
     return {
       title: `${title} - Vente Directe MazadClick`,
       description: enhancedDescription,
       openGraph: {
         title: title,
         description: enhancedDescription,
-        url: `https://mazadclick.com/direct-sale/${id}`,
+        url: `${productionFrontendUrl}/direct-sale/${id}`,
         images: fullImageUrl ? [
           {
             url: fullImageUrl,
@@ -117,7 +120,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
             price: price,
             priceCurrency: currency,
             availability: stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-            url: `https://mazadclick.com/direct-sale/${id}`,
+            url: `${productionFrontendUrl}/direct-sale/${id}`,
             itemCondition: condition === 'new' ? 'https://schema.org/NewCondition' : 'https://schema.org/UsedCondition',
           },
           brand: {

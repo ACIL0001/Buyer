@@ -1,6 +1,6 @@
 import TenderDetailsClient from "./TenderDetailsClient";
-import app from "@/config";
-import { normalizeImageUrl } from "@/utils/url";
+import app, { getFrontendUrl } from "@/config";
+import { normalizeImageUrlForMetadata } from "@/utils/url";
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -38,8 +38,8 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
         imageUrl = tender.images[0];
     }
     
-    // Normalize image URL
-    const fullImageUrl = normalizeImageUrl(imageUrl);
+    // Normalize image URL for Open Graph metadata
+    const fullImageUrl = normalizeImageUrlForMetadata(imageUrl, getFrontendUrl());
 
     // Extract additional metadata
     const budget = tender.budget || tender.estimatedValue || 0;
@@ -58,13 +58,16 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     // Create structured description
     const enhancedDescription = `${description}${budget ? ` | Budget: ${budget} ${currency}` : ''}${deadline ? ` | Date limite: ${new Date(deadline).toLocaleDateString('fr-DZ')}` : ''}${offersCount ? ` | ${offersCount} offres` : ''}${category ? ` | Catégorie: ${category}` : ''}`;
 
+    // Get production frontend URL for sharing
+    const productionFrontendUrl = getFrontendUrl().replace(/\/$/, '');
+
     return {
       title: `${title} - Appel d'Offres MazadClick`,
       description: enhancedDescription,
       openGraph: {
         title: title,
         description: enhancedDescription,
-        url: `https://mazadclick.com/tender-details/${id}`,
+        url: `${productionFrontendUrl}/tender-details/${id}`,
         images: fullImageUrl ? [
           {
             url: fullImageUrl,

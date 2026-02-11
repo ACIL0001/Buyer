@@ -1,6 +1,6 @@
 import AuctionDetailsClient from "./AuctionDetailsClient";
-import app from "@/config";
-import { normalizeImageUrl } from "@/utils/url";
+import app, { getFrontendUrl } from "@/config";
+import { normalizeImageUrlForMetadata } from "@/utils/url";
 
 export async function generateMetadata(props) {
   const params = await props.params;
@@ -48,8 +48,8 @@ export async function generateMetadata(props) {
         imageUrl = auction.image;
     }
     
-    // Normalize image URL to be absolute
-    const fullImageUrl = normalizeImageUrl(imageUrl);
+    // Normalize image URL to be absolute for Open Graph
+    const fullImageUrl = normalizeImageUrlForMetadata(imageUrl, getFrontendUrl());
 
     // Extract additional metadata
     const currentPrice = auction.currentPrice || auction.price || auction.startingPrice || 0;
@@ -68,13 +68,16 @@ export async function generateMetadata(props) {
     // Create structured description
     const enhancedDescription = `${description}${currentPrice ? ` | Prix actuel: ${currentPrice} ${currency}` : ''}${bidsCount ? ` | ${bidsCount} enchères` : ''}${category ? ` | Catégorie: ${category}` : ''}`;
 
+    // Get production frontend URL for sharing
+    const productionFrontendUrl = getFrontendUrl().replace(/\/$/, '');
+
     return {
       title: `${title} - Enchère MazadClick`,
       description: enhancedDescription,
       openGraph: {
         title: title,
         description: enhancedDescription,
-        url: `https://mazadclick.com/auction-details/${id}`,
+        url: `${productionFrontendUrl}/auction-details/${id}`,
         images: fullImageUrl ? [
           {
             url: fullImageUrl,
@@ -128,7 +131,7 @@ export async function generateMetadata(props) {
             price: currentPrice,
             priceCurrency: currency,
             availability: isEnded ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
-            url: `https://mazadclick.com/auction-details/${id}`,
+            url: `${productionFrontendUrl}/auction-details/${id}`,
             validThrough: endDate,
           },
           brand: {

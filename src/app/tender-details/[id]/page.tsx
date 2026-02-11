@@ -1,3 +1,4 @@
+
 import TenderDetailsClient from "./TenderDetailsClient";
 import app, { getFrontendUrl } from "@/config";
 import { normalizeImageUrlForMetadata } from "@/utils/url";
@@ -14,35 +15,37 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   }
 
   try {
-    const fetchUrl = `${app.baseURL}tenders/${id}`;
-    console.log('📡 [Tender] Fetching from:', fetchUrl);
+    // Import API dynamically to ensure server-side execution context is respected
+    const { TendersAPI } = await import('@/app/api/tenders');
     
-    const res = await fetch(fetchUrl, {
-      headers: { 
-        'x-access-key': app.apiKey,
-        'Content-Type': 'application/json'
-      },
-      cache: 'no-store'  // Always fetch fresh data
-    });
+    console.log('📡 [Tender] Fetching details...');
+    const tenderData = await TendersAPI.getTenderById(id);
+    const tender = (tenderData as any).data || tenderData;
     
-    if (!res.ok) {
-      console.error('❌ [Tender] Fetch failed with status:', res.status);
-      return { title: "Appel d'Offres - MazadClick" };
+    if (!tender) {
+        throw new Error('Tender not found');
     }
 
-    const json = await res.json();
-    const tender = json.data || json; 
-    
     console.log('✅ [Tender] Data fetched:', tender?.title || tender?.name);
 
-    // Tender title and description
+    // Title and description
     const title = tender.title || tender.name || "Appel d'Offres";
     const description = tender.description || "Découvrez cet appel d'offres sur MazadClick";
 
     // Image logic
     let imageUrl = "/assets/images/logo-dark.png";
     if (tender.attachments && tender.attachments.length > 0) {
-        imageUrl = tender.attachments[0].url;
+        // Try to find an image attachment first
+        const imageAttachment = tender.attachments.find((att: any) => 
+            att.url && att.url.match(/\.(jpg|jpeg|png|webp)$/i)
+        );
+        
+        if (imageAttachment) {
+            imageUrl = imageAttachment.url;
+        } else {
+            // Fallback to first attachment (could be PDF, but better than nothing or specific logic needed)
+             imageUrl = tender.attachments[0].url;
+        }
     } else if (tender.images && tender.images.length > 0) {
         imageUrl = tender.images[0];
     }
@@ -55,10 +58,9 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     const budget = tender.budget || tender.estimatedValue || 0;
     const currency = tender.currency || 'DZD';
     const deadline = tender.deadline || tender.submissionDeadline;
-    const tenderType = tender.tenderType || tender.type || '';
     const category = tender.category?.name || tender.categoryName || '';
-    const location = tender.location || '';
-    const organization = tender.organization?.name || tender.organizationName || '';
+    const location = tender.location || tender.wilaya || '';
+    const issuer = tender.issuer?.name || tender.companyName || 'MazadClick';
     const offersCount = tender.offersCount || tender.bidsCount || 0;
     
     // Determine status
@@ -66,12 +68,13 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     const status = isExpired ? 'Expiré' : 'Actif';
     
     // Create structured description
-    const enhancedDescription = `${description}${budget ? ` | Budget: ${budget} ${currency}` : ''}${deadline ? ` | Date limite: ${new Date(deadline).toLocaleDateString('fr-DZ')}` : ''}${offersCount ? ` | ${offersCount} offres` : ''}${category ? ` | Catégorie: ${category}` : ''}`;
+    const enhancedDescription = `${description}${budget ? ` | Budget: ${budget} ${currency}` : ''} | Status: ${status}${category ? ` | Catégorie: ${category}` : ''}`;
 
     // Get production frontend URL for sharing
     const productionFrontendUrl = getFrontendUrl().replace(/\/$/, '');
+    const pageUrl = `${productionFrontendUrl}/tender-details/${id}`;
     
-    console.log('🌐 [Tender] Production URL:', productionFrontendUrl + '/tender-details/' + id);
+    console.log('🌐 [Tender] Production URL:', pageUrl);
 
     const metadata = {
       title: `${title} - Appel d'Offres MazadClick`,
@@ -79,7 +82,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       openGraph: {
         title: title,
         description: enhancedDescription,
-        url: `${productionFrontendUrl}/tender-details/${id}`,
+        url: pageUrl,
         images: fullImageUrl ? [
           {
             url: fullImageUrl,
@@ -89,19 +92,8 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
           },
         ] : [],
         siteName: 'MazadClick',
-        type: 'article',
+        type: 'website', // Tenders are more like articles or website objects than products
         locale: 'fr_DZ',
-        // Article-specific Open Graph tags for tenders
-        ...(deadline && {
-          'article:published_time': new Date().toISOString(),
-          'article:expiration_time': new Date(deadline).toISOString(),
-        }),
-        ...(category && {
-          'article:section': category,
-        }),
-        ...(organization && {
-          'article:author': organization,
-        }),
       },
       twitter: {
         card: 'summary_large_image',
@@ -109,63 +101,31 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
         title: title,
         description: enhancedDescription,
         images: fullImageUrl ? [fullImageUrl] : [],
-        creator: organization ? `@${organization}` : undefined,
       },
-      // Additional metadata for better SEO
-      keywords: [
-        'appel d\'offres',
-        'tender',
-        'soumission',
-        'MazadClick',
-        category,
-        tenderType,
-        title,
-      ].filter(Boolean).join(', '),
-      authors: [{ name: organization || 'MazadClick' }],
+      authors: [{ name: issuer }],
       // JSON-LD structured data
       other: {
         'structuredData': JSON.stringify({
           '@context': 'https://schema.org',
-          '@type': 'JobPosting',
-          title: title,
+          '@type': 'Report', // Using Report as generic business checking or Tender if custom type supported
+          name: title,
           description: description,
           image: fullImageUrl,
-          hiringOrganization: {
-            '@type': 'Organization',
-            name: organization || 'MazadClick',
+          dateExpires: deadline,
+          about: {
+            '@type': 'Thing',
+            name: category,
           },
-          datePosted: new Date().toISOString(),
-          validThrough: deadline,
-          jobLocation: location ? {
-            '@type': 'Place',
-            address: {
-              '@type': 'PostalAddress',
-              addressLocality: location,
-            },
-          } : undefined,
-          baseSalary: budget ? {
-            '@type': 'MonetaryAmount',
-            currency: currency,
-            value: {
-              '@type': 'QuantitativeValue',
-              value: budget,
-              unitText: 'BUDGET',
-            },
-          } : undefined,
-          employmentType: tenderType || 'TENDER',
-          industry: category,
-          ...(offersCount > 0 && {
-            applicationContact: {
-              '@type': 'ContactPoint',
-              name: `${offersCount} offres reçues`,
-            },
-          }),
+          author: {
+             '@type': 'Organization',
+             name: issuer,
+          },
+          ...(location && { locationCreated: { '@type': 'Place', name: location } }),
         }),
       },
     };
     
     console.log('✅ [Tender] Metadata generated successfully');
-    console.log('📋 [Tender] OG Image:', metadata.openGraph?.images?.[0]?.url);
     return metadata;
     
   } catch (error) {
@@ -179,7 +139,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       openGraph: {
         title: fallbackTitle,
         description: fallbackDesc,
-        url: `${getFrontendUrl().replace(/\/$/, '')}/tender-details/${id}`,
+        url: `${getFrontendUrl().replace(/\/$/, '')}/tender-details/${id || ''}`,
         type: 'website',
         siteName: 'MazadClick',
       },
@@ -187,6 +147,9 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   }
 }
 
-export default function TenderDetailsPage() {
-  return <TenderDetailsClient />;
+export default async function TenderDetailsPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  return (
+    <TenderDetailsClient params={params} />
+  );
 }

@@ -1,3 +1,4 @@
+
 import DirectSaleDetailsClient from "./DirectSaleDetailsClient";
 import app, { getFrontendUrl } from "@/config";
 import { normalizeImageUrlForMetadata } from "@/utils/url";
@@ -14,25 +15,19 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   }
 
   try {
-    const fetchUrl = `${app.baseURL}direct-sales/${id}`;
-    console.log('📡 [DirectSale] Fetching from:', fetchUrl);
+    // Import API dynamically to ensure server-side execution context is respected
+    const { DirectSaleAPI } = await import('@/app/api/direct-sale');
     
-    const res = await fetch(fetchUrl, {
-      headers: { 
-        'x-access-key': app.apiKey,
-        'Content-Type': 'application/json'
-      },
-      cache: 'no-store'  // Always fetch fresh data
-    });
+    console.log('📡 [DirectSale] Fetching details...');
+    const directSaleData = await DirectSaleAPI.getDirectSaleById(id);
     
-    if (!res.ok) {
-      console.error('❌ [DirectSale] Fetch failed with status:', res.status);
-      return { title: "Vente Directe - MazadClick" };
+    // Check if data is wrapped or direct
+    const directSale = (directSaleData as any).data || directSaleData;
+    
+    if (!directSale) {
+        throw new Error('Direct Sale not found');
     }
 
-    const json = await res.json();
-    const directSale = json.data || json; 
-    
     console.log('✅ [DirectSale] Data fetched:', directSale?.title || directSale?.name);
 
     // Title and description
@@ -54,20 +49,18 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     const currency = directSale.currency || 'DZD';
     const stock = directSale.stock || directSale.quantity || 0;
     const category = directSale.category?.name || directSale.categoryName || '';
-    const location = directSale.location || '';
     const seller = directSale.seller?.name || directSale.sellerName || '';
+    const location = directSale.location || directSale.wilaya || '';
     const condition = directSale.condition || 'new';
     
-    // Determine availability
-    const availability = stock > 0 ? 'in stock' : 'out of stock';
-    
     // Create structured description
-    const enhancedDescription = `${description}${price ? ` | Prix: ${price} ${currency}` : ''}${stock ? ` | ${stock} en stock` : ''}${category ? ` | Catégorie: ${category}` : ''}`;
+    const enhancedDescription = `${description}${price ? ` | Prix: ${price} ${currency}` : ''}${stock ? ` | Quantité: ${stock}` : ''}`;
 
     // Get production frontend URL for sharing
     const productionFrontendUrl = getFrontendUrl().replace(/\/$/, '');
+    const pageUrl = `${productionFrontendUrl}/direct-sale/${id}`;
     
-    console.log('🌐 [DirectSale] Production URL:', productionFrontendUrl + '/direct-sale/' + id);
+    console.log('🌐 [DirectSale] Production URL:', pageUrl);
 
     const metadata = {
       title: `${title} - Vente Directe MazadClick`,
@@ -75,7 +68,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       openGraph: {
         title: title,
         description: enhancedDescription,
-        url: `${productionFrontendUrl}/direct-sale/${id}`,
+        url: pageUrl,
         images: fullImageUrl ? [
           {
             url: fullImageUrl,
@@ -92,14 +85,11 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
           'product:price:amount': price.toString(),
           'product:price:currency': currency,
         }),
-        ...(availability && {
-          'product:availability': availability,
+        ...(condition && {
+          'product:condition': condition,
         }),
         ...(category && {
           'product:category': category,
-        }),
-        ...(condition && {
-          'product:condition': condition,
         }),
       },
       twitter: {
@@ -131,8 +121,8 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
             '@type': 'Offer',
             price: price,
             priceCurrency: currency,
-            availability: stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-            url: `${productionFrontendUrl}/direct-sale/${id}`,
+            availability: stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut',
+            url: pageUrl,
             itemCondition: condition === 'new' ? 'https://schema.org/NewCondition' : 'https://schema.org/UsedCondition',
           },
           brand: {
@@ -152,9 +142,8 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     };
     
     console.log('✅ [DirectSale] Metadata generated successfully');
-    console.log('📋 [DirectSale] OG Image:', metadata.openGraph?.images?.[0]?.url);
     return metadata;
-    
+
   } catch (error) {
     console.error("❌ [DirectSale] Metadata error:", error);
     const fallbackTitle = "Vente Directe - MazadClick";
@@ -166,7 +155,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       openGraph: {
         title: fallbackTitle,
         description: fallbackDesc,
-        url: `${getFrontendUrl().replace(/\/$/, '')}/direct-sale/${id}`,
+        url: `${getFrontendUrl().replace(/\/$/, '')}/direct-sale/${id || ''}`,
         type: 'website',
         siteName: 'MazadClick',
       },
@@ -174,6 +163,9 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   }
 }
 
-export default function DirectSaleDetailsPage() {
-  return <DirectSaleDetailsClient />;
+export default async function DirectSaleDetailsPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  return (
+    <DirectSaleDetailsClient params={params} />
+  );
 }

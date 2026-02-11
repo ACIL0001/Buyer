@@ -1,4 +1,5 @@
 
+import { Suspense } from "react";
 import DirectSaleDetailsClient from "./DirectSaleDetailsClient";
 import app, { getFrontendUrl } from "@/config";
 import { normalizeImageUrlForMetadata } from "@/utils/url";
@@ -163,11 +164,33 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   }
 }
 
+
+
 export default async function DirectSaleDetailsPage(props: { params: Promise<{ id: string }> }) {
   // We await params just to satisfy Next.js server component requirements, 
   // but the client component uses useParams() hook
   await props.params;
+
   return (
-    <DirectSaleDetailsClient />
+    <Suspense fallback={
+       <div className="auction-details-section mb-110" style={{ 
+         marginTop: 0, 
+         paddingTop: 'clamp(120px, 15vw, 140px)',
+         minHeight: 'calc(100vh - 120px)'
+       }}>
+         <div className="container-fluid">
+           <div className="row">
+             <div className="col-12 text-center">
+               <div className="spinner-border text-primary" role="status">
+                 <span className="visually-hidden">Loading...</span>
+               </div>
+               <h3 className="mt-3">Chargement...</h3>
+             </div>
+           </div>
+         </div>
+       </div>
+    }>
+      <DirectSaleDetailsClient />
+    </Suspense>
   );
 }

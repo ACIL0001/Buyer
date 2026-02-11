@@ -4,7 +4,7 @@ import { Autoplay, EffectFade, Navigation, Pagination } from "swiper/modules";
 import Link from "next/link";
 import { useMemo, useEffect, useState, useRef } from "react";
 import { CategoryAPI } from "../../app/api/category";
-import app from '../../config'; // Import config to access route
+import app from '../../../config'; // Import config to access route
 import { useTranslation } from 'react-i18next';
 
 const Home1Category = () => {

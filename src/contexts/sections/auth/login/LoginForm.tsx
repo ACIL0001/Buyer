@@ -15,7 +15,7 @@ import { LoadingButton } from '@mui/lab';
 import Iconify from '../../../components/Iconify';
 import { AuthAPI } from '../../../app/api/auth';
 import { authStore } from '../../../contexts/authStore';
-import app from '../../../config';
+import app from '../../../../config';
 
 // ----------------------------------------------------------------------
 

@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import AuctionCard from '@/components/cards/AuctionCard';
 import TenderCard from '@/components/cards/TenderCard';
 import DirectSaleCard from '@/components/cards/DirectSaleCard';
-import app from '../../config';
+import app from '../../../config';
 
 import { Auction } from '@/types/auction';
 import { Tender } from '@/types/tender';

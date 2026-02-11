@@ -8,7 +8,7 @@ import { LoadingButton } from '@mui/lab';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
-import app from '../../../config';
+import app from '../../../../config';
 import Iconify from '../../../components/Iconify';
 
 const RootStyle = styled('div')(({ theme }) => ({

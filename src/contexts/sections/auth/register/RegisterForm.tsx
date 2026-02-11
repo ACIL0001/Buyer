@@ -124,7 +124,7 @@ const DocumentPage = styled('div')(({ theme }) => ({
   },
 }));
 // Import config to get base URL
-import app from '../../../config';
+import app from '../../../../config';
 
 const getFullUrl = (url: string) => {
     if (!url) return '';

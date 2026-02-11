@@ -10,7 +10,7 @@ import * as Yup from 'yup';
 import { AuthAPI } from '../../api/auth'; // Ensure this path is correct
 // If AuthAPI is not available, we might need to add the method there or call axios directly.
 import axios from 'axios';
-import app from '../../../config';
+import app from '../../../../config';
 
 const RootStyle = styled('div')(({ theme }) => ({
   minHeight: '100vh',

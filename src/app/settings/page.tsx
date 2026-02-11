@@ -11,7 +11,11 @@ import { useRouter } from "next/navigation"
 import { useTranslation } from "react-i18next"
 import { authStore } from "@/contexts/authStore"
 import { WILAYAS } from "@/constants/wilayas"
-import "../profile/modern-styles.css" 
+import { CategoryAPI } from "@/services/category"
+import "../profile/modern-styles.css"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { IdentityAPI } from "@/app/api/identity"
+import { normalizeImageUrl } from "@/utils/url" 
 
 // Password field component
 const PasswordField = ({ name, label, value, onChange, index }: {
@@ -102,6 +106,269 @@ export default function SettingsPage() {
         jobTitle: "",
         isProfileVisible: true,
     });
+    const [categories, setCategories] = useState<any[]>([]);
+
+    // Documents State
+    const queryClient = useQueryClient();
+    const [activeUpgradeSection, setActiveUpgradeSection] = useState<'verified' | 'certified' | null>('verified');
+    const [isUploadingDocument, setIsUploadingDocument] = useState<string | null>(null);
+    const [uploadingFile, setUploadingFile] = useState<File | null>(null);
+    const [isSubmittingIdentity, setIsSubmittingIdentity] = useState(false);
+
+    // Identity Query
+    const { data: identity, isLoading: isLoadingIdentity } = useQuery({
+        queryKey: ['identity'],
+        queryFn: async () => {
+            const response = await IdentityAPI.getMyIdentity();
+            return response.data as any;
+        },
+        retry: 1
+    });
+
+    const isLoadingDocuments = isLoadingIdentity;
+
+     // Document lists
+    const requiredDocuments = [
+        { key: 'registreCommerceCarteAuto', label: t('profile.documents.registreCommerce') || 'Registre de Commerce / Carte Artisan', required: true, description: 'Format PDF ou Image' },
+        { key: 'nifRequired', label: t('profile.documents.nif') || 'NIF', required: true, description: 'Numéro d\'Identification Fiscale' },
+        { key: 'carteFellah', label: t('profile.documents.carteFellah') || 'Carte Fellah', required: true, description: 'Pour les agriculteurs' }
+    ];
+
+    const optionalDocuments = [
+        { key: 'nis', label: t('profile.documents.nis') || 'NIS' },
+        { key: 'art', label: t('profile.documents.art') || 'Article' },
+        { key: 'c20', label: t('profile.documents.c20') || 'C20' },
+        { key: 'misesAJourCnas', label: t('profile.documents.misesAJourCnas') || 'Mises à jour CNAS' },
+        { key: 'last3YearsBalanceSheet', label: t('profile.documents.balanceSheet') || 'Bilans des 3 dernières années' },
+        { key: 'certificates', label: t('profile.documents.certificates') || 'Certificats' },
+        { key: 'identityCard', label: t('profile.documents.identityCard') || 'Carte d\'identité' }
+    ];
+
+    const handleFileSelect = (fieldKey: string, file: File) => {
+        if (!file) return;
+
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+        if (!allowedTypes.includes(file.type)) {
+            enqueueSnackbar('Format de fichier non supporté. Utilisez JPG, PNG ou PDF.', { variant: 'error' });
+            return;
+        }
+
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+            enqueueSnackbar('Fichier trop volumineux. Taille maximale: 5MB', { variant: 'error' });
+            return;
+        }
+
+        setUploadingFile(file);
+        uploadDocument(fieldKey, file);
+    };
+
+    const uploadDocument = async (fieldKey: string, file: File) => {
+        try {
+            setIsUploadingDocument(fieldKey);
+            
+            const formData = new FormData();
+            formData.append(fieldKey, file);
+
+            // If identity doesn't exist, create it with this document
+            if (!identity || !identity._id) {
+                const createResponse: any = await IdentityAPI.create(formData);
+                if (createResponse && (createResponse._id || (createResponse.data && createResponse.data._id))) {
+                    enqueueSnackbar('Document sauvegardé avec succès.', { variant: 'success' });
+                    await queryClient.invalidateQueries({ queryKey: ['identity'] });
+                } else {
+                    throw new Error('Failed to create identity with document');
+                }
+            } else {
+                const updateResponse = await IdentityAPI.updateDocument(identity._id, fieldKey, file);
+                if (updateResponse && updateResponse.success) {
+                    enqueueSnackbar('Document sauvegardé avec succès.', { variant: 'success' });
+                    await queryClient.invalidateQueries({ queryKey: ['identity'] });
+                } else {
+                    throw new Error(updateResponse?.message || 'Upload failed');
+                }
+            }
+        } catch (error: any) {
+            console.error('Error uploading document:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de la mise à jour du document';
+            enqueueSnackbar(errorMessage, { variant: 'error' });
+        } finally {
+            setIsUploadingDocument(null);
+            setUploadingFile(null);
+        }
+    };
+
+    const handleSubmitIdentity = async () => {
+        if (!identity || !identity._id) {
+            enqueueSnackbar('Veuillez d\'abord télécharger au moins un document', { variant: 'warning' });
+            return;
+        }
+
+        try {
+            setIsSubmittingIdentity(true);
+            const response = await IdentityAPI.submitIdentity(identity._id);
+            if (response && response.success) {
+                enqueueSnackbar(response.message || 'Documents soumis avec succès.', { variant: 'success' });
+                await queryClient.invalidateQueries({ queryKey: ['identity'] });
+            } else {
+                throw new Error(response?.message || 'Failed to submit identity');
+            }
+        } catch (error: any) {
+            console.error('Error submitting identity:', error);
+            enqueueSnackbar(error.message || 'Erreur lors de la soumission', { variant: 'error' });
+        } finally {
+            setIsSubmittingIdentity(false);
+        }
+    };
+
+    const getDocumentUrl = (document: any): string => {
+        if (!document) return '';
+        if (document.fullUrl) return normalizeImageUrl(document.fullUrl);
+        if (document.url) return normalizeImageUrl(document.url);
+        return '';
+    };
+
+    const getDocumentName = (document: any): string => {
+        if (!document) return '';
+        return document.filename || 'Document';
+    };
+
+    const renderDocumentCards = (documents: any[], sectionTitle: string, isRequired: boolean) => {
+        return (
+            <div className="modern-document-section">
+                <div className="modern-document-section-header">
+                    <h3 className="modern-document-section-title">
+                        <i className={`bi-${isRequired ? 'exclamation-triangle-fill' : 'plus-circle-fill'}`}></i>
+                        {sectionTitle}
+                    </h3>
+                    <div className={`modern-document-section-badge ${isRequired ? 'required' : 'optional'}`}>
+                        {isRequired ? 'Obligatoire' : 'Facultatif'}
+                    </div>
+                </div>
+
+                 {/* Note Box */}
+                <div className="modern-document-optional-note">
+                    <div className="modern-document-note-card">
+                        <i className="bi-info-circle-fill"></i>
+                        <div className="modern-document-note-content">
+                            <h4>{isRequired ? (t("profile.documents.verificationNoteTitle") || "Vérification") : (t("profile.documents.certificationNoteTitle") || "Certification")}</h4>
+                            <p>
+                                {isRequired 
+                                    ? (t("profile.documents.verificationRequirement") || "Fournir (RC/ Autres + NIF) ou (Carte Fellah uniquement).")
+                                    : (t("profile.documents.certificationRequirement") || "Ajoutez ces documents pour la certification professionnelle.")}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="modern-document-grid">
+                    {documents.map((field, index) => {
+                        const document = identity ? (identity as any)[field.key] : null;
+                        const isUploadingThisField = isUploadingDocument === field.key;
+                        const hasDocument = document && document.url;
+
+                        return (
+                            <motion.div
+                                key={field.key}
+                                className={`modern-document-card ${hasDocument ? 'has-document' : 'no-document'} ${isUploadingThisField ? 'uploading' : ''}`}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                            >
+                                <div className="modern-document-header">
+                                    <div className="modern-document-icon">
+                                        <i className={hasDocument ? "bi-file-earmark-check-fill" : "bi-file-earmark-plus"}></i>
+                                    </div>
+                                    <div className="modern-document-info">
+                                        <h3 className="modern-document-title">
+                                            {field.label}
+                                            {field.required && <span className="required-badge">*</span>}
+                                        </h3>
+                                        <p className="modern-document-description">{field.description}</p>
+                                    </div>
+                                </div>
+
+                                {hasDocument && (
+                                    <div className="modern-document-preview">
+                                        <div className="modern-document-file">
+                                             <div className="modern-document-icon">
+                                                <i className={`bi-${document.mimetype?.includes('pdf') ? 'file-earmark-pdf' : 'file-earmark-image'}`}></i>
+                                            </div>
+                                            <div className="modern-document-info-text">
+                                                <span className="modern-document-name">{getDocumentName(document)}</span>
+                                                <span className="modern-document-type">{document.mimetype || 'Document'}</span>
+                                            </div>
+                                        </div>
+                                        <div className="modern-document-actions">
+                                            <a
+                                                href={getDocumentUrl(document)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="modern-btn modern-btn-outline modern-btn-sm"
+                                            >
+                                                <i className="bi-eye"></i>
+                                                Voir
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="modern-document-upload-area">
+                                    <input
+                                        type="file"
+                                        id={`file-${field.key}`}
+                                        className="hidden-file-input"
+                                        accept=".pdf,.jpg,.jpeg,.png"
+                                        onChange={(e) => {
+                                            if (e.target.files && e.target.files[0]) {
+                                                handleFileSelect(field.key, e.target.files[0]);
+                                            }
+                                        }}
+                                        disabled={isUploadingThisField}
+                                        style={{ display: 'none' }}
+                                    />
+                                    <label 
+                                        htmlFor={`file-${field.key}`} 
+                                        className={`modern-upload-btn ${hasDocument ? 'update' : 'upload'}`}
+                                    >
+                                        {isUploadingThisField ? (
+                                            <>
+                                                <div className="modern-spinner-sm"></div>
+                                                <span>Importation...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <i className={`bi-${hasDocument ? 'arrow-repeat' : 'cloud-upload'}`}></i>
+                                                <span>{hasDocument ? 'Remplacer' : 'Importer'}</span>
+                                            </>
+                                        )}
+                                    </label>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
+                </div>
+                 {/* Submit Button for this section if needed, though usually one global submit */}
+            </div>
+        );
+    };
+
+    useEffect(() => {
+        loadCategories();
+    }, []);
+
+    const loadCategories = async () => {
+        try {
+            const response = await CategoryAPI.getCategories();
+            if (response && Array.isArray(response)) {
+                setCategories(response);
+            } else if (response?.data && Array.isArray(response.data)) {
+                setCategories(response.data);
+            }
+        } catch (error) {
+            console.error("Error loading categories", error);
+        }
+    };
 
     useEffect(() => {
         setIsReady(true);
@@ -140,6 +407,35 @@ export default function SettingsPage() {
             ...prev,
             [name]: value
         }));
+    };
+
+    const handleVisibilityToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.checked;
+        
+        // Optimistic update
+        setFormData(prev => ({
+            ...prev,
+            isProfileVisible: newValue
+        }));
+
+        try {
+            await UserAPI.updateProfile({ isProfileVisible: newValue });
+            enqueueSnackbar(newValue ? "Profil visible" : "Profil masqué", { variant: "success" });
+            
+            // Update auth user context if needed
+            if (auth.user) {
+                const mergedUser = { ...auth.user, isProfileVisible: newValue };
+                set({ user: mergedUser, tokens: auth.tokens });
+            }
+        } catch (error) {
+            console.error('Error updating profile visibility:', error);
+            // Revert on error
+            setFormData(prev => ({
+                ...prev,
+                isProfileVisible: !newValue
+            }));
+            enqueueSnackbar("Erreur lors de la mise à jour", { variant: "error" });
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -237,6 +533,7 @@ export default function SettingsPage() {
                             {[
                                 { id: "personal-info", icon: "bi-person-circle", label: t("profile.personalInfo.title") || "Personal Information" },
                                 { id: "security", icon: "bi-shield-lock-fill", label: t("profile.security.title") || "Security" },
+                                { id: "documents", icon: "bi-file-earmark-text-fill", label: t("dashboard.profile.tabs.documents") || "Documents" },
                             ].map((tab, index) => (
                                 <motion.button
                                     key={tab.id}
@@ -392,14 +689,35 @@ export default function SettingsPage() {
                                                         <label htmlFor="activitySector">{t("profile.personalInfo.secteur") || "Secteur d'activité"}</label>
                                                         <div className="input-with-icon">
                                                             <i className="bi bi-activity"></i>
-                                                            <input
-                                                                type="text"
+                                                            <select
                                                                 id="activitySector"
                                                                 name="activitySector"
                                                                 value={formData.activitySector}
                                                                 onChange={handleInputChange}
                                                                 disabled={!isEditing}
-                                                            />
+                                                                style={{
+                                                                    width: '100%',
+                                                                    padding: '12px 16px',
+                                                                    paddingLeft: '45px',
+                                                                    borderRadius: '12px',
+                                                                    border: '1px solid #e2e8f0',
+                                                                    backgroundColor: isEditing ? '#ffffff' : '#f8fafc',
+                                                                    color: '#1e293b',
+                                                                    fontSize: '14px',
+                                                                    outline: 'none',
+                                                                    height: '48px',
+                                                                    appearance: 'none',
+                                                                    cursor: isEditing ? 'pointer' : 'default',
+                                                                    transition: 'all 0.2s ease'
+                                                                }}
+                                                            >
+                                                                <option value="">Sélectionner un secteur</option>
+                                                                {categories.map((cat) => (
+                                                                    <option key={cat._id} value={cat.name}>
+                                                                        {cat.name}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
                                                         </div>
                                                     </div>
 
@@ -423,55 +741,55 @@ export default function SettingsPage() {
                                                             display: 'flex', 
                                                             justifyContent: 'space-between', 
                                                             alignItems: 'center',
-                                                            background: '#f8fafc',
-                                                            padding: '1rem',
-                                                            borderRadius: '12px',
-                                                            border: '1px solid #e2e8f0'
+                                                            background: 'white',
+                                                            padding: '1.25rem',
+                                                            borderRadius: '16px',
+                                                            border: '1px solid #e2e8f0',
+                                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)'
                                                         }}>
-                                                            <div>
-                                                                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: '#334155' }}>
-                                                                    {t("profile.personalInfo.isProfileVisible") || "Profil public"}
+                                                            <div style={{ maxWidth: '80%' }}>
+                                                                <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', fontWeight: 600, color: '#1e293b' }}>
+                                                                    {t("profile.personalInfo.isProfileVisible") || "Informations personnelles visibles"}
                                                                 </h4>
-                                                                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#64748b' }}>
-                                                                    {t("profile.personalInfo.isProfileVisibleDesc") || "Rendre votre profil visible"}
+                                                                <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b', lineHeight: '1.4' }}>
+                                                                    {t("profile.personalInfo.isProfileVisibleDesc") || "Rendre vos informations personnelles visibles aux autres utilisateurs"}
                                                                 </p>
                                                             </div>
-                                                            <div style={{ position: 'relative', width: '46px', height: '26px' }}>
+                                                            
+                                                            <label style={{ position: 'relative', width: '52px', height: '32px', cursor: 'pointer', display: 'block' }}>
                                                                 <input
                                                                     type="checkbox"
                                                                     id="isProfileVisible"
                                                                     name="isProfileVisible"
                                                                     checked={!!formData.isProfileVisible}
-                                                                    onChange={handleInputChange}
-                                                                    disabled={!isEditing}
+                                                                    onChange={handleVisibilityToggle}
                                                                     style={{ opacity: 0, width: 0, height: 0 }}
                                                                 />
-                                                                <label 
-                                                                    htmlFor="isProfileVisible"
-                                                                    style={{
-                                                                        position: 'absolute',
-                                                                        cursor: isEditing ? 'pointer' : 'not-allowed',
-                                                                        top: 0, left: 0, right: 0, bottom: 0,
-                                                                        backgroundColor: formData.isProfileVisible ? '#3b82f6' : '#cbd5e1',
-                                                                        transition: '.3s',
-                                                                        borderRadius: '34px',
-                                                                        opacity: isEditing ? 1 : 0.7
-                                                                    }}
-                                                                >
-                                                                    <span style={{
-                                                                        display: 'block',
-                                                                        position: 'absolute',
-                                                                        height: '20px',
-                                                                        width: '20px',
-                                                                        left: formData.isProfileVisible ? '23px' : '3px',
-                                                                        top: '3px',
-                                                                        backgroundColor: 'white',
-                                                                        transition: '.3s',
-                                                                        borderRadius: '50%',
-                                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                                                                    }}></span>
-                                                                </label>
-                                                            </div>
+                                                                <span style={{
+                                                                    position: 'absolute',
+                                                                    cursor: 'pointer',
+                                                                    top: 0, 
+                                                                    left: 0, 
+                                                                    right: 0, 
+                                                                    bottom: 0,
+                                                                    backgroundColor: formData.isProfileVisible ? '#4f46e5' : '#cbd5e1',
+                                                                    borderRadius: '34px',
+                                                                    transition: '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                                    boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)'
+                                                                }}></span>
+                                                                <span style={{
+                                                                    position: 'absolute',
+                                                                    content: '""',
+                                                                    height: '24px',
+                                                                    width: '24px',
+                                                                    left: formData.isProfileVisible ? '24px' : '4px',
+                                                                    bottom: '4px',
+                                                                    backgroundColor: 'white',
+                                                                    transition: '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                                    borderRadius: '50%',
+                                                                    boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)'
+                                                                }}></span>
+                                                            </label>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -628,7 +946,117 @@ export default function SettingsPage() {
                                     </motion.div>
                                 )}
 
+                                {activeTab === "documents" && (
+                                    <motion.div
+                                        key="documents"
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        transition={{ duration: 0.4 }}
+                                    >
+                                        <div className="modern-section-card" style={{ padding: 0, overflow: 'hidden' }}>
+                                            {isLoadingDocuments ? (
+                                                <div className="modern-loading" style={{ padding: '40px' }}>
+                                                    <div className="modern-spinner"></div>
+                                                    <p>Chargement des documents...</p>
+                                                </div>
+                                            ) : (
+                                                <div style={{ padding: '20px' }}>
+                                                    <div className="modern-upgrade-buttons" style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
+                                                        <motion.button
+                                                            className={`modern-upgrade-btn ${activeUpgradeSection === 'verified' ? 'active' : ''}`}
+                                                            onClick={() => setActiveUpgradeSection(activeUpgradeSection === 'verified' ? null : 'verified')}
+                                                            whileHover={{ scale: 1.02 }}
+                                                            whileTap={{ scale: 0.98 }}
+                                                            style={{
+                                                                flex: 1,
+                                                                padding: '15px',
+                                                                borderRadius: '12px',
+                                                                border: '1px solid #e2e8f0',
+                                                                background: activeUpgradeSection === 'verified' ? '#eff6ff' : 'white',
+                                                                color: activeUpgradeSection === 'verified' ? '#2563eb' : '#64748b',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                gap: '10px',
+                                                                cursor: 'pointer',
+                                                                fontWeight: 600
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-shield-check"></i>
+                                                            {t('dashboard.profile.documents.switchToVerified') || "Vérification (Obligatoire)"}
+                                                        </motion.button>
+                                                        <motion.button
+                                                            className={`modern-upgrade-btn ${activeUpgradeSection === 'certified' ? 'active' : ''}`}
+                                                            onClick={() => setActiveUpgradeSection(activeUpgradeSection === 'certified' ? null : 'certified')}
+                                                            whileHover={{ scale: 1.02 }}
+                                                            whileTap={{ scale: 0.98 }}
+                                                            style={{
+                                                                flex: 1,
+                                                                padding: '15px',
+                                                                borderRadius: '12px',
+                                                                border: '1px solid #e2e8f0',
+                                                                background: activeUpgradeSection === 'certified' ? '#f5f3ff' : 'white',
+                                                                color: activeUpgradeSection === 'certified' ? '#7c3aed' : '#64748b',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                gap: '10px',
+                                                                cursor: 'pointer',
+                                                                fontWeight: 600
+                                                            }}
+                                                        >
+                                                            <i className="bi bi-award"></i>
+                                                            {t('dashboard.profile.documents.switchToCertified') || "Certification (Optionnel)"}
+                                                        </motion.button>
+                                                    </div>
 
+                                                    <AnimatePresence>
+                                                        {activeUpgradeSection === 'verified' && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, height: 0 }}
+                                                                animate={{ opacity: 1, height: 'auto' }}
+                                                                exit={{ opacity: 0, height: 0 }}
+                                                            >
+                                                                {renderDocumentCards(requiredDocuments, t('dashboard.profile.documents.verificationTitle') || "Documents Requis", true)}
+                                                            </motion.div>
+                                                        )}
+                                                        {activeUpgradeSection === 'certified' && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, height: 0 }}
+                                                                animate={{ opacity: 1, height: 'auto' }}
+                                                                exit={{ opacity: 0, height: 0 }}
+                                                            >
+                                                                {renderDocumentCards(optionalDocuments, t('dashboard.profile.documents.certificationInfoTitle') || "Documents Optionnels", false)}
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                     
+                                                    <div style={{ padding: '20px 0', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #e2e8f0', marginTop: '20px' }}>
+                                                         <button
+                                                             onClick={handleSubmitIdentity}
+                                                             disabled={isSubmittingIdentity}
+                                                             className="modern-btn primary"
+                                                             style={{ padding: '12px 24px' }}
+                                                         >
+                                                             {isSubmittingIdentity ? (
+                                                                 <>
+                                                                     <div className="modern-spinner-sm"></div>
+                                                                     <span>Envoi en cours...</span>
+                                                                 </>
+                                                             ) : (
+                                                                 <>
+                                                                    <i className="bi bi-send"></i>
+                                                                    <span>Soumettre pour vérification</span>
+                                                                 </>
+                                                             )}
+                                                         </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                )}
                             </AnimatePresence>
                         </div>
                     </div>

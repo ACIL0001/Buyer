@@ -1,0 +1,3315 @@
+"use client";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, EffectFade, Navigation, Pagination } from "swiper/modules";
+import "./st.css";
+import "./modern-details.css";
+import Link from "next/link";
+import { useMemo, useState, useEffect, useRef } from "react";
+import { useCountdownTimer } from "@/customHooks/useCountdownTimer";
+import HandleQuantity from "../common/HandleQuantity";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { authStore } from "@/contexts/authStore";
+import { AuctionsAPI } from "@/app/api/auctions";
+import { OfferAPI } from "@/app/api/offer";
+import { AutoBidAPI } from "@/app/api/auto-bid";
+import useAuth from "@/hooks/useAuth";
+import app, { getSellerUrl } from "@/config"; // Import the app config
+import { calculateTimeRemaining } from "../live-auction/Home1LiveAuction";
+import { ReviewAPI } from "@/app/api/review"; // Import Review API
+import commentsApi from "@/app/api/comments";
+import { useTranslation } from 'react-i18next';
+import { motion } from "framer-motion";
+
+// Helper function to calculate time remaining and format with leading zeros
+function getTimeRemaining(endDate) {
+  if (!endDate) {
+    return {
+      total: 0,
+      days: "00",
+      hours: "00",
+      minutes: "00",
+      seconds: "00",
+    };
+  }
+  
+  const total = Date.parse(endDate) - Date.now();
+  const seconds = Math.max(Math.floor((total / 1000) % 60), 0);
+  const minutes = Math.max(Math.floor((total / 1000 / 60) % 60), 0);
+  const hours = Math.max(Math.floor((total / (1000 * 60 * 60)) % 24), 0);
+  const days = Math.max(Math.floor(total / (1000 * 60 * 60 * 24)), 0);
+
+  const formatNumber = (num) => String(num).padStart(2, "0");
+
+  return {
+    total,
+    days: formatNumber(days),
+    hours: formatNumber(hours),
+    minutes: formatNumber(minutes),
+    seconds: formatNumber(seconds),
+  };
+}
+
+const MultipurposeDetails1 = () => {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const [auctionData, setAuctionData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [errorDetails, setErrorDetails] = useState(null); // For debugging
+  const { isLogged, auth } = useAuth();
+  const [time, setTime] = useState({
+    day: "00",
+    hour: "00",
+    mun: "00",
+    sec: "00",
+  });
+  const [allAuctions, setAllAuctions] = useState([]);
+  const [similarAuctionTimers, setSimilarAuctionTimers] = useState([]);
+  const [activeTab, setActiveTab] = useState("description"); // State for active tab
+  const [reviewText, setReviewText] = useState(""); // State for review text
+  const [reviewRating, setReviewRating] = useState(0); // State for review rating
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0); // State for selected image index
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState(0); // State for selected video index
+  const [showVideo, setShowVideo] = useState(false); // State for showing video instead of image
+  const [newComment, setNewComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false); // State for showing all comments
+  const [offers, setOffers] = useState([]); // State for offers
+  const [professionalAmount, setProfessionalAmount] = useState(""); // State for professional amount
+  const [savingAutoBid, setSavingAutoBid] = useState(false); // State for saving auto bid
+  const [loadingAutoBid, setLoadingAutoBid] = useState(false); // State for loading auto bid
+  const [hasExistingAutoBid, setHasExistingAutoBid] = useState(false); // State to track if user has existing auto-bid
+  const [deletingAutoBid, setDeletingAutoBid] = useState(false); // State for deleting auto bid
+  const [showBidConfirmation, setShowBidConfirmation] = useState(false); // State for bid confirmation modal
+
+  // Get auction ID from URL params or search params
+  const routeId = params?.id;
+  const queryId = searchParams.get("id");
+  const auctionId = routeId || queryId;
+  const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-dark.png";
+  const DEFAULT_USER_AVATAR = "/assets/images/avatar.jpg";
+  const DEFAULT_PROFILE_IMAGE = "/assets/images/avatar.jpg";
+
+  // Add error boundary with better error information
+  if (error && !loading) {
+    return (
+      <div className="auction-details-section mb-110" style={{ marginTop: 0, paddingTop: 0 }}>
+        <div className="container-fluid">
+          <div className="row">
+            <div className="col-12 text-center">
+              <div className="alert alert-danger">
+                <h3>{t('details.errorOccurred') || 'Une erreur s\'est produite'}</h3>
+                <p>{error}</p>
+                {errorDetails && (
+                  <details style={{ marginTop: '10px', textAlign: 'left' }}>
+                    <summary style={{ cursor: 'pointer', color: '#721c24' }}>
+                      {t('details.technicalDetails') || 'Détails techniques (pour le débogage)'}
+                    </summary>
+                    <pre style={{ 
+                      background: '#f8f9fa', 
+                      padding: '10px', 
+                      borderRadius: '5px', 
+                      fontSize: '12px',
+                      marginTop: '10px',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word'
+                    }}>
+                      {JSON.stringify(errorDetails, null, 2)}
+                    </pre>
+                  </details>
+                )}
+                <div style={{ marginTop: '20px' }}>
+                  <button 
+                    className="btn btn-primary me-2"
+                    onClick={() => window.location.reload()}
+                  >
+                    {t('details.retry') || 'Réessayer'}
+                  </button>
+                  <button 
+                    className="btn btn-secondary"
+                    onClick={() => router.push('/auction-sidebar')}
+                  >
+                    {t('auctionDetails.backToAuctions') || 'Retour aux enchères'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: "auto" });
+        document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: "auto" });
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        }, 50);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!auctionData) return;
+    let inter = setInterval(() => {
+      try {
+        // Use the local getTimeRemaining for consistent formatting
+        const dataTimer = getTimeRemaining(auctionData.endingAt);
+        setTime({
+          day: dataTimer.days,
+          hour: dataTimer.hours,
+          mun: dataTimer.minutes,
+          sec: dataTimer.seconds,
+        });
+      } catch (err) {
+        console.error("Error updating timer:", err);
+        // Set default values if timer fails
+        setTime({
+          day: "00",
+          hour: "00",
+          mun: "00",
+          sec: "00",
+        });
+      }
+    }, 1000);
+    return () => clearInterval(inter);
+  }, [auctionData]);
+
+  useEffect(() => {
+    const fetchAuctionDetails = async () => {
+      try {
+        if (!auctionId) {
+          console.error("No auction ID found in URL parameters");
+          setError("ID d'enchère introuvable. Veuillez vérifier l'URL.");
+          setErrorDetails({
+            type: "MISSING_AUCTION_ID",
+            routeId,
+            queryId,
+            params: params,
+            searchParams: searchParams ? Object.fromEntries(searchParams.entries()) : null
+          });
+          setLoading(false);
+          return;
+        }
+
+        console.log("Fetching auction details for ID:", auctionId);
+        console.log("API Base URL:", app.baseURL);
+        setLoading(true);
+        
+        // Test server connectivity first
+        try {
+          const testResponse = await fetch(`${app.baseURL}health`, { 
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+          console.log("Server health check response:", testResponse.status);
+        } catch (healthError) {
+          console.warn("Server health check failed:", healthError);
+        }
+
+        const data = await AuctionsAPI.getAuctionById(auctionId);
+        console.log("Auction data received:", data);
+        
+        if (!data) {
+          throw new Error("Aucune donnée reçue du serveur");
+        }
+        
+        setAuctionData(data);
+        // Assuming offers are populated within auctionData
+        if (data?.offers) {
+          setOffers(data.offers);
+        }
+
+        // Handle Comment Redirection
+        const commentId = searchParams.get('commentId');
+        if (commentId) {
+             console.log("💬 Detected commentId in URL:", commentId);
+             setActiveTab('reviews');
+             setShowAllComments(true); // Ensure all comments are loaded so scrolling works
+             // Use setTimeout to allow tab switch and rendering to complete
+             setTimeout(() => {
+                 const element = document.getElementById(`comment-${commentId}`);
+                 if (element) {
+                     console.log("📍 Scrolling to comment:", commentId);
+                     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     element.classList.add('highlight-comment'); // Optional: Add CSS class for visual highlight
+                 } else {
+                     console.warn("❌ Comment element not found in DOM:", commentId);
+                 }
+             }, 800); // 800ms delay to ensure tab content is rendered
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching auction details:", err);
+        
+        // Enhanced error handling
+        let errorMessage = "Impossible de charger les détails de l'enchère. Veuillez réessayer plus tard.";
+        let errorType = "UNKNOWN_ERROR";
+        
+        if (err.name === 'TypeError' && err.message.includes('fetch')) {
+          errorMessage = "Impossible de se connecter au serveur. Vérifiez votre connexion internet.";
+          errorType = "NETWORK_ERROR";
+        } else if (err.response) {
+          // Server responded with error status
+          const status = err.response.status;
+          if (status === 404) {
+            errorMessage = t("auctionDetails.notFound") || "Enchère introuvable. Elle a peut-être été supprimée.";
+            errorType = "NOT_FOUND";
+          } else if (status === 401) {
+            errorMessage = t("auctionDetails.unauthorized") || "Accès non autorisé. Veuillez vous reconnecter.";
+            errorType = "UNAUTHORIZED";
+          } else if (status >= 500) {
+            errorMessage = t("auctionDetails.serverError") || "Erreur serveur. Veuillez réessayer plus tard.";
+            errorType = "SERVER_ERROR";
+          }
+        } else if (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND') {
+          errorMessage = t("auctionDetails.serverUnreachable") || "Serveur inaccessible. Vérifiez que le serveur est en cours d'exécution.";
+          errorType = "SERVER_UNREACHABLE";
+        }
+        
+        setError(errorMessage);
+        setErrorDetails({
+          type: errorType,
+          message: err.message,
+          stack: err.stack,
+          auctionId,
+          apiUrl: `${app.baseURL}bid/${auctionId}`,
+          timestamp: new Date().toISOString(),
+          userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'unknown'
+        });
+        setLoading(false);
+      }
+    };
+
+    fetchAuctionDetails();
+  }, [auctionId, params, searchParams]);
+
+  // Extract fetchAutoBidData as a reusable function
+  const fetchAutoBidData = async () => {
+    if (!isLogged || !auth.tokens || !auctionId || !auctionData) {
+      return;
+    }
+
+    // Only fetch for PROFESSIONAL users
+    if (auth.user?.type !== 'PROFESSIONAL') {
+      return;
+    }
+
+    // Compute starting price to avoid dependency issues
+    const startingPrice = auctionData?.startingPrice || 0;
+
+    try {
+      setLoadingAutoBid(true);
+      console.log("Fetching auto-bid data for auction:", auctionId);
+      
+      const autoBidResponse = await AutoBidAPI.getAutoBidByAuctionAndUser(auctionId);
+      console.log("Auto-bid response:", autoBidResponse);
+
+      if (autoBidResponse.success && autoBidResponse.data) {
+        // User has an auto-bid for this auction, use that price
+        console.log("Found existing auto-bid:", autoBidResponse.data);
+        setProfessionalAmount(autoBidResponse.data.price.toString());
+        setHasExistingAutoBid(true);
+      } else {
+        // No auto-bid found, use starting price
+        console.log("No auto-bid found, using starting price");
+        setProfessionalAmount(startingPrice.toString());
+        setHasExistingAutoBid(false);
+      }
+    } catch (err) {
+      console.error("Error fetching auto-bid data:", err);
+      // If error, use starting price as fallback and assume no existing auto-bid
+      setProfessionalAmount(startingPrice.toString());
+      setHasExistingAutoBid(false);
+    } finally {
+      setLoadingAutoBid(false);
+    }
+  };
+
+  // Fetch auto-bid data for professional users on component mount and data changes
+  useEffect(() => {
+    fetchAutoBidData();
+  }, [isLogged, auth.tokens, auctionId, auctionData, auth.user?.type]);
+
+  useEffect(() => {
+    // Fetch all auctions for 'Enchères Similaires'
+    const fetchAllAuctions = async () => {
+      try {
+        const data = await AuctionsAPI.getAuctions();
+        setAllAuctions(data);
+      } catch (err) {
+        // Optionally handle error
+        setAllAuctions([]);
+      }
+    };
+    fetchAllAuctions();
+  }, []);
+
+  // Update timers for similar auctions
+  useEffect(() => {
+    if (!allAuctions || allAuctions.length === 0) return;
+    const filtered = allAuctions
+      .filter((auction) => auction._id !== auctionId)
+      .slice(0, 4);
+    function updateTimers() {
+      setSimilarAuctionTimers(
+        filtered.map((auction) => {
+          const endDate =
+            auction.endDate || auction.endingAt || "2024-09-23 11:42:00";
+          return getTimeRemaining(endDate); // getTimeRemaining now formats with leading zeros
+        })
+      );
+    }
+    updateTimers();
+    const interval = setInterval(updateTimers, 1000);
+    return () => clearInterval(interval);
+  }, [allAuctions, auctionId]);
+
+  // Using the real end date if available, otherwise fallback to static date
+  const endDate = auctionData?.endDate || auctionData?.endingAt || "2024-09-23 11:42:00";
+  const { days, hours, minutes, seconds } = useCountdownTimer(endDate);
+
+  // Add null checks for critical data
+  const safeAuctionData = auctionData || {};
+  const safeThumbs = safeAuctionData.thumbs || [];
+  const safeVideos = safeAuctionData.videos || [];
+  const safeTitle = safeAuctionData.title || safeAuctionData.name || t('details.product');
+  const safeStartingPrice = safeAuctionData.startingPrice || 0;
+  const safeCurrentPrice = safeAuctionData.currentPrice || 0;
+  const safeOwner = safeAuctionData.owner || null;
+
+  // Rest of the component remains the same
+  const settings = useMemo(() => {
+    return {
+      slidesPerView: "auto",
+      speed: 1500,
+      spaceBetween: 15,
+      grabCursor: true,
+      autoplay: {
+        delay: 2500, // Autoplay duration in milliseconds
+        disableOnInteraction: false,
+      },
+      navigation: {
+        nextEl: ".category-slider-next",
+        prevEl: ".category-slider-prev",
+      },
+
+      breakpoints: {
+        280: {
+          slidesPerView: 2,
+        },
+        350: {
+          slidesPerView: 3,
+          spaceBetween: 10,
+        },
+        576: {
+          slidesPerView: 3,
+          spaceBetween: 15,
+        },
+        768: {
+          slidesPerView: 4,
+        },
+        992: {
+          slidesPerView: 5,
+          spaceBetween: 15,
+        },
+        1200: {
+          slidesPerView: 5,
+        },
+        1400: {
+          slidesPerView: 5,
+        },
+      },
+    };
+  }, []);
+  const settingsForUpcomingAuction = useMemo(() => {
+    return {
+      slidesPerView: "auto",
+      speed: 1500,
+      spaceBetween: 25,
+      autoplay: {
+        delay: 2500, // Autoplay duration in milliseconds
+        disableOnInteraction: false,
+      },
+      navigation: {
+        nextEl: ".auction-slider-next",
+        prevEl: ".auction-slider-prev",
+      },
+
+      breakpoints: {
+        280: {
+          slidesPerView: 1,
+        },
+        386: {
+          slidesPerView: 1,
+        },
+        576: {
+          slidesPerView: 1,
+        },
+        768: {
+          slidesPerView: 2,
+        },
+        992: {
+          slidesPerView: 3,
+        },
+        1200: {
+          slidesPerView: 4,
+        },
+        1400: {
+          slidesPerView: 4,
+        },
+      },
+    };
+  }, []);
+
+  // Function to handle thumbnail click
+  const handleThumbnailClick = (index) => {
+    setSelectedImageIndex(index);
+    setShowVideo(false); // Switch back to image view
+  };
+
+  // Function to handle video thumbnail click
+  const handleVideoThumbnailClick = (index) => {
+    setSelectedVideoIndex(index);
+    setShowVideo(true); // Switch to video view
+  };
+
+  // Function to switch between image and video view
+  const toggleMediaView = () => {
+    setShowVideo(!showVideo);
+  };
+
+  // Determine if the current user is the owner of the auction
+  const isOwner =
+    isLogged &&
+    safeOwner &&
+    auth.user._id === (safeOwner._id || safeOwner);
+
+  // Function to show bid confirmation modal
+  const handleBidClick = (e) => {
+    e.preventDefault();
+    setShowBidConfirmation(true);
+  };
+
+  // Function to handle confirmed bid submission
+  const handleConfirmedBidSubmit = async () => {
+    setShowBidConfirmation(false);
+    await submitBid();
+  };
+
+  // Function to cancel bid submission
+  const handleCancelBidSubmit = () => {
+    setShowBidConfirmation(false);
+  };
+
+  // Actual bid submission logic (extracted from handleBidSubmit)
+  const submitBid = async () => {
+    console.log(
+      "[MultipurposeDetails1] submitBid - isLogged:",
+      isLogged,
+    "auth.tokens:",
+    auth.tokens,
+    "auth.user:",
+    auth.user
+  );
+
+  try {
+    // Check if user is logged in
+    if (!isLogged || !auth.tokens) {
+      toast.error(t('details.pleaseLoginToBuy'));
+      router.push('/auth/login');
+      return;
+    }
+
+    // Get bid amount from the quantity input
+    const bidInput = document.querySelector(".quantity__input");
+    if (!bidInput || !bidInput.value) {
+      toast.error(t('auction.bidError'));
+      return;
+    }
+
+    const bidAmountRaw = bidInput.value;
+    console.log("[MultipurposeDetails1] Raw bid amount:", bidAmountRaw);
+
+    // Clean the bid amount - remove formatting
+    let cleanBidAmount = bidAmountRaw;
+    
+    // Remove ",00 " suffix if present
+    cleanBidAmount = cleanBidAmount.replace(/,00\s*$/, "");
+    
+    // Remove all commas (thousands separators)
+    cleanBidAmount = cleanBidAmount.replace(/,/g, "");
+    
+    // Remove any currency symbols or extra spaces
+    cleanBidAmount = cleanBidAmount.replace(/[^\d.]/g, "");
+
+    console.log("[MultipurposeDetails1] Cleaned bid amount:", cleanBidAmount);
+
+    // Parse to number and validate
+    const numericBidAmount = parseFloat(cleanBidAmount);
+    
+    if (isNaN(numericBidAmount) || numericBidAmount <= 0) {
+      toast.error(t('auction.bidError'));
+      return;
+    }
+    
+    // Check minimum bid amount
+    if (numericBidAmount < 1) {
+      toast.error(t('auction.bidError'));
+      return;
+    }
+
+    // Ensure the bid is higher than current price
+    const currentPrice = auctionData?.currentPrice || auctionData?.startingPrice || 0;
+    if (numericBidAmount <= currentPrice) {
+      toast.error(`${t('auction.bidMustBeHigher')} ${formatPrice(currentPrice)}`);
+      return;
+    }
+
+    // Round to avoid floating point issues
+    const finalBidAmount = Math.round(numericBidAmount);
+
+    console.log("[MultipurposeDetails1] Final bid amount:", finalBidAmount);
+    console.log("[MultipurposeDetails1] Current price:", currentPrice);
+
+    // Prepare the payload
+    const payload = {
+      price: finalBidAmount,
+      user: auth.user._id,
+      owner: safeOwner._id || safeOwner, // This should be the AUCTION OWNER'S ID, not the bidder's ID
+    };
+
+    console.log("[MultipurposeDetails1] Sending offer payload:", payload);
+
+    // Validate required fields
+    if (!payload.user) {
+      toast.error("Utilisateur non valide. Veuillez vous reconnecter.");
+      return;
+    }
+
+    if (!payload.owner) {
+      console.error("[MultipurposeDetails1] Missing owner ID:", safeOwner);
+      toast.error("Données de l'enchère incomplètes. Veuillez actualiser la page.");
+      return;
+    }
+
+    try {
+      // Send the offer
+      const offerResponse = await OfferAPI.sendOffer(auctionId, payload);
+      
+      console.log("[MultipurposeDetails1] Offer submission response:", offerResponse);
+      
+      // Always show success message if we got here (no exception thrown)
+      toast.success(t('auction.bidSuccess'));
+      
+      // Clear the input
+      if (bidInput) {
+        bidInput.value = formatPrice(finalBidAmount);
+      }
+      
+      // Refresh the auction data after placing a bid
+      try {
+        const refreshedData = await AuctionsAPI.getAuctionById(auctionId);
+        setAuctionData(refreshedData);
+        if (refreshedData?.offers) {
+          setOffers(refreshedData.offers);
+        }
+      } catch (refreshErr) {
+        console.warn("Failed to refresh auction data after successful bid:", refreshErr);
+        // Don't show error for this as the bid was successful
+      }
+    } catch (submitError) {
+      // If there was an error during submission, check if it has a status code
+      // Status codes in the 2xx range indicate success despite the error
+      const statusCode = submitError?.response?.status;
+      const hasSuccessStatus = statusCode && statusCode >= 200 && statusCode < 300;
+      
+      console.log("[MultipurposeDetails1] Offer submission error:", submitError, "Status code:", statusCode);
+      
+      // If we have a success status code, treat it as success
+      if (hasSuccessStatus) {
+        toast.success(t('auction.bidSuccess'));
+        
+        // Clear the input
+        if (bidInput) {
+          bidInput.value = formatPrice(finalBidAmount);
+        }
+        
+        // Try to refresh the auction data
+        try {
+          const refreshedData = await AuctionsAPI.getAuctionById(auctionId);
+          setAuctionData(refreshedData);
+          if (refreshedData?.offers) {
+            setOffers(refreshedData.offers);
+          }
+        } catch (refreshErr) {
+          console.warn("Failed to refresh auction data after successful bid:", refreshErr);
+        }
+      } else {
+        // Re-throw the error to be caught by the outer catch block
+        throw submitError;
+      }
+    }
+
+  } catch (err) {
+    console.error("Error placing bid:", err);
+    
+    // Check if the error response contains a success flag that's true
+    // This handles cases where the offer was saved but error was thrown anyway
+    if (err?.response?.data?.success === true) {
+      console.log("[MultipurposeDetails1] Detected successful operation despite error:", err);
+      toast.success(t('auction.bidSuccess'));
+      
+      // Refresh the auction data
+      try {
+        const refreshedData = await AuctionsAPI.getAuctionById(auctionId);
+        setAuctionData(refreshedData);
+        if (refreshedData?.offers) {
+          setOffers(refreshedData.offers);
+        }
+      } catch (refreshErr) {
+        console.warn("Failed to refresh auction data:", refreshErr);
+      }
+      return;
+    }
+    
+    // Extract user-friendly error message
+    let errorMessage = t('auction.bidError');
+    
+    if (err?.response?.data?.message) {
+      const serverMessage = err.response.data.message;
+      
+      // Handle specific error messages from server
+      switch (serverMessage) {
+        case 'OFFER.INVALID_PRICE':
+          errorMessage = t('auction.invalidPrice');
+          break;
+        case 'OFFER.AUCTION_ENDED':
+          errorMessage = t('auction.auctionEnded');
+          break;
+        case 'OFFER.INSUFFICIENT_AMOUNT':
+          errorMessage = t('auction.insufficientAmount');
+          break;
+        case 'OFFER.OWNER_CANNOT_BID':
+          errorMessage = t('auctionDetails.cannotBidOwn');
+          break;
+        default:
+          errorMessage = serverMessage;
+      }
+    } else if (err?.message) {
+      errorMessage = err.message;
+    }
+    
+    // Check if we have data despite the error
+    if (err?.response?.data) {
+      console.log("[MultipurposeDetails1] Error response contains data:", err.response.data);
+      
+      // If the data contains a valid offer object, consider it a success
+      if (err.response.data.price || err.response.data._id) {
+        console.log("[MultipurposeDetails1] Found offer data in error response, treating as success");
+        toast.success(t('auction.bidSuccess'));
+        
+        // Try to refresh auction data
+        try {
+          const refreshedData = await AuctionsAPI.getAuctionById(auctionId);
+          setAuctionData(refreshedData);
+          if (refreshedData?.offers) {
+            setOffers(refreshedData.offers);
+          }
+        } catch (refreshErr) {
+          console.warn("Failed to refresh auction data:", refreshErr);
+        }
+        return;
+      }
+    }
+    
+    toast.error(errorMessage);
+  }
+};
+
+  // Handle bid submission for similar auctions
+  const handleSimilarAuctionBid = async (similarAuction) => {
+    try {
+      // Check if user is logged in
+      if (!isLogged || !auth.tokens) {
+        toast.error(t('details.pleaseLoginToBuy'));
+      router.push('/auth/login');
+        return;
+      }
+
+      // Check if auction has ended
+      const auctionEndDate = similarAuction.endDate || similarAuction.endingAt;
+      if (auctionEndDate && new Date(auctionEndDate) <= new Date()) {
+        toast.error(t('auction.auctionEnded'));
+        return;
+      }
+
+      // Check if user is the owner of the auction
+      const isOwner = isLogged && auth.user._id === (similarAuction.owner?._id || similarAuction.owner);
+      if (isOwner) {
+        toast.error(t('auctionDetails.cannotBidOwn'));
+        return;
+      }
+
+      // Calculate suggested bid amount (current price + 5% of starting price)
+      const currentPrice = similarAuction.currentPrice || similarAuction.startingPrice || 0;
+      const startingPrice = similarAuction.startingPrice || 0;
+      // Using Math.floor to ensure whole number
+      const suggestedBid = Math.floor(currentPrice + Math.max(1, Math.floor(startingPrice * 0.05)));
+
+      // Show confirmation dialog
+      const confirmed = window.confirm(
+        `Voulez-vous placer une enchère de ${formatPrice(suggestedBid)} sur "${similarAuction.title || similarAuction.name}" ?`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      const bidPayload = {
+        price: Math.floor(suggestedBid),
+        user: auth.user._id,
+        owner: similarAuction.owner?._id || similarAuction.owner,
+      };
+      
+      console.log("[MultipurposeDetails1] Sending similar auction bid:", bidPayload);
+
+      try {
+        // Send the offer - using Math.floor to ensure whole number
+        const offerResponse = await OfferAPI.sendOffer(similarAuction._id, bidPayload);
+        
+        console.log("[MultipurposeDetails1] Similar auction bid response:", offerResponse);
+        
+        // Always show success message if we got here (no exception thrown)
+        toast.success(t('auction.bidSuccess'));
+        
+        // Refresh the similar auctions data
+        try {
+          const refreshedData = await AuctionsAPI.getAuctions();
+          setAllAuctions(refreshedData);
+        } catch (refreshErr) {
+          console.warn("Failed to refresh auction data after successful bid:", refreshErr);
+        }
+      } catch (submitError) {
+        // If there was an error during submission, check if it has a status code
+        // Status codes in the 2xx range indicate success despite the error
+        const statusCode = submitError?.response?.status;
+        const hasSuccessStatus = statusCode && statusCode >= 200 && statusCode < 300;
+        
+        console.log("[MultipurposeDetails1] Similar auction bid error:", submitError, "Status code:", statusCode);
+        
+        // If we have a success status code, treat it as success
+        if (hasSuccessStatus) {
+          toast.success(t('auction.bidSuccess'));
+          
+          // Try to refresh the auction data
+          try {
+            const refreshedData = await AuctionsAPI.getAuctions();
+            setAllAuctions(refreshedData);
+          } catch (refreshErr) {
+            console.warn("Failed to refresh similar auctions data:", refreshErr);
+          }
+        } else {
+          // Re-throw the error to be caught by the outer catch block
+          throw submitError;
+        }
+      }
+
+    } catch (err) {
+      console.error("Error placing bid on similar auction:", err);
+      
+      // Check if the error response contains a success flag that's true
+      // This handles cases where the offer was saved but error was thrown anyway
+      if (err?.response?.data?.success === true) {
+        console.log("[MultipurposeDetails1] Detected successful operation despite error:", err);
+        toast.success("Votre enchère a été placée avec succès !");
+        
+        // Refresh the auction data
+        try {
+          const refreshedData = await AuctionsAPI.getAuctions();
+          setAllAuctions(refreshedData);
+        } catch (refreshErr) {
+          console.warn("Failed to refresh similar auctions data:", refreshErr);
+        }
+        return;
+      }
+      
+      // Check if we have data despite the error
+      if (err?.response?.data) {
+        console.log("[MultipurposeDetails1] Error response contains data:", err.response.data);
+        
+        // If the data contains a valid offer object, consider it a success
+        if (err.response.data.price || err.response.data._id) {
+          console.log("[MultipurposeDetails1] Found offer data in error response, treating as success");
+          toast.success("Votre enchère a été placée avec succès !");
+          
+          // Refresh the auction data
+          try {
+            const refreshedData = await AuctionsAPI.getAuctions();
+            setAllAuctions(refreshedData);
+          } catch (refreshErr) {
+            console.warn("Failed to refresh similar auctions data:", refreshErr);
+          }
+          return;
+        }
+      }
+      
+      let errorMessage = "Échec de l'enchère. Veuillez réessayer.";
+      if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      toast.error(errorMessage);
+    }
+  };
+
+  // Handle review submission
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!isLogged || !auth.tokens) {
+      toast.error("Veuillez vous connecter pour soumettre un avis");
+      router.push("/auth/login");
+      return;
+    }
+
+    if (!reviewText.trim()) {
+      toast.error("Veuillez entrer votre comment.");
+      return;
+    }
+
+    if (reviewRating === 0) {
+      toast.error("Veuillez donner une note.");
+      return;
+    }
+
+    try {
+      const reviewData = {
+        rating: reviewRating,
+        comment: reviewText,
+        user: auth.user._id, // Assuming auth.user._id is available
+        auction: auctionId, // Pass the auction ID
+      };
+
+      await ReviewAPI.submitReview(auctionId, reviewData);
+      toast.success("Votre avis a été soumis avec succès !");
+      setReviewText("");
+      setReviewRating(0);
+      // Optionally refresh auction data to show new review
+      const refreshedData = await AuctionsAPI.getAuctionById(auctionId);
+      setAuctionData(refreshedData);
+    } catch (err) {
+      console.error("Error submitting review:", err);
+      if (err.response?.data?.message) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error("Échec de la soumission de l'avis. Veuillez réessayer.");
+      }
+    }
+  };
+
+  // Function to format price with currency symbol - using Math.floor to ensure whole numbers
+  const formatPrice = (price) => {
+    return `${Math.floor(Number(price)).toLocaleString()} `;
+  };
+
+  // Handle auto-bid for professional users
+  const handleAutoBidSave = async () => {
+    if (!isLogged || !auth.tokens) {
+      toast.error("Veuillez vous connecter pour sauvegarder l'auto-enchère");
+      return;
+    }
+
+    if (!professionalAmount || parseFloat(professionalAmount) <= 0) {
+      toast.error("Veuillez entrer un montant valide");
+      return;
+    }
+
+    const amount = parseFloat(professionalAmount);
+    if (amount < safeStartingPrice) {
+      toast.error(`Le montant doit être au moins ${formatPrice(safeStartingPrice)}`);
+      return;
+    }
+
+    // Check if user has placed a manual bid first (only for new auto-bids)
+    if (!hasExistingAutoBid) {
+        let currentOffers = offers;
+        try {
+            // Fetch fresh offers directly from OfferAPI
+            const freshOffersResponse = await OfferAPI.getOffersByBidId(auctionId);
+            
+            // Handle different response structures
+            if (freshOffersResponse && Array.isArray(freshOffersResponse)) {
+                currentOffers = freshOffersResponse;
+            } else if (freshOffersResponse && freshOffersResponse.data && Array.isArray(freshOffersResponse.data)) {
+                currentOffers = freshOffersResponse.data;
+            } else if (freshOffersResponse && freshOffersResponse.success && Array.isArray(freshOffersResponse.data)) {
+                 currentOffers = freshOffersResponse.data;
+            }
+        } catch (err) {
+            console.error("Failed to fetch fresh offers for check:", err);
+        }
+
+        console.log("Checking for manual bid. User ID:", auth.user._id);
+        console.log("Current offers (fresh - processed):", currentOffers);
+        
+        const hasPlacedBid = currentOffers && currentOffers.some(offer => {
+            if (!offer.user) return false;
+            
+            // Log for debugging
+            // console.log("Checking offer:", offer._id, "User:", offer.user);
+            
+            const offerUserId = (offer.user._id || offer.user).toString();
+            const currentUserId = auth.user._id.toString();
+            return offerUserId === currentUserId;
+        });
+
+        if (!hasPlacedBid) {
+            console.warn("User has not placed a manual bid yet.");
+            console.warn("User ID:", auth.user._id);
+            if (currentOffers && currentOffers.length > 0) {
+                 console.warn("First offer user:", currentOffers[0].user);
+            }
+            toast.warn("Vous devez d'abord faire une offre manuelle pour pouvoir faire une enchère automatique");
+            return;
+        }
+    }
+
+    try {
+      setSavingAutoBid(true);
+      
+      // Call the auto-bid API using AutoBidAPI
+      try {
+        console.log("Calling createOrUpdateAutoBid with:", {
+          auctionId,
+          price: amount,
+          user: auth.user._id,
+          bid: auctionId
+        });
+        
+        const result = await AutoBidAPI.createOrUpdateAutoBid(auctionId, {
+          price: amount,
+          user: auth.user._id,
+          bid: auctionId
+        });
+        
+        console.log("Auto-bid creation result:", result);
+        
+        // Immediately update UI state without waiting for a refresh
+        setHasExistingAutoBid(true);
+        setProfessionalAmount(amount.toString());
+        
+        toast.success("Auto-enchère sauvegardée avec succès !");
+        
+        // Also refresh the auction data to get any updates in the background
+        try {
+          const refreshedData = await AuctionsAPI.getAuctionById(auctionId);
+          setAuctionData(refreshedData);
+          if (refreshedData?.offers) {
+            setOffers(refreshedData.offers);
+          }
+        } catch (refreshErr) {
+          console.warn("Could not refresh auction data:", refreshErr);
+          // Don't show error to user as auto-bid was saved successfully
+        }
+      } catch (autoBidError) {
+        console.error("Error in createOrUpdateAutoBid:", autoBidError);
+        
+        // Check if the error response contains a success flag that's true
+        const errorResponse = autoBidError?.response?.data;
+        if (errorResponse && (errorResponse.success === true || errorResponse.data)) {
+          console.log("Auto-bid created successfully despite error:", errorResponse);
+          
+          // Immediately update UI state
+          setHasExistingAutoBid(true);
+          setProfessionalAmount(amount.toString());
+          
+          toast.success("Auto-enchère sauvegardée avec succès !");
+        } else {
+          // Show error message
+          let errorMessage = "Échec de la sauvegarde. Veuillez réessayer.";
+          if (autoBidError?.response?.data?.message) {
+            errorMessage = autoBidError.response.data.message;
+          } else if (autoBidError?.message) {
+            errorMessage = autoBidError.message;
+          }
+          toast.error(errorMessage);
+        }
+      }
+      
+    } finally {
+      setSavingAutoBid(false);
+      setLoadingAutoBid(false); // Make sure to reset loading state
+    }
+  };
+
+  // Handle auto-bid deletion for professional users
+  const handleAutoBidDelete = async () => {
+    if (!isLogged || !auth.tokens) {
+      toast.error("Veuillez vous connecter pour supprimer l'auto-enchère");
+      return;
+    }
+
+    if (!hasExistingAutoBid) {
+      toast.error("Aucune auto-enchère à supprimer");
+      return;
+    }
+
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      "Êtes-vous sûr de vouloir supprimer votre auto-enchère pour cette vente aux enchères ?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeletingAutoBid(true);
+      
+      // Call the delete API
+      try {
+        console.log("Calling deleteAutoBid with:", {
+          auctionId,
+          userId: auth.user._id
+        });
+        
+        await AutoBidAPI.deleteAutoBid(auctionId, auth.user._id);
+        console.log("Auto-bid deletion successful");
+        
+        // Immediately update UI state without waiting for a refresh
+        setHasExistingAutoBid(false);
+        setProfessionalAmount(safeStartingPrice.toString());
+        
+        toast.success("Auto-enchère supprimée avec succès !");
+      } catch (deleteBidError) {
+        console.error("Error in deleteAutoBid:", deleteBidError);
+        
+        // Check if the error response contains a success flag
+        const errorResponse = deleteBidError?.response?.data;
+        if (errorResponse && errorResponse.success === true) {
+          console.log("Auto-bid deleted successfully despite error:", errorResponse);
+          
+          // Immediately update UI state
+          setHasExistingAutoBid(false);
+          setProfessionalAmount(safeStartingPrice.toString());
+          
+          toast.success("Auto-enchère supprimée avec succès !");
+        } else {
+          // Show error message
+          let errorMessage = "Échec de la suppression. Veuillez réessayer.";
+          if (deleteBidError?.response?.data?.message) {
+            errorMessage = deleteBidError.response.data.message;
+          } else if (deleteBidError?.message) {
+            errorMessage = deleteBidError.message;
+          }
+          toast.error(errorMessage);
+          return; // Exit early if there was an error
+        }
+      }
+      
+    } finally {
+      setDeletingAutoBid(false);
+    }
+  };
+
+  return (
+    <>
+      <style jsx>{`
+        :global(.auction-details-section) {
+          padding-top: clamp(120px, 15vw, 140px) !important;
+        }
+
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+
+        .auction-card-hover {
+          transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .auction-card-hover:hover {
+          transform: translateY(-8px) scale(1.02);
+          box-shadow: 0 20px 40px rgba(0, 99, 177, 0.15);
+        }
+
+        .timer-digit {
+          animation: pulse 1s infinite;
+        }
+
+        .timer-digit.urgent {
+          animation: pulse 0.5s infinite;
+          color: #ff4444;
+        }
+      `}</style>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+
+      {loading ? (
+        <div
+          className="auction-details-section mb-110"
+          style={{ 
+            marginTop: 0, 
+            paddingTop: 'clamp(100px, 12vw, 120px)',
+            minHeight: 'calc(100vh - 100px)'
+          }}
+        >
+          <div className="container-fluid">
+            <div className="row">
+              <div className="col-12 text-center">
+                <div className="spinner-border text-warning" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                <h3 className="mt-3">Chargement des détails de l'enchère...</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : error ? (
+        <div
+          className="auction-details-section mb-110"
+          style={{ 
+            marginTop: 0, 
+            paddingTop: 'clamp(100px, 12vw, 120px)',
+            minHeight: 'calc(100vh - 100px)'
+          }}
+        >
+          <div className="container-fluid">
+            <div className="row">
+              <div className="col-12 text-center">
+                <div className="alert alert-danger">
+                  <h3>{error}</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div
+            className="auction-details-section auction-details-modern mb-110"
+            style={{ 
+              marginTop: 0, 
+              paddingTop: 'clamp(120px, 15vw, 140px)',
+              minHeight: 'calc(100vh - 120px)'
+            }}
+          >
+            <div className="container">
+              <div className="row gy-5">
+                {/* Left Column - Image Section */}
+                <div className="col-xl-7 image-column-top-spacing" style={{ paddingTop: '0' }}>
+                  <div className="main-image-container" style={{ position: 'relative', marginTop: '0' }}>
+                    {showVideo && safeVideos.length > 0 ? (
+                      <video
+                        src={(() => {
+                          const videoUrl = safeVideos[selectedVideoIndex]?.url;
+                          if (videoUrl) {
+                            if (videoUrl.startsWith('http')) {
+                              return videoUrl;
+                            } else if (videoUrl.startsWith('/static/')) {
+                              return `${app.baseURL}${videoUrl.substring(1)}`;
+                            } else if (videoUrl.startsWith('/')) {
+                              return `${app.baseURL}${videoUrl.substring(1)}`;
+                            } else {
+                              return `${app.baseURL}${videoUrl}`;
+                            }
+                          }
+                          return '';
+                        })()}
+                        controls
+                        className="main-video"
+                        crossOrigin="use-credentials"
+                        style={{
+                          width: '100%',
+                          height: '400px',
+                          objectFit: 'contain',
+                          borderRadius: '8px'
+                        }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '';
+                        }}
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    ) : (
+                    <img
+                      src={(() => {
+                        if (safeThumbs.length > 0) {
+                          const imageUrl = safeThumbs[selectedImageIndex]?.url;
+                          if (imageUrl) {
+                            // Handle different URL formats
+                            if (imageUrl.startsWith('http')) {
+                              return imageUrl; // Already a full URL
+                            } else if (imageUrl.startsWith('/static/')) {
+                              const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
+                              console.log('🎯 AUCTION DETAILS MAIN IMAGE:', {
+                                originalUrl: imageUrl,
+                                finalUrl: finalUrl,
+                                index: selectedImageIndex
+                              });
+                              return finalUrl;
+                            } else if (imageUrl.startsWith('/')) {
+                              const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
+                              console.log('🎯 AUCTION DETAILS MAIN IMAGE:', {
+                                originalUrl: imageUrl,
+                                finalUrl: finalUrl,
+                                index: selectedImageIndex
+                              });
+                              return finalUrl;
+                            } else {
+                              const finalUrl = `${app.baseURL}${imageUrl}`;
+                              console.log('🎯 AUCTION DETAILS MAIN IMAGE:', {
+                                originalUrl: imageUrl,
+                                finalUrl: finalUrl,
+                                index: selectedImageIndex
+                              });
+                              return finalUrl;
+                            }
+                          }
+                        }
+                        return DEFAULT_AUCTION_IMAGE;
+                      })()}
+                      alt={safeTitle}
+                      className="main-image"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = DEFAULT_AUCTION_IMAGE;
+                      }}
+                      crossOrigin="use-credentials"
+                    />
+                    )}
+                    
+                    {/* Media type toggle buttons */}
+                    {(safeThumbs.length > 0 || safeVideos.length > 0) && (
+                      <div className="media-toggle-buttons" style={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        display: 'flex',
+                        gap: '8px',
+                        zIndex: 10
+                      }}>
+                        {safeThumbs.length > 0 && (
+                          <button
+                            onClick={() => setShowVideo(false)}
+                            className={`media-toggle-btn ${!showVideo ? 'active' : ''}`}
+                            style={{
+                              padding: '8px 12px',
+                              border: 'none',
+                              borderRadius: '4px',
+                              backgroundColor: !showVideo ? '#007bff' : 'rgba(255,255,255,0.8)',
+                              color: !showVideo ? 'white' : '#333',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                            }}
+                          >
+                            📷 Images ({safeThumbs.length})
+                          </button>
+                        )}
+                        {safeVideos.length > 0 && (
+                          <button
+                            onClick={() => setShowVideo(true)}
+                            className={`media-toggle-btn ${showVideo ? 'active' : ''}`}
+                            style={{
+                              padding: '8px 12px',
+                              border: 'none',
+                              borderRadius: '4px',
+                              backgroundColor: showVideo ? '#007bff' : 'rgba(255,255,255,0.8)',
+                              color: showVideo ? 'white' : '#333',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                            }}
+                          >
+                            🎥 Videos ({safeVideos.length})
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="thumbnail-gallery-container">
+                    <Swiper {...settings} className="swiper thumbnail-gallery">
+                      {/* Image thumbnails */}
+                      {safeThumbs.length > 0 && safeThumbs.map((thumb, index) => (
+                        <SwiperSlide className="swiper-slide" key={`img-${index}`}>
+                            <div
+                              className={`thumbnail ${
+                              !showVideo && index === selectedImageIndex ? "active" : ""
+                              }`}
+                            style={{ position: 'relative' }}
+                            >
+                              <img
+                                src={(() => {
+                                  const imageUrl = thumb.url;
+                                  if (imageUrl) {
+                                    if (imageUrl.startsWith('http')) {
+                                      return imageUrl;
+                                    } else if (imageUrl.startsWith('/static/')) {
+                                      const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
+                                      console.log('🎯 AUCTION DETAILS THUMBNAIL:', {
+                                        originalUrl: imageUrl,
+                                        finalUrl: finalUrl,
+                                        index: index
+                                      });
+                                      return finalUrl;
+                                    } else if (imageUrl.startsWith('/')) {
+                                      const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
+                                      console.log('🎯 AUCTION DETAILS THUMBNAIL:', {
+                                        originalUrl: imageUrl,
+                                        finalUrl: finalUrl,
+                                        index: index
+                                      });
+                                      return finalUrl;
+                                    } else {
+                                      const finalUrl = `${app.baseURL}${imageUrl}`;
+                                      console.log('🎯 AUCTION DETAILS THUMBNAIL:', {
+                                        originalUrl: imageUrl,
+                                        finalUrl: finalUrl,
+                                        index: index
+                                      });
+                                      return finalUrl;
+                                    }
+                                  }
+                                  return DEFAULT_AUCTION_IMAGE;
+                                })()}
+                              alt={`${safeTitle} - Image ${index + 1}`}
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = DEFAULT_AUCTION_IMAGE;
+                                }}
+                                crossOrigin="use-credentials"
+                                onClick={() => handleThumbnailClick(index)}
+                              style={{ cursor: 'pointer' }}
+                            />
+                            <div 
+                              className="media-type-indicator"
+                              style={{
+                                position: 'absolute',
+                                top: '4px',
+                                left: '4px',
+                                backgroundColor: 'rgba(0,0,0,0.7)',
+                                color: 'white',
+                                padding: '2px 6px',
+                                borderRadius: '3px',
+                                fontSize: '10px',
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              📷
+                            </div>
+                            </div>
+                          </SwiperSlide>
+                      ))}
+                      
+                      {/* Video thumbnails */}
+                      {safeVideos.length > 0 && safeVideos.map((video, index) => (
+                        <SwiperSlide className="swiper-slide" key={`vid-${index}`}>
+                          <div
+                            className={`thumbnail ${
+                              showVideo && index === selectedVideoIndex ? "active" : ""
+                            }`}
+                            style={{ position: 'relative' }}
+                          >
+                            <video
+                              src={(() => {
+                                const videoUrl = video.url;
+                                if (videoUrl) {
+                                  if (videoUrl.startsWith('http')) {
+                                    return videoUrl;
+                                  } else if (videoUrl.startsWith('/static/')) {
+                                    return `${app.baseURL}${videoUrl.substring(1)}`;
+                                  } else if (videoUrl.startsWith('/')) {
+                                    return `${app.baseURL}${videoUrl.substring(1)}`;
+                                  } else {
+                                    return `${app.baseURL}${videoUrl}`;
+                                  }
+                                }
+                                return '';
+                              })()}
+                              style={{
+                                width: '100%',
+                                height: '80px',
+                                objectFit: 'cover',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                              }}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = '';
+                              }}
+                              crossOrigin="use-credentials"
+                              onClick={() => handleVideoThumbnailClick(index)}
+                              muted
+                              preload="metadata"
+                            />
+                            <div 
+                              className="media-type-indicator"
+                              style={{
+                                position: 'absolute',
+                                top: '4px',
+                                left: '4px',
+                                backgroundColor: 'rgba(0,0,0,0.7)',
+                                color: 'white',
+                                padding: '2px 6px',
+                                borderRadius: '3px',
+                                fontSize: '10px',
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              🎥
+                            </div>
+                            <div 
+                              className="play-overlay"
+                              style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                backgroundColor: 'rgba(0,0,0,0.6)',
+                                color: 'white',
+                                borderRadius: '50%',
+                                width: '24px',
+                                height: '24px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '12px'
+                              }}
+                            >
+                              ▶
+                            </div>
+                          </div>
+                        </SwiperSlide>
+                      ))}
+                      
+                      {/* Default thumbnail if no media */}
+                      {safeThumbs.length === 0 && safeVideos.length === 0 && (
+                        <SwiperSlide className="swiper-slide">
+                          <div className="thumbnail active">
+                            <img
+                              src={DEFAULT_AUCTION_IMAGE}
+                              alt="Default Auction Item"
+                              crossOrigin="use-credentials"
+                            />
+                          </div>
+                        </SwiperSlide>
+                      )}
+                    </Swiper>
+                  </div>
+                </div>
+
+                {/* Right Column - Auction Details */}
+                <div className="col-xl-5">
+                  <div className="auction-details-content" style={{ paddingTop: 'clamp(120px, 15vw, 140px)' }}>
+                    {/* Title above timer - Prominently displayed */}
+                    <div style={{ 
+                      marginBottom: '25px', 
+                      textAlign: 'center',
+                      padding: '15px 20px',
+                      background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                      border: '1px solid #e9ecef',
+                      display: 'block',
+                      width: '100%',
+                      visibility: 'visible',
+                      opacity: 1,
+                      position: 'relative',
+                      zIndex: 1
+                    }}>
+                      <h1 className="auction-title" style={{
+                        fontSize: 'clamp(18px, 3.5vw, 26px)',
+                        fontWeight: '700',
+                        color: '#0063b1',
+                        margin: 0,
+                        lineHeight: '1.4',
+                        wordBreak: 'break-word',
+                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                        display: 'block',
+                        width: '100%',
+                        visibility: 'visible',
+                        opacity: 1
+                      }}>
+                      {safeTitle}
+                    </h1>
+                    </div>
+
+                    {/* Auction timer and bid information */}
+                    <div className="bid-container">
+                      <div className="boxTime">
+                        <div className="countdown-timer">
+                          {/* Changed ul to div and applied inline styles for layout and appearance */}
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                background: "rgba(255, 255, 255, 0.2)",
+                                backdropFilter: "blur(10px)",
+                                borderRadius: "8px",
+                                padding: "4px 8px",
+                                minWidth: "35px",
+                                textAlign: "center",
+                                fontSize: "20px", // Larger font for numbers
+                                fontWeight: "700", // Bolder font for numbers
+                              }}
+                            >
+                              {time.day}
+                              <div
+                                style={{
+                                  fontSize: "10px",
+                                  opacity: 0.8,
+                                  fontWeight: "normal",
+                                }}
+                              >
+                                J
+                              </div>
+                            </div>
+                            <span
+                              style={{
+                                opacity: 0.8,
+                                fontSize: "20px",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              :
+                            </span>
+                            <div
+                              style={{
+                                background: "rgba(255, 255, 255, 0.2)",
+                                backdropFilter: "blur(10px)",
+                                borderRadius: "8px",
+                                padding: "4px 8px",
+                                minWidth: "35px",
+                                textAlign: "center",
+                                fontSize: "20px",
+                                fontWeight: "700",
+                              }}
+                            >
+                              {time.hour}
+                              <div
+                                style={{
+                                  fontSize: "10px",
+                                  opacity: 0.8,
+                                  fontWeight: "normal",
+                                }}
+                              >
+                                H
+                              </div>
+                            </div>
+                            <span
+                              style={{
+                                opacity: 0.8,
+                                fontSize: "20px",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              :
+                            </span>
+                            <div
+                              style={{
+                                background: "rgba(255, 255, 255, 0.2)",
+                                backdropFilter: "blur(10px)",
+                                borderRadius: "8px",
+                                padding: "4px 8px",
+                                minWidth: "35px",
+                                textAlign: "center",
+                                fontSize: "20px",
+                                fontWeight: "700",
+                              }}
+                            >
+                              {time.mun}
+                              <div
+                                style={{
+                                  fontSize: "10px",
+                                  opacity: 0.8,
+                                  fontWeight: "normal",
+                                }}
+                              >
+                                M
+                              </div>
+                            </div>
+                            <span
+                              style={{
+                                opacity: 0.8,
+                                fontSize: "20px",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              :
+                            </span>
+                            <div
+                              style={{
+                                background: "rgba(255, 255, 255, 0.2)",
+                                backdropFilter: "blur(10px)",
+                                borderRadius: "8px",
+                                padding: "4px 8px",
+                                minWidth: "35px",
+                                textAlign: "center",
+                                fontSize: "20px",
+                                fontWeight: "700",
+                              }}
+                            >
+                              {time.sec}
+                              <div
+                                style={{
+                                  fontSize: "10px",
+                                  opacity: 0.8,
+                                  fontWeight: "normal",
+                                }}
+                              >
+                                S
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="auction-details-table mb-4">
+                        <table className="table">
+                          <tbody>
+                            <tr>
+                              <td className="fw-bold">{t('auctionDetails.startingPrice') || 'Prix de départ'}</td>
+                              <td>
+                                {formatPrice(safeStartingPrice)}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="fw-bold">{t('auctionDetails.currentPrice') || 'Prix actuel'}</td>
+                              <td>
+                                {formatPrice(safeCurrentPrice)}
+                              </td>
+                            </tr>
+                            {auctionData?.bidType !== 'SERVICE' && auctionData?.quantity && auctionData?.quantity !== "Non spécifiée" && !isNaN(auctionData.quantity) && auctionData.quantity !== "" && (
+                              <tr>
+                                <td className="fw-bold">{t('auctionDetails.availableQuantity') || 'Quantité disponible'}</td>
+                                <td>
+                                  <span style={{
+                                    color: '#0063b1',
+                                    fontWeight: '600',
+                                    fontSize: '16px'
+                                  }}>
+                                    {auctionData.quantity}
+                                  </span>
+                                </td>
+                              </tr>
+                            )}
+                            <tr>
+                              <td className="fw-bold">{t('auctionDetails.auctionType') || 'Type d\'enchère'}</td>
+                              <td>{auctionData?.bidType || "PRODUCT"}</td>
+                            </tr>
+                            <tr>
+                              <td className="fw-bold">{t('common.status')}</td>
+                              <td>
+                                <span className="status-badge">
+                                  {auctionData?.status || "OPEN"}
+                                </span>
+                              </td>
+                            </tr>
+                            {safeOwner && (
+                              <tr>
+                                <td className="fw-bold">{t('common.seller')}</td>
+                                <td>
+                                  {safeAuctionData.hidden === true ? (
+                                    <span>{t('common.anonymous') || 'Anonyme'}</span>
+                                  ) : (
+                                    <Link
+                                      href={`/profile/${safeOwner._id || safeOwner}`}
+                                      style={{
+                                        color: '#0063b1',
+                                        textDecoration: 'none',
+                                        fontWeight: '600',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        transition: 'all 0.3s ease',
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.textDecoration = 'underline';
+                                        e.currentTarget.style.color = '#004c8c';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.textDecoration = 'none';
+                                        e.currentTarget.style.color = '#0063b1';
+                                      }}
+                                    >
+                                      {safeOwner.entreprise || 
+                                       (safeOwner.firstName && safeOwner.lastName ? `${safeOwner.firstName} ${safeOwner.lastName}` : safeOwner.name || safeOwner.username || t('common.seller'))}
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
+                                        <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
+                                      </svg>
+                                    </Link>
+                                  )}
+                                </td>
+                              </tr>
+                            )}
+                            <tr>
+                              <td className="fw-bold">{t('common.location') || 'Localisation'}</td>
+                              <td>
+                                {auctionData?.wilaya && auctionData?.place 
+                                  ? `${auctionData.place}, ${auctionData.wilaya}`
+                                  : auctionData?.wilaya || auctionData?.place || 'Non spécifiée'}
+                              </td>
+                            </tr>
+
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="bid-section">
+                        <p className="bid-label">{t('auctionDetails.yourBid') || 'Votre enchère'} DA </p>
+                        {isOwner && (
+                          <div
+                            style={{
+                              backgroundColor: "#fff3cd",
+                              border: "1px solid #ffeaa7",
+                              borderRadius: "8px",
+                              padding: "12px",
+                              marginBottom: "16px",
+                              color: "#856404",
+                              fontSize: "14px",
+                              fontWeight: "500",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                            </svg>
+                            {t('auctionDetails.cannotBidOwn') || 'Vous ne pouvez pas enchérir sur votre propre enchère.'}
+                          </div>
+                        )}
+                        <div className="quantity-counter-and-btn-area">
+                          <HandleQuantity
+                            initialValue={safeCurrentPrice || safeStartingPrice || 0}
+                            startingPrice={safeCurrentPrice || safeStartingPrice}
+                            placeholder={(() => {
+                              const lastOffer = Array.isArray(offers) && offers.length > 0
+                                ? (offers[offers.length - 1]?.price || offers[offers.length - 1]?.bidAmount)
+                                : null;
+                              const refPrice = lastOffer || safeCurrentPrice || safeStartingPrice || 0;
+                              if (refPrice > 0) {
+                                return `${t('auctionDetails.lastOffer') || 'Dernière offre'}: ${Number(refPrice).toLocaleString('fr-FR')} DA`;
+                              }
+                              return t('auctionDetails.enterYourBid') || "Entrez votre offre";
+                            })()}
+                          />
+                          <button
+                            className="bid-btn-modern"
+                            onClick={isOwner ? undefined : handleBidClick}
+                            disabled={isOwner}
+                            style={{
+                              opacity: isOwner ? 0.5 : 1,
+                              cursor: isOwner ? "not-allowed" : "pointer",
+                              pointerEvents: isOwner ? "none" : "auto",
+                            }}
+                            title={
+                              isOwner
+                                ? t('auctionDetails.cannotBidOwn') || "Vous ne pouvez pas enchérir sur votre propre enchère."
+                                : undefined
+                            }
+                          >
+                            <div className="btn-content">
+                              <span>{t('auctionDetails.placeBid') || 'Placer une Enchère'}</span>
+                              <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M14.4301 5.92993L20.5001 11.9999L14.4301 18.0699"
+                                  stroke="white"
+                                  strokeWidth="2"
+                                  strokeMiterlimit="10"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                                <path
+                                  d="M3.5 12H20.33"
+                                  stroke="white"
+                                  strokeWidth="2"
+                                  strokeMiterlimit="10"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Professional User Special Access Box */}
+                    {isLogged && auth.user?.type === 'PROFESSIONAL' && (
+                      <div className="professional-access-box" style={{
+                        marginTop: '24px',
+                        padding: '24px',
+                        background: 'white',
+                        borderRadius: '16px',
+                        border: '1px solid #e9ecef',
+                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                        position: 'relative'
+                      }}>
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                          {/* Header */}
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            marginBottom: '20px'
+                          }}>
+                            <div style={{
+                              width: '40px',
+                              height: '40px',
+                              borderRadius: '50%',
+                              background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}>
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="white"/>
+                              </svg>
+                            </div>
+                            <div>
+                              <h4 style={{
+                                margin: 0,
+                                color: '#333',
+                                fontSize: '18px',
+                                fontWeight: '600'
+                              }}>
+                                Accès Professionnel
+                                {loadingAutoBid && (
+                                  <span style={{
+                                    marginLeft: '8px',
+                                    fontSize: '14px',
+                                    color: '#666',
+                                    fontWeight: 'normal'
+                                  }}>
+                                    (Chargement...)
+                                  </span>
+                                )}
+                                {hasExistingAutoBid && !loadingAutoBid && (
+                                  <span style={{
+                                    marginLeft: '8px',
+                                    fontSize: '12px',
+                                    color: '#28a745',
+                                    fontWeight: '500',
+                                    background: '#d4edda',
+                                    padding: '2px 8px',
+                                    borderRadius: '12px',
+                                    border: '1px solid #c3e6cb'
+                                  }}>
+                                    ✓ Auto-enchère active
+                                  </span>
+                                )}
+                              </h4>
+                              <p style={{
+                                margin: '4px 0 0 0',
+                                color: '#666',
+                                fontSize: '14px'
+                              }}>
+                                {hasExistingAutoBid 
+                                  ? "Vous avez une auto-enchère configurée pour cette vente" 
+                                  : "Accès spécial pour les professionnels"
+                                }
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Input Section */}
+                          <div style={{
+                            background: '#f8f9fa',
+                            borderRadius: '12px',
+                            padding: '16px',
+                            marginBottom: '20px',
+                            border: '1px solid #e9ecef'
+                          }}>
+                            <label style={{
+                              display: 'block',
+                              marginBottom: '8px',
+                              color: '#333',
+                              fontSize: '14px',
+                              fontWeight: '500'
+                            }}>
+                              {hasExistingAutoBid ? 'Montant Auto-enchère Actuel (DA)' : 'Montant spécial (DA)'}
+                            </label>
+                            <input
+                              type="number"
+                              value={professionalAmount || safeCurrentPrice}
+                              onChange={(e) => setProfessionalAmount(e.target.value)}
+                              placeholder={
+                                loadingAutoBid 
+                                  ? (savingAutoBid ? "Mise à jour..." : "Chargement...") 
+                                  : "Entrez le montant"
+                              }
+                              disabled={loadingAutoBid}
+                              style={{
+                                width: '100%',
+                                padding: '12px 16px',
+                                borderRadius: '8px',
+                                border: '1px solid #ddd',
+                                background: loadingAutoBid ? '#f5f5f5' : 'white',
+                                color: loadingAutoBid ? '#999' : '#333',
+                                fontSize: '16px',
+                                outline: 'none',
+                                transition: 'all 0.3s ease',
+                                cursor: loadingAutoBid ? 'not-allowed' : 'text'
+                              }}
+                              onFocus={(e) => {
+                                if (!loadingAutoBid) {
+                                  e.target.style.borderColor = '#0063b1';
+                                  e.target.style.boxShadow = '0 0 0 3px rgba(0, 99, 177, 0.1)';
+                                }
+                              }}
+                              onBlur={(e) => {
+                                if (!loadingAutoBid) {
+                                  e.target.style.borderColor = '#ddd';
+                                  e.target.style.boxShadow = 'none';
+                                }
+                              }}
+                            />
+                            <p style={{
+                              margin: '8px 0 0 0',
+                              color: '#666',
+                              fontSize: '12px'
+                            }}>
+                              Montant minimum: {formatPrice(safeStartingPrice)}
+                            </p>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div style={{
+                            display: 'flex',
+                            gap: '12px'
+                          }}>
+                            {!hasExistingAutoBid ? (
+                              /* Create New Auto-Bid Buttons */
+                              <>
+                                <button
+                                  onClick={handleAutoBidSave}
+                                  disabled={savingAutoBid || loadingAutoBid}
+                                  style={{
+                                    flex: 1,
+                                    padding: '12px 20px',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    background: (savingAutoBid || loadingAutoBid) ? '#ccc' : 'linear-gradient(90deg, #0063b1, #00a3e0)',
+                                    color: 'white',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: (savingAutoBid || loadingAutoBid) ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    boxShadow: (savingAutoBid || loadingAutoBid) ? 'none' : '0 4px 12px rgba(0, 99, 177, 0.3)'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!savingAutoBid && !loadingAutoBid) {
+                                      e.target.style.transform = 'translateY(-2px)';
+                                      e.target.style.boxShadow = '0 6px 16px rgba(0, 99, 177, 0.4)';
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!savingAutoBid && !loadingAutoBid) {
+                                      e.target.style.transform = 'translateY(0)';
+                                      e.target.style.boxShadow = '0 4px 12px rgba(0, 99, 177, 0.3)';
+                                    }
+                                  }}
+                                >
+                                  {savingAutoBid ? 'Création...' : 'Créer Auto-enchère'}
+                                </button>
+                                <button
+                                  onClick={() => setProfessionalAmount('')}
+                                  disabled={loadingAutoBid}
+                                  style={{
+                                    padding: '12px 20px',
+                                    borderRadius: '8px',
+                                    border: '1px solid #ddd',
+                                    background: loadingAutoBid ? '#f5f5f5' : 'white',
+                                    color: loadingAutoBid ? '#999' : '#666',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: loadingAutoBid ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.3s ease'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!loadingAutoBid) {
+                                      e.target.style.background = '#f8f9fa';
+                                      e.target.style.transform = 'translateY(-2px)';
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!loadingAutoBid) {
+                                      e.target.style.background = 'white';
+                                      e.target.style.transform = 'translateY(0)';
+                                    }
+                                  }}
+                                >
+                                  Effacer
+                                </button>
+                              </>
+                            ) : (
+                              /* Update Auto-Bid Button */
+                              <>
+                                <button
+                                  onClick={handleAutoBidSave}
+                                  disabled={savingAutoBid || loadingAutoBid}
+                                  style={{
+                                    width: '100%',
+                                    padding: '12px 20px',
+                                    borderRadius: '8px',
+                                    border: 'none',
+                                    background: (savingAutoBid || loadingAutoBid) ? '#ccc' : 'linear-gradient(90deg, #ffa500, #ff8c00)',
+                                    color: 'white',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: (savingAutoBid || loadingAutoBid) ? 'not-allowed' : 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    boxShadow: (savingAutoBid || loadingAutoBid) ? 'none' : '0 4px 12px rgba(255, 165, 0, 0.3)'
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!savingAutoBid && !loadingAutoBid) {
+                                      e.target.style.transform = 'translateY(-2px)';
+                                      e.target.style.boxShadow = '0 6px 16px rgba(255, 165, 0, 0.4)';
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!savingAutoBid && !loadingAutoBid) {
+                                      e.target.style.transform = 'translateY(0)';
+                                      e.target.style.boxShadow = '0 4px 12px rgba(255, 165, 0, 0.3)';
+                                    }
+                                  }}
+                                >
+                                  {savingAutoBid ? 'Mise à jour...' : 'Mettre à jour'}
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+
+                    <ul className="question-and-wishlist-area" style={{ display: 'none' }}></ul>
+
+                  </div>
+                </div>
+              </div>
+
+              {/* Product Description Section */}
+              <div className="row mt-5">
+                <div className="col-12">
+                  <div className="auction-details-description-area">
+                    <div className="tab-container">
+                      <button
+                        className={`tab-button ${
+                          activeTab === "description" ? "active" : ""
+                        }`}
+                        onClick={() => setActiveTab("description")}
+                        type="button"
+                        role="tab"
+                        aria-controls="nav-description"
+                        aria-selected={activeTab === "description"}
+                      >
+                        {t('common.description')}
+                      </button>
+                      <button
+                        className={`tab-button ${
+                          activeTab === "reviews" ? "active" : ""
+                        }`}
+                        onClick={() => setActiveTab("reviews")}
+                        type="button"
+                        role="tab"
+                        aria-controls="nav-reviews"
+                        aria-selected={activeTab === "reviews"}
+                      >
+                        {t('common.comments') || 'Commentaires'} ({auctionData?.comments?.length || 0})
+                      </button>
+
+                    </div>
+
+                    <div className="tab-content" id="nav-tabContent">
+                      <div
+                        className={`tab-pane fade ${
+                          activeTab === "description" ? "show active" : ""
+                        }`}
+                        id="nav-description"
+                        role="tabpanel"
+                        aria-labelledby="nav-description-tab"
+                      >
+                        <div className="description-content">
+                          <h3>{auctionData?.name || t('auctionDetails.productDetails') || "Détails du Produit"}</h3>
+                          <p>
+                            {auctionData?.description ||
+                              t('auctionDetails.noDescription') || "Aucune description disponible."}
+                          </p>
+                          <ul className="features-list">
+                            <li>
+                              <svg
+                                width={13}
+                                height={11}
+                                viewBox="0 0 13 11"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M12.2986 0.0327999C9.89985 0.832756 6.86143 2.97809 4.03623 6.6688L2.36599 4.778C2.09946 4.4871 1.63748 4.4871 1.38872 4.778L0.162693 6.17792C-0.0682981 6.45063 -0.0505298 6.86879 0.19823 7.12332L3.96516 10.814C4.28499 11.1231 4.78251 11.0322 4.99574 10.6504C7.00358 6.92333 9.17134 4.15985 12.7961 0.996384C13.2581 0.596406 12.8672 -0.167189 12.2986 0.0327999Z" />
+                              </svg>
+                              Produit de Qualité
+                            </li>
+                            <li>
+                              <svg
+                                width={13}
+                                height={11}
+                                viewBox="0 0 13 11"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M12.2986 0.0327999C9.89985 0.832756 6.86143 2.97809 4.03623 6.6688L2.36599 4.778C2.09946 4.4871 1.63748 4.4871 1.38872 4.778L0.162693 6.17792C-0.0682981 6.45063 -0.0505298 6.86879 0.19823 7.12332L3.96516 10.814C4.28499 11.1231 4.78251 11.0322 4.99574 10.6504C7.00358 6.92333 9.17134 4.15985 12.7961 0.996384C13.2581 0.596406 12.8672 -0.167189 12.2986 0.0327999Z" />
+                              </svg>
+                              Excellent État
+                            </li>
+                            <li>
+                              <svg
+                                width={13}
+                                height={11}
+                                viewBox="0 0 13 11"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M12.2986 0.0327999C9.89985 0.832756 6.86143 2.97809 4.03623 6.6688L2.36599 4.778C2.09946 4.4871 1.63748 4.4871 1.38872 4.778L0.162693 6.17792C-0.0682981 6.45063 -0.0505298 6.86879 0.19823 7.12332L3.96516 10.814C4.28499 11.1231 4.78251 11.0322 4.99574 10.6504C7.00358 6.92333 9.17134 4.15985 12.7961 0.996384C13.2581 0.596406 12.8672 -0.167189 12.2986 0.0327999Z" />
+                              </svg>
+                              Livraison Disponible
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div
+                        className={`tab-pane fade ${
+                          activeTab === "reviews" ? "show active" : ""
+                        }`}
+                        id="nav-reviews"
+                        role="tabpanel"
+                        aria-labelledby="nav-reviews-tab"
+                      >
+                        <div className="reviews-area">
+
+
+                          {/* --- Comments Section (from backend) --- */}
+                          <div
+                            className="comments-area"
+                            style={{ marginBottom: 32 }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginBottom: "20px",
+                                borderBottom: "2px solid #f0f0f0",
+                                paddingBottom: "10px",
+                              }}
+                            >
+                              <h4
+                                style={{
+                                  margin: 0,
+                                  color: "#333",
+                                  fontSize: "18px",
+                                }}
+                              >
+                                💬 Commentaires (
+                                {auctionData?.comments?.length || 0})
+                              </h4>
+                            </div>
+
+                            {/* Comment Form */}
+                            {isLogged ? (
+                              <div
+                                style={{
+                                  background: "#f8f9fa",
+                                  borderRadius: "12px",
+                                  padding: "16px",
+                                  marginBottom: "20px",
+                                  border: "1px solid #e9ecef",
+                                }}
+                              >
+                                <form
+                                  onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    if (!newComment.trim()) return;
+                                    setSubmitting(true);
+                                    try {
+                                      console.log("[Comment Submit] Sending:", {
+                                        comment: newComment,
+                                        user: auth.user._id,
+                                        bid: auctionId,
+                                      });
+                                      const response =
+                                        await commentsApi.createCommentForBid(
+                                          auctionId,
+                                          newComment,
+                                          auth.user._id
+                                        );
+                                      console.log(
+                                        "[Comment Submit] Success:",
+                                        response
+                                      );
+                                      setNewComment("");
+                                      // Re-fetch auction details to update comments
+                                      const data =
+                                        await AuctionsAPI.getAuctionById(
+                                          auctionId
+                                        );
+                                      setAuctionData(data);
+                                    } catch (err) {
+                                      console.error(
+                                        "[Comment Submit] Error:",
+                                        err,
+                                        err?.response
+                                      );
+                                      toast.error(
+                                        "Erreur lors de l'envoi du commentaire."
+                                      );
+                                    }
+                                    setSubmitting(false);
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "flex-start",
+                                      gap: "12px",
+                                    }}
+                                  >
+                                    <img
+                                      src={
+                                        auth.user?.photoURL ||
+                                        DEFAULT_USER_AVATAR
+                                      }
+                                      alt="Your avatar"
+                                      style={{
+                                        width: "36px",
+                                        height: "36px",
+                                        borderRadius: "50%",
+                                        objectFit: "cover",
+                                        border: "2px solid #0063b1",
+                                      }}
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = DEFAULT_USER_AVATAR;
+                                      }}
+                                    />
+                                    <div style={{ flex: 1 }}>
+                                      <textarea
+                                        value={newComment}
+                                        onChange={(e) =>
+                                          setNewComment(e.target.value)
+                                        }
+                                        placeholder="Partagez votre opinion sur cette enchère..."
+                                        required
+                                        rows={2}
+                                        style={{
+                                          width: "100%",
+                                          padding: "12px",
+                                          borderRadius: "8px",
+                                          border: "1px solid #ddd",
+                                          marginBottom: "8px",
+                                          fontFamily: "inherit",
+                                          fontSize: "14px",
+                                          resize: "vertical",
+                                          minHeight: "60px",
+                                        }}
+                                      />
+                                      <button
+                                        type="submit"
+                                        disabled={submitting}
+                                        style={{
+                                          background: submitting
+                                            ? "#ccc"
+                                            : "#0063b1",
+                                          color: "#fff",
+                                          border: "none",
+                                          borderRadius: "6px",
+                                          padding: "8px 16px",
+                                          cursor: submitting
+                                            ? "not-allowed"
+                                            : "pointer",
+                                          fontSize: "14px",
+                                          fontWeight: "500",
+                                          transition: "background 0.3s ease",
+                                        }}
+                                      >
+                                        {submitting ? "Envoi..." : "Publier"}
+                                      </button>
+                                    </div>
+                                  </div>
+                                </form>
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  background: "#fff3cd",
+                                  border: "1px solid #ffeaa7",
+                                  borderRadius: "8px",
+                                  padding: "12px",
+                                  marginBottom: "20px",
+                                  color: "#856404",
+                                  textAlign: "center",
+                                }}
+                              >
+                                <span>
+                                  🔒 Connectez-vous pour ajouter un commentaire
+                                </span>
+                              </div>
+                            )}
+
+                             {/* Comments List */}
+                            <div className="comments-list">
+                              {auctionData?.comments &&
+                              auctionData.comments.length > 0 ? (
+                                <ul style={{ listStyle: "none", padding: 0 }}>
+                                  {(showAllComments
+                                    ? auctionData.comments
+                                    : auctionData.comments.slice(0, 3)
+                                  ).map((comment) => (
+                                    <CommentItem 
+                                       key={comment._id} 
+                                       comment={comment} 
+                                       isLogged={isLogged} 
+                                       authUser={auth.user} 
+                                       onReplySuccess={async () => {
+                                          const data = await AuctionsAPI.getAuctionById(auctionId);
+                                          setAuctionData(data);
+                                       }}
+                                    />
+                                  ))}
+                                </ul>
+                              ) : (
+                                <p
+                                  style={{
+                                    textAlign: "center",
+                                    color: "#999",
+                                    padding: "20px",
+                                    background: "#f9f9f9",
+                                    borderRadius: "8px",
+                                  }}
+                                >
+                                  Soyez le premier à commenter !
+                                </p>
+                              )}
+
+                              {auctionData?.comments?.length > 3 && (
+                                <div style={{ textAlign: "center", marginTop: "15px" }}>
+                                  <button
+                                    onClick={() => setShowAllComments(!showAllComments)}
+                                    style={{
+                                      background: "transparent",
+                                      border: "1px solid #0063b1",
+                                      color: "#0063b1",
+                                      padding: "8px 16px",
+                                      borderRadius: "20px",
+                                      cursor: "pointer",
+                                      fontSize: "14px",
+                                      fontWeight: "600",
+                                      transition: "all 0.3s ease",
+                                    }}
+                                  >
+                                    {showAllComments ? "Voir moins" : "Voir tous les commentaires"}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Similar Auctions Section */}
+          <div className="related-auction-section mb-110" style={{ paddingTop: 'clamp(120px, 15vw, 140px)' }}>
+            <div className="container">
+              <div className="row mb-50">
+                <div className="col-lg-12 d-flex align-items-center justify-content-between flex-wrap gap-3">
+                  <div className="section-title">
+                    <h2 className="related-auction-title">
+                      {t('auctionDetails.similarAuctions') || 'Enchères'} <span>{t('auctionDetails.similar') || 'Similaires'}</span>
+                    </h2>
+                  </div>
+                  <div className="slider-btn-grp">
+                    <div className="slider-btn auction-slider-prev">
+                      <svg
+                        width={9}
+                        height={15}
+                        viewBox="0 0 9 15"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M0 7.50009L9 0L3.27273 7.50009L9 15L0 7.50009Z" />
+                      </svg>
+                    </div>
+                    <div className="slider-btn auction-slider-next">
+                      <svg
+                        width={9}
+                        height={15}
+                        viewBox="0 0 9 15"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M9 7.50009L0 0L5.72727 7.50009L0 15L9 7.50009Z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="auction-slider-area">
+                <div className="row">
+                  <div className="col-lg-12">
+                    <Swiper
+                      {...settingsForUpcomingAuction}
+                      className="swiper auction-slider"
+                    >
+                      <div className="swiper-wrapper">
+                        {allAuctions && allAuctions.length > 1 ? (
+                          allAuctions
+                            .filter((auction) => auction._id !== auctionId)
+                            .slice(0, 4)
+                            .map((auction, index) => {
+                              const hasAuctionEnded =
+                                similarAuctionTimers[index]?.total <= 0;
+                              const timer = similarAuctionTimers[index] || { days: "00", hours: "00", minutes: "00", seconds: "00" };
+                              const isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30;
+
+                              // Get seller display name (handles anonymous sellers)
+                              const getSellerDisplayName = (auction) => {
+                                if (auction.hidden === true) {
+                                  return t('common.anonymous');
+                                }
+                                if (auction.owner?.firstName && auction.owner?.lastName) {
+                                  return `${auction.owner.firstName} ${auction.owner.lastName}`;
+                                }
+                                if (auction.owner?.name) {
+                                  return auction.owner.name;
+                                }
+                                if (auction.seller?.name) {
+                                  return auction.seller.name;
+                                }
+                                return t('liveAuction.seller');
+                              };
+
+                              const displayName = getSellerDisplayName(auction);
+
+                              return (
+                                <SwiperSlide
+                                  className="swiper-slide"
+                                  key={auction._id || index}
+                                  style={{ height: 'auto', display: 'flex', justifyContent: 'center' }}
+                                >
+                                  <div
+                                    className="auction-card-hover"
+                                    style={{
+                                      background: hasAuctionEnded ? "#f0f0f0" : "white",
+                                      borderRadius: "clamp(16px, 3vw, 20px)",
+                                      overflow: "hidden",
+                                      boxShadow: hasAuctionEnded ? "none" : "0 8px 25px rgba(0, 0, 0, 0.08)",
+                                      border: hasAuctionEnded ? "1px solid #d0d0d0" : "1px solid rgba(0, 0, 0, 0.05)",
+                                      width: "100%",
+                                      maxWidth: "320px",
+                                      position: "relative",
+                                      minHeight: "360px",
+                                      cursor: hasAuctionEnded ? "not-allowed" : "pointer",
+                                      opacity: hasAuctionEnded ? 0.6 : 1,
+                                      pointerEvents: hasAuctionEnded ? "none" : "auto",
+                                      transition: "all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      if (!hasAuctionEnded) {
+                                        e.currentTarget.style.transform = "translateY(-8px) scale(1.02)";
+                                        e.currentTarget.style.boxShadow = "0 20px 40px rgba(0, 99, 177, 0.15)";
+                                      }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      if (!hasAuctionEnded) {
+                                        e.currentTarget.style.transform = "translateY(0) scale(1)";
+                                        e.currentTarget.style.boxShadow = "0 8px 25px rgba(0, 0, 0, 0.08)";
+                                      }
+                                    }}
+                                  >
+                                    {/* Auction Image */}
+                                    <div style={{
+                                      position: "relative",
+                                      height: "clamp(160px, 25vw, 200px)",
+                                      overflow: "hidden",
+                                    }}>
+                                      <img
+                                        src={(() => {
+                                          if (auction.thumbs && auction.thumbs.length > 0) {
+                                            const imageUrl = auction.thumbs[0].url;
+                                            if (imageUrl) {
+                                              if (imageUrl.startsWith('http')) {
+                                                return imageUrl;
+                                              } else if (imageUrl.startsWith('/static/')) {
+                                                const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
+                                                console.log('🎯 SIMILAR AUCTION IMAGE:', {
+                                                  originalUrl: imageUrl,
+                                                  finalUrl: finalUrl,
+                                                  auctionId: auction._id
+                                                });
+                                                return finalUrl;
+                                              } else if (imageUrl.startsWith('/')) {
+                                                const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
+                                                console.log('🎯 SIMILAR AUCTION IMAGE:', {
+                                                  originalUrl: imageUrl,
+                                                  finalUrl: finalUrl,
+                                                  auctionId: auction._id
+                                                });
+                                                return finalUrl;
+                                              } else {
+                                                const finalUrl = `${app.baseURL}${imageUrl}`;
+                                                console.log('🎯 SIMILAR AUCTION IMAGE:', {
+                                                  originalUrl: imageUrl,
+                                                  finalUrl: finalUrl,
+                                                  auctionId: auction._id
+                                                });
+                                                return finalUrl;
+                                              }
+                                            }
+                                          }
+                                          return DEFAULT_AUCTION_IMAGE;
+                                        })()}
+                                        alt={auction.title || auction.name || "Auction"}
+                                        style={{
+                                          width: "100%",
+                                          height: "100%",
+                                          objectFit: "cover",
+                                          transition: "transform 0.4s ease",
+                                          filter: hasAuctionEnded ? "grayscale(100%)" : "none",
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          if (!hasAuctionEnded) {
+                                            e.currentTarget.style.transform = "scale(1.1)";
+                                          }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.currentTarget.style.transform = "scale(1)";
+                                        }}
+                                        onError={(e) => {
+                                          e.currentTarget.onerror = null;
+                                          e.currentTarget.src = DEFAULT_AUCTION_IMAGE;
+                                        }}
+                                        crossOrigin="use-credentials"
+                                      />
+
+                                      {/* Professional Badge */}
+                                      {auction.isPro && !hasAuctionEnded && (
+                                        <div style={{
+                                          position: "absolute",
+                                          top: "10px",
+                                          left: "10px",
+                                          background: "linear-gradient(45deg, #ffd700, #ffed4e)",
+                                          color: "#1a1a1a",
+                                          padding: "6px 12px",
+                                          borderRadius: "20px",
+                                          fontSize: "11px",
+                                          fontWeight: "700",
+                                          boxShadow: "0 4px 12px rgba(255, 215, 0, 0.4)",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: "4px",
+                                          zIndex: 2,
+                                        }}>
+                                          <span>👑</span>
+                                          <span>PRO</span>
+                                        </div>
+                                      )}
+
+                                      {/* Timer Overlay */}
+                                      <div style={{
+                                        position: "absolute",
+                                        top: "10px",
+                                        right: "10px",
+                                        background: hasAuctionEnded 
+                                          ? "rgba(100, 100, 100, 0.8)" 
+                                          : isUrgent 
+                                            ? "linear-gradient(45deg, #ff4444, #ff6666)" 
+                                            : "linear-gradient(45deg, #0063b1, #00a3e0)",
+                                        color: "white",
+                                        padding: "8px 12px",
+                                        borderRadius: "20px",
+                                        fontSize: "12px",
+                                        fontWeight: "600",
+                                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+                                      }}>
+                                        <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                                          <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.hours}</span>
+                                          <span>:</span>
+                                          <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.minutes}</span>
+                                          <span>:</span>
+                                          <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.seconds}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Auction Details */}
+                                    <div style={{ padding: "clamp(16px, 3vw, 20px)" }}>
+                                      {/* Title */}
+                                      <h3 style={{
+                                        fontSize: "18px",
+                                        fontWeight: "600",
+                                        color: hasAuctionEnded ? "#666" : "#333",
+                                        marginBottom: "12px",
+                                        lineHeight: "1.3",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                      }}>
+                                        <Link
+                                          href={hasAuctionEnded ? "#" : `/auction-details/${auction._id}`}
+                                          style={{
+                                            color: "inherit",
+                                            textDecoration: "none",
+                                            cursor: hasAuctionEnded ? "not-allowed" : "pointer",
+                                          }}
+                                        >
+                                          {auction.title || auction.name || "Enchère sans titre"}
+                                        </Link>
+                                      </h3>
+
+                                      {/* Quantity and Location Info */}
+                                      {(() => {
+                                        const hasQuantity = auction.quantity && auction.quantity !== "Non spécifiée" && !isNaN(auction.quantity) && auction.quantity !== "";
+                                        const place = auction.place || '';
+                                        const address = auction.address || '';
+                                        const location = auction.location || '';
+                                        const wilaya = auction.wilaya || '';
+                                        const parts = [place, address, location, wilaya].filter(Boolean);
+                                        const uniqueParts = [...new Set(parts)];
+                                        const hasLocation = uniqueParts.length > 0;
+                                        const itemCount = (hasQuantity ? 1 : 0) + (hasLocation ? 1 : 0);
+                                        
+                                        if (itemCount === 0) return null;
+                                        
+                                        return (
+                                      <div style={{
+                                        display: "grid",
+                                            gridTemplateColumns: itemCount === 2 ? "1fr 1fr" : "1fr",
+                                            gap: "6px",
+                                            marginBottom: "8px",
+                                          }}>
+                                            {hasQuantity && (
+                                              <div style={{
+                                                background: hasAuctionEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                                borderRadius: '8px',
+                                                padding: '4px 8px',
+                                                borderLeft: hasAuctionEnded ? '3px solid #d0d0d0' : '3px solid #0063b1',
+                                              }}>
+                                          <p style={{
+                                                  fontSize: "10px",
+                                            color: hasAuctionEnded ? "#888" : "#666",
+                                                  margin: "0 0 2px 0",
+                                            fontWeight: "600",
+                                          }}>
+                                                  📦 Quantité
+                                          </p>
+                                          <p style={{
+                                                  fontSize: "12px",
+                                            color: hasAuctionEnded ? "#888" : "#333",
+                                            margin: 0,
+                                            fontWeight: "500",
+                                          }}>
+                                                  {auction.quantity}
+                                          </p>
+                                        </div>
+                                            )}
+
+                                            {hasLocation && (
+                                              <div style={{
+                                                background: hasAuctionEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                                borderRadius: '8px',
+                                                padding: '4px 8px',
+                                                borderLeft: hasAuctionEnded ? '3px solid #d0d0d0' : '3px solid #0063b1',
+                                              }}>
+                                          <p style={{
+                                                  fontSize: "10px",
+                                            color: hasAuctionEnded ? "#888" : "#666",
+                                                  margin: "0 0 2px 0",
+                                            fontWeight: "600",
+                                          }}>
+                                                  📍 Localisation
+                                          </p>
+                                          <p style={{
+                                                  fontSize: "12px",
+                                            color: hasAuctionEnded ? "#888" : "#333",
+                                            margin: 0,
+                                            fontWeight: "500",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                          }}>
+                                                  {uniqueParts.join(', ')}
+                                          </p>
+                                        </div>
+                                            )}
+                                      </div>
+                                        );
+                                      })()}
+
+                                      {/* Price Info - Only show if price exists and is valid */}
+                                      {((auction.currentPrice && !isNaN(auction.currentPrice) && auction.currentPrice > 0) || 
+                                        (auction.startingPrice && !isNaN(auction.startingPrice) && auction.startingPrice > 0)) && (
+                                      <div style={{
+                                        background: hasAuctionEnded 
+                                            ? "#f0f0f0" 
+                                          : "linear-gradient(135deg, #f8f9fa, #e9ecef)",
+                                          borderRadius: "8px",
+                                          padding: "4px 8px",
+                                          marginBottom: "8px",
+                                        border: hasAuctionEnded 
+                                            ? "1px solid #e0e0e0" 
+                                          : "1px solid #e9ecef",
+                                          borderLeft: hasAuctionEnded ? '3px solid #d0d0d0' : '3px solid #0063b1',
+                                        }}>
+                                          <p style={{
+                                            fontSize: "10px",
+                                            color: hasAuctionEnded ? "#888" : "#666",
+                                            margin: "0 0 2px 0",
+                                            fontWeight: "600",
+                                          }}>
+                                            💰 {t('auctionDetails.currentPrice') || 'Prix actuel'}
+                                          </p>
+                                          <p style={{
+                                            fontSize: "12px",
+                                            color: hasAuctionEnded ? "#888" : "#0063b1",
+                                            margin: 0,
+                                            fontWeight: "600",
+                                          }}>
+                                            {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()} DA
+                                          </p>
+                                        </div>
+                                      )}
+
+                                      {/* Quantity Section - Only show if quantity exists and is valid */}
+                                      {auction.quantity && auction.quantity !== "Non spécifiée" && !isNaN(auction.quantity) && auction.quantity !== "" && (
+                                      <div style={{
+                                        background: hasAuctionEnded 
+                                            ? "#f0f0f0" 
+                                            : "linear-gradient(135deg, #f8f9fa, #e9ecef)",
+                                          borderRadius: "8px",
+                                          padding: "4px 8px",
+                                          marginBottom: "8px",
+                                        border: hasAuctionEnded 
+                                          ? "1px solid #e0e0e0" 
+                                            : "1px solid #e9ecef",
+                                          borderLeft: hasAuctionEnded ? '3px solid #d0d0d0' : '3px solid #0063b1',
+                                        }}>
+                                          <p style={{
+                                            fontSize: "10px",
+                                            color: hasAuctionEnded ? "#888" : "#666",
+                                            margin: "0 0 2px 0",
+                                            fontWeight: "600",
+                                          }}>
+                                            📦 Quantité disponible
+                                          </p>
+                                          <p style={{
+                                            fontSize: "12px",
+                                            color: hasAuctionEnded ? "#888" : "#0063b1",
+                                            margin: 0,
+                                            fontWeight: "600",
+                                          }}>
+                                            {auction.quantity}
+                                          </p>
+                                        </div>
+                                      )}
+
+
+                                      {/* Bidders Count */}
+                                      <div style={{
+                                        background: hasAuctionEnded 
+                                          ? "#f0f0f0" 
+                                          : "linear-gradient(135deg, #f8f9fa, #e9ecef)",
+                                        borderRadius: "8px",
+                                        padding: "6px 8px",
+                                        marginBottom: "8px",
+                                        border: hasAuctionEnded 
+                                          ? "1px solid #e0e0e0" 
+                                          : "1px solid #e9ecef",
+                                      }}>
+                                        <div style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          gap: "6px",
+                                        }}>
+                                          <div style={{
+                                            width: "6px",
+                                            height: "6px",
+                                            borderRadius: "50%",
+                                            background: hasAuctionEnded ? "#888" : "#0063b1",
+                                          }}></div>
+                                          <span style={{
+                                            fontSize: "12px",
+                                            fontWeight: "600",
+                                            color: hasAuctionEnded ? "#888" : "#0063b1",
+                                          }}>
+                                            {auction.biddersCount || 0} participant{(auction.biddersCount || 0) !== 1 ? "s" : ""} ont enchéri
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      {/* Seller Info */}
+                                      <div style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "10px",
+                                        marginBottom: "16px",
+                                      }}>
+                                        <img
+                                          src={auction.seller?.photoURL || auction.owner?.photoURL || DEFAULT_PROFILE_IMAGE}
+                                          alt={displayName}
+                                          style={{
+                                            width: "32px",
+                                            height: "32px",
+                                            borderRadius: "50%",
+                                            objectFit: "cover",
+                                            filter: hasAuctionEnded ? "grayscale(100%)" : "none",
+                                          }}
+                                          onError={(e) => {
+                                            e.currentTarget.onerror = null;
+                                            e.currentTarget.src = DEFAULT_PROFILE_IMAGE;
+                                          }}
+                                        />
+                                        <span style={{
+                                          fontSize: "14px",
+                                          color: hasAuctionEnded ? "#888" : "#666",
+                                          fontWeight: "500",
+                                        }}>
+                                          {displayName}
+                                        </span>
+                                      </div>
+
+                                      {/* View Auction Button */}
+                                      <Link
+                                        href={hasAuctionEnded ? "#" : `/auction-details/${auction._id}`}
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          gap: "8px",
+                                          width: "100%",
+                                          padding: "12px 20px",
+                                          background: hasAuctionEnded 
+                                            ? "#cccccc" 
+                                            : "linear-gradient(90deg, #0063b1, #00a3e0)",
+                                          color: hasAuctionEnded ? "#888" : "white",
+                                          textDecoration: "none",
+                                          borderRadius: "25px",
+                                          fontWeight: "600",
+                                          fontSize: "14px",
+                                          transition: "all 0.3s ease",
+                                          boxShadow: hasAuctionEnded ? "none" : "0 4px 12px rgba(0, 99, 177, 0.3)",
+                                          cursor: hasAuctionEnded ? "not-allowed" : "pointer",
+                                          pointerEvents: hasAuctionEnded ? "none" : "auto",
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          if (!hasAuctionEnded) {
+                                            e.currentTarget.style.background = "linear-gradient(90deg, #00a3e0, #0063b1)";
+                                            e.currentTarget.style.transform = "translateY(-2px)";
+                                            e.currentTarget.style.boxShadow = "0 8px 20px rgba(0, 99, 177, 0.4)";
+                                          }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          if (!hasAuctionEnded) {
+                                            e.currentTarget.style.background = "linear-gradient(90deg, #0063b1, #00a3e0)";
+                                            e.currentTarget.style.transform = "translateY(0)";
+                                            e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 99, 177, 0.3)";
+                                          }
+                                        }}
+                                      >
+                                        Voir les détails
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                          <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
+                                        </svg>
+                                      </Link>
+                                    </div>
+                                  </div>
+                                </SwiperSlide>
+                              );
+                            })
+                        ) : (
+                          <SwiperSlide className="swiper-slide">
+                            <div
+                              style={{
+                                minHeight: "300px",
+                                display: "flex",
+                                flexDirection: "row",
+                                flexWrap: "wrap",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                width: "100%",
+                                gap: "30px",
+                                background: "white",
+                                borderRadius: "12px",
+                                padding: "30px",
+                                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  flex: "1 1 auto",
+                                  minWidth: "300px",
+                                  maxWidth: "500px",
+                                }}
+                              >
+                                <h3
+                                  style={{
+                                    fontSize: "24px",
+                                    marginBottom: "20px",
+                                    color: "#333",
+                                  }}
+                                >
+                                  {t('auctionDetails.noSimilarAuctions')}
+                                </h3>
+                                <p
+                                  style={{
+                                    fontSize: "16px",
+                                    color: "#666",
+                                    lineHeight: "1.6",
+                                  }}
+                                >
+                                  {t('auctionDetails.checkMainPage')}
+                                </p>
+                              </div>
+                              <div style={{ flex: "0 0 auto" }}>
+                                <Link
+                                  href="/auction-sidebar"
+                                  className="primary-btn btn-hover"
+                                  style={{
+                                    display: "inline-block",
+                                    padding: "12px 25px",
+                                    borderRadius: "30px",
+                                    background: "#0063b1",
+                                    color: "white",
+                                    fontWeight: "600",
+                                    textDecoration: "none",
+                                    boxShadow:
+                                      "0 4px 8px rgba(0, 99, 177, 0.3)",
+                                    transition: "all 0.3s ease",
+                                  }}
+                                >
+                                  Voir toutes les enchères
+                                </Link>
+                              </div>
+                            </div>
+                          </SwiperSlide>
+                        )}
+                      </div>
+                    </Swiper>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Bid Confirmation Modal */}
+      {showBidConfirmation && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          backdropFilter: 'blur(5px)',
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '20px',
+            padding: '40px',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
+            animation: 'modalSlideIn 0.3s ease-out',
+            position: 'relative',
+          }}>
+            {/* Close button */}
+            <button
+              onClick={handleCancelBidSubmit}
+              style={{
+                position: 'absolute',
+                top: '15px',
+                right: '15px',
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                color: '#999',
+                cursor: 'pointer',
+                padding: '5px',
+                borderRadius: '50%',
+                width: '35px',
+                height: '35px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#f5f5f5';
+                e.target.style.color = '#666';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'none';
+                e.target.style.color = '#999';
+              }}
+            >
+              ×
+            </button>
+
+            {/* Modal Icon */}
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '20px',
+            }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 20px',
+                animation: 'pulse 2s infinite',
+              }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '30px',
+            }}>
+              <h3 style={{
+                fontSize: '24px',
+                fontWeight: '700',
+                color: '#333',
+                marginBottom: '15px',
+                lineHeight: '1.3',
+              }}>
+                Confirmer votre enchère
+              </h3>
+              
+              <p style={{
+                fontSize: '16px',
+                color: '#666',
+                lineHeight: '1.6',
+                marginBottom: '20px',
+              }}>
+                Êtes-vous sûr de vouloir placer cette enchère ?
+              </p>
+
+              {/* Bid Amount Display */}
+              <div style={{
+                background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                borderRadius: '12px',
+                padding: '20px',
+                marginBottom: '20px',
+                border: '1px solid #e9ecef',
+              }}>
+                <p style={{
+                  fontSize: '14px',
+                  color: '#666',
+                  margin: '0 0 8px 0',
+                  fontWeight: '600',
+                }}>
+                  Montant de votre enchère
+                </p>
+                <div style={{
+                  fontSize: '28px',
+                  fontWeight: '700',
+                  color: '#0063b1',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}>
+                  <span id="modal-bid-amount">
+                    {(() => {
+                      const bidInput = document.querySelector(".quantity__input");
+                      return bidInput ? bidInput.value : '0';
+                    })()}
+                  </span>
+                  <span style={{ fontSize: '16px', color: '#666' }}>DA</span>
+                </div>
+              </div>
+
+              <p style={{
+                fontSize: '14px',
+                color: '#999',
+                lineHeight: '1.5',
+                fontStyle: 'italic',
+              }}>
+                Une fois confirmée, votre enchère sera soumise et ne pourra plus être annulée.
+              </p>
+            </div>
+
+            {/* Modal Buttons */}
+            <div style={{
+              display: 'flex',
+              gap: '15px',
+              justifyContent: 'center',
+            }}>
+              <button
+                onClick={handleCancelBidSubmit}
+                style={{
+                  padding: '14px 28px',
+                  borderRadius: '12px',
+                  border: '2px solid #ddd',
+                  background: 'white',
+                  color: '#666',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  minWidth: '120px',
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.borderColor = '#999';
+                  e.target.style.color = '#333';
+                  e.target.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.borderColor = '#ddd';
+                  e.target.style.color = '#666';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                Annuler
+              </button>
+              
+              <button
+                onClick={handleConfirmedBidSubmit}
+                style={{
+                  padding: '14px 28px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'linear-gradient(90deg, #0063b1, #00a3e0)',
+                  color: 'white',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  minWidth: '120px',
+                  boxShadow: '0 4px 12px rgba(0, 99, 177, 0.3)',
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'linear-gradient(90deg, #00a3e0, #0063b1)';
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 16px rgba(0, 99, 177, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'linear-gradient(90deg, #0063b1, #00a3e0)';
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(0, 99, 177, 0.3)';
+                }}
+              >
+                Oui, Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Animation Styles */}
+      <style jsx>{`
+        @keyframes modalSlideIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(0, 99, 177, 0.7);
+          }
+          70% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(0, 99, 177, 0);
+          }
+          100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(0, 99, 177, 0);
+          }
+        }
+      `}</style>
+    </>
+  );
+};
+
+import CommentItem from "@/components/common/CommentItem";
+
+export default MultipurposeDetails1;
+

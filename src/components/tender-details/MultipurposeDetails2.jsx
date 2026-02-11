@@ -1746,7 +1746,7 @@ const MultipurposeDetails2 = () => {
                         id={safeTenderData._id || tenderId}
                         title={safeTitle}
                         description={safeDescription}
-                        imageUrl={getTenderImageUrl(safeTenderData)}
+                        imageUrl={safeAttachments.length > 0 ? (safeAttachments[0].url.startsWith('http') ? safeAttachments[0].url : `${app.baseURL}${safeAttachments[0].url.startsWith('/') ? safeAttachments[0].url.substring(1) : safeAttachments[0].url}`) : DEFAULT_TENDER_IMAGE}
                       />
                     </div>
                     {showVideo && safeVideos.length > 0 ? (

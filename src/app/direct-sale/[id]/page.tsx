@@ -2,33 +2,42 @@ import DirectSaleDetailsClient from "./DirectSaleDetailsClient";
 import app, { getFrontendUrl } from "@/config";
 import { normalizeImageUrlForMetadata } from "@/utils/url";
 
-export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
+export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<any> {
   const params = await props.params;
   const id = params.id;
   
+  console.log('🔍 [DirectSale] Generating metadata for ID:', id);
+  
   if (!id) {
-    return { title: "Direct Sale Details - MazadClick" };
+    console.warn('⚠️ [DirectSale] No ID provided');
+    return { title: "Vente Directe - MazadClick" };
   }
 
   try {
-    const res = await fetch(`${app.baseURL}direct-sales/${id}`, {
+    const fetchUrl = `${app.baseURL}direct-sales/${id}`;
+    console.log('📡 [DirectSale] Fetching from:', fetchUrl);
+    
+    const res = await fetch(fetchUrl, {
       headers: { 
         'x-access-key': app.apiKey,
         'Content-Type': 'application/json'
       },
-      next: { revalidate: 0 }
+      cache: 'no-store'  // Always fetch fresh data
     });
     
     if (!res.ok) {
-       return { title: "Direct Sale Details - MazadClick" };
+      console.error('❌ [DirectSale] Fetch failed with status:', res.status);
+      return { title: "Vente Directe - MazadClick" };
     }
 
     const json = await res.json();
     const directSale = json.data || json; 
+    
+    console.log('✅ [DirectSale] Data fetched:', directSale?.title || directSale?.name);
 
     // Title and description
-    const title = directSale.title || directSale.name || "Direct Sale Details";
-    const description = directSale.description || "View this product on MazadClick";
+    const title = directSale.title || directSale.name || "Vente Directe";
+    const description = directSale.description || "Découvrez cette opportunité sur MazadClick";
 
     // Image logic
     let imageUrl = "/assets/images/logo-dark.png";
@@ -38,6 +47,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     
     // Normalize image URL for Open Graph metadata
     const fullImageUrl = normalizeImageUrlForMetadata(imageUrl, getFrontendUrl());
+    console.log('🖼️ [DirectSale] Image URL:', fullImageUrl);
 
     // Extract additional metadata
     const price = directSale.price || 0;
@@ -56,8 +66,10 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
 
     // Get production frontend URL for sharing
     const productionFrontendUrl = getFrontendUrl().replace(/\/$/, '');
+    
+    console.log('🌐 [DirectSale] Production URL:', productionFrontendUrl + '/direct-sale/' + id);
 
-    return {
+    const metadata = {
       title: `${title} - Vente Directe MazadClick`,
       description: enhancedDescription,
       openGraph: {
@@ -138,9 +150,14 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
         }),
       },
     };
+    
+    console.log('✅ [DirectSale] Metadata generated successfully');
+    console.log('📋 [DirectSale] OG Image:', metadata.openGraph?.images?.[0]?.url);
+    return metadata;
+    
   } catch (error) {
-    console.error("Direct Sale metadata error:", error);
-    return { title: "Direct Sale Details - MazadClick" };
+    console.error("❌ [DirectSale] Metadata error:", error);
+    return { title: "Vente Directe - MazadClick" };
   }
 }
 

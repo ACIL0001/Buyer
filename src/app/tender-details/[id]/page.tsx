@@ -2,33 +2,42 @@ import TenderDetailsClient from "./TenderDetailsClient";
 import app, { getFrontendUrl } from "@/config";
 import { normalizeImageUrlForMetadata } from "@/utils/url";
 
-export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
+export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<any> {
   const params = await props.params;
   const id = params.id;
   
+  console.log('🔍 [Tender] Generating metadata for ID:', id);
+  
   if (!id) {
-    return { title: "Tender Details - MazadClick" };
+    console.warn('⚠️ [Tender] No ID provided');
+    return { title: "Appel d'Offres - MazadClick" };
   }
 
   try {
-    const res = await fetch(`${app.baseURL}tender/${id}`, {
+    const fetchUrl = `${app.baseURL}tenders/${id}`;
+    console.log('📡 [Tender] Fetching from:', fetchUrl);
+    
+    const res = await fetch(fetchUrl, {
       headers: { 
         'x-access-key': app.apiKey,
         'Content-Type': 'application/json'
       },
-      next: { revalidate: 0 }
+      cache: 'no-store'  // Always fetch fresh data
     });
     
     if (!res.ok) {
-       return { title: "Tender Details - MazadClick" };
+      console.error('❌ [Tender] Fetch failed with status:', res.status);
+      return { title: "Appel d'Offres - MazadClick" };
     }
 
     const json = await res.json();
     const tender = json.data || json; 
+    
+    console.log('✅ [Tender] Data fetched:', tender?.title || tender?.name);
 
     // Tender title and description
-    const title = tender.title || tender.name || "Tender Details";
-    const description = tender.description || "View this tender on MazadClick";
+    const title = tender.title || tender.name || "Appel d'Offres";
+    const description = tender.description || "Découvrez cet appel d'offres sur MazadClick";
 
     // Image logic
     let imageUrl = "/assets/images/logo-dark.png";
@@ -40,6 +49,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     
     // Normalize image URL for Open Graph metadata
     const fullImageUrl = normalizeImageUrlForMetadata(imageUrl, getFrontendUrl());
+    console.log('🖼️ [Tender] Image URL:', fullImageUrl);
 
     // Extract additional metadata
     const budget = tender.budget || tender.estimatedValue || 0;
@@ -60,8 +70,10 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
 
     // Get production frontend URL for sharing
     const productionFrontendUrl = getFrontendUrl().replace(/\/$/, '');
+    
+    console.log('🌐 [Tender] Production URL:', productionFrontendUrl + '/tender-details/' + id);
 
-    return {
+    const metadata = {
       title: `${title} - Appel d'Offres MazadClick`,
       description: enhancedDescription,
       openGraph: {
@@ -151,9 +163,14 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
         }),
       },
     };
+    
+    console.log('✅ [Tender] Metadata generated successfully');
+    console.log('📋 [Tender] OG Image:', metadata.openGraph?.images?.[0]?.url);
+    return metadata;
+    
   } catch (error) {
-    console.error("Tender metadata error:", error);
-    return { title: "Tender Details - MazadClick" };
+    console.error("❌ [Tender] Metadata error:", error);
+    return { title: "Appel d'Offres - MazadClick" };
   }
 }
 

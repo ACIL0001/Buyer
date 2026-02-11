@@ -6,37 +6,44 @@ export async function generateMetadata(props) {
   const params = await props.params;
   const id = params.id;
   
+  console.log('🔍 [Auction] Generating metadata for ID:', id);
+  
   if (!id) {
+    console.warn('⚠️ [Auction] No ID provided');
     return {
-      title: "Auction Details - MazadClick",
+      title: "Enchère - MazadClick",
     };
   }
 
   try {
     // Fetch auction data server-side
-    // using fetch directly to avoid axios issues on server or complex interceptors
-    const res = await fetch(`${app.baseURL}bid/${id}`, {
+    const fetchUrl = `${app.baseURL}bid/${id}`;
+    console.log('📡 [Auction] Fetching from:', fetchUrl);
+    
+    const res = await fetch(fetchUrl, {
       headers: { 
         'x-access-key': app.apiKey,
         'Content-Type': 'application/json'
       },
-      next: { revalidate: 0 } // No cache to ensure fresh data
+      cache: 'no-store'  // Always fetch fresh data
     });
     
     if (!res.ok) {
-       console.error("Metadata fetch failed:", res.status, res.statusText);
+       console.error("❌ [Auction] Fetch failed:", res.status, res.statusText);
        return {
-            title: "Auction Details - MazadClick",
-            description: "View details about this auction on MazadClick",
+            title: "Enchère - MazadClick",
+            description: "Découvrez cette enchère sur MazadClick",
        };
     }
 
     const json = await res.json();
     const auction = json.data || json; 
+    
+    console.log('✅ [Auction] Data fetched:', auction?.title || auction?.name);
 
     // Get title and description
-    const title = auction.title || auction.name || "Auction Item";
-    const description = auction.description || "Bid on this item at MazadClick";
+    const title = auction.title || auction.name || "Enchère";
+    const description = auction.description || "Découvrez cette enchère sur MazadClick";
 
     // Get image URL
     let imageUrl = "/assets/images/logo-dark.png";
@@ -50,6 +57,7 @@ export async function generateMetadata(props) {
     
     // Normalize image URL to be absolute for Open Graph
     const fullImageUrl = normalizeImageUrlForMetadata(imageUrl, getFrontendUrl());
+    console.log('🖼️ [Auction] Image URL:', fullImageUrl);
 
     // Extract additional metadata
     const currentPrice = auction.currentPrice || auction.price || auction.startingPrice || 0;
@@ -70,8 +78,10 @@ export async function generateMetadata(props) {
 
     // Get production frontend URL for sharing
     const productionFrontendUrl = getFrontendUrl().replace(/\/$/, '');
+    
+    console.log('🌐 [Auction] Production URL:', productionFrontendUrl + '/auction-details/' + id);
 
-    return {
+    const metadata = {
       title: `${title} - Enchère MazadClick`,
       description: enhancedDescription,
       openGraph: {
@@ -153,10 +163,16 @@ export async function generateMetadata(props) {
         }),
       },
     };
+    
+    console.log('✅ [Auction] Metadata generated successfully');
+    console.log('📋 [Auction] OG Image:', metadata.openGraph?.images?.[0]?.url);
+    return metadata;
+    
   } catch (error) {
-    console.error("Error generating metadata:", error);
+    console.error("❌ [Auction] Metadata error:", error);
     return {
-      title: "Auction Details - MazadClick",
+      title: "Enchère - MazadClick",
+      description: "Découvrez cette enchère sur MazadClick",
     };
   }
 }

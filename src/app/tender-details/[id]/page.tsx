@@ -148,8 +148,10 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
 }
 
 export default async function TenderDetailsPage(props: { params: Promise<{ id: string }> }) {
-  const params = await props.params;
+  // We await params just to satisfy Next.js server component requirements,
+  // but the client component uses useParams() hook
+  await props.params;
   return (
-    <TenderDetailsClient params={params} />
+    <TenderDetailsClient />
   );
 }

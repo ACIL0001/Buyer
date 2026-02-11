@@ -174,6 +174,6 @@ export async function generateMetadata(props) {
 export default async function AuctionDetailsPage(props) {
   const params = await props.params;
   return (
-    <AuctionDetailsClient params={params} />
+    <AuctionDetailsClient />
   );
 } 

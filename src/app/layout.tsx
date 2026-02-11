@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import Script from "next/script";
+import { Metadata, Viewport } from "next";
 import "../../public/assets/css/bootstrap-icons.css";
 import "../../public/assets/css/boxicons.min.css";
 import "../../public/assets/css/swiper-bundle.min.css";
@@ -12,8 +13,45 @@ import "../../public/assets/css/style.css";
 import "./rtl.css";
 
 import { dmsans, playfair_display } from "@/fonts/font";
-import Head from "./head";
 import ClientLayout from "./ClientLayout";
+
+export const metadata: Metadata = {
+  title: {
+    default: 'MazadClick',
+    template: '%s - MazadClick',
+  },
+  description: "MazadClick est la plateforme B2B d'enchères et de soumissions dédiée aux entreprises algériennes. Achetez, vendez et découvrez des opportunités uniques.",
+  metadataBase: new URL('https://mazadclick.vercel.app'),
+  applicationName: 'MazadClick',
+  keywords: ["MazadClick", "enchères", "soumissions", "B2B", "entreprise", "Algérie", "marketplace"],
+  icons: {
+    icon: '/assets/icon.png',
+    apple: '/assets/icon.png',
+    shortcut: '/assets/icon.png',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'fr_DZ',
+    url: 'https://mazadclick.vercel.app',
+    siteName: 'MazadClick',
+    title: 'MazadClick',
+    description: "MazadClick est la plateforme B2B d'enchères et de soumissions dédiée aux entreprises algériennes.",
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@MazadClick',
+    creator: '@MazadClick',
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#0063b1',
+  viewportFit: 'cover',
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -22,7 +60,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${playfair_display.variable} ${dmsans.variable}`}
       suppressHydrationWarning={true}
     >
-      <Head />
       <body>
         {/* Meta Pixel Code */}
         <Script

@@ -157,7 +157,20 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     
   } catch (error) {
     console.error("❌ [DirectSale] Metadata error:", error);
-    return { title: "Vente Directe - MazadClick" };
+    const fallbackTitle = "Vente Directe - MazadClick";
+    const fallbackDesc = "Découvrez cette opportunité sur MazadClick";
+
+    return {
+      title: fallbackTitle,
+      description: fallbackDesc,
+      openGraph: {
+        title: fallbackTitle,
+        description: fallbackDesc,
+        url: `${getFrontendUrl().replace(/\/$/, '')}/direct-sale/${id}`,
+        type: 'website',
+        siteName: 'MazadClick',
+      },
+    };
   }
 }
 

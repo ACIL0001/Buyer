@@ -170,7 +170,20 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     
   } catch (error) {
     console.error("❌ [Tender] Metadata error:", error);
-    return { title: "Appel d'Offres - MazadClick" };
+    const fallbackTitle = "Appel d'Offres - MazadClick";
+    const fallbackDesc = "Découvrez cet appel d'offres sur MazadClick";
+    
+    return {
+      title: fallbackTitle,
+      description: fallbackDesc,
+      openGraph: {
+        title: fallbackTitle,
+        description: fallbackDesc,
+        url: `${getFrontendUrl().replace(/\/$/, '')}/tender-details/${id}`,
+        type: 'website',
+        siteName: 'MazadClick',
+      },
+    };
   }
 }
 

@@ -170,9 +170,19 @@ export async function generateMetadata(props) {
     
   } catch (error) {
     console.error("❌ [Auction] Metadata error:", error);
+    const fallbackTitle = "Enchère - MazadClick";
+    const fallbackDesc = "Découvrez cette enchère sur MazadClick";
+    
     return {
-      title: "Enchère - MazadClick",
-      description: "Découvrez cette enchère sur MazadClick",
+      title: fallbackTitle,
+      description: fallbackDesc,
+      openGraph: {
+        title: fallbackTitle,
+        description: fallbackDesc,
+        url: `${getFrontendUrl().replace(/\/$/, '')}/auction-details/${id || ''}`,
+        type: 'website',
+        siteName: 'MazadClick',
+      },
     };
   }
 }

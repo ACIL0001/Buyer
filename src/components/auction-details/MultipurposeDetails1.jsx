@@ -390,6 +390,7 @@ const MultipurposeDetails1 = () => {
   const safeThumbs = safeAuctionData.thumbs || [];
   const safeVideos = safeAuctionData.videos || [];
   const safeTitle = safeAuctionData.title || safeAuctionData.name || t('details.product');
+  const safeDescription = safeAuctionData.description || t('auctionDetails.noDescription') || "Aucune description disponible.";
   const safeStartingPrice = safeAuctionData.startingPrice || 0;
   const safeCurrentPrice = safeAuctionData.currentPrice || 0;
   const safeOwner = safeAuctionData.owner || null;

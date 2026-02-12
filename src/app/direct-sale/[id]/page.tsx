@@ -70,7 +70,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
           },
         ] : [],
         siteName: 'MazadClick',
-        type: 'product',
+        type: 'website',
         locale: 'fr_DZ',
         // Product-specific Open Graph tags
         ...(price && {

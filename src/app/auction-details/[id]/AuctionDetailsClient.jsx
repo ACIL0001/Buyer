@@ -40,9 +40,9 @@ class ErrorBoundary extends React.Component {
           padding: '20px'
         }}>
           <div style={{ textAlign: 'center', maxWidth: '500px' }}>
-            <h2 style={{ color: '#dc3545', marginBottom: '20px' }}>{t('auctionDetails.errorOccurred') || 'Une erreur s\'est produite'}</h2>
+            <h2 style={{ color: '#dc3545', marginBottom: '20px' }}>{this.props.t('auctionDetails.errorOccurred') || 'Une erreur s\'est produite'}</h2>
             <p style={{ marginBottom: '20px' }}>
-              {t('auctionDetails.errorMessage') || 'Désolé, une erreur inattendue s\'est produite lors du chargement de cette page.'}
+              {this.props.t('auctionDetails.errorMessage') || 'Désolé, une erreur inattendue s\'est produite lors du chargement de cette page.'}
             </p>
             <button 
               onClick={() => window.location.reload()}
@@ -56,7 +56,7 @@ class ErrorBoundary extends React.Component {
                 fontSize: '16px'
               }}
             >
-              {t('auctionDetails.reloadPage') || 'Recharger la page'}
+              {this.props.t('auctionDetails.reloadPage') || 'Recharger la page'}
             </button>
           </div>
         </div>
@@ -222,7 +222,7 @@ export default function AuctionDetailsClient({ params }) {
         }
       `}</style>
       
-      <ErrorBoundary>
+      <ErrorBoundary t={t}>
         <div className={`${show && 'AllPages'}`}>
           {show && <Chat setShow={setShow} check={check} setCheck={setCheck}/>}
           <SnackbarProvider 

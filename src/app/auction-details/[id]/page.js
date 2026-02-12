@@ -84,7 +84,7 @@ export async function generateMetadata(props) {
           },
         ] : [],
         siteName: 'MazadClick',
-        type: 'product',
+        type: 'website',
         locale: 'fr_DZ',
         // Product-specific Open Graph tags
         ...(currentPrice && {

@@ -7,6 +7,25 @@ const require = createRequire(import.meta.url);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'mazadclick-server.onrender.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.mazad.click',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.onrender.com',
+        pathname: '/**',
+      }
+    ],
+  },
   /* config options here */
   webpack: (config, { isServer, dev }) => {
     config.resolve.alias = {

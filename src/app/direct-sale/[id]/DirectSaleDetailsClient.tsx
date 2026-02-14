@@ -29,7 +29,6 @@ import CommentItem from "@/components/common/CommentItem";
 // Import styles from the reference component
 import "@/components/auction-details/st.css";
 import "@/components/auction-details/modern-details.css";
-import { normalizeImageUrl } from "@/utils/url";
 
 export interface CommentUser {
   _id: string;
@@ -288,10 +287,9 @@ function DirectSaleDetailContent() {
 
   const getImageUrl = (imagePath?: string): string => {
     if (!imagePath) return DEFAULT_DIRECT_SALE_IMAGE;
-    
-    // Use the comprehensive normalizeImageUrl utility
-    // This handles localhost URLs, relative paths, and backend switching automatically
-    return normalizeImageUrl(imagePath);
+    if (imagePath.startsWith('http')) return imagePath;
+    if (imagePath.startsWith('/')) return `${app.route}${imagePath}`;
+    return `${app.route}/${imagePath}`;
   };
 
   const formatPrice = (price: number) => {

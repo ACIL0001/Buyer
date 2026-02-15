@@ -124,32 +124,32 @@ export default function Home() {
 
   const handleAuctionViewAll = () => {
     setAuctionDropdownOpen(false);
-    scrollToSection('auction');
+    window.location.href = 'http://localhost:3001/auction-sidebar/';
   };
 
   const handleTenderViewAll = () => {
     setTenderDropdownOpen(false);
-    scrollToSection('tenders');
+    window.location.href = 'http://localhost:3001/tenders/';
   };
 
   const handleVenteDirectViewAll = () => {
     setVenteDirectDropdownOpen(false);
-    scrollToSection('direct-sales');
+    window.location.href = 'http://localhost:3001/direct-sale/';
   };
 
   const handleCreateAuction = () => {
     setAuctionDropdownOpen(false);
-    window.location.href = `${getSellerUrl()}dashboard/auctions/create`;
+    window.location.href = 'http://localhost:3001/dashboard/auctions/create/';
   };
 
   const handleCreateTender = () => {
     setTenderDropdownOpen(false);
-    window.location.href = `${getSellerUrl()}dashboard/tenders/create`;
+    window.location.href = 'http://localhost:3001/dashboard/tenders/create/';
   };
 
   const handleCreateVenteDirect = () => {
     setVenteDirectDropdownOpen(false);
-    window.location.href = `${getSellerUrl()}dashboard/direct-sales/create`;
+    window.location.href = 'http://localhost:3001/dashboard/direct-sales/create/';
   };
 
   // Helper function to get category image URL

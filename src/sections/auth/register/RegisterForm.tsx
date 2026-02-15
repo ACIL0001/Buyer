@@ -38,6 +38,7 @@ import { LoadingButton } from '@mui/lab';
 // component
 import Iconify from '../../../components/Iconify';
 import { CLIENT_TYPE } from '../../../types/User';
+import ImageCropper from '../../../components/common/ImageCropper';
 
 function alpha(color: string, value: number) {
   return `rgba(${hexToRgb(color)}, ${value})`;
@@ -287,6 +288,25 @@ export default function RegisterForm() {
   const [isLoadingTerms, setIsLoadingTerms] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
+  // Image Cropper State
+  const [showCropper, setShowCropper] = useState(false);
+  const [cropImage, setCropImage] = useState<string | null>(null);
+
+  const readFile = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.addEventListener('load', () => resolve(reader.result as string), false);
+        reader.readAsDataURL(file);
+    });
+  };
+
+  const handleCropSave = (croppedBlob: Blob) => {
+    setShowCropper(false);
+    const file = new File([croppedBlob], 'avatar.jpg', { type: 'image/jpeg' });
+    formik.setFieldValue('photo', file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
   const RegisterSchema = Yup.object().shape({
     firstName: Yup.string().required('Le prénom est requis').min(2, 'Le prénom doit contenir au moins 2 caractères'),
     lastName: Yup.string().required('Le nom est requis').min(2, 'Le nom doit contenir au moins 2 caractères'),
@@ -419,11 +439,17 @@ export default function RegisterForm() {
 
   const { errors, touched, handleSubmit, isSubmitting, getFieldProps, setFieldValue, values } = formik;
 
-  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setFieldValue('photo', file);
-      setPhotoPreview(URL.createObjectURL(file));
+      try {
+        const imageDataUrl = await readFile(file);
+        setCropImage(imageDataUrl);
+        setShowCropper(true);
+      } catch (error) {
+        console.error(error);
+      }
+      event.target.value = '';
     }
   };
 
@@ -720,6 +746,16 @@ export default function RegisterForm() {
         termsAttachment={termsAttachment}
         isLoading={isLoadingTerms}
       />
+      
+      {showCropper && cropImage && (
+        <ImageCropper
+            imageSrc={cropImage}
+            aspectRatio={1}
+            onCancel={() => setShowCropper(false)}
+            onCropComplete={handleCropSave}
+            cropShape="round"
+        />
+      )}
     </FormikProvider>
   );
 }

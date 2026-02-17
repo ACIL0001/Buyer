@@ -204,11 +204,11 @@ export default function ProfilePage() {
             if (cropType === 'avatar') {
                 setIsUploadingAvatar(true);
                 const response = await UserAPI.uploadAvatar(formData);
-                handleUploadResponse(response, 'avatar');
+                handleUploadResponse(response.data, 'avatar');
             } else {
                 setIsUploadingCover(true);
                 const response = await UserAPI.uploadCover(formData);
-                handleUploadResponse(response, 'cover');
+                handleUploadResponse(response.data, 'cover');
             }
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || error.message || `Échec du téléchargement de ${cropType === 'avatar' ? 'l\'avatar' : 'la couverture'}`;
@@ -222,9 +222,8 @@ export default function ProfilePage() {
         }
     };
 
-    const handleUploadResponse = (response: any, type: 'avatar' | 'cover') => {
-        if (response && (response.success || response.user || response.data)) {
-            const updatedUser = response.user || response.data || response;
+    const handleUploadResponse = (updatedUser: any, type: 'avatar' | 'cover') => {
+        if (updatedUser) {
             const currentUser = auth.user;
             
             const mergedUser: any = { ...currentUser };
@@ -280,18 +279,18 @@ export default function ProfilePage() {
         try {
             const response = await UserAPI.updateProfile(formData);
 
-            if (response) {
-                let updatedUser = response.user || response.data || response;
+            if (response && response.data) {
+                let updatedUser = response.data;
 
                 if (updatedUser) {
                     const currentUser = auth.user;
                     const mergedUser = {
                         ...currentUser,
-                        _id: updatedUser._id || updatedUser.id || currentUser?._id,
+                        _id: updatedUser._id || currentUser?._id,
                         firstName: updatedUser.firstName || formData.firstName || currentUser?.firstName || '',
                         lastName: updatedUser.lastName || formData.lastName || currentUser?.lastName || '',
                         email: updatedUser.email || currentUser?.email || '',
-                        type: updatedUser.accountType || updatedUser.type || currentUser?.type || 'PROFESSIONAL',
+                        type: (updatedUser as any).accountType || updatedUser.type || currentUser?.type || 'PROFESSIONAL',
                         phone: updatedUser.phone || formData.phone || currentUser?.phone,
                         wilaya: updatedUser.wilaya || formData.wilaya || currentUser?.wilaya,
                         secteur: updatedUser.secteur || formData.secteur || currentUser?.secteur,
@@ -463,7 +462,7 @@ export default function ProfilePage() {
                 formData.append(fieldKey, file);
                 response = await IdentityAPI.create(formData);
                 
-                if (response && response._id) {
+                if (response && (response.data?._id || response._id)) {
                     enqueueSnackbar('Document sauvegardé avec succès. Cliquez sur "Soumettre" pour envoyer pour vérification.', { variant: 'success' });
                     await fetchIdentity();
                 }

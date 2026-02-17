@@ -8,6 +8,7 @@ export enum TENDER_STATUS {
   AWARDED = 'AWARDED',
   CLOSED = 'CLOSED',
   ARCHIVED = 'ARCHIVED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum TENDER_AUCTION_TYPE {
@@ -29,6 +30,10 @@ export interface Tender {
   tenderType: TENDER_TYPE;
   auctionType: TENDER_AUCTION_TYPE;
   maxBudget: number;
+  budget?: number; // legacy/ui fallback
+  deadline?: string; // legacy/ui fallback
+  bidsCount?: number; // legacy/ui fallback
+  bids?: any[]; // legacy/ui fallback
   currentLowestBid: number;
   quantity?: string;
   wilaya: string;
@@ -42,6 +47,9 @@ export interface Tender {
   comments: string[];
   createdAt: string;
   updatedAt: string;
+  evaluationType?: 'MOINS_DISANT' | 'MIEUX_DISANT';
+  contactNumber?: string;
+  place?: string;
   // --- Image properties for enhanced image loading ---
   image?: string;
   thumbnail?: string;

@@ -6,7 +6,7 @@ export interface DirectSale {
     quantity: number;
     soldQuantity?: number;
     saleType?: 'PRODUCT' | 'SERVICE';
-    status: 'ACTIVE' | 'SOLD_OUT' | 'INACTIVE' | 'ARCHIVED' | 'SOLD' | 'PAUSED';
+    status: SALE_STATUS;
     thumbs?: Array<{ _id: string; url: string; filename?: string; fullUrl?: string }>;
     videos?: Array<{ _id: string; url: string; filename?: string; fullUrl?: string }>;
     owner?: {
@@ -22,10 +22,27 @@ export interface DirectSale {
     productCategory?: {
         name: string;
     };
+    productSubCategory?: any;
     location?: string;
     place?: string;
     wilaya?: string;
     isPro?: boolean;
     hidden?: boolean;
     verifiedOnly?: boolean;
+    contactNumber?: string;
+    createdAt: string;
+    updatedAt: string;
+    category?: any;
+    stock?: number;
+    ordersCount?: number;
+}
+
+export enum SALE_STATUS {
+    ACTIVE = 'ACTIVE',
+    SOLD = 'SOLD',
+    INACTIVE = 'INACTIVE',
+    OUT_OF_STOCK = 'OUT_OF_STOCK',
+    SOLD_OUT = 'SOLD_OUT',
+    ARCHIVED = 'ARCHIVED',
+    PAUSED = 'PAUSED'
 }

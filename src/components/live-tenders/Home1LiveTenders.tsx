@@ -11,6 +11,8 @@ import { useMemo, useState, useEffect, useCallback } from "react";
 import { TendersAPI } from "@/app/api/tenders";
 import app from '@/config';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import CardSkeleton from '../skeletons/CardSkeleton';
 import { Tender, TENDER_STATUS } from '@/types/tender';
 import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
@@ -79,210 +81,43 @@ const Home1LiveTenders = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const { isLogged, auth } = useAuth();
-  const [liveTenders, setLiveTenders] = useState<Tender[]>([]);
-  const [allTenders, setAllTenders] = useState<Tender[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [timers, setTimers] = useState<{ [key: string]: Timer }>({});
-  const [animatedCards, setAnimatedCards] = useState<number[]>([]);
-  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
-  const [workingImageUrls, setWorkingImageUrls] = useState<{ [key: string]: string }>({});
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
+  const { data: allTendersResponse, isLoading: tendersLoading, error: tendersError } = useQuery({
+    queryKey: ['tenders', 'active'],
+    queryFn: () => TendersAPI.getActiveTenders(),
+  });
 
-  // Test image URL accessibility
-  const testImageUrl = async (url: string) => {
-    try {
-      const response = await fetch(url, { method: 'HEAD' });
-      const isAccessible = response.ok;
+  const error = tendersError ? (tendersError as any).message || "Failed to load tenders" : null;
 
-      return isAccessible;
-    } catch (error) {
-      // console.log(`❌ Tender image URL test failed for ${url}:`, error);
-      return false;
-    }
-  };
+  const allTenders = useMemo(() => {
+    const data = allTendersResponse?.data || allTendersResponse || [];
+    const transformed = (Array.isArray(data) ? data : []).map((tender: any) => ({
+      ...tender,
+      id: tender.id || tender._id,
+    }));
 
-  // Test multiple URLs and return the first working one
-  const findWorkingImageUrl = async (urls: string[]) => {
-    for (const url of urls) {
-      try {
-        const response = await fetch(url, { method: 'HEAD' });
-        if (response.ok) {
-          // console.log(`✅ Found working tender image URL: ${url}`);
-          return url;
-        }
-      } catch (error) {
-        // console.log(`❌ Tender URL failed: ${url}`);
-        continue;
-      }
-    }
-    // console.log('❌ No working tender image URLs found');
-    return null;
-  };
-
-  // Generate all possible backend image URLs for a given image path
-  const generateBackendImageUrls = (imagePath: string) => {
-    if (!imagePath) return [];
-    
-    const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
-    const baseURL = app.baseURL;
-    
-    return [
-      // Direct path with baseURL
-      `${baseURL}${cleanPath}`,
-      
-      // Common backend image paths
-      `${baseURL}uploads/${cleanPath}`,
-      `${baseURL}static/${cleanPath}`,
-      `${baseURL}public/${cleanPath}`,
-      `${baseURL}images/${cleanPath}`,
-      `${baseURL}assets/${cleanPath}`,
-      `${baseURL}media/${cleanPath}`,
-      `${baseURL}files/${cleanPath}`,
-      
-      // With original leading slash
-      `${baseURL}${imagePath}`,
-      
-      // Using route configuration if different from baseURL
-      app.route ? `${app.route}${cleanPath}` : null,
-      app.route ? `${app.route}${imagePath}` : null,
-    ].filter(Boolean); // Remove null values
-  };
-
-  // Handle image load errors
-  const handleImageError = async (tenderId: string, tender: Tender) => {
-    // console.log('❌ Tender image load error for:', tenderId, tender);
-    
-    // Get all possible image URLs for this tender
-    const possibleImageSources = [
-      tender.attachments?.[0]?.url,
-      tender.attachments?.[0]?.fullUrl,
-      tender.image,
-      tender.thumbnail,
-      tender.photo,
-      tender.picture,
-      tender.icon,
-      tender.logo,
-      tender.coverImage,
-      tender.mainImage
-    ].filter(Boolean);
-    
-    // Generate all possible backend URLs for each image source
-    const allPossibleUrls = possibleImageSources.flatMap(imagePath => 
-      generateBackendImageUrls(imagePath as string)
-    ).filter(Boolean) as string[];
-    
-    // console.log('🔍 All possible tender backend URLs to try:', allPossibleUrls);
-    
-    // Find the first working URL
-    const workingUrl = await findWorkingImageUrl(allPossibleUrls);
-    
-    if (workingUrl) {
-      console.log('🎉 Found working URL for tender:', tenderId, workingUrl);
-      // Cache the working URL
-      setWorkingImageUrls(prev => ({
-        ...prev,
-        [tenderId]: workingUrl
-      }));
-      // Clear the error state
-      setImageErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[tenderId];
-        return newErrors;
-      });
-    } else {
-      console.log('❌ No working URL found for tender:', tenderId);
-      setImageErrors(prev => ({
-        ...prev,
-        [tenderId]: true
-      }));
-    }
-  };
-
-  // Fetch tenders
-  useEffect(() => {
-    const fetchTenders = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const data = await TendersAPI.getActiveTenders();
-
-        // Process data based on response structure
-        let tendersData = [];
-        
-        if (data) {
-          if (Array.isArray(data)) {
-            tendersData = data;
-          } else if (data.data && Array.isArray(data.data)) {
-            tendersData = data.data;
-          } else if (data.success && data.data && Array.isArray(data.data)) {
-            tendersData = data.data;
-          } else {
-            tendersData = [];
-          }
-        } else {
-          tendersData = [];
-        }
-        
-        // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
-        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
-        const visibleTenders = tendersData.filter((tender: Tender) => {
-          // If tender is verifiedOnly and user is not verified, hide it
-          if (tender.verifiedOnly === true && !isUserVerified) {
-            return false;
-          }
-          return true;
-        });
-
-        // Store all tenders
-        setAllTenders(visibleTenders);
-        
-        // Apply initial filter (all by default)
-        let filteredTenders = visibleTenders;
-        if (statusFilter === 'active') {
-          filteredTenders = tendersData.filter((tender: Tender) => {
-            if (!tender.endingAt) return false;
-            const endTime = new Date(tender.endingAt);
-            return endTime > new Date();
-          });
-        } else if (statusFilter === 'finished') {
-          filteredTenders = tendersData.filter((tender: Tender) => {
-            if (!tender.endingAt) return true;
-            const endTime = new Date(tender.endingAt);
-            return endTime <= new Date();
-          });
-        }
-        
-        // Limit to 8 for display
-        const limitedTenders = filteredTenders.slice(0, 8);
-        setLiveTenders(limitedTenders);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching tenders:", err);
-        setError("Failed to load tenders");
-        setLiveTenders([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTenders();
-  }, []);
-
-  // Filter tenders based on status
-  useEffect(() => {
-    if (allTenders.length === 0) return;
-
-    // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+    // Filter by verifiedOnly
     const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
-    let filtered = allTenders.filter((tender: Tender) => {
-      // If tender is verifiedOnly and user is not verified, hide it
+    return transformed.filter((tender: Tender) => {
       if (tender.verifiedOnly === true && !isUserVerified) {
         return false;
       }
       return true;
     });
+  }, [allTendersResponse, auth.user]);
+
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
+  const [timers, setTimers] = useState<{ [key: string]: Timer }>({});
+  const [animatedCards, setAnimatedCards] = useState<number[]>([]);
+  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
+  const [workingImageUrls, setWorkingImageUrls] = useState<{ [key: string]: string }>({});
+
+  const handleImageError = (tenderId: string, _tender?: any) => {
+    setImageErrors(prev => ({ ...prev, [tenderId]: true }));
+  };
+
+  // Filter and limit tenders for display
+  const liveTenders = useMemo(() => {
+    let filtered = allTenders;
     
     if (statusFilter === 'active') {
       filtered = allTenders.filter((tender: Tender) => {
@@ -298,9 +133,7 @@ const Home1LiveTenders = () => {
       });
     }
 
-    // Limit to 8 for display
-    const limitedTenders = filtered.slice(0, 8);
-    setLiveTenders(limitedTenders);
+    return filtered.slice(0, 8);
   }, [allTenders, statusFilter]);
 
   // Update timers
@@ -418,21 +251,42 @@ const Home1LiveTenders = () => {
     });
   }, [router]);
 
-  if (loading) {
+  // Intersection Observer for scroll animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = parseInt(entry.target.getAttribute('data-index') || '0');
+            setAnimatedCards(prev => [...prev, index]);
+          }
+        });
+      },
+      { threshold: 0.3, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    const tenderCards = document.querySelectorAll('.tender-card-animate');
+    tenderCards.forEach((card, index) => {
+      card.setAttribute('data-index', index.toString());
+      observer.observe(card);
+    });
+
+    return () => observer.disconnect();
+  }, [liveTenders]);
+
+  if (tendersLoading) {
     return (
       <div className="modern-tenders-section" style={{ padding: '10px 0 0 0' }}>
         <div className="container-responsive">
-          <div className="section-header" style={{ textAlign: 'center', marginBottom: 'clamp(30px, 6vw, 50px)' }}>
-            <div style={{
-              display: 'inline-block',
-              width: '40px',
-              height: '40px',
-              border: '3px solid #f3f3f3',
-              borderTop: '3px solid #0063b1',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-            }}></div>
-            <p style={{ marginTop: '15px', color: '#666' }}>{t('liveTenders.loading')}</p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: '24px',
+            padding: '20px'
+          }}>
+            {[...Array(5)].map((_, i) => (
+              <CardSkeleton key={i} />
+            ))}
           </div>
         </div>
       </div>

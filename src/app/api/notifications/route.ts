@@ -13,11 +13,11 @@ export async function GET(req: NextRequest) {
     }
 
     // Forward the request to the backend
-    const response = await fetch(`${API_BASE_URL}/notification/all`, {
+    const response = await fetch(`${API_BASE_URL}notification/all`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,
-        'x-access-key': process.env.NEXT_PUBLIC_KEY_API_BYUER || '',
+        'x-access-key': app.apiKey || process.env.NEXT_PUBLIC_KEY_API_BYUER || '',
         'Content-Type': 'application/json',
       },
       credentials: 'include',
@@ -60,11 +60,11 @@ export async function POST(req: NextRequest) {
     console.log('🔍 Fetching notifications for user:', userId);
 
     // Use the correct backend endpoint for buyer notifications
-    const response = await fetch(`${API_BASE_URL}/notification/buyer/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}notification/buyer/${userId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
-        'x-access-key': process.env.NEXT_PUBLIC_KEY_API_BYUER || '',
+        'x-access-key': app.apiKey || process.env.NEXT_PUBLIC_KEY_API_BYUER || '',
         'Content-Type': 'application/json',
       },
       credentials: 'include',

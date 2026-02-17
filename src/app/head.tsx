@@ -26,6 +26,18 @@ export default function Head() {
       <meta property="og:site_name" content="MazadClick" />
       <meta property="twitter:title" content="MazadClick" />
       <meta property="twitter:description" content={SITE_DESCRIPTION} />
+
+      {/* Preload critical assets */}
+      <link rel="preload" href="/assets/css/bootstrap.min.css" as="style" />
+      <link rel="preload" href="/assets/css/style.css" as="style" />
+      
+      {/* Load critical CSS */}
+      <link rel="stylesheet" href="/assets/css/bootstrap.min.css" precedence="default" />
+      <link rel="stylesheet" href="/assets/css/style.css" precedence="default" />
+
+      {/* Defer non-critical CSS */}
+      <link rel="stylesheet" href="/assets/css/animate.min.css" media="print" onLoad={(e: any) => { (e.target as any).media = 'all' }} />
+      <link rel="stylesheet" href="/assets/css/slick.css" media="print" onLoad={(e: any) => { (e.target as any).media = 'all' }} />
     </>
   );
 }

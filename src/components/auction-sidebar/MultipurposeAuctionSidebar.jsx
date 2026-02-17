@@ -1,7 +1,7 @@
 "use client"
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import SelectComponent from '../common/SelectComponent'
 import { AuctionsAPI } from '@/app/api/auctions'
 import { CategoryAPI } from '@/app/api/category'
@@ -10,6 +10,8 @@ import app from '@/config'; // Import the app config
 import { normalizeImageUrl } from '@/utils/url';
 import { useTranslation } from 'react-i18next';
 import useAuth from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
+import PageSkeleton from '@/components/skeletons/PageSkeleton';
 import ShareButton from '../common/ShareButton';
 
 // Define BID_TYPE enum to match server definition
@@ -33,9 +35,6 @@ const MultipurposeAuctionSidebar = () => {
 
     const [activeColumn, setActiveColumn] = useState(3);
     const [currentPage, setCurrentPage] = useState(1);
-    const [auctions, setAuctions] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("");
     const [selectedSubCategory, setSelectedSubCategory] = useState("");
@@ -44,22 +43,55 @@ const MultipurposeAuctionSidebar = () => {
     const [filteredAuctions, setFilteredAuctions] = useState([]);
     const [sortOption, setSortOption] = useState(t('auctionSidebar.defaultSort'));
     const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'finished'
-    const [categories, setCategories] = useState([]);
     const [filteredCategories, setFilteredCategories] = useState([]);
-
-    const navigateWithTop = useCallback((url) => {
-        router.push(url, { scroll: false });
-        requestAnimationFrame(() => {
-            window.scrollTo({ top: 0, behavior: "auto" });
-            document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
-        });
-    }, [router]);
     const [subCategories, setSubCategories] = useState([]);
-    const [categoriesLoading, setCategoriesLoading] = useState(true);
     const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
     const [hoveredCategory, setHoveredCategory] = useState(null);
     const [hoveredSubCategory, setHoveredSubCategory] = useState(null);
     const [expandedCategories, setExpandedCategories] = useState({});
+
+    // Categories Query
+    const { data: categoryResponse, isLoading: isCategoriesLoading } = useQuery({
+        queryKey: ['categoryTree'],
+        queryFn: () => CategoryAPI.getCategoryTree(),
+    });
+
+    // Process category data
+    const categories = useMemo(() => {
+        if (!categoryResponse) return [];
+        if (categoryResponse.success && Array.isArray(categoryResponse.data)) return categoryResponse.data;
+        if (Array.isArray(categoryResponse)) return categoryResponse;
+        if (categoryResponse.data && Array.isArray(categoryResponse.data)) return categoryResponse.data;
+        return [];
+    }, [categoryResponse]);
+
+    // Auctions Query
+    const { data: auctionData, isLoading: isAuctionsLoading, error: auctionQueryError } = useQuery({
+        queryKey: ['auctions', auth.user?._id],
+        queryFn: () => AuctionsAPI.getAuctions(),
+    });
+
+    // Process auctions data
+    const auctions = useMemo(() => {
+        if (!auctionData) return [];
+        
+        // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+        const visibleAuctions = Array.isArray(auctionData) ? auctionData.filter(auction => {
+            if (auction.verifiedOnly === true && !isUserVerified) {
+                return false;
+            }
+            return true;
+        }) : [];
+        
+        return visibleAuctions;
+    }, [auctionData, auth.user]);
+
+    // Error handling
+    const error = auctionQueryError ? "Failed to load auctions" : null;
+    const loading = isAuctionsLoading;
+    const categoriesLoading = isCategoriesLoading;
+
     
     // Pagination constants
     const ITEMS_PER_PAGE = 9;
@@ -467,107 +499,44 @@ const MultipurposeAuctionSidebar = () => {
         }
     }, []);
 
+    // Timer effects
     useEffect(() => {
-        const fetchAuctions = async () => {
-            try {
-                setLoading(true);
-                // Ensure this API call fetches bids/auctions with populated owner and avatar
-                // This call should hit your backend endpoint that uses the updated bid.service.ts
-                const data = await AuctionsAPI.getAuctions();
-                
-                // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
-                const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
-                const visibleAuctions = Array.isArray(data) ? data.filter(auction => {
-                  // If auction is verifiedOnly and user is not verified, hide it
-                  if (auction.verifiedOnly === true && !isUserVerified) {
-                    return false;
-                  }
-                  return true;
-                }) : data;
-                
-                setAuctions(visibleAuctions);
-                // Initial filtering for display, the useEffect below will refine it
-                setFilteredAuctions(visibleAuctions);
+        if (auctions.length === 0) return;
 
-                // Initialize countdown timers for each auction
-                const timers = {};
-                visibleAuctions.forEach(auction => {
-                    if (auction._id) {
-                        const endTime = auction.endingAt || "2024-10-23 12:00:00";
-                        const currentTime = new Date();
-                        const timeDifference = new Date(endTime) - currentTime;
+        // Initialize countdown timers for each auction
+        const timers = {};
+        auctions.forEach(auction => {
+            if (auction._id) {
+                const endTime = auction.endingAt || "2024-10-23 12:00:00";
+                const currentTime = new Date();
+                const timeDifference = new Date(endTime) - currentTime;
 
-                        if (timeDifference > 0) {
-                            timers[auction._id] = calculateTimeRemaining(endTime);
-                        } else {
-                            timers[auction._id] = { days: "00", hours: "00", minutes: "00", seconds: "00", hasEnded: true }; // Mark as ended
-                        }
-                    }
-                });
-                setAuctionTimers(timers);
-
-                // Update timers every second
-                const interval = setInterval(() => {
-                    const updatedTimers = {};
-                    visibleAuctions.forEach(auction => {
-                        if (auction._id) {
-                            const endTime = auction.endingAt || "2024-10-23 12:00:00";
-                            updatedTimers[auction._id] = calculateTimeRemaining(endTime);
-                        }
-                    });
-                    setAuctionTimers(updatedTimers);
-                }, 1000);
-
-                setLoading(false);
-
-                return () => clearInterval(interval);
-            } catch (err) {
-                console.error("Error fetching auctions:", err);
-                setError("Failed to load auctions");
-                setLoading(false);
-            }
-        };
-
-        fetchAuctions();
-    }, [auth.user]);
-
-    // Fetch categories
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                setCategoriesLoading(true);
-                const response = await CategoryAPI.getCategoryTree();
-                
-                // Handle different response structures
-                let categoryData = null;
-                let isSuccess = false;
-                
-                if (response) {
-                    if (response.success && Array.isArray(response.data)) {
-                        categoryData = response.data;
-                        isSuccess = true;
-                    } else if (Array.isArray(response)) {
-                        categoryData = response;
-                        isSuccess = true;
-                    } else if (response.data && Array.isArray(response.data)) {
-                        categoryData = response.data;
-                        isSuccess = true;
-                    }
+                if (timeDifference > 0) {
+                    timers[auction._id] = calculateTimeRemaining(endTime);
+                } else {
+                    timers[auction._id] = { days: "00", hours: "00", minutes: "00", seconds: "00", hasEnded: true }; // Mark as ended
                 }
-                
-                if (isSuccess && categoryData && categoryData.length > 0) {
-                    setCategories(categoryData);
-                    setFilteredCategories(categoryData);
-                }
-                setCategoriesLoading(false);
-            } catch (err) {
-                console.error("Error fetching categories:", err);
-                setCategoriesLoading(false);
             }
-        };
+        });
+        setAuctionTimers(timers);
 
-        fetchCategories();
-    }, []);
+        // Update timers every second
+        const interval = setInterval(() => {
+            const updatedTimers = {};
+            auctions.forEach(auction => {
+                if (auction._id) {
+                    const endTime = auction.endingAt || "2024-10-23 12:00:00";
+                    updatedTimers[auction._id] = calculateTimeRemaining(endTime);
+                }
+            });
+            setAuctionTimers(updatedTimers);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [auctions]);
+
+
+
 
     // Update filtered categories when selectedBidType or searchTerm changes
     useEffect(() => {
@@ -791,7 +760,12 @@ const MultipurposeAuctionSidebar = () => {
         navigateWithTop(`/auction-details/${auctionId}`);
     };
 
+    if (isCategoriesLoading && isAuctionsLoading && auctions.length === 0) {
+        return <PageSkeleton />;
+    }
+
     return (
+
         <div className="auction-grid-section pt-10 mb-110">
             <style jsx>{`
                 @keyframes spin {

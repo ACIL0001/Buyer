@@ -12,6 +12,9 @@ import AuctionCard from '@/components/cards/AuctionCard';
 import TenderCard from '@/components/cards/TenderCard';
 import DirectSaleCard from '@/components/cards/DirectSaleCard';
 import app from '../../config';
+import { useQuery } from '@tanstack/react-query';
+import CardSkeleton from '@/components/skeletons/CardSkeleton';
+import PageSkeleton from '@/components/skeletons/PageSkeleton';
 
 import { Auction } from '@/types/auction';
 import { Tender } from '@/types/tender';
@@ -46,33 +49,17 @@ export default function CategoryClient() {
   const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [auctions, setAuctions] = useState<Auction[]>([]);
-  const [tenders, setTenders] = useState<Tender[]>([]);
-  const [allDirectSales, setAllDirectSales] = useState<DirectSale[]>([]);
-  
-  const [categoryTenders, setCategoryTenders] = useState<Tender[]>([]);
-  const [categoryDirectSales, setCategoryDirectSales] = useState<DirectSale[]>([]);
-
-  const [filteredAuctions, setFilteredAuctions] = useState<Auction[]>([]);
-  const [filteredTenders, setFilteredTenders] = useState<Tender[]>([]);
-  const [filteredDirectSales, setFilteredDirectSales] = useState<DirectSale[]>([]);
-  
-  const [loading, setLoading] = useState(true);
-  const [itemsLoading, setItemsLoading] = useState(false); // Renamed from auctionsLoading
-  const [error, setError] = useState(false);
+  const [viewMode, setViewMode] = useState<'categories' | 'auctions'>('categories');
+  const [filterType, setFilterType] = useState<'ALL' | 'PRODUCT' | 'SERVICE'>('ALL');
+  const [activeTab, setActiveTab] = useState<'auctions' | 'tenders' | 'directSales'>('auctions');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>('');
   const [expandedCategories, setExpandedCategories] = useState<{[key: string]: boolean}>({});
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'categories' | 'auctions'>('categories'); // We keep 'auctions' as the "Item View" mode name for now
-  const [filterType, setFilterType] = useState<'ALL' | 'PRODUCT' | 'SERVICE'>('ALL');
-    const [activeTab, setActiveTab] = useState<'auctions' | 'tenders' | 'directSales'>('auctions'); // New Tab State
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   
-  const [searchResults, setSearchResults] = useState<{ categories: Category[], auctions: Auction[], tenders: Tender[], directSales: DirectSale[] }>({ categories: [], auctions: [], tenders: [], directSales: [] });
-  const [showSearchResults, setShowSearchResults] = useState(false);
   const DEFAULT_CATEGORY_IMAGE = "/assets/images/logo-white.png";
   const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
 
@@ -119,155 +106,87 @@ export default function CategoryClient() {
     return null;
   };
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoading(true);
-        console.log('🔄 Fetching categories from API...');
-        const response = await CategoryAPI.getCategoryTree();
-        console.log('📡 API Response:', response);
-        
-        let categoryData: Category[] | null = null;
-        let isSuccess = false;
-        
-        if (response) {
-          if ((response as any).success && Array.isArray((response as any).data)) {
-            categoryData = (response as any).data;
-            isSuccess = true;
-            console.log('✅ Success: Found categories in response.data:', categoryData?.length || 0);
-          } else if (Array.isArray(response as any)) {
-            categoryData = response as any;
-            isSuccess = true;
-            console.log('✅ Success: Direct array response:', categoryData?.length || 0);
-          } else if ((response as any).data && Array.isArray((response as any).data)) {
-            categoryData = (response as any).data;
-            isSuccess = true;
-            console.log('✅ Success: Found categories in response.data (alternative):', categoryData?.length || 0);
-          } else {
-            console.log('❌ No valid category data found in response structure');
-            console.log('Response structure:', {
-              hasSuccess: 'success' in (response as any),
-              hasData: 'data' in (response as any),
-              isArray: Array.isArray(response),
-              responseType: typeof response,
-              responseKeys: response && typeof response === 'object' ? Object.keys(response) : []
-            });
-          }
-        } else {
-          console.log('❌ No response received from API');
+  const { data: categories = [], isLoading: categoriesLoading, isError: categoriesError } = useQuery({
+    queryKey: ['categories', 'tree'],
+    queryFn: async () => {
+      console.log('🔄 Fetching categories from API...');
+      const response = await CategoryAPI.getCategoryTree();
+      let categoryData: Category[] = [];
+      
+      if (response) {
+        if ((response as any).success && Array.isArray((response as any).data)) {
+          categoryData = (response as any).data;
+        } else if (Array.isArray(response)) {
+          categoryData = response as Category[];
+        } else if ((response as any).data && Array.isArray((response as any).data)) {
+          categoryData = (response as any).data;
         }
-        
-        if (isSuccess && categoryData && (categoryData?.length || 0) > 0) {
-          console.log('🎉 Setting categories:', categoryData);
-          // Debug image URLs
-          categoryData.forEach((cat, index) => {
-            if (cat.thumb && cat.thumb.url) {
-              console.log(`📸 Category ${index} (${cat.name}) image URL:`, cat.thumb.url);
-            } else {
-              console.log(`❌ Category ${index} (${cat.name}) has no image`);
-            }
-          });
-          setCategories(categoryData as Category[]);
-          setError(false);
-        } else {
-          console.log('❌ No categories to display, throwing error');
-          throw new Error('Invalid response structure or no categories found');
-        }
-      } catch (error) {
-        console.error("❌ Error fetching categories:", error);
-        setCategories([]);
-        setError(true);
-      } finally {
-        setLoading(false);
       }
-    };
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    const fetchCategoryItems = async () => {
-      if (!selectedCategory) {
-        setAuctions([]);
-        setFilteredAuctions([]);
-        setFilteredTenders([]);
-        setFilteredDirectSales([]);
-        return;
-      }
-      try {
-        setItemsLoading(true);
-        
-        // 1. Fetch Auctions
-        const auctionRes = await AuctionsAPI.getAuctions();
-        
-        // 2. Fetch Direct Sales (from allDirectSales state filtered later, no API call needed here)
-
-        const selectedCategoryObj = findCategoryById(categories, selectedCategory);
-        let allCategoryIds: string[] = [selectedCategory];
-        
-        if (selectedCategoryObj) {
-           allCategoryIds = getAllSubcategoryIds(selectedCategoryObj);
-        }
-        
-        // Filter Auctions (Always fetched per category)
-        const mappedAuctions = (Array.isArray(auctionRes) ? auctionRes : []).map((a: any) => ({ ...a, id: a._id || a.id }));
-
-        if (mappedAuctions.length > 0) {
-            const categoryAuctions = mappedAuctions.filter((auction: any) => {
-              if (auction.productCategory && auction.productCategory._id) {
-                return allCategoryIds.includes(auction.productCategory._id);
-              }
-              return false;
-            });
-            setAuctions(categoryAuctions);
-            setFilteredAuctions(categoryAuctions);
-        } else {
-             setAuctions([]);
-             setFilteredAuctions([]);
-        }
-
-        // Filter Direct Sales (from allDirectSales state)
-        if (allDirectSales && allDirectSales.length > 0) {
-            const categoryDS = allDirectSales.filter((sale: any) => {
-                if (sale.productCategory && sale.productCategory._id) {
-                    return allCategoryIds.includes(sale.productCategory._id);
-                }
-                return false;
-            });
-            setCategoryDirectSales(categoryDS);
-            setFilteredDirectSales(categoryDS);
-        } else {
-            setCategoryDirectSales([]);
-            setFilteredDirectSales([]);
-        }
-
-        // Filter Tenders (from tenders state)
-        if (tenders && tenders.length > 0) {
-            const categoryT = tenders.filter((tender: any) => {
-                const catId = tender.productCategory?._id || tender.category?._id;
-                if (catId) {
-                    return allCategoryIds.includes(catId);
-                }
-                return false;
-            });
-            setCategoryTenders(categoryT);
-            setFilteredTenders(categoryT);
-        } else {
-            setCategoryTenders([]);
-            setFilteredTenders([]);
-        }
-
-      } catch (error) {
-        console.error("Error fetching category items:", error);
-        setAuctions([]);
-        setFilteredAuctions([]);
-      } finally {
-        setItemsLoading(false);
-      }
-    };
-    if (categories.length > 0 && selectedCategory) {
-      fetchCategoryItems();
+      return categoryData;
     }
-  }, [selectedCategory, categories, tenders, allDirectSales]);
+  });
+
+  const { data: allAuctionsResponse, isLoading: auctionsLoading } = useQuery({
+    queryKey: ['auctions', 'all'],
+    queryFn: () => AuctionsAPI.getAuctions(),
+  });
+  const allAuctions = (allAuctionsResponse as any)?.data || (Array.isArray(allAuctionsResponse) ? allAuctionsResponse : []);
+
+  const { data: tenders = [], isLoading: tendersLoading } = useQuery({
+    queryKey: ['tenders', 'active'],
+    queryFn: async () => {
+      const response = await TendersAPI.getActiveTenders();
+      const tendersData = response?.data || response || [];
+      return (Array.isArray(tendersData) ? tendersData : []).map((t: any) => ({ ...t, id: t._id || t.id }));
+    }
+  });
+
+  const { data: allDirectSales = [], isLoading: directSalesLoading } = useQuery({
+    queryKey: ['direct-sales', 'all'],
+    queryFn: async () => {
+      const response = await DirectSaleAPI.getDirectSales();
+      const directSalesData = (response as any)?.data || response || [];
+      return (Array.isArray(directSalesData) ? directSalesData : []).map((s: any) => ({ ...s, id: s._id || s.id }));
+    }
+  });
+
+  // Derived state for filtered items based on selected category
+  const { auctions, categoryTenders, categoryDirectSales } = useMemo(() => {
+    if (!selectedCategory || !categories.length) {
+      return { auctions: [], categoryTenders: [], categoryDirectSales: [] };
+    }
+
+    const selectedCategoryObj = findCategoryById(categories, selectedCategory);
+    let allCategoryIds: string[] = [selectedCategory];
+    if (selectedCategoryObj) {
+      allCategoryIds = getAllSubcategoryIds(selectedCategoryObj);
+    }
+
+    const mappedAuctions = (Array.isArray(allAuctions) ? allAuctions : []).map((a: any) => ({ ...a, id: a._id || a.id }));
+    const filteredAuctions = mappedAuctions.filter((auction: any) => {
+      const catId = auction.productCategory?._id || auction.category?._id;
+      return catId && allCategoryIds.includes(catId);
+    });
+
+    const filteredTenders = tenders.filter((tender: any) => {
+      const catId = tender.productCategory?._id || tender.category?._id;
+      return catId && allCategoryIds.includes(catId);
+    });
+
+    const filteredDirectSales = allDirectSales.filter((sale: any) => {
+      const catId = sale.productCategory?._id || sale.category?._id;
+      return catId && allCategoryIds.includes(catId);
+    });
+
+    return { 
+      auctions: filteredAuctions, 
+      categoryTenders: filteredTenders, 
+      categoryDirectSales: filteredDirectSales
+    };
+  }, [selectedCategory, categories, allAuctions, tenders, allDirectSales]);
+
+  const itemsLoading = auctionsLoading || tendersLoading || directSalesLoading;
+
 
   const hasChildren = (category: Category) => {
     return category.children && category.children.length > 0;
@@ -291,12 +210,10 @@ export default function CategoryClient() {
     setViewMode('categories');
     setSelectedCategory(null);
     setSelectedCategoryName('');
-    setAuctions([]);
-    setFilteredAuctions([]);
-    setFilteredTenders([]);
-    setFilteredDirectSales([]);
     setActiveTab('auctions'); // Reset tab
   };
+
+  const showSearchResults = isSearchFocused && searchTerm.trim().length > 0;
 
   // Filter categories by type
   const filteredCategories = useMemo(() => {
@@ -324,41 +241,12 @@ export default function CategoryClient() {
   }, [categories, filterType, searchTerm, showSearchResults]);
 
   // Fetch tenders and direct sales on mount
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [tendersRes, directSalesRes] = await Promise.all([
-          TendersAPI.getActiveTenders(),
-          DirectSaleAPI.getDirectSales()
-        ]);
-        
-        const tendersData = tendersRes?.data || tendersRes || [];
-        const mappedTenders = (Array.isArray(tendersData) ? tendersData : []).map((t: any) => ({ ...t, id: t._id || t.id }));
-        setTenders(mappedTenders);
-
-        const directSalesData = (directSalesRes as any)?.data || directSalesRes || [];
-        const mappedSales = (Array.isArray(directSalesData) ? directSalesData : []).map((s: any) => ({ ...s, id: s._id || s.id }));
-        setAllDirectSales(mappedSales);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-    fetchData();
-  }, []);
 
 
 
-  // Search functionality for categories, auctions, tenders, and direct sales
-  useEffect(() => {
+  const searchResults = useMemo(() => {
     if (!searchTerm.trim()) {
-      setSearchResults({ categories: [], auctions: [], tenders: [], directSales: [] });
-      setShowSearchResults(false);
-      
-      // Restore category-filtered views
-      setFilteredAuctions(auctions);
-      setFilteredTenders(categoryTenders);
-      setFilteredDirectSales(categoryDirectSales);
-      return;
+      return { categories: [], auctions: [], tenders: [], directSales: [] };
     }
 
     const searchLower = searchTerm.toLowerCase().trim();
@@ -370,45 +258,52 @@ export default function CategoryClient() {
       return name.includes(searchLower) || description.includes(searchLower);
     });
 
-    // Search auctions (Only within loaded category auctions)
-    const resultsAuctions = auctions.filter((auction: Auction) => {
-      const title = (auction.title || '').toLowerCase();
+    // Search auctions
+    const resultsAuctions = (auctions.length > 0 ? auctions : allAuctions).filter((auction: any) => {
+      const title = (auction.title || auction.name || '').toLowerCase();
       const description = (auction.description || '').toLowerCase();
       return title.includes(searchLower) || description.includes(searchLower);
     });
 
-    // Search tenders (Global search)
-    const resultsTenders = tenders.filter((tender: Tender) => {
+    // Search tenders
+    const resultsTenders = (categoryTenders.length > 0 ? categoryTenders : tenders).filter((tender: any) => {
       const title = (tender.title || '').toLowerCase();
       const description = (tender.description || '').toLowerCase();
       return title.includes(searchLower) || description.includes(searchLower);
     });
 
-    // Search direct sales (Global search)
-    const resultsDirectSales = allDirectSales.filter((sale: DirectSale) => {
+    // Search direct sales
+    const resultsDirectSales = (categoryDirectSales.length > 0 ? categoryDirectSales : allDirectSales).filter((sale: any) => {
       const title = (sale.title || '').toLowerCase();
       const description = (sale.description || '').toLowerCase();
       return title.includes(searchLower) || description.includes(searchLower);
     });
 
-    setSearchResults({
+    return {
       categories: resultsCategories,
       auctions: resultsAuctions,
       tenders: resultsTenders,
       directSales: resultsDirectSales
-    });
-    
-    setShowSearchResults(true);
-    
-    // Update filtered lists for the current view
-    setFilteredAuctions(resultsAuctions);
-    setFilteredTenders(resultsTenders);
-    setFilteredDirectSales(resultsDirectSales);
-  }, [searchTerm, categories, auctions, tenders, allDirectSales, categoryTenders, categoryDirectSales]);
+    };
+  }, [searchTerm, categories, auctions, tenders, allDirectSales, allAuctions, categoryTenders, categoryDirectSales]);
+
+  const { filteredAuctions, filteredTenders, filteredDirectSales } = useMemo(() => {
+    if (showSearchResults) {
+      return {
+        filteredAuctions: searchResults.auctions,
+        filteredTenders: searchResults.tenders,
+        filteredDirectSales: searchResults.directSales
+      };
+    }
+    return {
+      filteredAuctions: auctions,
+      filteredTenders: categoryTenders,
+      filteredDirectSales: categoryDirectSales
+    };
+  }, [showSearchResults, searchResults, auctions, categoryTenders, categoryDirectSales]);
 
   const handleSearchSelect = (item: Category | Auction | Tender | DirectSale, type: 'category' | 'auction' | 'tender' | 'directSale') => {
     setSearchTerm('');
-    setShowSearchResults(false);
     
     if (type === 'category') {
       const category = item as Category;
@@ -773,28 +668,11 @@ export default function CategoryClient() {
 
 
 
-  if (loading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '400px',
-        padding: '40px',
-      }}>
-        <div style={{ 
-          width: '40px', 
-          height: '40px', 
-          border: '3px solid rgba(0, 99, 177, 0.2)', 
-          borderTop: '3px solid #0063b1', 
-          borderRadius: '50%', 
-          animation: 'spin 1s linear infinite' 
-        }} />
-      </div>
-    );
+  if (categoriesLoading) {
+    return <PageSkeleton />;
   }
 
-  if (error || categories.length === 0) {
+  if (categoriesError || categories.length === 0) {
     return (
       <div style={{ 
         textAlign: 'center', 
@@ -930,9 +808,7 @@ export default function CategoryClient() {
             onFocus={(e) => {
               e.currentTarget.style.borderColor = '#0063b1';
               e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 99, 177, 0.15)';
-              if (searchTerm.trim()) {
-                setShowSearchResults(true);
-              }
+              setIsSearchFocused(true);
             }}
             style={{
               width: '100%',
@@ -950,7 +826,7 @@ export default function CategoryClient() {
               e.currentTarget.style.borderColor = '#e2e8f0';
               e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
               // Delay hiding search results to allow clicks
-              setTimeout(() => setShowSearchResults(false), 200);
+              setTimeout(() => setIsSearchFocused(false), 200);
             }}
           />
           <div style={{
@@ -967,7 +843,7 @@ export default function CategoryClient() {
           </div>
 
           {/* Search Results Dropdown */}
-          {showSearchResults && (searchResults.categories.length > 0 || searchResults.auctions.length > 0 || searchResults.tenders.length > 0 || searchResults.directSales.length > 0) && (
+          {isSearchFocused && searchTerm.trim() && (searchResults.categories.length > 0 || searchResults.auctions.length > 0 || searchResults.tenders.length > 0 || searchResults.directSales.length > 0) && (
             <div style={{
               position: 'absolute',
               top: '100%',
@@ -1014,7 +890,7 @@ export default function CategoryClient() {
                   <div style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     {t('category.searchAuctions')}
                   </div>
-                  {searchResults.auctions.slice(0, 5).map((auction) => (
+                  {searchResults.auctions.slice(0, 5).map((auction: any) => (
                     <div
                       key={auction.id}
                       onClick={() => handleSearchSelect(auction, 'auction')}
@@ -1320,20 +1196,17 @@ export default function CategoryClient() {
         ) : (
           <div>
             {itemsLoading ? (
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                minHeight: '200px',
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                gap: '24px',
+                maxWidth: '1400px',
+                margin: '0 auto',
+                width: '100%'
               }}>
-                <div style={{ 
-                  width: '32px', 
-                  height: '32px', 
-                  border: '3px solid rgba(0, 99, 177, 0.2)', 
-                  borderTop: '3px solid #0063b1', 
-                  borderRadius: '50%', 
-                  animation: 'spin 1s linear infinite' 
-                }} />
+                {[...Array(6)].map((_, i) => (
+                  <CardSkeleton key={i} />
+                ))}
               </div>
             ) : (
                 <>
@@ -1346,7 +1219,7 @@ export default function CategoryClient() {
                                 maxWidth: '1400px',
                                 margin: '0 auto',
                             }}>
-                                {filteredAuctions.map(auction => (
+                                {filteredAuctions.map((auction: any) => (
                                     <div key={auction.id} style={{ height: '100%' }}>
                                         <AuctionCard auction={auction} />
                                     </div>
@@ -1370,7 +1243,7 @@ export default function CategoryClient() {
                                 maxWidth: '1400px',
                                 margin: '0 auto',
                             }}>
-                                {filteredTenders.map(tender => (
+                                {filteredTenders.map((tender: any) => (
                                     <div key={tender._id} style={{ height: '100%' }}>
                                         <TenderCard tender={tender} />
                                     </div>
@@ -1394,7 +1267,7 @@ export default function CategoryClient() {
                                 maxWidth: '1400px',
                                 margin: '0 auto',
                             }}>
-                                {filteredDirectSales.map(sale => (
+                                {filteredDirectSales.map((sale: any) => (
                                     <div key={sale._id} style={{ height: '100%' }}>
                                         <DirectSaleCard sale={sale} />
                                     </div>

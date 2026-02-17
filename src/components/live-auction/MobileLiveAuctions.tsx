@@ -7,9 +7,13 @@ import { useMemo, useState, useEffect, useCallback } from "react";
 import { AuctionsAPI } from "@/app/api/auctions";
 import app from '@/config';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import useAuth from '@/hooks/useAuth';
+import CardSkeleton from '../skeletons/CardSkeleton';
 import "../auction-details/st.css";
 import "../auction-details/modern-details.css";
 import { useRouter } from "next/navigation";
+import { normalizeImageUrl } from '@/utils/url';
 
 // Default image constants
 const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
@@ -119,59 +123,34 @@ const getAuctionImageUrl = (auction: Auction) => {
 const MobileLiveAuctions = () => {
   const { t } = useTranslation();
   const router = useRouter();
-  const [liveAuctions, setLiveAuctions] = useState<Auction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { isLogged, auth } = useAuth();
+  const { data: allAuctionsResponse, isLoading: auctionsLoading, error: auctionsError } = useQuery({
+    queryKey: ['auctions', 'live'],
+    queryFn: () => AuctionsAPI.getAuctions(),
+  });
+
+  const error = auctionsError ? (auctionsError as any).message || "Failed to load auctions" : null;
+
+  const liveAuctions = useMemo(() => {
+    const dataResponse = allAuctionsResponse as any;
+    const data = dataResponse?.data || (Array.isArray(allAuctionsResponse) ? allAuctionsResponse : []);
+    
+    // Process and filter auctions
+    const transformed = (Array.isArray(data) ? data : []).map((auction: any) => ({
+      ...auction,
+      id: auction._id || auction.id,
+    }));
+    
+    // Filter out ended auctions and limit to 8 for display
+    return transformed.filter((auction: Auction) => {
+      if (!auction.endingAt) return false;
+      const endTime = new Date(auction.endingAt);
+      return endTime > new Date();
+    }).slice(0, 8);
+  }, [allAuctionsResponse]);
+
   const [timers, setTimers] = useState<{ [key: string]: Timer }>({});
   const [animatedCards, setAnimatedCards] = useState<number[]>([]);
-
-  // Fetch auctions
-  useEffect(() => {
-    const fetchAuctions = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const data = await AuctionsAPI.getAuctions();
-
-        // Process data based on response structure
-        let auctionsData: Auction[] = [];
-        
-        if (data) {
-          if (Array.isArray(data)) {
-            auctionsData = data as unknown as Auction[];
-          } else if (data.data && Array.isArray(data.data)) {
-            auctionsData = data.data as unknown as Auction[];
-          } else if (data.success && data.data && Array.isArray(data.data)) {
-            auctionsData = data.data as unknown as Auction[];
-          } else {
-            auctionsData = [];
-          }
-        } else {
-          auctionsData = [];
-        }
-        
-        // Filter out ended auctions and limit to 8 for display
-        const activeAuctions = auctionsData.filter((auction: Auction) => {
-          if (!auction.endingAt) return false;
-          const endTime = new Date(auction.endingAt);
-          const isActive = endTime > new Date();
-          return isActive;
-        }).slice(0, 8);
-
-        setLiveAuctions(activeAuctions);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching auctions:", err);
-        setError("Failed to load auctions");
-        setLiveAuctions([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAuctions();
-  }, []);
 
   // Update timers
   useEffect(() => {
@@ -180,19 +159,15 @@ const MobileLiveAuctions = () => {
     const updateTimers = () => {
       const newTimers: { [key: string]: Timer } = {};
       liveAuctions.forEach(auction => {
-        if (auction._id && auction.endingAt) {
-          newTimers[auction._id] = calculateTimeRemaining(auction.endingAt);
+        if (auction.id && auction.endingAt) {
+          newTimers[auction.id] = calculateTimeRemaining(auction.endingAt);
         }
       });
       setTimers(newTimers);
     };
 
-    // Initial update
     updateTimers();
-
-    // Update every second
     const interval = setInterval(updateTimers, 1000);
-
     return () => clearInterval(interval);
   }, [liveAuctions]);
 
@@ -235,16 +210,15 @@ const MobileLiveAuctions = () => {
   // Helper function to get seller display name
   const getSellerDisplayName = useCallback((auction: Auction) => {
     if (auction.hidden === true) {
-      return 'Anonyme';
+      return t('common.anonymous') || 'Anonyme';
     }
 
     const ownerName = auction.owner?.firstName && auction.owner?.lastName
       ? `${auction.owner.firstName} ${auction.owner.lastName}`
-      : auction.owner?.name;
-    const sellerName = auction.seller?.name;
-
-    return ownerName || sellerName || 'Vendeur';
-  }, []);
+      : (auction.owner?.name || t('liveAuction.seller') || 'Vendeur');
+    
+    return ownerName;
+  }, [t]);
 
   // Swiper settings
   const settings = useMemo(() => ({
@@ -292,19 +266,18 @@ const MobileLiveAuctions = () => {
     },
   }), []);
 
-  if (loading) {
+  if (auctionsLoading) {
     return (
-      <div style={{ padding: '40px 0', textAlign: 'center' }}>
+      <div style={{ padding: '20px', width: '100%' }}>
         <div style={{
-          display: 'inline-block',
-          width: '40px',
-          height: '40px',
-          border: '3px solid #f3f3f3',
-          borderTop: '3px solid #2563eb',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-        }}></div>
-        <p style={{ marginTop: '15px', color: '#666' }}>Chargement des enchères...</p>
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: '20px',
+        }}>
+          {[...Array(4)].map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     );
   }
@@ -321,7 +294,7 @@ const MobileLiveAuctions = () => {
           maxWidth: '600px',
           margin: '0 auto',
         }}>
-          <h3>❌ Erreur de chargement des enchères</h3>
+          <h3>❌ {t('liveAuction.loadingError') || 'Erreur de chargement des enchères'}</h3>
           <p>{error}</p>
         </div>
       </div>

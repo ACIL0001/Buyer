@@ -1,5 +1,6 @@
 import User from '@/types/User';
 import { create } from 'zustand';
+import { VaultService } from '@/services/vault';
 
 const initialState: { tokens?: { accessToken: string; refreshToken: string }; user?: User } = {
   tokens: undefined,
@@ -62,21 +63,15 @@ export const authStore = create<IAuthStore>((setValues) => ({
       return { auth: newAuth, isLogged, isReady: true };
     });
 
-    // Store in localStorage with proper structure
+    // Store in Secure Vault with proper structure
     if (typeof window !== 'undefined') {
       const authData = {
         user: auth.user,
         tokens: auth.tokens,
       };
 
-      console.log('💾 Storing auth data in localStorage');
-      window.localStorage.setItem('auth', JSON.stringify(authData));
-
-      // Verify storage
-      const stored = window.localStorage.getItem('auth');
-      if (stored) {
-        console.log('✅ Auth data stored successfully');
-      }
+      console.log('💾 Storing auth data in Secure Vault');
+      VaultService.setItem('auth', JSON.stringify(authData));
     }
   },
 
@@ -84,7 +79,7 @@ export const authStore = create<IAuthStore>((setValues) => ({
     console.log('🧹 Clearing auth data');
     setValues(() => ({ auth: initialState, isLogged: false }));
     if (typeof window !== 'undefined') {
-      window.localStorage.clear();
+      VaultService.clear();
     }
   },
 
@@ -92,7 +87,7 @@ export const authStore = create<IAuthStore>((setValues) => ({
     console.log('🚪 Logging out user');
     setValues(() => ({ auth: initialState, isLogged: false, isReady: true }));
     if (typeof window !== 'undefined') {
-      window.localStorage.clear();
+      VaultService.removeItem('auth');
     }
   },
 
@@ -107,92 +102,89 @@ export const authStore = create<IAuthStore>((setValues) => ({
       return;
     }
 
-    const authentication = window.localStorage.getItem('auth');
-    console.log('📦 Auth data from localStorage:', authentication ? 'Found' : 'Not found');
+    const initAuth = async () => {
+      const authentication = await VaultService.getItem('auth');
+      console.log('📦 Auth data from Secure Vault:', authentication ? 'Found' : 'Not found');
 
-    let values;
+      let values;
 
-    if (authentication) {
-      try {
-        const parsed = JSON.parse(authentication);
-        console.log('✅ Parsed auth data successfully');
+      if (authentication) {
+        try {
+          const parsed = JSON.parse(authentication);
+          console.log('✅ Parsed auth data successfully');
 
-        // Validate the stored data structure
-        if (parsed.user && parsed.tokens && parsed.tokens.accessToken && parsed.tokens.refreshToken) {
-          console.log('🔑 Valid tokens found in storage');
-          console.log('🔑 Access token length:', parsed.tokens.accessToken.length);
+          // Validate the stored data structure
+          if (parsed.user && parsed.tokens && parsed.tokens.accessToken && parsed.tokens.refreshToken) {
+            console.log('🔑 Valid tokens found in storage');
+            console.log('🔑 Access token length:', parsed.tokens.accessToken.length);
 
-          // Map user data to ensure compatibility
-          const mappedUser = {
-            ...parsed.user,
-            displayName: parsed.user.firstName,
-            type: parsed.user.type || 'CLIENT',
-            email: parsed.user.email || '',
-            photoURL: (parsed.user.photoURL && !parsed.user.photoURL.includes('mock-images'))
-              ? parsed.user.photoURL
-              : '/assets/images/avatar.jpg',
-            firstName: parsed.user.firstName || '',
-            lastName: parsed.user.lastName || '',
-            phone: parsed.user.phone || '',
-            rate: parsed.user.rate || 1,
-            avatar: parsed.user.avatar || null,
-          } as User;
+            // Map user data to ensure compatibility
+            const mappedUser = {
+              ...parsed.user,
+              displayName: parsed.user.firstName,
+              type: parsed.user.type || 'CLIENT',
+              email: parsed.user.email || '',
+              photoURL: (parsed.user.photoURL && !parsed.user.photoURL.includes('mock-images'))
+                ? parsed.user.photoURL
+                : '/assets/images/avatar.jpg',
+              firstName: parsed.user.firstName || '',
+              lastName: parsed.user.lastName || '',
+              phone: parsed.user.phone || '',
+              rate: parsed.user.rate || 1,
+              avatar: parsed.user.avatar || null,
+            } as User;
 
-          values = {
-            auth: {
-              user: mappedUser,
-              tokens: parsed.tokens
-            },
-            isLogged: true
-          };
+            values = {
+              auth: {
+                user: mappedUser,
+                tokens: parsed.tokens
+              },
+              isLogged: true
+            };
 
-        } else {
-          console.log('⚠️ Invalid auth data structure, using initial state');
+          } else {
+            console.log('⚠️ Invalid auth data structure, using initial state');
+            values = { auth: initialState, isLogged: false };
+          }
+        } catch (error) {
+          console.error('⚠️ Error parsing auth data:', error);
           values = { auth: initialState, isLogged: false };
         }
-      } catch (error) {
-        console.error('⚠️ Error parsing auth data:', error);
-        window.localStorage.setItem('auth', JSON.stringify(initialState));
+      } else {
+        console.log('🔭 No auth data found, using initial state');
         values = { auth: initialState, isLogged: false };
       }
-    } else {
-      console.log('🔭 No auth data found, using initial state');
-      values = { auth: initialState, isLogged: false };
-    }
 
-    console.log('🎯 Setting initial auth values:', {
-      hasUser: !!values.auth.user,
-      hasTokens: !!values.auth.tokens,
-      isLogged: values.isLogged
-    });
+      console.log('🎯 Setting initial auth values:', {
+        hasUser: !!values.auth.user,
+        hasTokens: !!values.auth.tokens,
+        isLogged: values.isLogged
+      });
 
-    setValues({ ...values, isReady: true });
+      setValues({ ...values, isReady: true });
 
-    // If user is logged in, fetch fresh data after initialization
-    if (values.isLogged && values.auth.tokens?.accessToken) {
-      console.log('🔄 User is logged in, checking data completeness...');
+      // If user is logged in, fetch fresh data after initialization
+      if (values.isLogged && values.auth.tokens?.accessToken) {
+        console.log('🔄 User is logged in, checking data completeness...');
 
-      // Check if user data looks incomplete (generic name or missing fields)
-      const user = values.auth.user;
-      const isIncomplete = !user?.firstName || user.firstName === 'User' || !user.lastName;
+        // Check if user data looks incomplete (generic name or missing fields)
+        const user = values.auth.user;
+        const isIncomplete = !user?.firstName || user.firstName === 'User' || !user.lastName;
 
-      // If data is suspect, fetch almost immediately. Otherwise, wait a bit.
-      const delay = isIncomplete ? 500 : 2000;
+        // If data is suspect, fetch almost immediately. Otherwise, wait a bit.
+        const delay = isIncomplete ? 500 : 2000;
 
-      if (isIncomplete) {
-        console.log('⚠️ User data appears incomplete on init, fetching fresh data quickly...');
-      } else {
-        console.log('✅ User data appears complete, scheduling background refresh...');
+        // Give some time for the app to fully initialize
+        setTimeout(() => {
+          const currentState = authStore.getState();
+          if (currentState.isLogged && currentState.auth.tokens?.accessToken) {
+            authStore.getState().fetchFreshUserData();
+          }
+        }, delay);
       }
+    };
 
-      // Give some time for the app to fully initialize
-      setTimeout(() => {
-        const currentState = authStore.getState();
-        if (currentState.isLogged && currentState.auth.tokens?.accessToken) {
-          authStore.getState().fetchFreshUserData();
-        }
-      }, delay);
-    }
+    initAuth();
   },
 
   testTokenStorage: () => {
@@ -202,50 +194,42 @@ export const authStore = create<IAuthStore>((setValues) => ({
       return;
     }
 
-    const authData = window.localStorage.getItem('auth');
-    console.log('🧪 Raw localStorage data:', authData ? 'Found' : 'Not found');
+    VaultService.getItem('auth').then(authData => {
+      console.log('🧪 Raw Secure Vault data:', authData ? 'Found' : 'Not found');
 
-    if (authData) {
-      try {
-        const parsed = JSON.parse(authData);
-        console.log('🧪 Parsed data structure valid:', !!parsed.tokens);
-        console.log('🧪 Access token:', parsed?.tokens?.accessToken ? 'Present' : 'Missing');
-        console.log('🧪 Refresh token:', parsed?.tokens?.refreshToken ? 'Present' : 'Missing');
-        if (parsed?.tokens?.accessToken) {
-          console.log('🧪 Token preview:', parsed.tokens.accessToken.substring(0, 20) + '...');
-          console.log('🧪 Token length:', parsed.tokens.accessToken.length);
+      if (authData) {
+        try {
+          const parsed = JSON.parse(authData);
+          console.log('🧪 Parsed data structure valid:', !!parsed.tokens);
+          console.log('🧪 Access token:', parsed?.tokens?.accessToken ? 'Present' : 'Missing');
+        } catch (error) {
+          console.error('🧪 Error parsing auth data:', error);
         }
-      } catch (error) {
-        console.error('🧪 Error parsing auth data:', error);
       }
-    }
+    });
   },
 
   refreshAuthState: () => {
     console.log('🔄 Refreshing auth state...');
     if (typeof window === 'undefined') return;
 
-    const authData = window.localStorage.getItem('auth');
-    if (authData) {
-      try {
-        const parsed = JSON.parse(authData);
-        if (parsed.user && parsed.tokens && parsed.tokens.accessToken) {
-          console.log('🔄 Found valid auth data, updating store...');
-          setValues({
-            auth: parsed,
-            isLogged: true,
-            isReady: true
-          });
-          console.log('🔄 Auth state refreshed successfully');
-        } else {
-          console.log('🔄 Invalid auth data structure');
+    VaultService.getItem('auth').then(authData => {
+      if (authData) {
+        try {
+          const parsed = JSON.parse(authData);
+          if (parsed.user && parsed.tokens && parsed.tokens.accessToken) {
+            console.log('🔄 Found valid auth data, updating store...');
+            setValues({
+              auth: parsed,
+              isLogged: true,
+              isReady: true
+            });
+          }
+        } catch (error) {
+          console.error('🔄 Error refreshing auth state:', error);
         }
-      } catch (error) {
-        console.error('🔄 Error refreshing auth state:', error);
       }
-    } else {
-      console.log('🔄 No auth data found in localStorage');
-    }
+    });
   },
 
   fetchFreshUserData: async () => {
@@ -276,29 +260,16 @@ export const authStore = create<IAuthStore>((setValues) => ({
       const { UserAPI } = await import('@/app/api/users');
       const response = await UserAPI.getMe();
 
-      console.log('📦 Response received:', response);
-      console.log('📦 Response type:', typeof response);
-      console.log('📦 Response keys:', response ? Object.keys(response) : 'null/undefined');
-
       // Handle different response formats from your backend
       let userData = null;
 
       if (response && response.success && response.data) {
-        // New format: { success: true, data: user, message: "..." }
-        console.log('✅ Fresh user data received (new format):', response.data);
         userData = response.data;
       } else if (response && (response as any)._id) {
-        // Old format: direct user object
-        console.log('✅ Fresh user data received (old format):', response);
         userData = response as any;
       } else if (!response || (response && Object.keys(response).length === 0)) {
-        // 304 Not Modified response (empty response body)
-        console.log('✅ User data is not modified (304), using cached data.');
-        console.log('🎉 User data refresh successful (no changes)!');
         return;
       } else {
-        console.log('ℹ️ Unexpected response format:', response);
-        console.log('🎉 User data refresh completed (keeping current data)!');
         return;
       }
 
@@ -308,16 +279,12 @@ export const authStore = create<IAuthStore>((setValues) => ({
           tokens: currentState.auth.tokens
         };
 
-        console.log('💾 Updating auth store with fresh user data...');
         authStore.getState().set(updatedAuth);
-
-        console.log('🎉 User data successfully refreshed from backend!');
       }
     } catch (error: any) {
       console.error('❌ Error fetching fresh user data:', error);
 
       if (error?.response?.status === 401) {
-        console.log('🔒 Token expired or unauthorized, clearing auth...');
         authStore.getState().logout();
 
         if (typeof window !== 'undefined' && window.location.pathname !== '/auth/signin') {

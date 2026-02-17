@@ -12,6 +12,8 @@ import { AuctionsAPI } from "@/app/api/auctions";
 import app from '@/config';
 import { ApiResponse } from '@/types/ApiResponse';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import CardSkeleton from '../skeletons/CardSkeleton';
 import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
 import "../auction-details/st.css";
@@ -146,222 +148,45 @@ const Home1LiveAuction = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const { isLogged, auth } = useAuth();
-  const [liveAuctions, setLiveAuctions] = useState<Auction[]>([]);
-  const [allAuctions, setAllAuctions] = useState<Auction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [timers, setTimers] = useState<{ [key: string]: Timer }>({});
-  const [animatedCards, setAnimatedCards] = useState<number[]>([]);
-  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
-  const [workingImageUrls, setWorkingImageUrls] = useState<{ [key: string]: string }>({});
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
+  const { data: allAuctionsResponse, isLoading: auctionsLoading, error: auctionsError } = useQuery({
+    queryKey: ['auctions', 'all'],
+    queryFn: () => AuctionsAPI.getAuctions(),
+  });
+  const error = auctionsError ? (auctionsError as any).message || "Failed to load auctions" : null;
 
-  // Test image URL accessibility
-  const testImageUrl = async (url: string) => {
-    try {
-      const response = await fetch(url, { method: 'HEAD' });
-      const isAccessible = response.ok;
+  const allAuctions = useMemo(() => {
+    const data = (allAuctionsResponse as any)?.data || (Array.isArray(allAuctionsResponse) ? allAuctionsResponse : []);
+    const transformed = (Array.isArray(data) ? data : []).map((auction: any) => ({
+      ...auction,
+      id: auction.id || auction._id,
+    }));
 
-      return isAccessible;
-    } catch (error) {
-      // console.log(`❌ Auction image URL test failed for ${url}:`, error);
-      return false;
-    }
-  };
+    // Exclude professional auctions
+    const nonProAuctions = transformed.filter((auction: Auction) => auction.isPro !== true);
 
-  // Test multiple URLs and return the first working one
-  const findWorkingImageUrl = async (urls: string[]) => {
-    for (const url of urls) {
-      try {
-        const response = await fetch(url, { method: 'HEAD' });
-        if (response.ok) {
-          // console.log(`✅ Found working auction image URL: ${url}`);
-          return url;
-        }
-      } catch (error) {
-        // console.log(`❌ Auction URL failed: ${url}`);
-        continue;
-      }
-    }
-    // console.log('❌ No working auction image URLs found');
-    return null;
-  };
-
-  // Generate all possible backend image URLs for a given image path
-  const generateBackendImageUrls = (imagePath: string) => {
-    if (!imagePath) return [];
-    
-    const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
-    const baseURL = app.baseURL;
-    
-    return [
-      // Direct path with baseURL
-      `${baseURL}${cleanPath}`,
-      
-      // Common backend image paths
-      `${baseURL}uploads/${cleanPath}`,
-      `${baseURL}static/${cleanPath}`,
-      `${baseURL}public/${cleanPath}`,
-      `${baseURL}images/${cleanPath}`,
-      `${baseURL}assets/${cleanPath}`,
-      `${baseURL}media/${cleanPath}`,
-      `${baseURL}files/${cleanPath}`,
-      
-      // With original leading slash
-      `${baseURL}${imagePath}`,
-      
-      // Using route configuration if different from baseURL
-      app.route ? `${app.route}${cleanPath}` : null,
-      app.route ? `${app.route}${imagePath}` : null,
-    ].filter(Boolean); // Remove null values
-  };
-
-  // Handle image load errors
-  const handleImageError = async (auctionId: string, auction: Auction) => {
-    // console.log('❌ Auction image load error for:', auctionId, auction);
-    
-    // Get all possible image URLs for this auction
-    const possibleImageSources = [
-      auction.thumbs?.[0]?.url,
-      auction.thumbs?.[0]?.fullUrl,
-      auction.images?.[0],
-      auction.image,
-      auction.thumbnail,
-      auction.photo,
-      auction.picture,
-      auction.icon,
-      auction.logo,
-      auction.coverImage,
-      auction.mainImage
-    ].filter(Boolean);
-    
-    // Generate all possible backend URLs for each image source
-    const allPossibleUrls = possibleImageSources.flatMap(imagePath => 
-      generateBackendImageUrls(imagePath as string)
-    ).filter(Boolean) as string[];
-    
-    // console.log('🔍 All possible auction backend URLs to try:', allPossibleUrls);
-    
-    // Find the first working URL
-    const workingUrl = await findWorkingImageUrl(allPossibleUrls);
-    
-    if (workingUrl) {
-      console.log('🎉 Found working URL for auction:', auctionId, workingUrl);
-      // Cache the working URL
-      setWorkingImageUrls(prev => ({
-        ...prev,
-        [auctionId]: workingUrl
-      }));
-      // Clear the error state
-      setImageErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[auctionId];
-        return newErrors;
-      });
-    } else {
-      console.log('❌ No working URL found for auction:', auctionId);
-      setImageErrors(prev => ({
-        ...prev,
-        [auctionId]: true
-      }));
-    }
-  };
-
-  // Fetch auctions
-  useEffect(() => {
-    const fetchAuctions = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const data = await AuctionsAPI.getAuctions();
-
-        // Process data based on response structure
-        let auctionsData: Auction[] = [];
-        
-        if (data) {
-          if (Array.isArray(data)) {
-            auctionsData = data;
-          } else if (data.data && Array.isArray(data.data)) {
-            auctionsData = data.data;
-          } else if (data.success && data.data && Array.isArray(data.data)) {
-            auctionsData = data.data;
-          } else {
-            auctionsData = [];
-          }
-        } else {
-          auctionsData = [];
-        }
-        
-        // Transform data to ensure id field is properly mapped
-        const transformedAuctions = auctionsData.map((auction: any) => ({
-          ...auction,
-          id: auction.id || auction._id, // Use id if available, fallback to _id
-        }));
-        
-        // Exclude professional auctions
-        const nonProAuctions = transformedAuctions.filter((auction: Auction) => {
-          return auction.isPro !== true;
-        });
-
-        // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
-        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
-        const visibleAuctions = nonProAuctions.filter((auction: Auction) => {
-          // If auction is verifiedOnly and user is not verified, hide it
-          if (auction.verifiedOnly === true && !isUserVerified) {
-            return false;
-          }
-          return true;
-        });
-
-        // Store all auctions
-        setAllAuctions(visibleAuctions);
-        
-        // Apply initial filter (all by default)
-        let filteredAuctions = visibleAuctions;
-        if (statusFilter === 'active') {
-          filteredAuctions = nonProAuctions.filter((auction: Auction) => {
-            if (!auction.endingAt) return false;
-            const endTime = new Date(auction.endingAt);
-            return endTime > new Date();
-          });
-        } else if (statusFilter === 'finished') {
-          filteredAuctions = nonProAuctions.filter((auction: Auction) => {
-            if (!auction.endingAt) return true;
-            const endTime = new Date(auction.endingAt);
-            return endTime <= new Date();
-          });
-        }
-
-        // Limit to 8 for display
-        const limitedAuctions = filteredAuctions.slice(0, 8);
-        setLiveAuctions(limitedAuctions);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching auctions:", err);
-        setError("Failed to load auctions");
-        setLiveAuctions([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAuctions();
-  }, []);
-
-  // Filter auctions based on status
-  useEffect(() => {
-    if (allAuctions.length === 0) return;
-
-    // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+    // Filter by verifiedOnly
     const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
-    let filtered = allAuctions.filter((auction: Auction) => {
-      // If auction is verifiedOnly and user is not verified, hide it
+    return nonProAuctions.filter((auction: Auction) => {
       if (auction.verifiedOnly === true && !isUserVerified) {
         return false;
       }
       return true;
     });
+  }, [allAuctionsResponse, auth.user]);
+
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
+  const [timers, setTimers] = useState<{ [key: string]: Timer }>({});
+  const [animatedCards, setAnimatedCards] = useState<number[]>([]);
+  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
+  const [workingImageUrls, setWorkingImageUrls] = useState<{ [key: string]: string }>({});
+
+  const handleImageError = (auctionId: string, _auction?: any) => {
+    setImageErrors(prev => ({ ...prev, [auctionId]: true }));
+  };
+
+  // Filter and limit auctions for display
+  const liveAuctions = useMemo(() => {
+    let filtered = allAuctions;
     
     if (statusFilter === 'active') {
       filtered = allAuctions.filter((auction: Auction) => {
@@ -377,9 +202,7 @@ const Home1LiveAuction = () => {
       });
     }
 
-    // Limit to 8 for display
-    const limitedAuctions = filtered.slice(0, 8);
-    setLiveAuctions(limitedAuctions);
+    return filtered.slice(0, 8);
   }, [allAuctions, statusFilter]);
 
   // Update timers
@@ -513,21 +336,19 @@ const Home1LiveAuction = () => {
     });
   }, [router]);
 
-  if (loading) {
+  if (auctionsLoading) {
     return (
       <div className="modern-auctions-section" style={{ padding: '10px 0 0 0' }}>
         <div className="container-responsive">
-          <div className="section-header" style={{ textAlign: 'center', marginBottom: 'clamp(30px, 6vw, 50px)' }}>
-            <div style={{
-              display: 'inline-block',
-              width: '40px',
-              height: '40px',
-              border: '3px solid #f3f3f3',
-              borderTop: '3px solid #0063b1',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-            }}></div>
-            <p style={{ marginTop: '15px', color: '#666' }}>{t('liveAuction.loading')}</p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: '24px',
+            padding: '20px'
+          }}>
+            {[...Array(5)].map((_, i) => (
+              <CardSkeleton key={i} />
+            ))}
           </div>
         </div>
       </div>

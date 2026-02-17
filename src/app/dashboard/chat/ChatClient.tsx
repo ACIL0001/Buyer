@@ -42,7 +42,7 @@ import {
 const ModernChatContainer = styled(Box)(({ theme }) => ({
   height: 'calc(100vh - 64px)',
   display: 'flex',
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+  background: 'linear-gradient(135deg, #667eea 0%, #1976d2 50%, #64b5f6 100%)',
   borderRadius: '20px',
   overflow: 'hidden',
   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
@@ -54,7 +54,7 @@ const ModernChatContainer = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3), transparent 50%)',
+    background: 'radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%), radial-gradient(circle at 80% 80%, rgba(33, 150, 243, 0.3), transparent 50%)',
     pointerEvents: 'none',
   },
   [theme.breakpoints.down('md')]: {
@@ -97,7 +97,7 @@ const SidebarContainer = styled(Box)(({ theme }) => ({
 const SidebarHeader = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2.5, 2.5),
   borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-  background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+  background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(25, 118, 210, 0.1) 100%)',
   backdropFilter: 'blur(10px)',
   position: 'relative',
   '&::after': {
@@ -129,10 +129,10 @@ const ContactsList = styled(Box)(({ theme }) => ({
     borderRadius: '10px',
   },
   '&::-webkit-scrollbar-thumb': {
-    background: 'linear-gradient(135deg, #667eea, #764ba2)',
+    background: 'linear-gradient(135deg, #667eea, #1976d2)',
     borderRadius: '10px',
     '&:hover': {
-      background: 'linear-gradient(135deg, #764ba2, #667eea)',
+      background: 'linear-gradient(135deg, #1976d2, #667eea)',
     },
   },
 }));
@@ -144,7 +144,7 @@ const ContactCard = styled(motion.div, {
   margin: theme.spacing(0.75, 1),
   borderRadius: '18px',
   background: $active 
-    ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)' 
+    ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(25, 118, 210, 0.15) 100%)' 
     : 'rgba(255, 255, 255, 0.8)',
   backdropFilter: 'blur(10px)',
   border: $active 
@@ -157,7 +157,7 @@ const ContactCard = styled(motion.div, {
     : '0 2px 8px rgba(0, 0, 0, 0.04)',
   '&:hover': {
     background: $active 
-      ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%)' 
+      ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(25, 118, 210, 0.2) 100%)' 
       : 'rgba(255, 255, 255, 0.95)',
     transform: 'translateY(-3px)',
     boxShadow: '0 12px 32px rgba(102, 126, 234, 0.15)',
@@ -214,10 +214,10 @@ const MessagesContainer = styled(Box)(({ theme }) => ({
     borderRadius: '10px',
   },
   '&::-webkit-scrollbar-thumb': {
-    background: 'linear-gradient(135deg, #667eea, #764ba2)',
+    background: 'linear-gradient(135deg, #667eea, #1976d2)',
     borderRadius: '10px',
     '&:hover': {
-      background: 'linear-gradient(135deg, #764ba2, #667eea)',
+      background: 'linear-gradient(135deg, #1976d2, #667eea)',
     },
   },
 }));
@@ -225,23 +225,24 @@ const MessagesContainer = styled(Box)(({ theme }) => ({
 const MessageBubble = styled(motion.div, {
   shouldForwardProp: (prop) => prop !== '$sender',
 })<{ $sender?: boolean }>(({ theme, $sender }) => ({
-  maxWidth: '65%',
+  maxWidth: '100%', // Let parent control max width
+  width: 'fit-content', // Only take necessary space
   padding: theme.spacing(1.5, 2.5),
-  borderRadius: $sender ? '20px 20px 20px 4px' : '20px 20px 4px 20px',
+  borderRadius: $sender ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
   background: $sender 
-    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+    ? 'linear-gradient(135deg, #667eea 0%, #1976d2 100%)' 
     : 'rgba(255, 255, 255, 0.95)',
   color: $sender ? 'white' : '#2d3748',
   boxShadow: $sender 
     ? '0 4px 12px rgba(102, 126, 234, 0.3)' 
     : '0 2px 8px rgba(0, 0, 0, 0.1)',
-  marginBottom: theme.spacing(1.5),
-  alignSelf: $sender ? 'flex-start' : 'flex-end',
+  marginBottom: theme.spacing(0.5), // Reduced margin since we have wrapper margin
+  // alignSelf: $sender ? 'flex-end' : 'flex-start', // Handled by parent
   position: 'relative',
   backdropFilter: 'blur(10px)',
   border: $sender ? 'none' : '1px solid rgba(0, 0, 0, 0.05)',
   [theme.breakpoints.down('sm')]: {
-    maxWidth: '85%',
+    maxWidth: '100%',
   },
 }));
 
@@ -336,20 +337,25 @@ export default function ModernChat() {
 
   // Combine and deduplicate messages
   const combinedMessages = useMemo(() => {
-    const allMessages = [...messages, ...socketMessages];
+    // Filter socket messages for current chat
+    const currentChatSocketMessages = socketMessages.filter((m: any) => 
+      !m.idChat || (selectedChat && m.idChat === selectedChat._id)
+    );
+
+    const allMessages = [...messages, ...currentChatSocketMessages];
     const uniqueMessages = allMessages.filter((message, index, self) => 
       index === self.findIndex(m => 
         m._id === message._id || 
         (m.message === message.message && 
          m.sender === message.sender && 
          m.idChat === message.idChat &&
-         Math.abs(new Date(m.createdAt || 0).getTime() - new Date(message.createdAt || 0).getTime()) < 1000)
+         Math.abs(new Date(m.createdAt || 0).getTime() - new Date(message.createdAt || 0).getTime()) < 5000)
       )
     );
     return uniqueMessages.sort((a, b) => 
       new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
     );
-  }, [messages, socketMessages]);
+  }, [messages, socketMessages, selectedChat]);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -502,7 +508,7 @@ export default function ModernChat() {
     };
 
     if (socket) {
-      socket.emit('sendMessage', messageData);
+      // socket.emit('sendMessage', messageData);
     }
     
     MessageAPI.send(messageData).then(response => {
@@ -575,6 +581,62 @@ export default function ModernChat() {
     };
   }, [socket, selectedChat?._id, auth?.user?._id]);
 
+  // Direct socket listeners for real-time updates (similar to Admin ChatLayout)
+  useEffect(() => {
+        if (!socket || !selectedChat?._id) return;
+    
+        console.log('🎧 Adding direct socket listeners for ChatClient. Chat ID:', selectedChat._id);
+        
+        const handleNewSocketMessage = (data: any) => {
+          console.group('🔥 ChatClient: New Socket Message');
+          console.log('Payload:', data);
+          
+          // Check if message belongs to current chat
+          if (data.idChat === selectedChat._id) {
+            console.log('✅ Message belongs to current chat, adding to state');
+            
+            setMessages(prev => {
+              // Deduplicate
+              const exists = prev.some(msg => 
+                msg._id === data._id || 
+                (msg.message === data.message && msg.sender === data.sender && 
+                   Math.abs(new Date(msg.createdAt).getTime() - new Date(data.createdAt).getTime()) < 5000)
+              );
+              
+              if (exists) {
+                console.log('⚠️ Message already exists in local state, skipping');
+                console.groupEnd();
+                return prev;
+              }
+              
+              console.log('✅ Added to local messages');
+              console.groupEnd();
+              return [...prev, data];
+            });
+            
+            // Scroll to bottom
+            setTimeout(() => {
+              if (messagesEndRef.current) {
+                messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+              }
+            }, 100);
+          } else {
+            console.log('❌ Message NOT for current chat:', data.idChat);
+            console.groupEnd();
+          }
+        };
+    
+        // Listen for both event types
+        socket.on('adminMessage', handleNewSocketMessage);
+        socket.on('sendMessage', handleNewSocketMessage);
+        
+        return () => {
+          console.log('🧹 Removing direct socket listeners');
+          socket.off('adminMessage', handleNewSocketMessage);
+          socket.off('sendMessage', handleNewSocketMessage);
+        };
+      }, [socket, selectedChat?._id]);
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -624,7 +686,7 @@ export default function ModernChat() {
           <SidebarHeader>
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Typography variant="h5" fontWeight={700} sx={{ 
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #667eea 0%, #1976d2 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
@@ -809,41 +871,67 @@ export default function ModernChat() {
                   </Box>
                 ) : (
                   <>
-                    {combinedMessages.map((msg, index) => {
-                      const isSender = msg.sender === auth?.user?._id;
-                      return (
-                        <Box
-                          key={msg._id || index}
-                          sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: isSender ? 'flex-start' : 'flex-end',
-                            mb: 2,
-                          }}
-                        >
-                          <MessageBubble
-                            $sender={isSender}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <Typography variant="body2">{msg.message}</Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                display: 'block',
-                                mt: 0.5,
-                                opacity: 0.7,
-                                fontSize: '0.65rem',
-                              }}
-                            >
-                              {formatTime(msg.createdAt)}
-                            </Typography>
-                          </MessageBubble>
+                {combinedMessages.map((msg, index) => {
+                  const isSender = msg.sender === auth?.user?._id;
+                  const showAvatar = !isSender && (
+                    index === 0 || 
+                    combinedMessages[index - 1].sender !== msg.sender ||
+                    new Date(msg.createdAt).getTime() - new Date(combinedMessages[index - 1].createdAt).getTime() > 60000
+                  );
+
+                  return (
+                    <Box
+                      key={msg._id || index}
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                         justifyContent: isSender ? 'flex-end' : 'flex-start',
+                        mb: 1,
+                        alignItems: 'flex-end',
+                      }}
+                    >
+                      {!isSender && (
+                        <Box sx={{ width: 40, mr: 1, display: 'flex', justifyContent: 'center' }}>
+                           {showAvatar ? (
+                             <Avatar
+                               src={getOtherUser(selectedChat)?.avatar?.url || '/assets/images/avatar.jpg'}
+                               sx={{ width: 32, height: 32 }}
+                             >
+                               {getOtherUser(selectedChat)?.firstName?.[0] || 'U'}
+                             </Avatar>
+                           ) : <Box sx={{ width: 32 }} />}
                         </Box>
-                      );
-                    })}
-                    <div ref={messagesEndRef} />
+                      )}
+
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: isSender ? 'flex-end' : 'flex-start', maxWidth: '70%' }}>
+                        <MessageBubble
+                          $sender={isSender}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.5 }}>
+                            {msg.message}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              display: 'block',
+                              mt: 0.5,
+                              opacity: 0.7,
+                              fontSize: '0.65rem',
+                              textAlign: 'right', // Timestamp always right aligned in bubble
+                              width: '100%',
+                            }}
+                          >
+                            {formatTime(msg.createdAt)}
+                          </Typography>
+                        </MessageBubble>
+                      </Box>
+                    </Box>
+                  );
+                })}
+                <div ref={messagesEndRef} />
                   </>
                 )}
               </MessagesContainer>
@@ -872,10 +960,10 @@ export default function ModernChat() {
                     onClick={sendMessage}
                     disabled={!newMessage.trim()}
                     sx={{
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background: 'linear-gradient(135deg, #667eea 0%, #1976d2 100%)',
                       color: 'white',
                       '&:hover': {
-                        background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                        background: 'linear-gradient(135deg, #1976d2 0%, #667eea 100%)',
                       },
                       '&:disabled': {
                         background: 'rgba(0, 0, 0, 0.12)',

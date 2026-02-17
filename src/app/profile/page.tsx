@@ -16,7 +16,8 @@ import { useRouter } from "next/navigation"
 // import HistoryPage from "./history/HistoryPage"
 import { useTranslation } from "react-i18next"
 import { authStore } from "@/contexts/authStore"
-// import { WILAYAS } from "@/constants/wilayas"
+import { WILAYAS } from "@/constants/wilayas"
+import { CategoryAPI } from "@/services/category"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import ProfileSkeleton from "@/components/skeletons/ProfileSkeleton"
 import VerificationPopup from "@/components/VerificationPopup"
@@ -78,7 +79,23 @@ function ProfilePage() {
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [isUploadingCover, setIsUploadingCover] = useState(false);
     const [coverKey, setCoverKey] = useState(Date.now());
+
     const [avatarKey, setAvatarKey] = useState(Date.now());
+
+    // Personal Info State
+    const [isEditing, setIsEditing] = useState(false);
+    const [categories, setCategories] = useState<any[]>([]);
+    const [formData, setFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        wilaya: "",
+        activitySector: "",
+        companyName: "",
+        jobTitle: "",
+        isProfileVisible: true,
+    });
     
     // Document Upload States
     const [uploadingFile, setUploadingFile] = useState<File | null>(null);
@@ -95,6 +112,29 @@ function ProfilePage() {
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
     const [isCropping, setIsCropping] = useState(false);
     const [cropType, setCropType] = useState<'avatar' | 'cover'>('avatar');
+
+    // Document Handling State & Logic
+    const [activeUpgradeSection, setActiveUpgradeSection] = useState<'verified' | 'certified' | null>('verified');
+
+    const isLoadingDocuments = isLoadingIdentity;
+
+    // Document lists
+    const requiredDocuments = [
+        { key: 'registreCommerceCarteAuto', label: t('profile.documents.registreCommerce') || 'Registre de Commerce / Carte Artisan', required: true, description: 'Format PDF ou Image' },
+        { key: 'nifRequired', label: t('profile.documents.nif') || 'NIF', required: true, description: 'Numéro d\'Identification Fiscale' },
+        { key: 'carteFellah', label: t('profile.documents.carteFellah') || 'Carte Fellah', required: true, description: 'Pour les agriculteurs' }
+    ];
+
+    const optionalDocuments = [
+        { key: 'nis', label: t('profile.documents.nis') || 'NIS' },
+        { key: 'c20', label: t('profile.documents.c20') || 'C20' },
+        { key: 'misesAJourCnas', label: t('profile.documents.misesAJourCnas') || 'Mises à jour CNAS' },
+        { key: 'last3YearsBalanceSheet', label: t('profile.documents.balanceSheet') || 'Bilans des 3 dernières années' },
+        { key: 'certificates', label: t('profile.documents.certificates') || 'Certificats' },
+        { key: 'identityCard', label: t('profile.documents.identityCard') || 'Carte d\'identité' }
+    ];
+
+
 
     const handleCropSave = async (croppedBlob: Blob) => {
         setIsCropping(false);
@@ -234,6 +274,22 @@ function ProfilePage() {
             hasUser: !!auth.user, 
             loginCount: auth.user?.loginCount 
         });
+
+        if (auth.user) {
+            setFormData({
+                firstName: auth.user.firstName || "",
+                lastName: auth.user.lastName || "",
+                email: auth.user.email || "",
+                phone: auth.user.phone || "",
+                wilaya: auth.user.wilaya || "",
+                activitySector: Array.isArray((auth.user as any).activitySector) 
+                    ? (auth.user as any).activitySector.join(', ') 
+                    : (auth.user as any).activitySector || (auth.user as any).secteur || "",
+                companyName: (auth.user as any).companyName || (auth.user as any).socialReason || "",
+                jobTitle: auth.user.jobTitle || "",
+                isProfileVisible: (auth.user as any).isProfileVisible !== undefined ? (auth.user as any).isProfileVisible : true,
+            });
+        }
         
         // DEVELOPMENT: Force show for testing
         if (typeof window !== 'undefined' && sessionStorage.getItem('force_show_profile_note') === 'true') {
@@ -245,6 +301,92 @@ function ProfilePage() {
         // Check for Complete Profile Note
         checkProfileCompletion(auth.user);
     }, [auth.user]);
+
+    useEffect(() => {
+        loadCategories();
+    }, []);
+
+    const loadCategories = async () => {
+        try {
+            const response = await CategoryAPI.getCategories();
+            if (response && Array.isArray(response)) {
+                setCategories(response);
+            } else if (response?.data && Array.isArray(response.data)) {
+                setCategories(response.data);
+            }
+        } catch (error) {
+            console.error("Error loading categories", error);
+        }
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const target = e.target as HTMLInputElement;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleVisibilityToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.checked;
+        
+        // Optimistic update
+        setFormData(prev => ({
+            ...prev,
+            isProfileVisible: newValue
+        }));
+
+        try {
+            await UserAPI.updateProfile({ isProfileVisible: newValue });
+            enqueueSnackbar(newValue ? "Profil visible" : "Profil masqué", { variant: "success" });
+            
+            // Update auth user context if needed
+            if (auth.user) {
+                const mergedUser = { ...auth.user, isProfileVisible: newValue };
+                set({ user: mergedUser, tokens: auth.tokens });
+            }
+        } catch (error) {
+            console.error('Error updating profile visibility:', error);
+            // Revert on error
+            setFormData(prev => ({
+                ...prev,
+                isProfileVisible: !newValue
+            }));
+            enqueueSnackbar("Erreur lors de la mise à jour", { variant: "error" });
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        try {
+            const updatePayload = { 
+                ...formData,
+                phone: formData.phone?.replace(/\s/g, '') || ''
+            };
+
+            console.log('📤 Submitting profile update payload:', updatePayload);
+            const response = await UserAPI.updateProfile(updatePayload);
+            
+            enqueueSnackbar(t("profileUpdated") || "Profile updated successfully", { variant: "success" });
+            setIsEditing(false);
+
+            if (auth.user && response.data) {
+                const mergedUser = { ...auth.user, ...response.data };
+                set({ user: mergedUser, tokens: auth.tokens });
+            }
+        } catch (error: any) {
+            console.error('Error updating profile:', error);
+            const errorMessage = error.response?.data?.message || t("updateFailed") || "Failed to update profile";
+            enqueueSnackbar(errorMessage, { variant: "error" });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const checkProfileCompletion = (user: any) => {
         console.log('🎯 ===== PROFILE COMPLETION CHECK STARTED =====');
@@ -439,8 +581,39 @@ function ProfilePage() {
 
     const handleNoteAction = async (action: 'complete' | 'postpone' | 'dismiss') => {
         if (action === 'complete') {
-             router.push('/settings');
+             const user = auth.user;
+             if (!user) return;
+
+             const isProfessional = user.type === 'PROFESSIONAL';
+             
+             // Check personal info fields
+             const basicFieldsMissing = !user.firstName || !user.lastName || !user.email || !user.phone || !user.wilaya;
+             const professionalFieldsMissing = isProfessional && (!user.companyName || !(user as any).secteur && !(user as any).activitySector || !user.jobTitle);
+             const isProfileIncomplete = basicFieldsMissing || professionalFieldsMissing;
+
+             if (isProfileIncomplete) {
+                 setActiveTab('personal-info');
+             } else if (!user.isHasIdentity || !user.isVerified) {
+                 setActiveTab('documents');
+             } else if (!user.isCertified) {
+                 setActiveTab('documents');
+                 // Also ensure the Certified section is active if they go there for certification
+                 if (user.isVerified) {
+                     setActiveUpgradeSection('certified');
+                 }
+             } else {
+                 setActiveTab('personal-info');
+             }
+
              setShowCompleteProfile(false);
+             
+             // Scroll to content
+             setTimeout(() => {
+                 const tabsElement = document.querySelector('.modern-tabs-section') || document.querySelector('.modern-content-grid');
+                 if (tabsElement) {
+                     tabsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                 }
+             }, 100);
         } else if (action === 'dismiss') {
              // "Jamais" - Dismiss forever via backend API
              try {
@@ -490,30 +663,7 @@ function ProfilePage() {
 
 
 
-    // Helper for loading state
-    const isLoadingDocuments = isLoadingIdentity;
 
-    // Upgrade section state - using 'verified' or 'certified' as expected by JSX
-    const [activeUpgradeSection, setActiveUpgradeSection] = useState<'verified' | 'certified' | null>('verified');
-
-    // Document lists
-    // Verification documents - User must provide EITHER (RC + NIF) OR (Carte Fellah alone)
-    const requiredDocuments = [
-        { key: 'registreCommerceCarteAuto', label: t('profile.documents.registreCommerce') || 'Registre de Commerce / Carte Artisan' },
-        { key: 'nifRequired', label: t('profile.documents.nif') || 'NIF' },
-        { key: 'carteFellah', label: t('profile.documents.carteFellah') || 'Carte Fellah' }
-    ];
-
-    // Certification documents - Additional professional documents for certified status
-    const optionalDocuments = [
-        { key: 'nis', label: t('profile.documents.nis') || 'NIS' },
-        { key: 'art', label: t('profile.documents.art') || 'Article' },
-        { key: 'c20', label: t('profile.documents.c20') || 'C20' },
-        { key: 'misesAJourCnas', label: t('profile.documents.misesAJourCnas') || 'Mises à jour CNAS' },
-        { key: 'last3YearsBalanceSheet', label: t('profile.documents.balanceSheet') || 'Bilans des 3 dernières années' },
-        { key: 'certificates', label: t('profile.documents.certificates') || 'Certificats' },
-        { key: 'identityCard', label: t('profile.documents.identityCard') || 'Carte d\'identité' }
-    ];
 
     // ... existing code ...
     
@@ -1648,7 +1798,9 @@ function ProfilePage() {
                             {/* Tab Navigation */}
                             <div className="modern-tab-nav">
                                 {[
-                                    { id: "activities", icon: "bi-activity", label: t("profile.tabs.myActivities") || "Mes Activités" }
+                                    { id: "activities", icon: "bi-activity", label: t("profile.tabs.myActivities") || "Mes Activités" },
+                                    { id: "personal-info", icon: "bi-person-circle", label: t("profile.personalInfo.title") || "Infos Personnelles" },
+                                    { id: "documents", icon: "bi-file-earmark-text-fill", label: t("dashboard.profile.tabs.documents") || "Documents" },
                                 ].map((tab, index) => (
                                     <motion.button
                                         key={tab.id}
@@ -1695,7 +1847,415 @@ function ProfilePage() {
 
 
 
-                                    {/* Documents Tab removed - moved to settings */}
+                                    {activeTab === "personal-info" && (
+                                        <motion.div
+                                            key="personal-info"
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.4 }}
+                                        >
+                                            <div className="modern-section-card">
+                                                <div className="section-header">
+                                                    <div className="header-content">
+                                                        <div className="header-icon">
+                                                            <i className="bi bi-person-circle"></i>
+                                                        </div>
+                                                        <div className="header-text">
+                                                            <h2>{t("profile.personalInfo.title") || "Personal Information"}</h2>
+                                                            <p>{t("profile.personalInfo.subtitle") || "Manage your personal information and profile details"}</p>
+                                                        </div>
+                                                    </div>
+                                                    <motion.button
+                                                        className={`modern-edit-button ${isEditing ? "editing" : ""}`}
+                                                        onClick={() => setIsEditing(!isEditing)}
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                    >
+                                                        <i className={`bi ${isEditing ? 'bi-x-circle' : 'bi-pencil-square'}`} />
+                                                        <span>{isEditing ? t("common.cancel") : t("common.edit")}</span>
+                                                    </motion.button>
+                                                </div>
+
+                                                <form onSubmit={handleSubmit} className="modern-profile-form">
+                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                                                        <div className="modern-form-field">
+                                                            <label htmlFor="firstName">{t("profile.personalInfo.firstName") || "Prénom"}</label>
+                                                            <div className="input-with-icon">
+                                                                <input
+                                                                    type="text"
+                                                                    id="firstName"
+                                                                    name="firstName"
+                                                                    value={formData.firstName}
+                                                                    onChange={handleInputChange}
+                                                                    disabled={!isEditing}
+                                                                    required
+                                                                />
+                                                                <div className="modern-input-icon">
+                                                                    <i className="bi bi-person"></i>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="modern-form-field">
+                                                            <label htmlFor="lastName">{t("profile.lastName") || "Nom"}</label>
+                                                            <div className="input-with-icon">
+                                                                <input
+                                                                    type="text"
+                                                                    id="lastName"
+                                                                    name="lastName"
+                                                                    value={formData.lastName}
+                                                                    onChange={handleInputChange}
+                                                                    disabled={!isEditing}
+                                                                    required
+                                                                />
+                                                                <div className="modern-input-icon">
+                                                                    <i className="bi bi-person"></i>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="modern-form-field">
+                                                            <label htmlFor="wilaya">{t("profile.wilaya") || "Wilaya"}</label>
+                                                            <div className="input-with-icon">
+                                                                <select
+                                                                    id="wilaya"
+                                                                    name="wilaya"
+                                                                    value={formData.wilaya}
+                                                                    onChange={handleInputChange}
+                                                                    disabled={!isEditing}
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        padding: '12px 16px',
+                                                                        paddingLeft: '50px',
+                                                                        borderRadius: '12px',
+                                                                        border: '1px solid #e2e8f0',
+                                                                        backgroundColor: isEditing ? '#ffffff' : '#f8fafc',
+                                                                        color: '#1e293b',
+                                                                        fontSize: '14px',
+                                                                        outline: 'none',
+                                                                        height: '54px',
+                                                                        appearance: 'none',
+                                                                        cursor: isEditing ? 'pointer' : 'default',
+                                                                        transition: 'all 0.2s ease'
+                                                                    }}
+                                                                >
+                                                                    <option value="">Sélectionner une Wilaya</option>
+                                                                    {WILAYAS.map((w, index) => (
+                                                                        <option key={index} value={w}>{w}</option>
+                                                                    ))}
+                                                                </select>
+                                                                <div className="modern-input-icon">
+                                                                    <i className="bi bi-geo-alt"></i>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="modern-form-field">
+                                                            <label htmlFor="companyName">{t("profile.personalInfo.companyName") || "Nom de l'entreprise"}</label>
+                                                            <div className="input-with-icon">
+                                                                <input
+                                                                    type="text"
+                                                                    id="companyName"
+                                                                    name="companyName"
+                                                                    value={formData.companyName}
+                                                                    onChange={handleInputChange}
+                                                                    disabled={!isEditing}
+                                                                />
+                                                                <div className="modern-input-icon">
+                                                                    <i className="bi bi-building"></i>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="modern-form-field">
+                                                            <label htmlFor="jobTitle">{t("profile.personalInfo.jobTitle") || "Poste actuel"}</label>
+                                                            <div className="input-with-icon">
+                                                                <input
+                                                                    type="text"
+                                                                    id="jobTitle"
+                                                                    name="jobTitle"
+                                                                    value={formData.jobTitle}
+                                                                    onChange={handleInputChange}
+                                                                    disabled={!isEditing}
+                                                                />
+                                                                <div className="modern-input-icon">
+                                                                    <i className="bi bi-person-workspace"></i>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="modern-form-field">
+                                                            <label htmlFor="activitySector">{t("profile.personalInfo.secteur") || "Secteur d'activité"}</label>
+                                                            <div className="input-with-icon">
+                                                                <select
+                                                                    id="activitySector"
+                                                                    name="activitySector"
+                                                                    value={formData.activitySector}
+                                                                    onChange={handleInputChange}
+                                                                    disabled={!isEditing}
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        padding: '12px 16px',
+                                                                        paddingLeft: '50px',
+                                                                        borderRadius: '12px',
+                                                                        border: '1px solid #e2e8f0',
+                                                                        backgroundColor: isEditing ? '#ffffff' : '#f8fafc',
+                                                                        color: '#1e293b',
+                                                                        fontSize: '14px',
+                                                                        outline: 'none',
+                                                                        height: '54px',
+                                                                        appearance: 'none',
+                                                                        cursor: isEditing ? 'pointer' : 'default',
+                                                                        transition: 'all 0.2s ease'
+                                                                    }}
+                                                                >
+                                                                    <option value="">{t("profile.personalInfo.selectSector") || "Sélectionner un secteur"}</option>
+                                                                    {categories.map((cat) => (
+                                                                        <option key={cat._id} value={cat.name}>
+                                                                            {cat.name}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                                <div className="modern-input-icon">
+                                                                    <i className="bi bi-activity"></i>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="modern-form-field">
+                                                            <label htmlFor="phone">{t("profile.personalInfo.phone") || "Téléphone"}</label>
+                                                            <div className="input-with-icon">
+                                                                <input
+                                                                    type="tel"
+                                                                    id="phone"
+                                                                    name="phone"
+                                                                    value={formData.phone}
+                                                                    onChange={handleInputChange}
+                                                                    disabled={!isEditing}
+                                                                />
+                                                                <div className="modern-input-icon">
+                                                                    <i className="bi bi-telephone"></i>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="modern-form-field" style={{ gridColumn: '1 / -1' }}>
+                                                            <div style={{ 
+                                                                display: 'flex', 
+                                                                justifyContent: 'space-between', 
+                                                                alignItems: 'center', 
+                                                                background: 'white', 
+                                                                padding: '1.25rem', 
+                                                                borderRadius: '16px', 
+                                                                border: '1px solid #e2e8f0', 
+                                                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)'
+                                                            }}>
+                                                                <div style={{ maxWidth: '80%' }}>
+                                                                    <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', fontWeight: 600, color: '#1e293b' }}>
+                                                                        {t("profile.personalInfo.isProfileVisible") || "Informations personnelles visibles"}
+                                                                    </h4>
+                                                                    <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b', lineHeight: '1.4' }}>
+                                                                        {t("profile.personalInfo.isProfileVisibleDesc") || "Rendre vos informations personnelles visibles aux autres utilisateurs"}
+                                                                    </p>
+                                                                </div>
+                                                                
+                                                                <label style={{ position: 'relative', width: '52px', height: '32px', cursor: 'pointer', display: 'block' }}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        id="isProfileVisible"
+                                                                        name="isProfileVisible"
+                                                                        checked={!!formData.isProfileVisible}
+                                                                        onChange={handleVisibilityToggle}
+                                                                        style={{ opacity: 0, width: 0, height: 0 }}
+                                                                    />
+                                                                    <span style={{
+                                                                        position: 'absolute',
+                                                                        cursor: 'pointer',
+                                                                        top: 0, 
+                                                                        left: 0, 
+                                                                        right: 0, 
+                                                                        bottom: 0,
+                                                                        backgroundColor: formData.isProfileVisible ? '#4f46e5' : '#cbd5e1',
+                                                                        borderRadius: '34px',
+                                                                        transition: '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                                        boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)'
+                                                                    }}></span>
+                                                                    <span style={{
+                                                                        position: 'absolute',
+                                                                        content: '""',
+                                                                        height: '24px',
+                                                                        width: '24px',
+                                                                        left: formData.isProfileVisible ? '24px' : '4px',
+                                                                        bottom: '4px',
+                                                                        backgroundColor: 'white',
+                                                                        transition: '0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                                        borderRadius: '50%',
+                                                                        boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)'
+                                                                    }}></span>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+
+
+                                                    {isEditing && (
+                                                        <div className="modern-actions" style={{
+                                                            marginTop: '2rem',
+                                                            display: 'flex',
+                                                            justifyContent: 'flex-end',
+                                                            gap: '1rem'
+                                                        }}>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setIsEditing(false)}
+                                                                className="modern-btn secondary"
+                                                                style={{
+                                                                    padding: '0.75rem 1.5rem',
+                                                                    borderRadius: '10px',
+                                                                    border: '1px solid #e2e8f0',
+                                                                    backgroundColor: 'white',
+                                                                    color: '#64748b',
+                                                                    fontWeight: 600,
+                                                                    cursor: 'pointer',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '0.5rem'
+                                                                }}
+                                                            >
+                                                                <i className="bi bi-x-circle"></i>
+                                                                <span>{t("common.cancel")}</span>
+                                                            </button>
+
+                                                            <button
+                                                                type="submit"
+                                                                disabled={isLoading}
+                                                                className="modern-btn primary"
+                                                                style={{
+                                                                    padding: '0.75rem 1.5rem',
+                                                                    borderRadius: '10px',
+                                                                    border: 'none',
+                                                                    background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
+                                                                    color: 'white',
+                                                                    fontWeight: 600,
+                                                                    cursor: 'pointer',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '0.5rem',
+                                                                    boxShadow: '0 4px 6px -1px rgba(79, 70, 229, 0.2)'
+                                                                }}
+                                                            >
+                                                                {isLoading ? (
+                                                                    <>
+                                                                        <div className="modern-spinner-sm"></div>
+                                                                        <span>{t("profile.saving") || "Saving..."}</span>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <i className="bi bi-check-circle"></i>
+                                                                        <span>{t("profile.saveChanges") || "Save changes"}</span>
+                                                                    </>
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </form>
+                                            </div>
+                                        </motion.div>
+                                    )}
+
+                                    {activeTab === "documents" && (
+                                        <motion.div
+                                            key="documents"
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.4 }}
+                                        >
+                                            <div className="modern-section-card" style={{ padding: 0, overflow: 'hidden' }}>
+                                                {isLoadingDocuments ? (
+                                                    <div className="modern-loading" style={{ padding: '40px' }}>
+                                                        <div className="modern-spinner"></div>
+                                                        <p>Chargement des documents...</p>
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ padding: '20px' }}>
+                                                        <div className="modern-upgrade-buttons">
+                                                            <motion.button
+                                                                className={`modern-upgrade-btn verified ${activeUpgradeSection === 'verified' ? 'active' : ''}`}
+                                                                onClick={() => setActiveUpgradeSection(activeUpgradeSection === 'verified' ? null : 'verified')}
+                                                                whileHover={{ scale: 1.02 }}
+                                                                whileTap={{ scale: 0.98 }}
+                                                            >
+                                                                <i className="bi bi-shield-check"></i>
+                                                                {t('dashboard.profile.documents.switchToVerified') || "Vérification (Obligatoire)"}
+                                                            </motion.button>
+                                                            <motion.button
+                                                                className={`modern-upgrade-btn certified ${activeUpgradeSection === 'certified' ? 'active' : ''}`}
+                                                                onClick={() => {
+                                                                    if (!auth.user?.isVerified) {
+                                                                        enqueueSnackbar("Vous devez être vérifié pour accéder à la certification", { variant: 'warning' });
+                                                                        return;
+                                                                    }
+                                                                    setActiveUpgradeSection(activeUpgradeSection === 'certified' ? null : 'certified')
+                                                                }}
+                                                                disabled={!auth.user?.isVerified}
+                                                                whileHover={auth.user?.isVerified ? { scale: 1.02 } : {}}
+                                                                whileTap={auth.user?.isVerified ? { scale: 0.98 } : {}}
+                                                            >
+                                                                <i className="bi bi-award"></i>
+                                                                {t('dashboard.profile.documents.switchToCertified') || "Certification (Optionnel)"}
+                                                                {!auth.user?.isVerified && <i className="bi bi-lock-fill"></i>}
+                                                            </motion.button>
+                                                        </div>
+
+                                                        <AnimatePresence>
+                                                            {activeUpgradeSection === 'verified' && (
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, height: 0 }}
+                                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                                    exit={{ opacity: 0, height: 0 }}
+                                                                >
+                                                                    {renderDocumentCards(requiredDocuments, t('dashboard.profile.documents.verificationTitle') || "Documents Requis", true)}
+                                                                </motion.div>
+                                                            )}
+                                                            {activeUpgradeSection === 'certified' && (
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, height: 0 }}
+                                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                                    exit={{ opacity: 0, height: 0 }}
+                                                                >
+                                                                    {renderDocumentCards(optionalDocuments, t('dashboard.profile.documents.certificationInfoTitle') || "Documents Optionnels", false)}
+                                                                </motion.div>
+                                                            )}
+                                                        </AnimatePresence>
+                                                         
+                                                        <div style={{ padding: '20px 0', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #e2e8f0', marginTop: '20px' }}>
+                                                             <button
+                                                                 onClick={handleSubmitIdentity}
+                                                                 disabled={isSubmittingIdentity}
+                                                                 className="modern-btn primary"
+                                                                 style={{ padding: '12px 24px' }}
+                                                             >
+                                                                 {isSubmittingIdentity ? (
+                                                                     <>
+                                                                         <div className="modern-spinner-sm"></div>
+                                                                         <span>Envoi en cours...</span>
+                                                                     </>
+                                                                 ) : (
+                                                                     <>
+                                                                        <i className="bi bi-send"></i>
+                                                                        <span>Soumettre pour vérification</span>
+                                                                     </>
+                                                                 )}
+                                                             </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    )}
 
                                     {/* History Tab */}
 

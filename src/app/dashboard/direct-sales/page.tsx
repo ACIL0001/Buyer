@@ -24,27 +24,11 @@ import { MdAdd } from 'react-icons/md';
 import ResponsiveTable from '@/components/Tables/ResponsiveTable';
 import Label from '@/components/Label';
 import useAuth from '@/hooks/useAuth';
+import { DirectSale, SALE_STATUS } from '@/types/direct-sale';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import TableSkeleton from '@/components/skeletons/TableSkeleton';
 
-enum SALE_STATUS {
-  ACTIVE = 'ACTIVE',
-  SOLD = 'SOLD',
-  INACTIVE = 'INACTIVE',
-  OUT_OF_STOCK = 'OUT_OF_STOCK'
-}
-
-interface DirectSale {
-  _id: string;
-  title: string;
-  description: string;
-  category: string | { name: string };
-  productCategory?: string | { name: string };
-  price: number;
-  stock: number;
-  quantity?: number;
-  status: SALE_STATUS;
-  ordersCount: number;
-  createdAt: string;
-}
+// Local types for UI removed in favor of global types
 
 export default function DirectSalesPage() {
   const router = useRouter();
@@ -61,47 +45,32 @@ export default function DirectSalesPage() {
     { id: 'actions', label: '', alignRight: true, searchable: false }
   ];
   
-  const [sales, setSales] = useState<DirectSale[]>([]);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState('createdAt');
   const [filterName, setFilterName] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const { isLogged } = useAuth();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (isLogged) {
-        fetchSales();
-    }
-  }, [isLogged]);
-
-  const fetchSales = async () => {
-    setLoading(true);
-    try {
+  const { data: sales = [], isLoading } = useQuery({
+    queryKey: ['direct-sales', 'my'],
+    queryFn: async () => {
       const { DirectSaleAPI } = await import('@/services/direct-sale');
       const response = await DirectSaleAPI.getMyDirectSales();
-      console.log('Fetched direct sales:', response);
-      // Handle both array response or { data: [...] } response
-      // Handle both array response or { data: [...] } response
-      const rawData: DirectSale[] = Array.isArray(response) ? response : (response?.data || []);
+      const rawData = response.data || (Array.isArray(response) ? response : []);
       
       // Normalize data for table: ensure category/productCategory are not objects to avoid MobileCard crash
-      const normalizedData = rawData.map(item => ({
+      return rawData.map((item: any) => ({
         ...item,
         category: typeof item.category === 'object' ? item.category.name : item.category,
         productCategory: typeof item.productCategory === 'object' ? item.productCategory.name : item.productCategory
-      }));
-
-      setSales(normalizedData);
-    } catch (error) {
-      console.error('Error fetching direct sales:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      })) as DirectSale[];
+    },
+    enabled: isLogged,
+  });
 
   const getStatusColor = (status: SALE_STATUS): 'success' | 'info' | 'warning' | 'error' => {
     switch (status) {
@@ -128,7 +97,7 @@ export default function DirectSalesPage() {
       try {
         const { DirectSaleAPI } = await import('@/services/direct-sale');
         await DirectSaleAPI.delete(id);
-        fetchSales();
+        queryClient.invalidateQueries({ queryKey: ['direct-sales', 'my'] });
       } catch (error) {
         console.error('Error deleting sale:', error);
       }
@@ -253,7 +222,9 @@ export default function DirectSalesPage() {
         </Stack>
       </Box>
       
-      {sales.length === 0 && !loading ? (
+      {isLoading ? (
+        <TableSkeleton rows={rowsPerPage} columns={7} />
+      ) : sales.length === 0 ? (
         <Stack 
           spacing={3} 
           alignItems="center" 

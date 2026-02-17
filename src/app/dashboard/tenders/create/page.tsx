@@ -134,7 +134,7 @@ export default function CreateTenderPage() {
         try {
             const { CategoryAPI } = await import('@/services/category');
             const response = await CategoryAPI.getCategoryTree();
-            let categoryData = [];
+            let categoryData: any[] = [];
             if (response?.data && Array.isArray(response.data)) categoryData = response.data;
             else if (Array.isArray(response)) categoryData = response;
             if (categoryData.length > 0) setCategories(categoryData);
@@ -471,6 +471,7 @@ export default function CreateTenderPage() {
                                     sx={{ mb: 2, width: '100%', alignItems: 'flex-start' }}
                                 />
 
+                                {auth.user?.type === 'PROFESSIONAL' && (
                                 <FormControlLabel
                                     control={<Switch checked={formik.values.professionalOnly} onChange={formik.handleChange} name="professionalOnly" />}
                                     label={
@@ -481,6 +482,7 @@ export default function CreateTenderPage() {
                                     }
                                     sx={{ width: '100%', alignItems: 'flex-start' }}
                                 />
+                                )}
                             </Box>
                         </Grid>
 

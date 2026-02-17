@@ -24,27 +24,11 @@ import { MdAdd } from 'react-icons/md';
 import ResponsiveTable from '@/components/Tables/ResponsiveTable';
 import Label from '@/components/Label';
 import useAuth from '@/hooks/useAuth';
+import { Tender, TENDER_STATUS } from '@/types/tender';
+import { useQuery } from '@tanstack/react-query';
+import TableSkeleton from '@/components/skeletons/TableSkeleton';
 
-enum TENDER_STATUS {
-  OPEN = 'OPEN',
-  CLOSED = 'CLOSED',
-  AWARDED = 'AWARDED',
-  CANCELLED = 'CANCELLED'
-}
-
-interface Tender {
-  _id: string;
-  title: string;
-  description: string;
-  category: string | { name: string };
-  budget: number;
-  maxBudget?: number;
-  deadline: string;
-  endingAt?: string;
-  status: TENDER_STATUS;
-  bidsCount: number;
-  bids?: any[];
-}
+// Local types for UI removed in favor of global types
 
 export default function TendersPage() {
   const router = useRouter();
@@ -121,46 +105,30 @@ export default function TendersPage() {
     { id: 'actions', label: '', alignRight: true, searchable: false }
   ];
   
-  const [tenders, setTenders] = useState<Tender[]>([]);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState('deadline');
   const [filterName, setFilterName] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const { isLogged } = useAuth();
 
-  useEffect(() => {
-    if (isLogged) {
-        fetchTenders();
-    }
-  }, [isLogged]);
-
-  const fetchTenders = async () => {
-    setLoading(true);
-    try {
+  const { data: tenders = [], isLoading } = useQuery({
+    queryKey: ['tenders', 'my'],
+    queryFn: async () => {
       const { TendersAPI } = await import('@/services/tenders');
       const response = await TendersAPI.getTenders();
-      console.log('Fetched tenders:', response);
-      // Handle both array response or { data: [...] } response
-      // Handle both array response or { data: [...] } response
-      const rawData: Tender[] = Array.isArray(response) ? response : (response?.data || []);
+      const rawData = response.data || (Array.isArray(response) ? response : []);
       
       // Normalize category to be a string
-      const normalizedData = rawData.map(item => ({
+      return rawData.map(item => ({
         ...item,
         category: typeof item.category === 'object' ? item.category?.name : item.category
       }));
-      
-      setTenders(normalizedData);
-    } catch (error) {
-      console.error('Error fetching tenders:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    enabled: isLogged,
+  });
 
   const getStatusColor = (status: TENDER_STATUS): 'info' | 'success' | 'error' | 'warning' => {
     switch (status) {
@@ -298,7 +266,9 @@ export default function TendersPage() {
         </Stack>
       </Box>
       
-      {tenders.length === 0 && !loading ? (
+      {isLoading ? (
+        <TableSkeleton rows={rowsPerPage} columns={7} />
+      ) : tenders.length === 0 ? (
         <Stack 
           spacing={3} 
           alignItems="center" 

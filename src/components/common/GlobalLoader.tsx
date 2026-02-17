@@ -8,19 +8,10 @@ const GlobalLoader: React.FC = () => {
   const [loadingText, setLoadingText] = useState('Loading...');
   const pathname = usePathname();
 
-  useEffect(() => {
-    // Show loading when pathname changes (navigation)
-    if (pathname) {
-      setIsLoading(true);
-      setLoadingText('Loading page...');
-      
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 800);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [pathname]);
+  // No longer showing spinner on navigation to allow cache to work instantly
+  // useEffect(() => {
+  //   if (pathname) { ... }
+  // }, [pathname]);
 
   useEffect(() => {
     // Handle page refresh

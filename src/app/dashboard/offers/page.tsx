@@ -112,12 +112,10 @@ export default function OffersPage() {
       
       let offersData: Offer[] = [];
       
-      if (Array.isArray(response)) {
-        offersData = response;
-      } else if (response?.data && Array.isArray(response.data)) {
+      if (response && response.data && Array.isArray(response.data)) {
         offersData = response.data;
-      } else if (response?.offers && Array.isArray(response.offers)) {
-        offersData = response.offers;
+      } else if (Array.isArray(response)) {
+        offersData = response;
       }
       
       setOffers(offersData);

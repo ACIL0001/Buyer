@@ -17,7 +17,10 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
+import { useQuery } from '@tanstack/react-query';
+import PageSkeleton from '@/components/skeletons/PageSkeleton';
 import ShareButton from '@/components/common/ShareButton';
+
 
 // Define BID_TYPE enum to match server definition
 const BID_TYPE = {
@@ -93,9 +96,7 @@ const MultipurposeTenderSidebar = () => {
 
     const [activeColumn, setActiveColumn] = useState(3);
     const [currentPage, setCurrentPage] = useState(1);
-    const [tenders, setTenders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [expandedCategories, setExpandedCategories] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("");
     const [selectedSubCategory, setSelectedSubCategory] = useState("");
@@ -104,14 +105,64 @@ const MultipurposeTenderSidebar = () => {
     const [filteredTenders, setFilteredTenders] = useState([]);
     const [sortOption, setSortOption] = useState(t('defaultSort'));
     const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'finished'
-    const [categories, setCategories] = useState([]);
     const [filteredCategories, setFilteredCategories] = useState([]);
     const [subCategories, setSubCategories] = useState([]);
-    const [categoriesLoading, setCategoriesLoading] = useState(true);
     const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
     const [hoveredCategory, setHoveredCategory] = useState(null);
     const [hoveredSubCategory, setHoveredSubCategory] = useState(null);
-    const [expandedCategories, setExpandedCategories] = useState({});
+
+
+    // Categories Query
+    const { data: categoryResponse, isLoading: isCategoriesLoading } = useQuery({
+        queryKey: ['categoryTree'],
+        queryFn: () => CategoryAPI.getCategoryTree(),
+    });
+
+    // Process category data
+    const categories = useMemo(() => {
+        if (!categoryResponse) return [];
+        if (categoryResponse.success && Array.isArray(categoryResponse.data)) return categoryResponse.data;
+        if (Array.isArray(categoryResponse)) return categoryResponse;
+        if (categoryResponse.data && Array.isArray(categoryResponse.data)) return categoryResponse.data;
+        return [];
+    }, [categoryResponse]);
+
+    // Tenders Query
+    const { data: rawTenders, isLoading: isTendersLoading, error: tenderQueryError } = useQuery({
+        queryKey: ['tenders', auth.user?._id],
+        queryFn: () => TendersAPI.getActiveTenders(),
+    });
+
+    // Process tenders data
+    const tenders = useMemo(() => {
+        if (!rawTenders) return [];
+        
+        let tendersData = [];
+        if (rawTenders.success && Array.isArray(rawTenders.data)) {
+            tendersData = rawTenders.data;
+        } else if (Array.isArray(rawTenders)) {
+            tendersData = rawTenders;
+        } else if (rawTenders.data && Array.isArray(rawTenders.data)) {
+            tendersData = rawTenders.data;
+        }
+
+        // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+        const visibleTenders = tendersData.filter(tender => {
+            if (tender.verifiedOnly === true && !isUserVerified) {
+                return false;
+            }
+            return true;
+        });
+        
+        return visibleTenders;
+    }, [rawTenders, auth.user]);
+
+    // Error handling
+    const error = tenderQueryError ? "Failed to load tenders" : null;
+    const loading = isTendersLoading;
+    const categoriesLoading = isCategoriesLoading;
+
     
     // Pagination constants
     const ITEMS_PER_PAGE = 9;
@@ -569,125 +620,44 @@ const MultipurposeTenderSidebar = () => {
         }
     }, []);
 
+    // Timer initialization based on tenders
     useEffect(() => {
-        const fetchTenders = async () => {
-            try {
-                setLoading(true);
-                // Fetch tenders with populated owner and avatar
-                const response = await TendersAPI.getActiveTenders();
-                
-                console.log('Tenders API Response:', response);
-                
-                // Handle the API response structure
-                let tendersData = [];
-                if (response && response.success) {
-                    // If response has data array
-                    if (Array.isArray(response.data)) {
-                        tendersData = response.data;
-                    } else if (Array.isArray(response)) {
-                        // If response is directly an array
-                        tendersData = response;
-                    }
-                } else if (Array.isArray(response)) {
-                    // If response is directly an array
-                    tendersData = response;
+        if (!tenders || tenders.length === 0) return;
+
+        // Initialize countdown timers for each tender
+        const timers = {};
+        tenders.forEach(tender => {
+            if (tender._id) {
+                const endTime = tender.endingAt || "2024-10-23 12:00:00";
+                const currentTime = new Date();
+                const timeDifference = new Date(endTime) - currentTime;
+
+                if (timeDifference > 0) {
+                    timers[tender._id] = calculateTimeRemaining(endTime);
+                } else {
+                    timers[tender._id] = { days: "00", hours: "00", minutes: "00", seconds: "00", hasEnded: true }; // Mark as ended
                 }
-                
-                console.log('Processed tenders data:', tendersData);
-                
-                // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
-                const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
-                const visibleTenders = tendersData.filter(tender => {
-                  // If tender is verifiedOnly and user is not verified, hide it
-                  if (tender.verifiedOnly === true && !isUserVerified) {
-                    return false;
-                  }
-                  return true;
-                });
-                
-                setTenders(visibleTenders);
-                // Initial filtering for display, the useEffect below will refine it
-                setFilteredTenders(visibleTenders);
-
-                // Initialize countdown timers for each tender
-                const timers = {};
-                tendersData.forEach(tender => {
-                    if (tender._id) {
-                        const endTime = tender.endingAt || "2024-10-23 12:00:00";
-                        const currentTime = new Date();
-                        const timeDifference = new Date(endTime) - currentTime;
-
-                        if (timeDifference > 0) {
-                            timers[tender._id] = calculateTimeRemaining(endTime);
-                        } else {
-                            timers[tender._id] = { days: "00", hours: "00", minutes: "00", seconds: "00", hasEnded: true }; // Mark as ended
-                        }
-                    }
-                });
-                setTenderTimers(timers);
-
-                // Update timers every second
-                const interval = setInterval(() => {
-                    const updatedTimers = {};
-                    tendersData.forEach(tender => {
-                        if (tender._id) {
-                            const endTime = tender.endingAt || "2024-10-23 12:00:00";
-                            updatedTimers[tender._id] = calculateTimeRemaining(endTime);
-                        }
-                    });
-                    setTenderTimers(updatedTimers);
-                }, 1000);
-
-                setLoading(false);
-
-                return () => clearInterval(interval);
-            } catch (err) {
-                console.error("Error fetching tenders:", err);
-                setError("Failed to load tenders");
-                setLoading(false);
             }
-        };
+        });
+        setTenderTimers(timers);
 
-        fetchTenders();
-    }, [auth.user]);
-
-    // Fetch categories
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                setCategoriesLoading(true);
-                const response = await CategoryAPI.getCategoryTree();
-                
-                // Handle different response structures
-                let categoryData = null;
-                let isSuccess = false;
-                
-                if (response) {
-                    if (response.success && Array.isArray(response.data)) {
-                        categoryData = response.data;
-                        isSuccess = true;
-                    } else if (Array.isArray(response)) {
-                        categoryData = response;
-                        isSuccess = true;
-                    } else if (response.data && Array.isArray(response.data)) {
-                        categoryData = response.data;
-                        isSuccess = true;
-                    }
+        // Update timers every second
+        const interval = setInterval(() => {
+            const updatedTimers = {};
+            tenders.forEach(tender => {
+                if (tender._id) {
+                    const endTime = tender.endingAt || "2024-10-23 12:00:00";
+                    updatedTimers[tender._id] = calculateTimeRemaining(endTime);
                 }
-                
-                if (isSuccess && categoryData && categoryData.length > 0) {
-                    setCategories(categoryData);
-                    setFilteredCategories(categoryData);
-                }
-                setCategoriesLoading(false);
-            } catch (err) {
-                console.error("Error fetching categories:", err);
-                setCategoriesLoading(false);
-            }
-        };
+            });
+            setTenderTimers(updatedTimers);
+        }, 1000);
 
-        fetchCategories();
-    }, []);
+        return () => clearInterval(interval);
+    }, [tenders]);
+
+
+
 
     // Update filtered categories when selectedBidType or searchTerm changes
     useEffect(() => {
@@ -1041,7 +1011,12 @@ const MultipurposeTenderSidebar = () => {
         },
     }), []);
 
+    if (isCategoriesLoading && isTendersLoading && tenders.length === 0) {
+        return <PageSkeleton />;
+    }
+
     return (
+
         <>
             <Header />
             <div className="tender-grid-section mb-110" style={{ paddingTop: 'clamp(70px, 8vw, 100px)' }}>

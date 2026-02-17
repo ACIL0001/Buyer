@@ -19,6 +19,8 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { AuctionsAPI } from '@/services/auctions';
+import { Auction } from '@/types/auction';
+import User from '@/types/User';
 import { OffersAPI } from '@/services/offers';
 import useAuth from '@/hooks/useAuth';
 import Label from '@/components/Label';
@@ -65,10 +67,11 @@ const useTranslation = () => {
   return { t, i18n: { language: 'fr' } };
 };
 
+// Local enums for UI matching the backend
 enum BID_STATUS {
     OPEN = 'OPEN',
     CLOSED = 'CLOSED',
-    ON_AUCTION = 'ON_AUCTION',
+    ON_AUCTION = 'ACCEPTED', // Backend uses ACCEPTED for on-auction
     ARCHIVED = 'ARCHIVED'
 }
 
@@ -76,31 +79,6 @@ enum AUCTION_TYPE {
     CLASSIC = 'CLASSIC',
     EXPRESS = 'EXPRESS',
     AUTO_SUB_BID = 'AUTO_SUB_BID'
-}
-
-interface User {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone?: string;
-    avatar?: { path: string };
-}
-
-interface Auction {
-    _id: string;
-    title: string;
-    description: string;
-    startingPrice: number;
-    currentPrice?: number;
-    status: BID_STATUS;
-    bidType: 'PRODUCT' | 'SERVICE';
-    auctionType: AUCTION_TYPE;
-    startingAt: string;
-    endingAt: string;
-    winner?: User;
-    owner?: User;
-    contactNumber?: string;
 }
 
 interface Participant {
@@ -136,10 +114,10 @@ export default function AuctionDetailPage() {
       const response = await AuctionsAPI.getAuctionById(auctionId);
       console.log("Auction details response:", response);
       
-      if (response) {
-        console.log('📞 Auction response:', response);
-        console.log('📞 Contact Number:', response?.contactNumber);
-        setAuction(response);
+      if (response && response.data) {
+        console.log('📞 Auction response:', response.data);
+        console.log('📞 Contact Number:', response.data.contactNumber);
+        setAuction(response.data);
       }
     } catch (error: any) {
       console.error('Error fetching auction details:', error);
@@ -164,13 +142,13 @@ export default function AuctionDetailPage() {
 
       console.log('Offers response:', offers);
       
-      if (Array.isArray(offers)) {
-        const formattedParticipants = offers
+      if (offers && offers.data && Array.isArray(offers.data)) {
+        const formattedParticipants = offers.data
           .map((offer: any) => ({
             name: offer.user?.firstName && offer.user?.lastName 
               ? `${offer.user.firstName} ${offer.user.lastName}` 
               : offer.user?.email || t('unknownUser'),
-            avatar: offer.user?.avatar?.path || '',
+            avatar: (offer.user?.avatar as any)?.url || (offer.user?.avatar as any)?.path || '',
             bidAmount: offer.price || 0,
             bidDate: offer.createdAt || new Date(),
             user: offer.user as User
@@ -250,7 +228,7 @@ export default function AuctionDetailPage() {
       >
         <MdEmojiEvents size={40} style={{ color: '#fff', marginRight: 16 }} />
         <Avatar
-          src={winner?.avatar?.path || ''}
+          src={(winner?.avatar as any)?.url || (winner?.avatar as any)?.path || ''}
           alt={winner?.firstName || 'Winner'}
           sx={{ width: 56, height: 56, border: '2px solid #fff', boxShadow: 2 }}
         >
@@ -346,7 +324,7 @@ export default function AuctionDetailPage() {
                   height: 8,
                   borderRadius: '50%',
                   bgcolor: (theme) => {
-                    const color = getStatusColor(auction.status);
+                    const color = getStatusColor(auction.status as any);
                     return (theme.palette as any)[color]?.main || theme.palette.primary.main;
                   },
                   animation: 'pulse 2s infinite',
@@ -363,7 +341,7 @@ export default function AuctionDetailPage() {
                 : auction.status === BID_STATUS.CLOSED ? 'Closed'
                 : auction.status === BID_STATUS.ARCHIVED ? 'Archived'
                 : auction.status}
-              color={getStatusColor(auction.status) as any}
+              color={getStatusColor(auction.status as any) as any}
               variant="filled"
               size="small"
               sx={{ fontWeight: 600, borderRadius: 1.5, minWidth: 80 }}

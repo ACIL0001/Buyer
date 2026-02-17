@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { getSellerUrl, getFrontendUrl } from '@/config';
@@ -12,6 +12,8 @@ import useAuth from '@/hooks/useAuth';
 import { SnackbarProvider } from 'notistack';
 import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
 import RequestProvider from "@/contexts/RequestContext";
+import { useQuery } from '@tanstack/react-query';
+import PageSkeleton from "@/components/skeletons/PageSkeleton";
 
 export default function MobilePage() {
   const { t } = useTranslation();
@@ -21,14 +23,28 @@ export default function MobilePage() {
   // Mobile detection
   const [isMobile, setIsMobile] = useState(false);
   
-  // State for category search
-  const [categories, setCategories] = useState<any[]>([]);
+  // Fetch categories using react-query
+  const { data: categoriesResponse, isLoading: loadingCategories } = useQuery({
+    queryKey: ['categories', 'all'],
+    queryFn: () => CategoryAPI.getCategories(),
+  });
+
+  const categories = useMemo(() => {
+    return categoriesResponse?.data || [];
+  }, [categoriesResponse]);
+
+  // State for search
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [loadingCategories, setLoadingCategories] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchResultsRef = useRef<HTMLDivElement>(null);
+
+  const searchResults = useMemo(() => {
+    if (searchQuery.length === 0) return [];
+    return categories.filter((category: any) => 
+      category.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, categories]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -47,36 +63,10 @@ export default function MobilePage() {
   }, [initializeAuth]);
 
   // Category search functions
-  const fetchCategories = async () => {
-    try {
-      setLoadingCategories(true);
-      const response = await CategoryAPI.getCategories();
-      console.log('Categories API response:', response);
-      if (response.success && response.data) {
-        setCategories(response.data);
-        console.log('Categories loaded:', response.data.length);
-      }
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    } finally {
-      setLoadingCategories(false);
-    }
-  };
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
-    if (query.length > 0) {
-      const filtered = categories.filter((category: any) => 
-        category.name.toLowerCase().includes(query.toLowerCase())
-      );
-      setSearchResults(filtered);
-      setShowSearchResults(true);
-    } else {
-      setSearchResults([]);
-      setShowSearchResults(false);
-    }
+    setShowSearchResults(query.length > 0);
   };
 
   const handleCategorySelect = (category: any) => {
@@ -98,11 +88,6 @@ export default function MobilePage() {
     }
   };
 
-  // Fetch categories on component mount
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
   // Close search results when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -120,6 +105,10 @@ export default function MobilePage() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showSearchResults]);
+
+  if (loadingCategories) {
+    return <PageSkeleton />;
+  }
 
   const handleBuyButton = () => {
     // Redirect to seller URL for buying/auctioning in the same page

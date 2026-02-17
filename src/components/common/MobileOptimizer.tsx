@@ -9,6 +9,18 @@ interface MobileOptimizerProps {
 export const MobileOptimizer: React.FC<MobileOptimizerProps> = ({ children }) => {
   const { width, height, isMobile, isTablet, isIPhone, isSamsung } = useResponsive();
   const [isClient, setIsClient] = useState(false);
+  const [isLowPerformance, setIsLowPerformance] = useState(false);
+
+  useEffect(() => {
+    // Detect low-performance devices (simplified)
+    if (typeof navigator !== 'undefined') {
+      const memory = (navigator as any).deviceMemory; // in GB
+      const cores = navigator.hardwareConcurrency;
+      if ((memory && memory < 4) || (cores && cores < 4)) {
+        setIsLowPerformance(true);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     setIsClient(true);
@@ -60,6 +72,22 @@ export const MobileOptimizer: React.FC<MobileOptimizerProps> = ({ children }) =>
       body.classList.add('tablet');
     } else {
       body.classList.add('desktop');
+    }
+
+    if (isLowPerformance) {
+      body.classList.add('low-perf');
+    }
+
+    // Preload critical images for mobile
+    if (isMobile) {
+      const imagesToPreload = [
+        '/assets/images/logo.png',
+        '/assets/images/avatar.jpg'
+      ];
+      imagesToPreload.forEach(src => {
+        const img = new Image();
+        img.src = src;
+      });
     }
 
     return () => {
@@ -163,6 +191,14 @@ export const MobileOptimizer: React.FC<MobileOptimizerProps> = ({ children }) =>
       .mobile * {
         animation-duration: 0.3s !important;
         transition-duration: 0.3s !important;
+      }
+
+      /* Disable heavy animations on low-performance devices */
+      .low-perf .wow, .low-perf .animate__animated {
+        animation: none !important;
+        transition: none !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
       
       /* Improve scrolling performance */

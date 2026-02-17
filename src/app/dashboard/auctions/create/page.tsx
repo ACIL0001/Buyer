@@ -135,7 +135,7 @@ export default function CreateAuctionPage() {
         try {
             const { CategoryAPI } = await import('@/services/category');
             const response = await CategoryAPI.getCategoryTree();
-            let categoryData = [];
+            let categoryData: any[] = [];
             if (response?.data && Array.isArray(response.data)) categoryData = response.data;
             else if (Array.isArray(response)) categoryData = response;
             
@@ -473,6 +473,7 @@ export default function CreateAuctionPage() {
                                     sx={{ mb: 2, width: '100%', alignItems: 'flex-start' }}
                                 />
 
+                                {auth.user?.type === 'PROFESSIONAL' && (
                                 <FormControlLabel
                                     control={<Switch checked={formik.values.professionalOnly} onChange={formik.handleChange} name="professionalOnly" />}
                                     label={
@@ -483,6 +484,7 @@ export default function CreateAuctionPage() {
                                     }
                                     sx={{ width: '100%', alignItems: 'flex-start' }}
                                 />
+                                )}
                             </Box>
                         </Grid>
 

@@ -1,18 +1,22 @@
 "use client";
 import { useEffect, ReactNode, useState } from "react";
 import Script from "next/script";
-import "../../public/assets/css/bootstrap-icons.css";
-import "../../public/assets/css/boxicons.min.css";
-import "../../public/assets/css/swiper-bundle.min.css";
-import "../../public/assets/css/slick-theme.css";
-import "../../public/assets/css/animate.min.css";
-import "../../public/assets/css/nice-select.css";
-import "../../public/assets/css/slick.css";
+
+// Critical CSS
 import "../../public/assets/css/bootstrap.min.css";
+import "../../public/assets/css/bootstrap-icons.css";
 import "../../public/assets/css/style.css";
 import "./rtl.css";
 
-import ScrollTopBtn from "../components/common/ScrollTopBtn.jsx";
+import dynamic from "next/dynamic";
+
+// Non-critical components moved to dynamic imports for better initial load
+const ScrollTopBtn = dynamic(() => import("../components/common/ScrollTopBtn.jsx"), { ssr: false });
+const FloatingAdminChat = dynamic(() => import("@/components/FloatingAdminChat"), { ssr: false });
+const FloatingLanguageSwitcher = dynamic(() => import("@/components/FloatingLanguageSwitcher"), { ssr: false });
+const BidChecker = dynamic(() => import("@/components/BidChecker"), { ssr: false });
+const WinnerAnnouncement = dynamic(() => import("@/components/WinnerAnnouncement"), { ssr: false });
+
 import useWow from "@/customHooks/useWow";
 import { dmsans, playfair_display } from "@/fonts/font";
 
@@ -21,13 +25,9 @@ import { AxiosInterceptor } from "@/app/api/AxiosInterceptor";
 
 import { SnackbarProvider } from "@/contexts/snackbarContext";
 import SocketProvider from "@/contexts/socket";
-import FloatingAdminChat from "@/components/FloatingAdminChat";
-import FloatingLanguageSwitcher from "@/components/FloatingLanguageSwitcher";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import I18nProvider from "@/components/I18nProvider";
 import GlobalLoader from "@/components/common/GlobalLoader";
-import BidChecker from "@/components/BidChecker";
-import WinnerAnnouncement from "@/components/WinnerAnnouncement";
 import TokenHandler from "@/app/components/TokenHandler";
 import MobileOptimizer from "@/components/common/MobileOptimizer";
 import { usePathname } from "next/navigation";
@@ -78,7 +78,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: Infinity,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        gcTime: 30 * 60 * 1000,  // 30 minutes
+        retry: 1,
+        refetchOnWindowFocus: false,
       },
     },
   }));
@@ -115,7 +118,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       // Prop to prevent hydration errors from browser extensions
       suppressHydrationWarning={true}
     >
-      <Head />
+      <head>
+        <Head />
+      </head>
       <body>
         {/* Meta Pixel Code */}
         <Script

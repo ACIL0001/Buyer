@@ -214,7 +214,13 @@ function TermsModal({ open, onClose, termsContent, termsAttachment, isLoading }:
           </Box>
         ) : (
           <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-             {hasAttachment ? (
+             {showTextContent ? (
+                <Box sx={{ p: 4, overflowY: 'auto', flexGrow: 1, bgcolor: 'white' }}>
+                    <Typography component="div" variant="body1" sx={{ whiteSpace: 'pre-wrap', color: 'text.primary' }}>
+                        {termsContent || 'Le contenu des termes et conditions n\'est pas disponible pour le moment.'}
+                    </Typography>
+                </Box>
+             ) : hasAttachment ? (
                 <Box sx={{ flexGrow: 1, height: '100%', bgcolor: 'white', display: 'flex', flexDirection: 'column' }}>
                      {isPdf ? (
                         <iframe 
@@ -252,13 +258,9 @@ function TermsModal({ open, onClose, termsContent, termsAttachment, isLoading }:
                 </Box>
              ) : (
                 <Box sx={{ p: 4, overflowY: 'auto', flexGrow: 1, bgcolor: 'white' }}>
-                    <DocumentPage dangerouslySetInnerHTML={{ 
-                        __html: termsContent || `
-                        <div style="font-family: inherit; color: #334155; text-align: center; padding: 40px;">
-                           <p>Le contenu des termes et conditions n'est pas disponible pour le moment.</p>
-                        </div>
-                        ` 
-                    }} />
+                    <Typography component="div" sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
+                       Le contenu des termes et conditions n'est pas disponible pour le moment.
+                    </Typography>
                 </Box>
              )}
           </Box>

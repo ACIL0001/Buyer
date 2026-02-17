@@ -24,6 +24,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { DirectSaleAPI } from '@/services/direct-sale';
+import { DirectSale } from '@/types/direct-sale';
 import Label from '@/components/Label';
 import { MdShoppingCart, MdLocalOffer, MdStore, MdPerson } from 'react-icons/md';
 
@@ -65,24 +66,11 @@ const useTranslation = () => {
   return { t };
 };
 
-interface DirectSale {
-  _id: string;
-  title: string;
-  description: string;
-  price: number;
-  quantity: number;
-  soldQuantity: number;
-  status: 'ACTIVE' | 'SOLD_OUT' | 'INACTIVE';
-  productCategory?: { name: string } | string;
-  productSubCategory?: { name: string } | string;
-  wilaya: string;
-  location: string;
-  place?: string;
-  isPro?: boolean;
-  createdAt: string;
-  updatedAt: string;
-  owner?: any;
-  contactNumber?: string;
+// Local types for UI
+enum SALE_STATUS {
+  ACTIVE = 'ACTIVE',
+  SOLD_OUT = 'SOLD_OUT',
+  INACTIVE = 'INACTIVE'
 }
 
 export default function DirectSaleDetailPage() {
@@ -101,12 +89,13 @@ export default function DirectSaleDetailPage() {
     try {
       setLoading(true);
       console.log('🌐 [FRONTEND] Fetching direct sale with ID:', id);
-      const data = await DirectSaleAPI.getDirectSaleById(id);
-      console.log('📞 [FRONTEND] Full Direct Sale response:', data);
-      console.log('📞 [FRONTEND] Contact Number field:', data?.contactNumber);
-      console.log('📞 [FRONTEND] Has Contact Number:', !!data?.contactNumber);
-      console.log('📞 [FRONTEND] All fields:', Object.keys(data || {}));
-      setDirectSale(data);
+      const response = await DirectSaleAPI.getDirectSaleById(id);
+      console.log('📞 [FRONTEND] Full Direct Sale response:', response);
+      
+      if (response && response.data) {
+        console.log('📞 [FRONTEND] Contact Number field:', response.data.contactNumber);
+        setDirectSale(response.data);
+      }
     } catch (error) {
       console.error('Error fetching direct sale:', error);
     } finally {

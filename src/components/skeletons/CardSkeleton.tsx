@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import { Card, CardContent, Skeleton, Box } from '@mui/material';
 

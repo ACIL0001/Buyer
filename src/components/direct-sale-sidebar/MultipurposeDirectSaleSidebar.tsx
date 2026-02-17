@@ -9,7 +9,10 @@ import app from '@/config'
 import { useTranslation } from 'react-i18next'
 import useAuth from '@/hooks/useAuth'
 import { normalizeImageUrl } from '@/utils/url'
+import { useQuery } from '@tanstack/react-query'
+import PageSkeleton from '@/components/skeletons/PageSkeleton'
 import ShareButton from '../common/ShareButton'
+
 
 // Define SALE_TYPE enum
 const SALE_TYPE = {
@@ -66,23 +69,72 @@ const MultipurposeDirectSaleSidebar = () => {
 
   const [activeColumn, setActiveColumn] = useState(3);
   const [currentPage, setCurrentPage] = useState(1);
-  const [directSales, setDirectSales] = useState<DirectSale[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedSubCategory, setSelectedSubCategory] = useState("");
-  
-  // Selected Sale Type (Product or Service)
-  const [selectedSaleType, setSelectedSaleType] = useState(""); 
-  
-  const [filteredDirectSales, setFilteredDirectSales] = useState<DirectSale[]>([]);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
-  const [categories, setCategories] = useState<any[]>([]);
-  const [filteredCategories, setFilteredCategories] = useState<any[]>([]);
-  const [subCategories, setSubCategories] = useState<any[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
+    const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("");
+    const [selectedSubCategory, setSelectedSubCategory] = useState("");
+    const [selectedSaleType, setSelectedSaleType] = useState(""); 
+    const [filteredDirectSales, setFilteredDirectSales] = useState<DirectSale[]>([]);
+    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
+    const [filteredCategories, setFilteredCategories] = useState<any[]>([]);
+    const [subCategories, setSubCategories] = useState<any[]>([]);
+
+
+    // Categories Query
+    const { data: categoryResponse, isLoading: isCategoriesLoading } = useQuery({
+        queryKey: ['categoryTree'],
+        queryFn: () => CategoryAPI.getCategoryTree(),
+    });
+
+    // Process category data
+    const categories = useMemo(() => {
+        if (!categoryResponse) return [];
+        if (categoryResponse.success && Array.isArray(categoryResponse.data)) return categoryResponse.data;
+        if (Array.isArray(categoryResponse)) return categoryResponse;
+        if (categoryResponse.data && Array.isArray(categoryResponse.data)) return categoryResponse.data;
+        return [];
+    }, [categoryResponse]);
+
+    // Direct Sales Query
+    const { data: rawDirectSales, isLoading: isDirectSalesLoading, error: directSaleQueryError } = useQuery({
+        queryKey: ['directSales', auth.user?._id],
+        queryFn: () => DirectSaleAPI.getDirectSales(),
+    });
+
+    // Process direct sales data
+    const directSales: DirectSale[] = useMemo(() => {
+        if (!rawDirectSales) return [];
+        
+        let directSalesData: DirectSale[] = [];
+        const data = rawDirectSales as any;
+        
+        if (data) {
+          if (Array.isArray(data)) {
+            directSalesData = data;
+          } else if (data.data && Array.isArray(data.data)) {
+            directSalesData = data.data;
+          } else if (data.success && data.data && Array.isArray(data.data)) {
+            directSalesData = data.data;
+          }
+        }
+
+        // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
+        const visibleDirectSales = directSalesData.filter((sale: DirectSale) => {
+          if (sale.verifiedOnly === true && !isUserVerified) {
+            return false;
+          }
+          return true;
+        });
+        
+        return visibleDirectSales;
+    }, [rawDirectSales, auth.user]);
+
+    // Error and Loading states
+    const error = directSaleQueryError ? "Failed to load direct sales" : null;
+    const loading = isDirectSalesLoading;
+    const categoriesLoading = isCategoriesLoading;
+
 
   const navigateWithTop = useCallback((url: string) => {
     router.push(url, { scroll: false });
@@ -290,98 +342,9 @@ const MultipurposeDirectSaleSidebar = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchDirectSales = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const data = await DirectSaleAPI.getDirectSales() as any;
-        
-        let directSalesData: DirectSale[] = [];
-        
-        if (data) {
-          if (Array.isArray(data)) {
-            directSalesData = data;
-          } else if (data.data && Array.isArray(data.data)) {
-            directSalesData = data.data;
-          } else if (data.success && data.data && Array.isArray(data.data)) {
-            directSalesData = data.data;
-          } else {
-            directSalesData = [];
-          }
-        } else {
-          directSalesData = [];
-        }
-        
-        // IMPORTANT: Display ALL direct sales including sold-out ones
-        // Sold-out items will be shown but visually deactivated (grayed out, non-clickable)
-        // DO NOT filter by status - include ALL items regardless of status or quantity
-        // This ensures sold-out items (SOLD_OUT, SOLD, or exhausted quantity) remain visible
-        // Only the API response determines what items are returned - we display everything
-        
-        // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
-        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
-        const visibleDirectSales = directSalesData.filter((sale: DirectSale) => {
-          // If sale is verifiedOnly and user is not verified, hide it
-          if (sale.verifiedOnly === true && !isUserVerified) {
-            return false;
-          }
-          return true;
-        });
-        
-        setDirectSales(visibleDirectSales);
-        setFilteredDirectSales(visibleDirectSales);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching direct sales:", err);
-        setError("Failed to load direct sales");
-        setDirectSales([]);
-        setFilteredDirectSales([]);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchDirectSales();
-  }, [auth.user]);
 
-  // Fetch categories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setCategoriesLoading(true);
-        const response = await CategoryAPI.getCategoryTree();
-        
-        let categoryData = null;
-        let isSuccess = false;
-        
-        if (response) {
-          if (response.success && Array.isArray(response.data)) {
-            categoryData = response.data;
-            isSuccess = true;
-          } else if (Array.isArray(response)) {
-            categoryData = response;
-            isSuccess = true;
-          } else if (response.data && Array.isArray(response.data)) {
-            categoryData = response.data;
-            isSuccess = true;
-          }
-        }
-        
-        if (isSuccess && categoryData && categoryData.length > 0) {
-          setCategories(categoryData);
-          setFilteredCategories(categoryData);
-        }
-        setCategoriesLoading(false);
-      } catch (err) {
-        console.error("Error fetching categories:", err);
-        setCategoriesLoading(false);
-      }
-    };
 
-    fetchCategories();
-  }, []);
 
   // Update filtered categories when searchTerm or SaleType changes
   useEffect(() => {
@@ -593,7 +556,12 @@ const MultipurposeDirectSaleSidebar = () => {
     return t('directSale.seller') || 'Vendeur';
   };
 
-  return (
+    if (isCategoriesLoading && isDirectSalesLoading && directSales.length === 0) {
+        return <PageSkeleton />;
+    }
+
+    return (
+
     <div className="direct-sale-grid-section pt-10 mb-110">
       <style jsx>{`
         @keyframes spin {

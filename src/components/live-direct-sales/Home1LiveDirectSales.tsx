@@ -11,6 +11,8 @@ import { useMemo, useState, useEffect, useCallback } from "react";
 import { DirectSaleAPI } from "@/app/api/direct-sale";
 import app from '@/config';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import CardSkeleton from '../skeletons/CardSkeleton';
 import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
 import "../auction-details/st.css";
@@ -72,132 +74,50 @@ const Home1LiveDirectSales = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const { isLogged, auth } = useAuth();
-  const [directSales, setDirectSales] = useState<DirectSale[]>([]);
-  const [allDirectSales, setAllDirectSales] = useState<DirectSale[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [animatedCards, setAnimatedCards] = useState<number[]>([]);
-  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
+  const { data: allDirectSalesResponse, isLoading: directSalesLoading, error: directSalesError } = useQuery({
+    queryKey: ['direct-sales', 'all'],
+    queryFn: () => DirectSaleAPI.getDirectSales(),
+  });
 
-  // Fetch direct sales
-  useEffect(() => {
-    const fetchDirectSales = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const data = await DirectSaleAPI.getDirectSales() as any;
-        
-        // Process data based on response structure
-        let directSalesData: DirectSale[] = [];
-        
-        if (data) {
-          if (Array.isArray(data)) {
-            directSalesData = data;
-          } else if (data.data && Array.isArray(data.data)) {
-            directSalesData = data.data;
-          } else if (data.success && data.data && Array.isArray(data.data)) {
-            directSalesData = data.data;
-          } else {
-            directSalesData = [];
-          }
-        } else {
-          directSalesData = [];
-        }
-        
-        // IMPORTANT: Display ALL direct sales including sold-out ones
-        // Sold-out items will be shown but visually deactivated (grayed out, non-clickable)
-        // DO NOT filter out SOLD_OUT, SOLD, or items with exhausted quantity
-        // Only filter out items that are explicitly ARCHIVED or INACTIVE
-        // This ensures sold-out items remain visible as deactivated cards
-        const statusFilteredSales = directSalesData.filter((sale: DirectSale) => {
-          // Include all items except ARCHIVED and INACTIVE
-          // This includes: ACTIVE, SOLD_OUT, SOLD, PAUSED, and items with exhausted quantity
-          return sale.status !== 'ARCHIVED' && sale.status !== 'INACTIVE';
-        });
+  const error = directSalesError ? (directSalesError as any).message || "Failed to load direct sales" : null;
 
-        // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
-        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
-        const visibleDirectSales = statusFilteredSales.filter((sale: DirectSale) => {
-          // If sale is verifiedOnly and user is not verified, hide it
-          if (sale.verifiedOnly === true && !isUserVerified) {
-            return false;
-          }
-          return true;
-        });
+  const allDirectSales = useMemo(() => {
+    const dataResponse = allDirectSalesResponse as any;
+    const data = dataResponse?.data || (Array.isArray(allDirectSalesResponse) ? allDirectSalesResponse : []);
+    const transformed = (Array.isArray(data) ? data : []).map((sale: any) => ({
+      ...sale,
+      id: sale.id || sale._id,
+    }));
 
-        // Store all direct sales
-        setAllDirectSales(visibleDirectSales);
-        
-        // IMPORTANT: Always display ALL items (including sold-out ones)
-        // Sold-out items will be shown but visually deactivated (grayed out, non-clickable)
-        // DO NOT filter out sold-out items - they should remain visible but deactivated
-        // Only apply status filter for display priority, but always include sold-out items
-        let filteredDirectSales = visibleDirectSales;
-        
-        // When filtering by 'active', prioritize ACTIVE/PAUSED but still include sold-out items
-        // When filtering by 'finished', prioritize SOLD_OUT/SOLD but still include all items
-        // When 'all', show everything
-        if (statusFilter === 'active') {
-          // Sort to show active items first, but include all items
-          filteredDirectSales = [...visibleDirectSales].sort((a, b) => {
-            const aIsActive = a.status === 'ACTIVE' || a.status === 'PAUSED';
-            const bIsActive = b.status === 'ACTIVE' || b.status === 'PAUSED';
-            if (aIsActive && !bIsActive) return -1;
-            if (!aIsActive && bIsActive) return 1;
-            return 0;
-          });
-        } else if (statusFilter === 'finished') {
-          // Sort to show finished items first, but include all items
-          filteredDirectSales = [...visibleDirectSales].sort((a, b) => {
-            const aIsFinished = a.status === 'SOLD_OUT' || a.status === 'SOLD';
-            const bIsFinished = b.status === 'SOLD_OUT' || b.status === 'SOLD';
-            if (aIsFinished && !bIsFinished) return -1;
-            if (!aIsFinished && bIsFinished) return 1;
-            return 0;
-          });
-        }
+    // Filter by archived/inactive
+    const activeSales = transformed.filter((sale: DirectSale) => {
+      return sale.status !== 'ARCHIVED' && sale.status !== 'INACTIVE';
+    });
 
-        // Limit to 8 for display
-        const limitedDirectSales = filteredDirectSales.slice(0, 8);
-        setDirectSales(limitedDirectSales);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching direct sales:", err);
-        setError("Failed to load direct sales");
-        setDirectSales([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDirectSales();
-  }, []);
-
-  // Filter direct sales based on status
-  // IMPORTANT: Always display ALL items (including sold-out ones)
-  // Sold-out items will be shown but visually deactivated (grayed out, non-clickable)
-  // DO NOT filter out sold-out items - they should remain visible but deactivated
-  useEffect(() => {
-    if (allDirectSales.length === 0) return;
-
-    // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
+    // Filter by verifiedOnly
     const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
-    let filtered = allDirectSales.filter((sale: DirectSale) => {
-      // If sale is verifiedOnly and user is not verified, hide it
+    return activeSales.filter((sale: DirectSale) => {
       if (sale.verifiedOnly === true && !isUserVerified) {
         return false;
       }
       return true;
     });
+  }, [allDirectSalesResponse, auth.user]);
+
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
+  const [animatedCards, setAnimatedCards] = useState<number[]>([]);
+  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
+
+  const handleImageError = (saleId: string) => {
+    setImageErrors(prev => ({ ...prev, [saleId]: true }));
+  };
+
+  // Filter and limit direct sales for display
+  const directSales = useMemo(() => {
+    let filtered = [...allDirectSales];
     
-    // When filtering by 'active', prioritize ACTIVE/PAUSED but still include sold-out items
-    // When filtering by 'finished', prioritize SOLD_OUT/SOLD but still include all items
-    // When 'all', show everything
     if (statusFilter === 'active') {
-      // Sort to show active items first, but include all items
-      filtered = [...allDirectSales].sort((a, b) => {
+      filtered.sort((a, b) => {
         const aIsActive = a.status === 'ACTIVE' || a.status === 'PAUSED';
         const bIsActive = b.status === 'ACTIVE' || b.status === 'PAUSED';
         if (aIsActive && !bIsActive) return -1;
@@ -205,8 +125,7 @@ const Home1LiveDirectSales = () => {
         return 0;
       });
     } else if (statusFilter === 'finished') {
-      // Sort to show finished items first, but include all items
-      filtered = [...allDirectSales].sort((a, b) => {
+      filtered.sort((a, b) => {
         const aIsFinished = a.status === 'SOLD_OUT' || a.status === 'SOLD';
         const bIsFinished = b.status === 'SOLD_OUT' || b.status === 'SOLD';
         if (aIsFinished && !bIsFinished) return -1;
@@ -215,9 +134,7 @@ const Home1LiveDirectSales = () => {
       });
     }
 
-    // Limit to 8 for display
-    const limitedDirectSales = filtered.slice(0, 8);
-    setDirectSales(limitedDirectSales);
+    return filtered.slice(0, 8);
   }, [allDirectSales, statusFilter]);
 
   // Intersection Observer for scroll animations
@@ -325,21 +242,42 @@ const Home1LiveDirectSales = () => {
     });
   }, [router]);
 
-  if (loading) {
+  // Intersection Observer for scroll animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = parseInt(entry.target.getAttribute('data-index') || '0');
+            setAnimatedCards(prev => [...prev, index]);
+          }
+        });
+      },
+      { threshold: 0.3, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    const directSaleCards = document.querySelectorAll('.direct-sale-card-animate');
+    directSaleCards.forEach((card, index) => {
+      card.setAttribute('data-index', index.toString());
+      observer.observe(card);
+    });
+
+    return () => observer.disconnect();
+  }, [directSales]);
+
+  if (directSalesLoading) {
     return (
       <div className="modern-direct-sales-section" style={{ padding: '10px 0 0 0' }}>
         <div className="container-responsive">
-          <div className="section-header" style={{ textAlign: 'center', marginBottom: 'clamp(30px, 6vw, 50px)' }}>
-            <div style={{
-              display: 'inline-block',
-              width: '40px',
-              height: '40px',
-              border: '3px solid #f3f3f3',
-              borderTop: '3px solid #f7ef8a',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-            }}></div>
-            <p style={{ marginTop: '15px', color: '#666' }}>{t('liveDirectSales.loading')}</p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: '24px',
+            padding: '20px'
+          }}>
+            {[...Array(5)].map((_, i) => (
+              <CardSkeleton key={i} />
+            ))}
           </div>
         </div>
       </div>

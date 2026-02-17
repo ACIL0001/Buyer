@@ -10,7 +10,7 @@ import Home1LiveDirectSales from "@/components/live-direct-sales/Home1LiveDirect
 import Footer from "@/components/footer/FooterWithErrorBoundary";
 import RequestProvider from "@/contexts/RequestContext";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { SnackbarProvider, useSnackbar } from 'notistack';
 import useAuth from '@/hooks/useAuth';
 import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
@@ -22,11 +22,14 @@ import app from '@/config';
 import { CategoryAPI } from '@/app/api/category';
 import { AuctionsAPI } from '@/app/api/auctions';
 import { TendersAPI } from '@/app/api/tenders';
+import { DirectSaleAPI } from '@/app/api/direct-sale';
 import { useRouter } from 'next/navigation';
 import ResponsiveTest from '@/components/common/ResponsiveTest';
 import { FaGavel } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import Fuse from 'fuse.js';
+import { useQuery } from '@tanstack/react-query';
+import PageSkeleton from '@/components/skeletons/PageSkeleton';
 
 export default function Home() {
   const { t } = useTranslation();
@@ -97,14 +100,40 @@ export default function Home() {
   const [tenderDropdownOpen, setTenderDropdownOpen] = useState(false);
   const [venteDirectDropdownOpen, setVenteDirectDropdownOpen] = useState(false);
 
-  // State for search (categories, auctions, tenders)
-  const [categories, setCategories] = useState<any[]>([]);
-  const [allAuctions, setAllAuctions] = useState<any[]>([]);
-  const [allTenders, setAllTenders] = useState<any[]>([]);
+  // Data fetching with react-query
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
+    queryKey: ['categories', 'all'],
+    queryFn: () => CategoryAPI.getCategories(),
+  });
+
+  const { data: auctionsData, isLoading: auctionsLoading } = useQuery({
+    queryKey: ['auctions', 'all'],
+    queryFn: () => AuctionsAPI.getAuctions(),
+  });
+
+  const { data: tendersData, isLoading: tendersLoading } = useQuery({
+    queryKey: ['tenders', 'active'],
+    queryFn: () => TendersAPI.getActiveTenders(),
+  });
+
+  const { data: directSalesData, isLoading: directSalesLoading } = useQuery({
+    queryKey: ['direct-sales', 'all'],
+    queryFn: () => DirectSaleAPI.getDirectSales(),
+  });
+
+  // Derived data for search
+  const categories = useMemo(() => categoriesData?.success ? categoriesData.data : [], [categoriesData]);
+  const allAuctions = useMemo(() => (auctionsData as any)?.data || (Array.isArray(auctionsData) ? auctionsData : []), [auctionsData]);
+  const allTenders = useMemo(() => {
+    const data = tendersData?.data || tendersData || [];
+    return Array.isArray(data) ? data : [];
+  }, [tendersData]);
+
+
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [loadingCategories, setLoadingCategories] = useState(false);
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [showNotifyMe, setShowNotifyMe] = useState(false);
   const [notifyMeEmail, setNotifyMeEmail] = useState('');
@@ -124,32 +153,32 @@ export default function Home() {
 
   const handleAuctionViewAll = () => {
     setAuctionDropdownOpen(false);
-    window.location.href = 'https://mazadclick.vercel.app/auction-sidebar/';
+    window.location.href = 'http://localhost:3001/auction-sidebar/';
   };
 
   const handleTenderViewAll = () => {
     setTenderDropdownOpen(false);
-    window.location.href = 'https://mazadclick.vercel.app/tenders/';
+    window.location.href = 'http://localhost:3001/tenders/';
   };
 
   const handleVenteDirectViewAll = () => {
     setVenteDirectDropdownOpen(false);
-    window.location.href = 'https://mazadclick.vercel.app/direct-sale/';
+    window.location.href = 'http://localhost:3001/direct-sale/';
   };
 
   const handleCreateAuction = () => {
     setAuctionDropdownOpen(false);
-    window.location.href = 'https://mazadclick.vercel.app/dashboard/auctions/create/';
+    window.location.href = 'http://localhost:3001/dashboard/auctions/create/';
   };
 
   const handleCreateTender = () => {
     setTenderDropdownOpen(false);
-    window.location.href = 'https://mazadclick.vercel.app/dashboard/tenders/create/';
+    window.location.href = 'http://localhost:3001/dashboard/tenders/create/';
   };
 
   const handleCreateVenteDirect = () => {
     setVenteDirectDropdownOpen(false);
-    window.location.href = 'https://mazadclick.vercel.app/dashboard/direct-sales/create/';
+    window.location.href = 'http://localhost:3001/dashboard/direct-sales/create/';
   };
 
   // Helper function to get category image URL
@@ -218,22 +247,6 @@ export default function Home() {
     return `${baseURL}${imageUrl}`;
   };
 
-  // Category search functions
-  const fetchCategories = async () => {
-    try {
-      setLoadingCategories(true);
-      const response = await CategoryAPI.getCategories();
-      console.log('Categories API response:', response);
-      if (response.success && response.data) {
-        setCategories(response.data);
-        console.log('Categories loaded:', response.data.length);
-      }
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    } finally {
-      setLoadingCategories(false);
-    }
-  };
 
   const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -265,7 +278,7 @@ export default function Home() {
         console.log('🎯 Category fuzzy results:', categorySearchResults.length, 'matches');
         
         const filteredCategories = categorySearchResults.map(result => ({ 
-          ...result.item, 
+          ...(result.item as any), 
           type: 'category',
           score: result.score
         }));
@@ -283,7 +296,7 @@ export default function Home() {
         console.log('🎯 Auction fuzzy results:', auctionSearchResults.length, 'matches');
         
         const filteredAuctions = auctionSearchResults.map(result => ({ 
-          ...result.item, 
+          ...(result.item as any), 
           type: 'auction',
           score: result.score
         }));
@@ -301,7 +314,7 @@ export default function Home() {
         console.log('🎯 Tender fuzzy results:', tenderSearchResults.length, 'matches');
         
         const filteredTenders = tenderSearchResults.map(result => ({ 
-          ...result.item, 
+          ...(result.item as any), 
           type: 'tender',
           score: result.score
         }));
@@ -323,7 +336,7 @@ export default function Home() {
           console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
           
           try {
-            const fallbackResponse = await fetch('http://localhost:3000/search/fallback', {
+            const fallbackResponse = await fetch(`${app.baseURL}search/fallback`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ query, limit: 3, minProbability: 50 })
@@ -409,7 +422,7 @@ export default function Home() {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/search/notify-me', {
+      const response = await fetch(`${app.baseURL}search/notify-me`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -476,7 +489,7 @@ export default function Home() {
       console.log('🔄 Mapped type:', item.type, '→', mappedType);
       console.log('🆔 Selected ID:', selectedId);
 
-      await fetch('http://localhost:3000/search/update-edge-weight', {
+      await fetch(`${app.baseURL}search/update-edge-weight`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -530,33 +543,6 @@ export default function Home() {
     }
   };
 
-  // Fetch auctions and tenders on component mount for search
-  useEffect(() => {
-    const fetchAuctionsAndTenders = async () => {
-      try {
-        const [auctionsRes, tendersRes] = await Promise.all([
-          AuctionsAPI.getAuctions().catch(() => ({ data: [] })),
-          TendersAPI.getActiveTenders().catch(() => [])
-        ]);
-        
-        // Handle different response structures
-        const auctions = auctionsRes?.data || auctionsRes || [];
-        const tenders = tendersRes?.data || tendersRes || [];
-        
-        setAllAuctions(Array.isArray(auctions) ? auctions : []);
-        setAllTenders(Array.isArray(tenders) ? tenders : []);
-      } catch (error) {
-        console.error('Error fetching auctions and tenders for search:', error);
-      }
-    };
-    
-    fetchAuctionsAndTenders();
-  }, []);
-
-  // Fetch categories on component mount
-  useEffect(() => {
-    fetchCategories();
-  }, []);
 
   // Close dropdowns and search results when clicking outside
   useEffect(() => {
@@ -654,8 +640,13 @@ export default function Home() {
     };
   }, []);
 
+  // Global loading state
   return (
     <>
+      {(categoriesLoading || auctionsLoading || tendersLoading || directSalesLoading) ? (
+        <PageSkeleton />
+      ) : (
+        <>
       <style jsx global>{`
         /* Global styles */
         :root {
@@ -2815,6 +2806,8 @@ export default function Home() {
           </SnackbarProvider>
         </div>
       </SocketProvider>
+        </>
+      )}
     </>
   );
 }

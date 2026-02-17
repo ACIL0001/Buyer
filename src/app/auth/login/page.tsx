@@ -205,6 +205,78 @@ export default function Login() {
             </Link>
             </Typography>
           )}
+
+          {/* Secure Vault Message */}
+          <Box
+            sx={{
+              mt: 4,
+              pt: 3,
+              borderTop: (theme) => `1px dashed ${alpha(theme.palette.divider, 0.5)}`,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1.5,
+              width: '100%',
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                px: 2,
+                py: 1,
+                borderRadius: '12px',
+                background: (theme) => alpha(theme.palette.success.main, 0.08),
+                border: (theme) => `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+              }}
+            >
+              <svg 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                style={{ color: '#2e7d32' }}
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'success.main',
+                  fontWeight: 700,
+                  fontSize: { xs: '0.75rem', sm: '0.8rem' },
+                  letterSpacing: '0.01em',
+                }}
+              >
+                LOGICIEL SÉCURISÉ
+              </Typography>
+            </Box>
+            
+            <Typography
+              variant="caption"
+              align="center"
+              sx={{
+                color: 'text.secondary',
+                fontSize: { xs: '0.78rem', sm: '0.82rem' },
+                lineHeight: 1.6,
+                maxWidth: '320px',
+                fontWeight: 500,
+                fontStyle: 'italic',
+                '& span': {
+                    color: 'primary.main',
+                    fontWeight: 700,
+                }
+              }}
+            >
+              "Nous veillons à utiliser le <span>coffre-fort sécurisé intégré</span> du téléphone pour protéger vos données."
+            </Typography>
+          </Box>
       </GlassContainer>
 
       {smUp && (

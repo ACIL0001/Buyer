@@ -6,14 +6,14 @@ const API_BASE_URL = app.baseURL;
 // Helper function to check if backend is accessible
 async function checkBackendHealth() {
   try {
-    console.log('🔍 Checking backend health at:', `${API_BASE_URL}/chat/admin-chats`);
+    console.log('🔍 Checking backend health at:', `${API_BASE_URL}chat/admin-chats`);
     
     // Try to access a simple endpoint that should exist
-    const response = await fetch(`${API_BASE_URL}/chat/admin-chats`, {
+    const response = await fetch(`${API_BASE_URL}chat/admin-chats`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'x-access-key': process.env.NEXT_PUBLIC_KEY_API_BYUER || '',
+        'x-access-key': app.apiKey || process.env.NEXT_PUBLIC_KEY_API_BYUER || '',
       },
     });
     
@@ -59,14 +59,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Authorization header required' }, { status: 401 });
     }
 
-    console.log('🔄 Forwarding to backend:', `${API_BASE_URL}/chat/admin-chats`);
+    console.log('🔄 Forwarding to backend:', `${API_BASE_URL}chat/admin-chats`);
     
     // Forward the request to the backend admin-chats endpoint
-    const response = await fetch(`${API_BASE_URL}/chat/admin-chats`, {
+    const response = await fetch(`${API_BASE_URL}chat/admin-chats`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,
-        'x-access-key': process.env.NEXT_PUBLIC_KEY_API_BYUER || '',
+        'x-access-key': app.apiKey || process.env.NEXT_PUBLIC_KEY_API_BYUER || '',
         'Content-Type': 'application/json',
       },
       credentials: 'include',
@@ -122,12 +122,12 @@ export async function POST(req: NextRequest) {
     console.log('📦 Request body:', body);
 
     // Forward the request to the backend getchats endpoint
-    console.log('🔄 Forwarding to backend:', `${API_BASE_URL}/chat/getchats`);
-    const response = await fetch(`${API_BASE_URL}/chat/getchats`, {
+    console.log('🔄 Forwarding to backend:', `${API_BASE_URL}chat/getchats`);
+    const response = await fetch(`${API_BASE_URL}chat/getchats`, {
       method: 'POST',
       headers: {
         'Authorization': authHeader,
-        'x-access-key': process.env.NEXT_PUBLIC_KEY_API_BYUER || '',
+        'x-access-key': app.apiKey || process.env.NEXT_PUBLIC_KEY_API_BYUER || '',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),

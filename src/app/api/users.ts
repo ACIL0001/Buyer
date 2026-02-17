@@ -406,16 +406,35 @@ export const UserAPI = {
     }
 
     try {
-      // Filter out undefined values and only allow certain fields
-      const allowedFields: Array<keyof User> = ['firstName', 'lastName', 'phone', 'wilaya', 'activitySector', 'companyName', 'jobTitle', 'secteur', 'socialReason', 'isProfileVisible']; // Added new fields, kept old for safe transition
-      const filteredData: Partial<User> = {};
+      // STRICTLY ALIGN WITH REGISTER FORM PAYLOAD to fix 400 Bad Request
+      // Fields: firstName, lastName, phone, wilaya, activitySector, companyName, jobTitle
+      const allowedFields: Array<keyof User> = [
+        'firstName',
+        'lastName',
+        'phone',
+        'wilaya',
+        'activitySector',
+        'companyName',
+        'jobTitle',
+        'isProfileVisible'
+      ];
+
+      const filteredData: any = {};
 
       for (const field of allowedFields) {
         const value = data[field as keyof User];
         if (value !== undefined && value !== null && value !== '') {
-          filteredData[field] = value as any;
+          filteredData[field] = value;
         }
       }
+
+      // Handle array-to-string conversion for activitySector (matches RegisterForm behavior)
+      if (Array.isArray(filteredData.activitySector)) {
+        filteredData.activitySector = filteredData.activitySector.join(', ');
+        console.log('🔄 Converted activitySector array to string');
+      }
+
+      console.log('💾 Final payload to send:', JSON.stringify(filteredData, null, 2));
 
       if (Object.keys(filteredData).length === 0) {
         throw new Error('No valid fields to update');
@@ -450,7 +469,16 @@ export const UserAPI = {
       }
 
     } catch (error: any) {
-      console.error('❌ Profile update failed:', error.response?.data || error.message);
+      console.error('❌ === PROFILE UPDATE FAILED ===');
+      console.error('💬 Error message:', error.message);
+      console.error('📊 Status:', error.response?.status);
+      console.error('📄 Response data:', JSON.stringify(error.response?.data, null, 2));
+
+      if (error.response?.status === 400) {
+        console.error('⚠️ Validation error likely. Check payload format.');
+      }
+
+      console.error('❌ Original error:', error.response?.data || error.message);
       if (error.response?.status === 401) {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('auth');

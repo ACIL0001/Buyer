@@ -1,12 +1,14 @@
 export interface Auction {
-    id: string;
+    _id: string;
+    id?: string;
     title: string;
     name?: string;
     thumbs?: Array<{ _id: string; url: string; filename?: string; fullUrl?: string }>;
-    endingAt?: string;
+    endingAt: string;
     endDate?: string;
+    startingAt: string;
     currentPrice?: number;
-    startingPrice?: number;
+    startingPrice: number;
     isPro?: boolean;
     hidden?: boolean;
     seller?: {
@@ -25,17 +27,20 @@ export interface Auction {
         profileImage?: { url: string; };
         photoURL?: string;
     } | string;
-    status?: string;
+    status: string;
     verifiedOnly?: boolean;
+    winner?: any;
     quantity?: string | number;
     location?: string;
     wilaya?: string;
     place?: string;
     address?: string;
     description?: string;
+    contactNumber?: string;
     biddersCount?: number;
     participantsCount?: number;
-    bidType?: 'PRODUCT' | 'SERVICE';
+    bidType: 'PRODUCT' | 'SERVICE';
+    auctionType: 'CLASSIC' | 'EXPRESS' | 'AUTO_SUB_BID';
     images?: string[];
     image?: string;
     thumbnail?: string;

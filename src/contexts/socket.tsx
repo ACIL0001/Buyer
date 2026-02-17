@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useState, useContext, ReactNode, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import app from '@/config';
+import useAuth from '@/hooks/useAuth';
 
 interface Props {
   children?: ReactNode;
@@ -45,21 +46,27 @@ const SocketProvider: React.FC<Props> = (props = {}) => {
 
 
 
-  // Initialize socket only once on mount - no dependencies to prevent loops
+  const { user } = useAuth();
+
+  // Initialize socket when user changes
   useEffect(() => {
     let currentSocket: Socket | undefined;
     
     const createSocket = () => {
-      const authData = window.localStorage.getItem('auth');
       let userId = 'guest'; // Default to guest for unauthenticated users
       
-      if (authData) {
-        try {
-          const userData = JSON.parse(authData);
-          userId = userData?.user?._id || 'guest';
-        } catch (error) {
-          console.error('Error parsing auth data:', error);
-          userId = 'guest';
+      if (user?._id) {
+        userId = user._id;
+      } else {
+        // Fallback to localStorage if useAuth hasn't loaded (though useAuth is preferred)
+        const authData = window.localStorage.getItem('auth');
+        if (authData) {
+          try {
+            const userData = JSON.parse(authData);
+            userId = userData?.user?._id || 'guest';
+          } catch (error) {
+            console.error('Error parsing auth data:', error);
+          }
         }
       }
 
@@ -71,13 +78,13 @@ const SocketProvider: React.FC<Props> = (props = {}) => {
         timeout: 20000,
         // Limit reconnection attempts to prevent spam
         reconnection: true,
-        reconnectionAttempts: 3,
-        reconnectionDelay: 2000,
-        reconnectionDelayMax: 10000,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
       });
 
         currentSocket.on('connect', () => {
-          console.log('Socket connected successfully!');
+          console.log('Socket connected successfully with ID:', currentSocket?.id);
           setSocketError(null);
         });
 
@@ -95,30 +102,40 @@ const SocketProvider: React.FC<Props> = (props = {}) => {
         });
 
         currentSocket.on('sendMessage', (data) => {
-          console.log('Message data from sendMessage event:', data);
-          // Accept all messages, not just non-admin ones
+          console.group('📨 Buyer Socket: sendMessage');
+          console.log('Data:', data);
           setMessages(p => {
             // Check if message already exists to avoid duplicates
-            const isDuplicate = p.some((msg: any) => 
-              msg._id === data._id || 
-              (msg.message === data.message && 
-               msg.sender === data.sender && 
-               Math.abs(new Date(msg.createdAt).getTime() - new Date(data.createdAt).getTime()) < 1000)
-            );
+            // We use a looser time window (5s) to catch slightly delayed server responses vs socket
+            const isDuplicate = p.some((msg: any) => {
+               const idMatch = msg._id === data._id;
+               const contentMatch = msg.message === data.message && msg.sender === data.sender;
+               const timeMatch = Math.abs(new Date(msg.createdAt).getTime() - new Date(data.createdAt).getTime()) < 5000;
+               
+               if (idMatch) return true;
+               if (contentMatch && timeMatch) {
+                   console.log('Skipping duplicate by content/time:', data._id);
+                   return true;
+               }
+               return false;
+            });
             
             if (isDuplicate) {
-              console.log('Duplicate message, not adding to state');
+              console.log('🚫 Duplicate message, filtering out');
+              console.groupEnd();
               return p;
             }
             
-            console.log('Adding message to state');
+            console.log('✅ Adding message to state');
+            console.groupEnd();
             return [...p, data];
           });
         });
         
         // Listen for adminMessage events specifically for admin-to-user communication
         currentSocket.on('adminMessage', (data) => {
-          console.log('Admin message received in socket context:', data);
+          console.group('📨 Buyer Socket: adminMessage');
+          console.log('Data:', data);
           // Make sure the sender is properly set to 'admin'
           const adminMessage = {
             ...data,
@@ -127,19 +144,27 @@ const SocketProvider: React.FC<Props> = (props = {}) => {
           // Always accept admin messages
           setMessages(p => {
             // Check if message already exists to avoid duplicates
-            const isDuplicate = p.some((msg: any) => 
-              msg._id === adminMessage._id || 
-              (msg.message === adminMessage.message && 
-               msg.sender === 'admin' && 
-               Math.abs(new Date(msg.createdAt).getTime() - new Date(adminMessage.createdAt).getTime()) < 1000)
-            );
+            const isDuplicate = p.some((msg: any) => {
+               const idMatch = msg._id === adminMessage._id;
+               const contentMatch = msg.message === adminMessage.message && msg.sender === 'admin';
+               const timeMatch = Math.abs(new Date(msg.createdAt).getTime() - new Date(adminMessage.createdAt).getTime()) < 5000;
+               
+               if (idMatch) return true;
+               if (contentMatch && timeMatch) {
+                   console.log('Skipping duplicate admin message by content/time:', adminMessage._id);
+                   return true;
+               }
+               return false;
+            });
             
             if (isDuplicate) {
-              console.log('Duplicate admin message, not adding to state');
+              console.log('🚫 Duplicate admin message, filtering out');
+              console.groupEnd();
               return p;
             }
             
-            console.log('Adding admin message to state');
+            console.log('✅ Adding admin message to state');
+            console.groupEnd();
             return [...p, adminMessage];
           });
         });
@@ -147,19 +172,19 @@ const SocketProvider: React.FC<Props> = (props = {}) => {
         setSocket(currentSocket);
     };
 
-    // Create socket on mount
+    // Create socket on mount or when user changes
     createSocket();
 
-    // Cleanup on unmount
+    // Cleanup on unmount or when user changes
     return () => {
       if (currentSocket) {
-        console.log('Cleaning up socket on component unmount');
+        console.log('Cleaning up socket (user changed or unmount)');
         currentSocket.disconnect();
         currentSocket = undefined;
         setSocket(undefined);
       }
     };
-  }, []); // Empty dependency array - only run once
+  }, [user?._id]); // Re-run when user ID changes
 
   return (
     <CreateSocket.Provider 

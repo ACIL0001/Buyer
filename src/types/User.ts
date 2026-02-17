@@ -9,6 +9,7 @@ export enum CLIENT_TYPE {
 interface Attachment {
   _id?: string;
   url?: string;
+  path?: string;
   filename?: string;
   fullUrl?: string;
 }

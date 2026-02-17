@@ -66,8 +66,10 @@ export default function TenderDetailPage() {
     try {
       const response = await TendersAPI.getTenderById(id);
       console.log('📞 Tender response:', response);
-      console.log('📞 Contact Number:', response?.contactNumber);
-      setTender(response);
+      if (response && response.data) {
+          console.log('📞 Contact Number:', response.data.contactNumber);
+          setTender(response.data);
+      }
     } catch (error) {
       console.error('Error fetching tender details:', error);
     } finally {
@@ -81,12 +83,11 @@ export default function TenderDetailPage() {
     try {
       const response = await TendersAPI.getTenderBids(id);
       let bidsArray: any[] = [];
-      if (Array.isArray(response)) {
+      
+      if (response && response.data && Array.isArray(response.data)) {
+          bidsArray = response.data;
+      } else if (Array.isArray(response)) {
         bidsArray = response;
-      } else if (response?.data && Array.isArray(response.data)) {
-        bidsArray = response.data;
-      } else if (response?.bids && Array.isArray(response.bids)) {
-        bidsArray = response.bids;
       }
       
       const isOwner = (tender.owner?._id || tender.owner) == auth?.user?._id;

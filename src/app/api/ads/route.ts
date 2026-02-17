@@ -6,7 +6,9 @@ const API_BASE_URL = app.baseURL;
 export async function GET(req: NextRequest) {
   try {
     // Forward the request to the backend
-    const response = await fetch(`${API_BASE_URL}ads`, {
+    const fetchUrl = `${API_BASE_URL}ads`;
+    console.log(`🌐 API Route fetching ads from: ${fetchUrl}`);
+    const response = await fetch(fetchUrl, {
       method: 'GET',
       headers: {
         'x-access-key': app.apiKey || process.env.NEXT_PUBLIC_KEY_API_BYUER || '',

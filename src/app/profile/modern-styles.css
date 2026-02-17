@@ -708,6 +708,77 @@
   cursor: not-allowed;
 }
 
+/* Enhanced Input with Icon Styles */
+.input-with-icon {
+  position: relative;
+  width: 100%;
+}
+
+.input-with-icon .left-icon,
+.input-with-icon .modern-input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1.2rem;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-with-icon input {
+  padding-left: 50px !important;
+  padding-right: 50px !important;
+  height: 54px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.input-with-icon input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  background: #ffffff;
+}
+
+.input-with-icon input:focus~.left-icon,
+.input-with-icon input:focus~.modern-input-icon,
+.input-with-icon input:not(:placeholder-shown)~.left-icon,
+.input-with-icon input:not(:placeholder-shown)~.modern-input-icon {
+  color: #6366f1;
+  transform: translateY(-50%) scale(1.1);
+  filter: drop-shadow(0 2px 4px rgba(99, 102, 241, 0.2));
+}
+
+/* Password Toggle Button */
+.password-toggle-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 1.2rem;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+  border-radius: 50%;
+}
+
+.password-toggle-btn:hover {
+  color: #4b5563;
+  background-color: #f3f4f6;
+  transform: translateY(-50%) scale(1.05);
+}
+
 /* Action Buttons */
 .modern-actions {
   display: flex;

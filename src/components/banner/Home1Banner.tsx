@@ -10,6 +10,9 @@ import { TendersAPI } from '@/app/api/tenders';
 import { DirectSaleAPI } from '@/app/api/direct-sale';
 import { useRouter } from 'next/navigation';
 import app from '@/config';
+import { useQuery } from '@tanstack/react-query';
+import CardSkeleton from '@/components/skeletons/CardSkeleton';
+import { normalizeImageUrl } from '@/utils/url';
 import { FaShoppingBag, FaHandshake } from 'react-icons/fa';
 import Fuse from 'fuse.js';
 import "swiper/css";
@@ -21,8 +24,36 @@ type Home1BannerProps = object;
 const Home1Banner: React.FC<Home1BannerProps> = () => {
   const { t } = useTranslation();
   const router = useRouter();
-  const [allCategories, setAllCategories] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
+    queryKey: ['categories', 'all'],
+    queryFn: () => CategoryAPI.getCategories(),
+  });
+  const allCategories = useMemo(() => categoriesData?.success ? categoriesData.data : [], [categoriesData]);
+
+  const { data: allAuctionsResponse } = useQuery({
+    queryKey: ['auctions', 'all'],
+    queryFn: () => AuctionsAPI.getAuctions(),
+  });
+  const allAuctions = useMemo(() => (allAuctionsResponse as any)?.data || (Array.isArray(allAuctionsResponse) ? allAuctionsResponse : []), [allAuctionsResponse]);
+
+  const { data: tendersResponse } = useQuery({
+    queryKey: ['tenders', 'active'],
+    queryFn: () => TendersAPI.getActiveTenders(),
+  });
+  const allTenders = useMemo(() => {
+    const data = tendersResponse?.data || tendersResponse || [];
+    return Array.isArray(data) ? data : [];
+  }, [tendersResponse]);
+
+  const { data: directSalesResponse } = useQuery({
+    queryKey: ['direct-sales', 'all'],
+    queryFn: () => DirectSaleAPI.getDirectSales(),
+  });
+  const allDirectSales = useMemo(() => {
+    const data = (directSalesResponse as any)?.data || directSalesResponse || [];
+    return Array.isArray(data) ? data : [];
+  }, [directSalesResponse]);
+
   const [filterType, setFilterType] = useState<'ALL' | 'PRODUCT' | 'SERVICE'>('ALL');
   const [isDragging, setIsDragging] = useState(false);
   const [swiperInstance, setSwiperInstance] = useState<any>(null);
@@ -32,32 +63,11 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [loadingSearch, setLoadingSearch] = useState(false);
-  const [allAuctions, setAllAuctions] = useState<any[]>([]);
-  const [allTenders, setAllTenders] = useState<any[]>([]);
-  const [allDirectSales, setAllDirectSales] = useState<any[]>([]);
   const [showNotifyMe, setShowNotifyMe] = useState(false);
   const [notifyMeEmail, setNotifyMeEmail] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchResultsRef = useRef<HTMLDivElement>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoading(true);
-        const response = await CategoryAPI.getCategories();
-        if (response.success && response.data) {
-          setAllCategories(response.data);
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategories();
-  }, []);
 
   // Check screen size for search placeholder
   useEffect(() => {
@@ -67,31 +77,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
-
-  // Fetch auctions, tenders, and direct sales for search
-  useEffect(() => {
-    const fetchSearchData = async () => {
-      try {
-        const [auctionsRes, tendersRes, directSalesRes] = await Promise.all([
-          AuctionsAPI.getAuctions().catch(() => ({ data: [] })),
-          TendersAPI.getActiveTenders().catch(() => []),
-          DirectSaleAPI.getDirectSales().catch(() => [])
-        ]);
-        
-        const auctions = auctionsRes?.data || auctionsRes || [];
-        const tenders = tendersRes?.data || tendersRes || [];
-        const directSales = Array.isArray(directSalesRes) ? directSalesRes : [];
-        
-        setAllAuctions(Array.isArray(auctions) ? auctions : []);
-        setAllTenders(Array.isArray(tenders) ? tenders : []);
-        setAllDirectSales(Array.isArray(directSales) ? directSales : []);
-      } catch (error) {
-        console.error('Error fetching search data:', error);
-      }
-    };
-    
-    fetchSearchData();
   }, []);
 
   // Search handler
@@ -118,7 +103,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         console.log('🎯 Home1Banner Category fuzzy search results:', categorySearchResults);
         
         const filteredCategories = categorySearchResults.map(result => ({ 
-          ...result.item, 
+          ...(result.item as any), 
           type: 'category',
           score: result.score
         }));
@@ -136,7 +121,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         console.log('🎯 Home1Banner Auction fuzzy search results:', auctionSearchResults);
         
         const filteredAuctions = auctionSearchResults.map(result => ({ 
-          ...result.item, 
+          ...(result.item as any), 
           type: 'auction',
           score: result.score
         }));
@@ -154,7 +139,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         console.log('🎯 Home1Banner Tender fuzzy search results:', tenderSearchResults);
         
         const filteredTenders = tenderSearchResults.map(result => ({ 
-          ...result.item, 
+          ...(result.item as any), 
           type: 'tender',
           score: result.score
         }));
@@ -172,7 +157,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         console.log('🎯 Home1Banner DirectSale fuzzy search results:', directSaleSearchResults);
         
         const filteredDirectSales = directSaleSearchResults.map(result => ({ 
-          ...result.item, 
+          ...(result.item as any), 
           type: 'directSale',
           score: result.score
         }));
@@ -192,7 +177,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           console.log('🔄 No local results, trying database fallback...');
           
           try {
-            const fallbackResponse = await fetch('http://localhost:3000/search/fallback', {
+            const fallbackResponse = await fetch(`${app.baseURL}search/fallback`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ query, limit: 3, minProbability: 50 })
@@ -261,7 +246,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/search/notify-me', {
+      const response = await fetch(`${app.baseURL}search/notify-me`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -303,7 +288,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
       const mappedType = typeMapping[item.type] || 'category';
       const selectedId = item.categoryId || item._id || item.id || item.termId;
 
-      await fetch('http://localhost:3000/search/update-edge-weight', {
+      await fetch(`${app.baseURL}search/update-edge-weight`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -434,35 +419,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
   }, [categoryCount]);
 
   const getCategoryImageUrl = (category: any): string => {
-    // Check if category has thumb with url (matching working implementation)
-    if (category.thumb && category.thumb.url) {
-      const imageUrl = category.thumb.url;
-      
-      // If it's already a full URL, return it as-is
-      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-        // Replace localhost:3000 with current baseURL if needed
-        if (imageUrl.includes('localhost:3000')) {
-          return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-        }
-        return imageUrl;
-      }
-      
-      // Handle /static/ paths by removing leading slash and prepending baseURL
-      if (imageUrl.startsWith('/static/')) {
-        return `${app.baseURL}${imageUrl.substring(1)}`;
-      }
-      
-      // Handle other paths starting with /
-      if (imageUrl.startsWith('/')) {
-        return `${app.baseURL}${imageUrl.substring(1)}`;
-      }
-      
-      // Handle paths without leading slash
-      return `${app.baseURL}${imageUrl}`;
-    }
-    
-    // Fallback: try other possible fields
-    const imageUrl = category.thumb?.fullUrl || 
+    const imageUrl = category.thumb?.url || 
+                     category.thumb?.fullUrl || 
                      category.image || 
                      category.thumbnail || 
                      category.photo || 
@@ -472,24 +430,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
       return '/assets/images/cat.avif'; // Fallback image
     }
 
-    // If it's already a full URL, return it as-is
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      if (imageUrl.includes('localhost:3000')) {
-        return imageUrl.replace('http://localhost:3000', app.baseURL.replace(/\/$/, ''));
-      }
-      return imageUrl;
-    }
-
-    // Handle relative paths
-    if (imageUrl.startsWith('/static/')) {
-      return `${app.baseURL}${imageUrl.substring(1)}`;
-    }
-    
-    if (imageUrl.startsWith('/')) {
-      return `${app.baseURL}${imageUrl.substring(1)}`;
-    }
-    
-    return `${app.baseURL}${imageUrl}`;
+    return normalizeImageUrl(imageUrl) || '/assets/images/cat.avif';
   };
 
   const navigateToCategory = (category: any, event: React.MouseEvent) => {
@@ -1601,8 +1542,17 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
             {t('common.service')}
           </button>
                 </div>
-        {loading ? (
-          <div className="loading-state">{t('home.loadingCategories')}</div>
+        {categoriesLoading ? (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: '16px',
+            padding: '20px'
+          }}>
+            {[...Array(4)].map((_, i) => (
+              <CardSkeleton key={i} />
+            ))}
+          </div>
         ) : categories.length === 0 ? (
           <div className="empty-state">{t('home.noCategoriesAvailable')}</div>
         ) : (
@@ -1659,7 +1609,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                 const isService = categoryType === 'SERVICE';
                 
                 return (
-                  <SwiperSlide key={category._id || category.id}>
+                  <SwiperSlide key={(category as any)._id || (category as any).id}>
                     <div className="category-card-wrapper">
                       <div 
                         className="category-card"

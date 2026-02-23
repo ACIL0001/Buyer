@@ -133,7 +133,7 @@ const TenderCard = ({ tender }: TenderCardProps) => {
       <style jsx>{`
         .timer-digit.urgent {
            animation: pulse 0.5s infinite;
-           color: #ff4444;
+           color: white;
         }
          @keyframes pulse {
           0% { transform: scale(1); }
@@ -192,11 +192,11 @@ const TenderCard = ({ tender }: TenderCardProps) => {
           ) : (
             <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
               <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.days}</span>
-              <span>:</span>
+              <span style={{ color: 'white' }}>:</span>
               <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.hours}</span>
-              <span>:</span>
+              <span style={{ color: 'white' }}>:</span>
               <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.minutes}</span>
-              <span>:</span>
+              <span style={{ color: 'white' }}>:</span>
               <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.seconds}</span>
             </div>
           )}

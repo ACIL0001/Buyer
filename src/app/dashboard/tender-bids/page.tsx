@@ -25,6 +25,7 @@ import {
   CircularProgress,
   Tabs,
   Tab,
+  Tooltip,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { MdRefresh, MdAdd, MdCheckCircle, MdCancel } from 'react-icons/md';
@@ -44,6 +45,8 @@ interface Bidder {
   lastName: string;
   email: string;
   phone?: string;
+  companyName?: string;
+  entreprise?: string;
 }
 
 interface Tender {
@@ -253,22 +256,24 @@ export default function TenderBidsPage() {
             <TableRow hover key={_id} tabIndex={-1}>
               <TableCell component="th" scope="row" padding="none" sx={{ pl: 2 }}>
                 <Stack direction="row" alignItems="center" spacing={2}>
-                  <Link href={`/profile/${bidder?._id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <Avatar sx={{ width: 32, height: 32 }}>
-                      {bidder?.firstName?.charAt(0) || '?'}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="subtitle2" noWrap sx={{ '&:hover': { textDecoration: 'underline' } }}>
-                        {bidder?.firstName} {bidder?.lastName}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" noWrap>
-                        {bidder?.email}
-                      </Typography>
-                      {bidder?.phone && (
-                          <Chip label={bidder.phone} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem', mt: 0.5 }} />
-                      )}
-                    </Box>
-                  </Link>
+                  <Tooltip title="Voir le profil du soumissionnaire" arrow>
+                    <Link href={`/profile/${bidder?._id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <Avatar sx={{ width: 34, height: 34, bgcolor: 'primary.main', cursor: 'pointer' }}>
+                        {(bidder?.companyName || bidder?.firstName || '?').charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="subtitle2" noWrap sx={{ '&:hover': { textDecoration: 'underline' } }}>
+                          {bidder?.companyName || bidder?.entreprise || `${bidder?.firstName || ''} ${bidder?.lastName || ''}`.trim() || 'N/A'}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" noWrap>
+                          {bidder?.email}
+                        </Typography>
+                        {bidder?.phone && (
+                            <Chip label={bidder.phone} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem', mt: 0.5 }} />
+                        )}
+                      </Box>
+                    </Link>
+                  </Tooltip>
                 </Stack>
               </TableCell>
               <TableCell align="left">

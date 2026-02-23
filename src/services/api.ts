@@ -5,7 +5,7 @@ import app from '@/config';
 // Get configuration from central config
 const config = {
     baseURL: app.baseURL,
-    apiKey: process.env.NEXT_PUBLIC_API_KEY || '64d2e8b7c3a9f1e5d8b2a4c6e9f0d3a5',
+    apiKey: app.apiKey,
     timeout: 15000,
 };
 

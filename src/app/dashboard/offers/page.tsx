@@ -19,6 +19,8 @@ import {
   Tabs,
   Tab,
   Card,
+  Avatar,
+  Tooltip,
 } from '@mui/material';
 import { MdRefresh } from 'react-icons/md';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -42,6 +44,8 @@ interface User {
   username?: string;
   email: string;
   phone: string;
+  companyName?: string;
+  entreprise?: string;
 }
 
 interface Offer {
@@ -256,15 +260,27 @@ export default function OffersPage() {
               sx={{ cursor: 'pointer', '&:hover': { backgroundColor: theme.palette.action.hover } }}
             >
               <TableCell component="th" scope="row" padding="none" sx={{ pl: 2 }}>
-                <Stack direction="column" spacing={0.5}>
-                  <Typography variant="subtitle2" noWrap fontWeight={500}>
-                    {user?.firstName && user?.lastName 
-                      ? `${user.firstName} ${user.lastName}`
-                      : user?.username || 'N/A'}
-                  </Typography>
-                  {user?.email && (
-                    <Typography variant="caption" color="text.secondary">{user.email}</Typography>
-                  )}
+                <Stack direction="row" alignItems="center" spacing={1.5}>
+                  <Tooltip title="Voir le profil de l'acheteur" arrow>
+                    <Link
+                      href={`/profile/${user?._id}`}
+                      style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: 12 }}
+                    >
+                      <Avatar sx={{ width: 34, height: 34, fontSize: '0.85rem', bgcolor: 'secondary.main', cursor: 'pointer' }}>
+                        {(user?.companyName || user?.firstName || '?').charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Stack direction="column" spacing={0.25}>
+                        <Typography variant="subtitle2" noWrap fontWeight={500} sx={{ '&:hover': { textDecoration: 'underline' } }}>
+                          {user?.companyName || user?.entreprise || (user?.firstName && user?.lastName
+                            ? `${user.firstName} ${user.lastName}`
+                            : user?.username || 'N/A')}
+                        </Typography>
+                        {user?.email && (
+                          <Typography variant="caption" color="text.secondary">{user.email}</Typography>
+                        )}
+                      </Stack>
+                    </Link>
+                  </Tooltip>
                 </Stack>
               </TableCell>
               
@@ -296,7 +312,7 @@ export default function OffersPage() {
                   {bid?._id && (
                     <Button
                       component={Link}
-                      href={`/dashboard/auctions/${bid._id}`}
+                      href={filterTab === 'received' ? `/dashboard/auctions/${bid._id}/offers/${_id}` : `/dashboard/auctions/${bid._id}`}
                       size="small"
                       variant="outlined"
                       color="primary"

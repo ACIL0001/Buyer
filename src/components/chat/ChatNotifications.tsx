@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BiMessage } from 'react-icons/bi';
 import { useChatNotificationsWithGeneral } from '@/hooks/useChatNotificationsWithGeneral';
-import { markNotificationAsRead, markAllNotificationsAsRead } from '@/utils/api';
+import { markNotificationAsRead, markAllNotificationsAsRead, markChatAsRead } from '@/utils/api';
 import useAuth from '@/hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 
@@ -25,30 +25,17 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
   const { auth } = useAuth();
   
   const { 
-    chatCreatedNotifications: initialChatCreatedNotifications, 
-    chatNotifications: initialChatNotifications, // This is the chat messages, not chatMessages
+    chatCreatedNotifications, 
+    chatNotifications, 
     loading, 
     refresh, 
-    totalUnread: initialTotalUnread 
+    totalUnread,
+    markAsRead,
+    markAllRead
   } = useChatNotificationsWithGeneral();
   
-  // Local state to manage optimistic updates
-  const [chatCreatedNotifications, setChatCreatedNotifications] = useState(initialChatCreatedNotifications);
-  const [chatNotifications, setChatNotifications] = useState(initialChatNotifications);
+  // Local state removed to prevent sync issues
   
-  // Update local state when hook state changes
-  useEffect(() => {
-    setChatCreatedNotifications(initialChatCreatedNotifications);
-    setChatNotifications(initialChatNotifications);
-  }, [initialChatCreatedNotifications, initialChatNotifications]);
-  
-  // Recalculate totalUnread from local state
-  // Recalculate totalUnread from local state
-  // Since API returns only unread chat notifications, the length is the count
-  const chatMessagesUnread = chatNotifications.length;
-  const chatCreatedUnread = chatCreatedNotifications.length;
-  const totalUnread = chatMessagesUnread + chatCreatedUnread;
-
   console.log('💬 ChatNotifications: chatCreatedNotifications count:', chatCreatedNotifications.length);
   console.log('💬 ChatNotifications: chatNotifications count:', chatNotifications.length);
   console.log('💬 ChatNotifications: totalUnread:', totalUnread);
@@ -146,43 +133,29 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
     try {
       console.log('🔖 Marking chat notification as read:', notification);
       
-      if (notification._id && auth?.tokens?.accessToken) {
-        // Optimistically update the UI first
-        const isChatCreatedNotification = notification.type === 'CHAT_CREATED';
-        // Message notifications have type MESSAGE_RECEIVED or MESSAGE_ADMIN, or just fall through
-        const isChatMessageNotification = notification.type === 'MESSAGE_RECEIVED' || notification.type === 'MESSAGE_ADMIN' || (!isChatCreatedNotification && notification.chatId);
-        
-        if (isChatCreatedNotification) {
-          // It's a chat-created notification - remove it from the list immediately
-          console.log('📝 Removing chat-created notification from list:', notification._id);
-          setChatCreatedNotifications(prev => prev.filter(n => n._id !== notification._id));
-        } else if (isChatMessageNotification) {
-          // It's a chat message notification - remove it from the list immediately
-          console.log('📝 Removing chat message notification from list:', notification._id);
-          setChatNotifications(prev => prev.filter(n => n._id !== notification._id));
-        }
-        
-        // Mark as read on server
-        await markNotificationAsRead(notification._id);
-        console.log('✅ Chat notification marked as read');
-        
-        // Refresh notifications to sync with server (but don't wait, let optimistic update show immediately)
-        refresh().catch(err => {
-          console.error('❌ Error refreshing notifications:', err);
-          // On error, refresh to get correct state
-          refresh();
-        });
-      }
+      const chatId = notification.chatId || notification.data?.chatId || notification.idChat;
       
-      // Determine navigation target
-      const chatId = notification.data?.chatId || notification.chatId;
-      console.log('🔗 Redirecting to chat with ID:', chatId);
       
       if (chatId) {
+        // Optimistically mark as read in the hook state
+        markAsRead(chatId);
+
+        if (auth?.tokens?.accessToken && notification.type !== 'RECENT_CONVERSATION') {
+          // Mark all notifications for this chat as read
+          await markChatAsRead(chatId);
+          console.log('✅ Chat marked as read:', chatId);
+          
+          // Refresh notifications to sync with server
+          refresh().catch(err => {
+            console.error('❌ Error refreshing notifications:', err);
+             // If refresh fails, we still have the optimistic update
+          });
+        }
+        
+        console.log('🔗 Redirecting to chat with ID:', chatId);
         router.push(`/dashboard/chat?chatId=${chatId}`);
       } else {
         // Fallback: Try to redirect using senderId if chat ID is missing
-        // This relies on Chat page handling userId param
         let senderId = null;
         
         if (notification.senderId) {
@@ -207,19 +180,17 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
       setIsOpen(false);
     } catch (error) {
       console.error('❌ Error marking chat notification as read:', error);
-      // Revert optimistic update on error by refreshing
       await refresh();
     }
   };
-
+   
   // Handle marking all notifications as read
   const handleMarkAllAsRead = async () => {
     try {
       console.log('🔖 Marking all chat notifications as read');
       
-      // Optimistically clear all notifications
-      setChatCreatedNotifications([]);
-      setChatNotifications([]);
+      // Optimistically mark all as read in hook state
+      markAllRead();
       
       if (auth?.tokens?.accessToken) {
         await markAllNotificationsAsRead();
@@ -552,7 +523,7 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
                     
                     {chatNotifications.map((notification: any) => {
                       const userName = notification.senderName || notification.data?.senderName || t('chat.unknown');
-                      const message = notification.data?.message || t('chat.newMessage');
+                      const message = notification.message || notification.data?.message || t('chat.newMessage');
                       
                       return (
                         <div 

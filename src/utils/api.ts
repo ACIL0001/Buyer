@@ -207,3 +207,13 @@ export const markAllNotificationsAsRead = async () => {
   }
 };
 
+export const markChatAsRead = async (chatId: string) => {
+  try {
+    const result = await NotificationAPI.markChatAsRead(chatId);
+    return result;
+  } catch (err) {
+    console.error('Error marking chat notifications as read:', err);
+    throw err;
+  }
+};
+

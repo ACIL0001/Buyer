@@ -193,7 +193,7 @@ export const ChatAPI = {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'x-access-key': '64d2e8b7c3a9f1e5d8b2a4c6e9f0d3a5'
+          'x-access-key': app.apiKey
         }
       });
 

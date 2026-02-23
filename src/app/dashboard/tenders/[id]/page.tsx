@@ -29,8 +29,10 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  CircularProgress
+  CircularProgress,
+  Tooltip,
 } from '@mui/material';
+import Link from 'next/link';
 import { useTheme } from '@mui/material/styles';
 import { TendersAPI } from '@/services/tenders';
 import { OffersAPI } from '@/services/offers';
@@ -66,9 +68,10 @@ export default function TenderDetailPage() {
     try {
       const response = await TendersAPI.getTenderById(id);
       console.log('📞 Tender response:', response);
-      if (response && response.data) {
-          console.log('📞 Contact Number:', response.data.contactNumber);
-          setTender(response.data);
+      const tenderData = response.data || response;
+      if (tenderData && (tenderData._id || (tenderData as any).id)) {
+          console.log('📞 Contact Number:', tenderData.contactNumber);
+          setTender(tenderData);
       }
     } catch (error) {
       console.error('Error fetching tender details:', error);
@@ -194,7 +197,7 @@ export default function TenderDetailPage() {
   return (
     <Container maxWidth="xl" sx={{ mt: 3, mb: 10 }}>
       <Stack mb={3}>
-        <Typography variant="h4">{tender.title}</Typography>
+        <Typography variant="h4">Tenders Details</Typography>
       </Stack>
 
       <Grid container spacing={3}>
@@ -262,6 +265,8 @@ export default function TenderDetailPage() {
             </Alert>
         </Grid>
       </Grid>
+
+
     </Container>
   );
 }

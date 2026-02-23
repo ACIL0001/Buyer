@@ -148,7 +148,7 @@
   align-items: center;
 }
 
-.hero-content {
+.modern-profile-page .hero-content {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -597,7 +597,7 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.section-header {
+.modern-profile-page .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -606,13 +606,13 @@
   gap: 0.6rem;
 }
 
-.header-content {
+.modern-profile-page .header-content {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.header-icon {
+.modern-profile-page .header-icon {
   width: 36px;
   height: 36px;
   border-radius: var(--border-radius-sm);
@@ -625,14 +625,14 @@
   box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
 }
 
-.header-text h2 {
+.modern-profile-page .header-text h2 {
   font-size: 1rem;
   font-weight: 600;
   color: #1a202c;
   margin-bottom: 0.15rem;
 }
 
-.header-text p {
+.modern-profile-page .header-text p {
   color: #64748b;
   font-size: 0.75rem;
 }
@@ -957,7 +957,7 @@
     gap: clamp(1rem, 3vw, 1.5rem);
   }
 
-  .section-header {
+  .modern-profile-page .section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: clamp(0.5rem, 1.5vw, 0.75rem);
@@ -965,22 +965,22 @@
     padding: clamp(0.5rem, 1.5vw, 0.75rem) 0;
   }
 
-  .header-content {
+  .modern-profile-page .header-content {
     gap: clamp(0.5rem, 1.5vw, 0.75rem);
   }
 
-  .header-icon {
+  .modern-profile-page .header-icon {
     width: clamp(28px, 4vw, 32px);
     height: clamp(28px, 4vw, 32px);
     font-size: clamp(0.8rem, 2vw, 0.9rem);
   }
 
-  .header-text h2 {
+  .modern-profile-page .header-text h2 {
     font-size: clamp(0.85rem, 2vw, 0.95rem);
     margin-bottom: clamp(0.1rem, 0.5vw, 0.15rem);
   }
 
-  .header-text p {
+  .modern-profile-page .header-text p {
     font-size: clamp(0.65rem, 1.5vw, 0.7rem);
   }
 
@@ -1110,12 +1110,12 @@
     padding: clamp(1rem, 3vw, 1.25rem);
   }
 
-  .section-header h2 {
+  .modern-profile-page .section-header h2 {
     font-size: clamp(0.9rem, 2.5vw, 1.1rem);
     margin-bottom: clamp(0.2rem, 0.5vw, 0.4rem);
   }
 
-  .section-header .header-icon {
+  .modern-profile-page .section-header .header-icon {
     width: clamp(28px, 4vw, 32px);
     height: clamp(28px, 4vw, 32px);
     font-size: clamp(0.8rem, 2vw, 0.9rem);
@@ -1814,6 +1814,7 @@
     color: #e5e7eb;
     background: linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 

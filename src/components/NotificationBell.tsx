@@ -4,9 +4,14 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BsBell, BsHammer, BsTrophy, BsExclamationCircle, BsChat } from 'react-icons/bs';
+import { normalizeImageUrl } from '@/utils/url';
 import useNotification from '@/hooks/useNotification';
 import useTotalNotifications from '@/hooks/useTotalNotifications';
 import { useTranslation } from 'react-i18next';
+import ConfirmedOrderModal from '@/components/notifications/ConfirmedOrderModal';
+import AuctionWonModal from '@/components/notifications/AuctionWonModal';
+import FeedbackModal from '@/components/notifications/FeedbackModal';
+
 
 // Fallback icon component
 const FallbackIcon = () => <BsBell size={16} color="#666" />;
@@ -25,6 +30,37 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
   const [isMarkingAllAsRead, setIsMarkingAllAsRead] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // State for Confirmed Order Modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalData, setModalData] = useState<{
+    contactNumber: string;
+    chatId?: string;
+    saleTitle?: string;
+    image?: string;
+    quantity?: number;
+    price?: number;
+    sellerName?: string;
+  }>({ contactNumber: '' });
+
+  // State for Auction Won Modal
+  const [auctionWonModalOpen, setAuctionWonModalOpen] = useState(false);
+  const [auctionWonData, setAuctionWonData] = useState<{
+    auctionTitle: string;
+    sellerName: string;
+    price: number;
+    chatId?: string;
+    image?: string;
+    sellerId?: string;
+    quantity?: number;
+  }>({ auctionTitle: '', sellerName: '', price: 0 });
+
+  // State for Feedback Modal
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [feedbackData, setFeedbackData] = useState<{
+    auctionId: string;
+    auctionTitle: string;
+  }>({ auctionId: '', auctionTitle: '' });
   
   // Debug component mounts
   useEffect(() => {
@@ -192,180 +228,179 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
         });
 
         let redirectPath: string | null = null;
+        const titleLower = notification.title?.toLowerCase() || '';
+        const messageLower = notification.message?.toLowerCase() || '';
 
         // 1. PUBLIC CREATION NOTIFICATIONS (Prioritize these - for newly created items)
-        console.log('🔍 Checking Creation Types...');
-        
         if (notification.type === 'TENDER_CREATED') {
-            console.log('🔍 Type matched TENDER_CREATED');
             const id = data?._id || data?.id || data?.tenderId;
-            console.log('🔍 Extracted Tender ID:', id);
-            if (id) {
-               console.log('🚀 Redirecting to Tender (Created):', id);
-               redirectPath = `/tender-details/${id}`;
-            } else {
-               console.error('❌ TENDER_CREATED matched but NO ID found in data:', data);
-            }
+            if (id) redirectPath = `/tender-details/${id}`;
         }
         else if (notification.type === 'AUCTION_CREATED' || 
                 (notification.type === 'BID_CREATED' && 
-                 (notification.title?.toLowerCase().includes('créée') || notification.title?.toLowerCase().includes('created')))) {
-            console.log('🔍 Type matched AUCTION_CREATED or BID_CREATED (Created)');
+                 (titleLower.includes('créée') || titleLower.includes('created')))) {
             const id = data?._id || data?.id || data?.auctionId;
-            console.log('🔍 Extracted Auction ID:', id);
-            if (id) {
-               console.log('🚀 Redirecting to Auction (Created):', id);
-               redirectPath = `/auction-details/${id}`;
-            } else {
-               console.error('❌ AUCTION_CREATED matched but NO ID found in data:', data);
-            }
+            if (id) redirectPath = `/auction-details/${id}`;
         }
         else if (notification.type === 'DIRECT_SALE_CREATED') {
-            console.log('🔍 Type matched DIRECT_SALE_CREATED');
             const id = data?._id || data?.id || data?.directSaleId;
-            console.log('🔍 Extracted Direct Sale ID:', id);
-            if (id) {
-               console.log('🚀 Redirecting to Direct Sale (Created):', id);
-               redirectPath = `/direct-sale/${id}`;
-            } else {
-               console.error('❌ DIRECT_SALE_CREATED matched but NO ID found in data:', data);
-            }
+            if (id) redirectPath = `/direct-sale/${id}`;
         }
         // 2. COMMENT REDIRECTION
         else if (notification.type === 'COMMENT_RECEIVED' || notification.type === 'COMMENT_REPLY') {
-            console.log('💬 Type matched COMMENT notification');
-            
-            // Extract IDs with multiple fallback options
             const auctionId = data?.auctionId || (data?.entityType === 'BID' ? data?.entityId : null);
             const tenderId = data?.tenderId || (data?.entityType === 'TENDER' ? data?.entityId : null);
             const directSaleId = data?.directSaleId || (data?.entityType === 'DIRECT_SALE' ? data?.entityId : null);
-            
             const commentId = data?.commentId || data?._id;
 
-            if (auctionId) {
-                redirectPath = `/auction-details/${auctionId}${commentId ? `?commentId=${commentId}` : ''}`;
-            } else if (tenderId) {
-                redirectPath = `/tender-details/${tenderId}${commentId ? `?commentId=${commentId}` : ''}`;
-            } else if (directSaleId) {
-                redirectPath = `/direct-sale/${directSaleId}${commentId ? `?commentId=${commentId}` : ''}`;
-            } 
+            if (auctionId) redirectPath = `/auction-details/${auctionId}${commentId ? `?commentId=${commentId}` : ''}`;
+            else if (tenderId) redirectPath = `/tender-details/${tenderId}${commentId ? `?commentId=${commentId}` : ''}`;
+            else if (directSaleId) redirectPath = `/direct-sale/${directSaleId}${commentId ? `?commentId=${commentId}` : ''}`;
+        }
+        // 3. ORDER CONFIRMED / PLACED - Prioritize showing modal for buyer
+        else if (notification.type === 'ORDER' && 
+                 (titleLower.includes('confirmée') || titleLower.includes('confirmed') ||
+                  titleLower.includes('effectuée') || titleLower.includes('placed'))) {
+            const contactNumber = data?.directSale?.contactNumber || data?.contactNumber;
+            const cid = data?.chatId || data?.chat?._id;
             
-            if (redirectPath) {
-                 console.log('🚀 Redirecting to Comment:', redirectPath);
+            // Comprehensive Title Extraction - prioritizing the actual product title
+            const saleTitle = data?.directSale?.title || 
+                              data?.directSale?.name || 
+                              data?.title || 
+                              data?.name || 
+                              "Article MazadClick";
+            
+            // Comprehensive Image Extraction - checking all possible locations
+            const rawImage = data?.directSale?.thumbs?.[0]?.url || 
+                             data?.directSale?.thumbs?.[0] || 
+                             data?.directSale?.images?.[0] || 
+                             data?.directSale?.image ||
+                             data?.directSale?.thumbnail ||
+                             data?.image || 
+                             data?.thumbnail;
+            
+            const image = normalizeImageUrl(rawImage);
+
+            // Comprehensive Quantity Extraction
+            const quantity = data?.quantity || 
+                             data?.orderedQuantity || 
+                             data?.qty || 
+                             data?.directSale?.quantity ||
+                             1;
+
+            // Comprehensive Seller Name Extraction
+            const owner = data?.directSale?.owner;
+            const sellerName = data?.seller?.name || 
+                               owner?.entreprise || 
+                               owner?.companyName || 
+                               (owner?.firstName && owner?.lastName ? `${owner.firstName} ${owner.lastName}` : (owner?.name || owner?.username)) ||
+                               data?.directSale?.sellerName || 
+                               data?.sellerName ||
+                               "Vente MazadClick";
+
+            const price = data?.directSale?.price || data?.price;
+
+            if (contactNumber) {
+                console.log('🎉 Showing ConfirmedOrderModal', { 
+                    image, 
+                    quantity, 
+                    sellerName, 
+                    saleTitle,
+                    rawImage 
+                });
+                setModalData({
+                    contactNumber,
+                    chatId: cid,
+                    saleTitle,
+                    image,
+                    quantity: Number(quantity),
+                    price: price ? Number(price) : undefined,
+                    sellerName
+                });
+                setModalOpen(true);
+            } else if (cid) {
+                redirectPath = `/dashboard/chat?chatId=${cid}`;
             } else {
-                 console.error('❌ COMMENT matched but could not determine Entity Type/ID:', data);
-            }
-        }
-        // 3. CHAT REDIRECTION
-        else if (data?.chatId) {
-            console.log('🚀 Redirecting to Chat:', data.chatId);
-            redirectPath = `/dashboard/chat?conversationId=${data.chatId}`;
-        }
-        else {
-            // 4. SELLER NOTIFICATIONS - Redirect to dashboard management pages with "received" tab
-            
-            const titleLower = notification.title?.toLowerCase() || '';
-            const messageLower = notification.message?.toLowerCase() || '';
-            
-            console.log('🔍 Checking seller notifications:', {
-                titleLower,
-                messageLower,
-                type: notification.type,
-                hasCommande: titleLower.includes('commande') || messageLower.includes('commande'),
-                hasNouvelle: titleLower.includes('nouvelle'),
-                hasConfirmee: titleLower.includes('confirmée') || titleLower.includes('confirmed')
-            });
-
-            // Check if user is receiving offers/bids on THEIR items
-            // IMPORTANT: Exclude CREATED types which should go to details pages above
-            const isSellerReceivingTenderBid = !titleLower.includes('créée') &&
-                                              notification.type === 'NEW_OFFER' &&
-                                              (data?.tender || data?.tenderId || 
-                                               messageLower.includes('soumission') ||
-                                               messageLower.includes('appel d\'offres'));
-            
-            const isSellerReceivingAuctionBid = !titleLower.includes('créée') &&
-                                                (notification.type === 'BID_CREATED' ||
-                                                (notification.type === 'NEW_OFFER' && 
-                                                (data?.auction || data?.auctionId ||
-                                                  messageLower.includes('enchère'))));
-            
-            // Seller receiving a new order (nouvelle commande)
-            const isSellerReceivingDirectSaleOrder = (
-                (titleLower.includes('nouvelle') && titleLower.includes('commande') && !titleLower.includes('créée')) ||
-                (notification.type === 'ORDER' && !titleLower.includes('confirmée') && !titleLower.includes('confirmed')) ||
-                (notification.type === 'NEW_OFFER' && (titleLower.includes('commande') || messageLower.includes('commande')))
-            );
-
-            console.log('🎯 Seller notification checks:', {
-                isSellerReceivingTenderBid,
-                isSellerReceivingAuctionBid,
-                isSellerReceivingDirectSaleOrder
-            });
-
-            // Redirect sellers to their dashboard "received" tab to manage incoming offers/orders
-            
-            // Priority Check: Bidder Submissions (My Actions)
-            if (titleLower.includes('soumise') || titleLower.includes('submitted') || 
-                titleLower.includes('enregistrée') || titleLower.includes('registered')) {
-                 if (data?.tender || data?.tenderId || messageLower.includes('appel d\'offres') || messageLower.includes('tender')) {
-                     console.log('🔄 Redirecting to Tender Bids Dashboard (My Tab)');
-                     redirectPath = '/dashboard/tender-bids?tab=my';
-                 }
-            }
-
-            if (redirectPath) {
-                // Already handled
-            }
-            else if (isSellerReceivingTenderBid) {
-                console.log('🔄 Redirecting to Tender Bids Dashboard (Received Tab)');
-                redirectPath = '/dashboard/tender-bids?tab=received';
-            }
-            else if (isSellerReceivingAuctionBid) {
-                console.log('🔄 Redirecting to Auction Offers Dashboard (Received Tab)');
-                redirectPath = '/dashboard/offers?tab=received';
-            }
-            else if (isSellerReceivingDirectSaleOrder) {
-                console.log('✅ REDIRECTING: Direct Sales Orders Dashboard (Received Tab) - Nouvelle Commande');
-                redirectPath = '/dashboard/direct-sales/orders?tab=received';
-            }
-            // 4. BUYER NOTIFICATIONS - When buyer's offer is accepted
-            else if (notification.type === 'OFFER_ACCEPTED') {
-                // Buyer's offer was accepted - go to the item details to see it
-                const tenderId = data?.tender?._id || data?.tenderId || data?.tender;
-                if (tenderId && typeof tenderId === 'string') {
-                  console.log('🔄 Redirecting to Tender Details (Accepted):', tenderId);
-                  redirectPath = `/tender-details/${tenderId}`;
-                }
-                else {
-                    const auctionId = data?.auction?._id || data?.auctionId || data?.auction;
-                    if (auctionId && typeof auctionId === 'string') {
-                        console.log('🔄 Redirecting to Auction Details (Accepted):', auctionId);
-                        redirectPath = `/auction-details/${auctionId}`;
-                    }
-                    else {
-                        const dsId = data?.directSale?._id || data?.directSaleId;
-                        if (dsId && typeof dsId === 'string') {
-                            console.log('🔄 Redirecting to Direct Sale Details (Accepted):', dsId);
-                            redirectPath = `/direct-sale/${dsId}`;
-                        }
-                    }
-                }
-            }
-            // 5. ORDER CONFIRMED / PLACED - Buyer receives confirmation
-            else if (notification.type === 'ORDER' && 
-                     (titleLower.includes('confirmée') || titleLower.includes('confirmed') ||
-                      titleLower.includes('effectuée') || titleLower.includes('placed'))) {
-                console.log('🔄 Redirecting to My Purchases (Placed/Confirmed)');
                 redirectPath = '/dashboard/direct-sales/orders?tab=my';
             }
         }
+        // NEW: AUCTION WON
+        else if (notification.type === 'AUCTION_WON') {
+             let auctionTitle = data?.productTitle || data?.auction?.title;
 
-        if (!redirectPath) {
-            console.log('⚠️ No redirect condition matched for this notification');
+             if (!auctionTitle && notification.message) {
+                  const match = notification.message.match(/l'enchère "([^"]+)"/);
+                  if (match && match[1]) {
+                      auctionTitle = match[1];
+                  }
+             }
+             if (!auctionTitle) auctionTitle = "Article";
+             const sellerName = data?.sellerName || "Vendeur";
+             const price = Number(data?.amount || data?.price || 0);
+             const chatId = data?.chatId;
+             const sellerId = data?.sellerId || data?.seller?._id || notification.senderId;
+
+             // Extract image if available in data
+           const rawImage = data?.auction?.thumbs?.[0] || data?.image || data?.thumbnail;
+           const image = normalizeImageUrl(rawImage);
+           
+           // Quantity extraction
+           const quantity = Number(data?.quantity || data?.orderedQuantity || 1);
+
+           console.log('🎉 Showing AuctionWonModal', { auctionTitle, sellerName, price, chatId, sellerId });
+           setAuctionWonData({ auctionTitle, sellerName, price, chatId, image, sellerId, quantity });
+           setAuctionWonModalOpen(true);
+        }
+        // NEW: FEEDBACK REMINDER
+        else if (notification.type === 'FEEDBACK_REMINDER') {
+             const auctionId = data?.auctionId || data?.auction?._id;
+             const auctionTitle = data?.productTitle || data?.auction?.title || "Article";
+             
+             if (auctionId) {
+                 console.log('📝 Showing FeedbackModal', { auctionId, auctionTitle });
+                 setFeedbackData({ auctionId, auctionTitle });
+                 setFeedbackModalOpen(true);
+             }
+        }
+        // 4. CHAT REDIRECTION (Generic fallback)
+        else if (data?.chatId) {
+            redirectPath = `/dashboard/chat?conversationId=${data.chatId}`;
+        }
+        // 5. SELLER / OTHER NOTIFICATIONS
+        else {
+            // Check if seller receiving bids/orders
+            const isSellerReceivingTenderBid = !titleLower.includes('créée') &&
+                                              notification.type === 'NEW_OFFER' &&
+                                              (data?.tender || data?.tenderId || messageLower.includes('soumission'));
+            
+            const isSellerReceivingAuctionBid = !titleLower.includes('créée') &&
+                                                (notification.type === 'BID_CREATED' ||
+                                                (notification.type === 'NEW_OFFER' && (data?.auction || data?.auctionId)));
+            
+            const isSellerReceivingDirectSaleOrder = (
+                (titleLower.includes('nouvelle') && titleLower.includes('commande') && !titleLower.includes('créée')) ||
+                (notification.type === 'ORDER' && !titleLower.includes('confirmée')) ||
+                (notification.type === 'NEW_OFFER' && titleLower.includes('commande'))
+            );
+
+            if (titleLower.includes('soumise') || titleLower.includes('submitted')) {
+                 if (data?.tender || data?.tenderId) redirectPath = '/dashboard/tender-bids?tab=my';
+            }
+            else if (isSellerReceivingTenderBid) redirectPath = '/dashboard/tender-bids?tab=received';
+            else if (isSellerReceivingAuctionBid) redirectPath = '/dashboard/offers?tab=received';
+            else if (isSellerReceivingDirectSaleOrder) redirectPath = '/dashboard/direct-sales/orders?tab=received';
+            else if (notification.type === 'OFFER_ACCEPTED') {
+                const tenderId = data?.tender?._id || data?.tenderId || data?.tender;
+                const auctionId = data?.auction?._id || data?.auctionId || data?.auction;
+                const dsId = data?.directSale?._id || data?.directSaleId;
+                
+                if (tenderId && typeof tenderId === 'string') redirectPath = `/tender-details/${tenderId}`;
+                else if (auctionId && typeof auctionId === 'string') redirectPath = `/auction-details/${auctionId}`;
+                else if (dsId && typeof dsId === 'string') redirectPath = `/direct-sale/${dsId}`;
+            }
         }
 
-        // Execute the redirect FIRST, before marking as read and closing dropdown
         if (redirectPath) {
             console.log('🎯 Executing redirect to:', redirectPath);
             router.push(redirectPath);
@@ -748,6 +783,37 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
         )}
       </button>
       {renderDropdown()}
+      
+      <ConfirmedOrderModal 
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        contactNumber={modalData.contactNumber}
+        chatId={modalData.chatId}
+        saleTitle={modalData.saleTitle}
+        image={modalData.image}
+        quantity={modalData.quantity}
+        price={modalData.price}
+        sellerName={modalData.sellerName}
+      />
+      
+      <AuctionWonModal 
+        isOpen={auctionWonModalOpen}
+        onClose={() => setAuctionWonModalOpen(false)}
+        auctionTitle={auctionWonData.auctionTitle}
+        sellerName={auctionWonData.sellerName}
+        price={auctionWonData.price}
+        chatId={auctionWonData.chatId}
+        image={auctionWonData.image}
+        sellerId={auctionWonData.sellerId}
+        quantity={auctionWonData.quantity}
+      />
+
+      <FeedbackModal 
+        isOpen={feedbackModalOpen}
+        onClose={() => setFeedbackModalOpen(false)}
+        auctionId={feedbackData.auctionId}
+        auctionTitle={feedbackData.auctionTitle}
+      />
     </>
   );
 });

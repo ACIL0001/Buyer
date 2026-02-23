@@ -14,5 +14,7 @@ export const AuctionsAPI = {
         winnerSelectedAt: new Date()
     }),
     getFinishedAuctions: (): Promise<ApiResponse<Auction[]>> => requests.get('bid/my-finished-bids'),
-    relaunchAuction: (data: any): Promise<ApiResponse<Auction>> => requests.post('bid/relaunch', data)
+    relaunchAuction: (data: any): Promise<ApiResponse<Auction>> => requests.post('bid/relaunch', data),
+    delayFeedback: (id: string): Promise<ApiResponse<any>> => requests.post(`bid/${id}/delay-feedback`, {}),
+    saveFeedback: (id: string, data: { action: 'LIKE' | 'DISLIKE', reason?: string }): Promise<ApiResponse<any>> => requests.post(`bid/${id}/feedback`, data)
 };

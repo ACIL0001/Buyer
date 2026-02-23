@@ -1096,7 +1096,7 @@ const MultipurposeTenderSidebar = () => {
                 }
                 .timer-digit.urgent {
                     animation: pulse 0.5s infinite;
-                    color: #ff4444;
+                    color: white;
                 }
             `}</style>
             <div className="container">
@@ -1482,6 +1482,7 @@ const MultipurposeTenderSidebar = () => {
                                     paginatedTenders.map((tender, index) => {
                                         const timer = timers[tender._id] || { days: "00", hours: "00", minutes: "00", seconds: "00", hasEnded: false };
                                         const hasTenderEnded = timer.hasEnded || false;
+                                        const isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30 && parseInt(timer.days) === 0;
 
                                         // Determine the display name for the tender owner
                                         let displayName;
@@ -1640,13 +1641,16 @@ const MultipurposeTenderSidebar = () => {
                                                                     gap: '4px',
                                                                     fontSize: '10px',
                                                                     fontWeight: '700',
-                                                                }}
-                                                        >
-                                                            <span>{timer.days || "00"}j</span>:
-                                                            <span>{timer.hours || "00"}h</span>:
-                                                            <span>{timer.minutes || "00"}m</span>:
-                                                            <span>{timer.seconds || "00"}s</span>
-                                                        </div>
+                                                            }}
+                                                            >
+                                                                <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.days}</span>
+                                                                <span style={{ color: 'white' }}>:</span>
+                                                                <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.hours}</span>
+                                                                <span style={{ color: 'white' }}>:</span>
+                                                                <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.minutes}</span>
+                                                                <span style={{ color: 'white' }}>:</span>
+                                                                <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.seconds}</span>
+                                                            </div>
 
                                                         {/* Share Button - Bottom Right */}
                                                         <div style={{

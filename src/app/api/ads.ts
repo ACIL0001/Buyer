@@ -23,7 +23,7 @@ interface ApiResponse<T> {
 }
 
 export const AdsAPI = {
-  getAds: async (): Promise<ApiResponse<Ad[]>> => {
+  getAds: async (signal?: AbortSignal): Promise<ApiResponse<Ad[]>> => {
     try {
       // Use Next.js API route instead of calling backend directly
       // This allows the route to handle backend errors gracefully
@@ -33,6 +33,7 @@ export const AdsAPI = {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
+        ...(signal ? { signal } : {}),
       });
 
       if (!res.ok) {
@@ -47,7 +48,7 @@ export const AdsAPI = {
 
       const data = await res.json();
       let adsData: Ad[] = [];
-      
+
       if (data && 'success' in data && 'data' in data) {
         adsData = Array.isArray(data.data) ? data.data : [];
       } else if (Array.isArray(data)) {
@@ -55,25 +56,27 @@ export const AdsAPI = {
       } else if (data?.data && Array.isArray(data.data)) {
         adsData = data.data;
       }
-      
+
       // Filter ads to only return those with isActive: true and isDisplayed: true
-      const filteredAds = Array.isArray(adsData) 
+      const filteredAds = Array.isArray(adsData)
         ? adsData.filter((ad: Ad) => ad.isActive === true && ad.isDisplayed === true)
         : [];
-      
+
       // Sort by order if available
       filteredAds.sort((a: Ad, b: Ad) => {
         const orderA = a.order ?? 0;
         const orderB = b.order ?? 0;
         return orderA - orderB;
       });
-      
+
       return {
         success: true,
         data: filteredAds,
         message: data?.message,
       } as ApiResponse<Ad[]>;
     } catch (error: unknown) {
+      // Re-throw AbortError so callers can handle navigation-away cleanly
+      if (error instanceof Error && error.name === 'AbortError') throw error;
       console.error('Error fetching ads:', error);
       // Return empty array instead of throwing error to prevent UI crashes
       return {

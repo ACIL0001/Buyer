@@ -17,7 +17,10 @@ import {
   CircularProgress,
   Tabs,
   Tab,
+  Avatar,
+  Tooltip,
 } from '@mui/material';
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MdVisibility } from 'react-icons/md';
@@ -35,19 +38,27 @@ interface Order {
         lastName?: string;
         email?: string;
         phone?: string;
+        companyName?: string;
+        entreprise?: string;
     };
   } | null;
   buyer?: {
+    _id?: string;
     firstName: string;
     lastName: string;
-    email: string;
+    email?: string;
     phone?: string;
+    companyName?: string;
+    entreprise?: string;
   } | null;
   seller?: {
+    _id?: string;
     firstName: string;
     lastName: string;
-    email: string;
+    email?: string;
     phone?: string;
+    companyName?: string;
+    entreprise?: string;
   } | null;
   quantity: number;
   unitPrice: number;
@@ -110,8 +121,8 @@ export default function OrdersPage() {
         DirectSaleAPI.getMyPurchases()
       ]);
 
-      setOrders(Array.isArray(ordersData) ? ordersData : []);
-      setPurchases(Array.isArray(purchasesData) ? purchasesData : []);
+      setOrders(Array.isArray(ordersData) ? ordersData.filter((o: any) => o.directSale) : []);
+      setPurchases(Array.isArray(purchasesData) ? purchasesData.filter((p: any) => p.directSale) : []);
     } catch (error: any) {
       console.error('Error fetching data:', error);
     } finally {
@@ -237,10 +248,12 @@ export default function OrdersPage() {
                 ? (order.seller || order.directSale?.owner)
                 : order.buyer;
             
-            const counterpartyName = counterparty 
-                ? `${counterparty.firstName || ''} ${counterparty.lastName || ''}`.trim()
+            const displayName = counterparty
+                ? (counterparty.companyName || counterparty.entreprise || `${counterparty.firstName || ''} ${counterparty.lastName || ''}`.trim())
                 : (isPurchase ? t('dashboard.orders.unknownSeller') : t('dashboard.orders.unknownBuyer'));
 
+            const initials = displayName ? displayName.charAt(0).toUpperCase() : '?';
+            const profileId = (counterparty as any)?._id;
             const counterpartyPhone = counterparty?.phone || t('dashboard.orders.phoneUnavailable');
 
             return (
@@ -252,14 +265,36 @@ export default function OrdersPage() {
                   </Typography>
                 </TableCell>
                 
-                {/* Counterparty (Buyer or Seller) */}
+                {/* Counterparty (Buyer or Seller) — clickable profile link */}
                 <TableCell>
-                  <Typography variant="body2" noWrap>
-                    {counterpartyName}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                      {counterpartyPhone}
-                  </Typography>
+                  {profileId ? (
+                    <Tooltip title={isPurchase ? 'Voir le profil du vendeur' : 'Voir le profil de l\'acheteur'} arrow>
+                      <Link
+                        href={`/profile/${profileId}`}
+                        style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: 10 }}
+                      >
+                        <Avatar sx={{ width: 34, height: 34, fontSize: '0.85rem', bgcolor: isPurchase ? 'primary.main' : 'secondary.main', cursor: 'pointer' }}>
+                          {initials}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="subtitle2" noWrap sx={{ '&:hover': { textDecoration: 'underline' } }}>
+                            {displayName}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {counterpartyPhone}
+                          </Typography>
+                        </Box>
+                      </Link>
+                    </Tooltip>
+                  ) : (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Avatar sx={{ width: 34, height: 34, fontSize: '0.85rem' }}>{initials}</Avatar>
+                      <Box>
+                        <Typography variant="subtitle2" noWrap>{displayName}</Typography>
+                        <Typography variant="caption" color="text.secondary">{counterpartyPhone}</Typography>
+                      </Box>
+                    </Box>
+                  )}
                 </TableCell>
                 
                 {/* Quantity */}
@@ -296,10 +331,10 @@ export default function OrdersPage() {
                     variant="outlined"
                     startIcon={<MdVisibility />}
                     onClick={() => {
-                        if (order.directSale?._id) {
-                        router.push(`/dashboard/direct-sales/${order.directSale._id}`);
+                        if (order.directSale?._id && order._id) {
+                          router.push(`/dashboard/direct-sales/${order.directSale._id}/orders/${order._id}`);
                         } else {
-                        console.error('Direct sale ID not found for order:', order._id);
+                          console.error('Direct sale ID or Order ID not found for order:', order._id);
                         }
                     }}
                     >

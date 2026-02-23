@@ -32,6 +32,12 @@ const MultipurposeAuctionSidebar = () => {
     const { t } = useTranslation();
     const router = useRouter();
     const { isLogged, auth } = useAuth();
+    
+    // Helper function for navigation with scroll to top
+    const navigateWithTop = (path) => {
+        window.scrollTo(0, 0);
+        router.push(path);
+    };
 
     const [activeColumn, setActiveColumn] = useState(3);
     const [currentPage, setCurrentPage] = useState(1);

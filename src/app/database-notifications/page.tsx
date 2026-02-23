@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsBell, BsCheck, BsCheckAll } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { normalizeImageUrl } from '@/utils/url';
+import ConfirmedOrderModal from '@/components/notifications/ConfirmedOrderModal';
 
 interface Notification {
   _id: string;
@@ -22,6 +25,18 @@ export default function DatabaseNotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // State for Confirmed Order Modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalData, setModalData] = useState<{
+    contactNumber: string;
+    chatId?: string;
+    saleTitle?: string;
+    image?: string;
+    quantity?: number;
+    price?: number;
+    sellerName?: string;
+  }>({ contactNumber: '' });
 
   useEffect(() => {
     fetchNotifications();
@@ -156,7 +171,61 @@ export default function DatabaseNotificationsPage() {
              }
         }
         else if (type === 'ORDER' && (titleLower.includes('confirmée') || titleLower.includes('confirmed'))) {
-             redirectPath = '/dashboard/direct-sales/orders';
+             const contactNumber = data?.directSale?.contactNumber || data?.contactNumber;
+             const cid = data?.chatId || data?.chat?._id;
+             
+             // Comprehensive Title Extraction - prioritizing the actual product title
+             const saleTitle = data?.directSale?.title || 
+                               data?.directSale?.name || 
+                               data?.title || 
+                               data?.name || 
+                               "Article MazadClick";
+             
+             // Comprehensive Image Extraction - checking all possible locations
+             const rawImage = data?.directSale?.thumbs?.[0]?.url || 
+                              data?.directSale?.thumbs?.[0] || 
+                              data?.directSale?.images?.[0] || 
+                              data?.directSale?.image ||
+                              data?.directSale?.thumbnail ||
+                              data?.image || 
+                              data?.thumbnail;
+             
+             const image = normalizeImageUrl(rawImage);
+
+             // Comprehensive Quantity Extraction
+             const quantity = data?.quantity || 
+                              data?.orderedQuantity || 
+                              data?.qty || 
+                              data?.directSale?.quantity ||
+                              1;
+
+             // Comprehensive Seller Name Extraction
+             const owner = data?.directSale?.owner;
+             const sellerName = data?.seller?.name || 
+                                owner?.entreprise || 
+                                owner?.companyName || 
+                                (owner?.firstName && owner?.lastName ? `${owner.firstName} ${owner.lastName}` : (owner?.name || owner?.username)) ||
+                                data?.directSale?.sellerName || 
+                                data?.sellerName ||
+                                "Vente MazadClick";
+
+             const price = data?.directSale?.price || data?.price;
+
+             if (contactNumber) {
+                 setModalData({
+                     contactNumber,
+                     chatId: cid,
+                     saleTitle,
+                     image,
+                     quantity: Number(quantity),
+                     price: price ? Number(price) : undefined,
+                     sellerName
+                 });
+                 setModalOpen(true);
+             }
+ else {
+                 redirectPath = '/dashboard/direct-sales/orders';
+             }
         }
     }
 
@@ -301,6 +370,18 @@ export default function DatabaseNotificationsPage() {
           </div>
         </div>
       </div>
+
+      <ConfirmedOrderModal 
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        contactNumber={modalData.contactNumber}
+        chatId={modalData.chatId}
+        saleTitle={modalData.saleTitle}
+        image={modalData.image}
+        quantity={modalData.quantity}
+        price={modalData.price}
+        sellerName={modalData.sellerName}
+      />
     </div>
   );
 } 

@@ -17,21 +17,30 @@ const AdsSlider: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
     const fetchAds = async () => {
       try {
         setLoading(true);
-        const response = await AdsAPI.getAds();
-        if (response.success && response.data) {
+        const response = await AdsAPI.getAds(controller.signal);
+        if (isMounted && response.success && response.data) {
           setAds(response.data);
         }
-      } catch (error) {
-        console.error('Error fetching ads:', error);
+      } catch (error: unknown) {
+        // Ignore AbortError - it's expected when navigating away
+        if (error instanceof Error && error.name === 'AbortError') return;
+        if (isMounted) console.error('Error fetching ads:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchAds();
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
 
   useEffect(() => {

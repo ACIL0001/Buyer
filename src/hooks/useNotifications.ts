@@ -81,7 +81,7 @@ export function useNotifications() {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
-          'x-access-key': process.env.NEXT_PUBLIC_KEY_API_BYUER as string,
+          'x-access-key': app.apiKey,
         },
       });
 

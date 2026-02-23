@@ -1,7 +1,11 @@
 ﻿import { useState, useEffect, useRef } from 'react';
-import { BiBell } from 'react-icons/bi';
-import useNotifications from '@/hooks/useNotifications';
+import { BiBell, BiPhone, BiMessageDetail } from 'react-icons/bi';
+import useNotification from '@/hooks/useNotification';
+import useTotalNotifications from '@/hooks/useTotalNotifications';
 import { useRouter } from 'next/navigation';
+import { normalizeImageUrl } from '@/utils/url';
+import ConfirmedOrderModal from '@/components/notifications/ConfirmedOrderModal';
+import FeedbackModal from '@/components/notifications/FeedbackModal';
 
 interface BellNotificationsProps {
   variant?: 'header' | 'sidebar';
@@ -11,9 +15,29 @@ interface BellNotificationsProps {
 export default function BellNotifications({ variant = 'header', onOpenChange }: BellNotificationsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(1024);
-  const { notifications, unreadCount, loading, refresh, markAsRead } = useNotifications();
+  const { notifications, loading, refresh, markAsRead } = useNotification();
+  const { totalUnreadCount: unreadCount, refreshAll } = useTotalNotifications();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // State for Confirmed Order Modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalData, setModalData] = useState<{
+    contactNumber: string;
+    chatId?: string;
+    saleTitle?: string;
+    image?: string;
+    quantity?: number;
+    price?: number;
+    sellerName?: string;
+  }>({ contactNumber: '' });
+
+  // State for Feedback Modal
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [feedbackModalData, setFeedbackModalData] = useState<{
+    auctionId: string;
+    auctionTitle: string;
+  }>({ auctionId: '', auctionTitle: '' });
 
   console.log('BellNotifications: notifications count:', notifications.length);
   console.log('BellNotifications: unreadCount:', unreadCount);
@@ -24,6 +48,7 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
     setIsOpen(newIsOpen);
     if (newIsOpen && onOpenChange) {
       onOpenChange(true);
+      refreshAll();
     }
   };
 
@@ -32,14 +57,9 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
     };
-    
-    // Set initial width
     setWindowWidth(window.innerWidth);
-    
     window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Close dropdown when clicking outside
@@ -49,154 +69,209 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
         setIsOpen(false);
       }
     }
-    
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Handle dropdown open/close events
-  useEffect(() => {
-    if (isOpen) {
-      // Only notify parent component, don't refresh on every open
-      // The notifications are already being managed by the hook
-      if (onOpenChange) {
-        onOpenChange(true);
+  const handleNotificationClick = async (notification: any) => {
+    try {
+      console.log('🔔 Notification clicked:', notification._id);
+      
+      const data = notification.data as any;
+      let redirectPath: string | null = null;
+      const titleLower = notification.title?.toLowerCase() || '';
+      const messageLower = notification.message?.toLowerCase() || '';
+
+      // 1. PUBLIC CREATION NOTIFICATIONS
+      if (notification.type === 'TENDER_CREATED') {
+          const id = data?._id || data?.id || data?.tenderId;
+          if (id) redirectPath = `/tender-details/${id}`;
       }
-    }
-  }, [isOpen, onOpenChange]); // Remove refresh dependency to prevent excessive API calls
-  
-  const handleNotificationClick = (notification: any) => {
-    console.log('🔔 Notification clicked:', notification._id);
+      else if (notification.type === 'AUCTION_CREATED' || 
+              (notification.type === 'BID_CREATED' && (titleLower.includes('créée') || titleLower.includes('created')))) {
+          const id = data?._id || data?.id || data?.auctionId;
+          if (id) redirectPath = `/auction-details/${id}`;
+      }
+      else if (notification.type === 'DIRECT_SALE_CREATED') {
+          const id = data?._id || data?.id || data?.directSaleId;
+          if (id) redirectPath = `/direct-sale/${id}`;
+      }
+      // 2. COMMENT REDIRECTION
+      else if (notification.type === 'COMMENT_RECEIVED' || notification.type === 'COMMENT_REPLY') {
+          const auctionId = data?.auctionId || (data?.entityType === 'BID' ? data?.entityId : null);
+          const tenderId = data?.tenderId || (data?.entityType === 'TENDER' ? data?.entityId : null);
+          const directSaleId = data?.directSaleId || (data?.entityType === 'DIRECT_SALE' ? data?.entityId : null);
+          const commentId = data?.commentId || data?._id;
 
-    // 3. Redirect logic based on type and data (FIRST!)
-    const { type, data} = notification;
-    const titleLower = notification.title?.toLowerCase() || '';
+          if (auctionId) redirectPath = `/auction-details/${auctionId}${commentId ? `?commentId=${commentId}` : ''}`;
+          else if (tenderId) redirectPath = `/tender-details/${tenderId}${commentId ? `?commentId=${commentId}` : ''}`;
+          else if (directSaleId) redirectPath = `/direct-sale/${directSaleId}${commentId ? `?commentId=${commentId}` : ''}`;
+      }
+      // 3. ORDER CONFIRMED / PLACED
+      else if (notification.type === 'ORDER' && 
+               (titleLower.includes('confirmée') || titleLower.includes('confirmed') ||
+                titleLower.includes('effectuée') || titleLower.includes('placed'))) {
+          const contactNumber = data?.directSale?.contactNumber || data?.contactNumber || data?.order?.contactNumber;
+          const cid = data?.chatId || data?.chat?._id || data?.order?.chatId;
+          
+          // Debug: log full data to identify seller fields
+          console.log('📦 ORDER notification full data:', JSON.stringify(data, null, 2));
 
-    let redirectPath: string | null = null;
+          // Comprehensive Title Extraction
+          const saleTitle = data?.directSale?.title || 
+                            data?.directSale?.name || 
+                            data?.order?.directSale?.title ||
+                            data?.title || 
+                            data?.name || 
+                            "Article MazadClick";
 
-    // 0. NEW ITEMS CREATED (Public Notifications) - Prioritize these checks
-    // Redirect to the public details page for the item
-    
-    // TENDER CREATED
-    if (type === 'TENDER_CREATED') {
-        const id = data?._id || data?.id || data?.tenderId;
-        if (id) {
-            redirectPath = `/tender-details/${id}`;
-        }
-    }
-    // AUCTION CREATED (Handled via AUCTION_CREATED type OR BID_CREATED with "créée" in title)
-    else if (type === 'AUCTION_CREATED' || 
-            (type === 'BID_CREATED' && (titleLower.includes('créée') || titleLower.includes('created')))) {
-        const id = data?._id || data?.id || data?.auctionId;
-        if (id) {
-            console.log('🚀 Redirecting to Auction (Created):', id);
-            redirectPath = `/auction-details/${id}`;
-        }
-    }
-    // DIRECT SALE CREATED
-    else if (type === 'DIRECT_SALE_CREATED') {
-        const id = data?._id || data?.id || data?.directSaleId;
-        if (id) {
-            redirectPath = `/direct-sale/${id}`;
-        }
-    }
-    else {
-        // Helper to safely get IDs
-        const getChatId = () => data?.chatId || data?.chat?._id;
+          // Comprehensive Quantity Extraction
+          const quantity = data?.quantity || 
+                           data?.orderedQuantity || 
+                           data?.qty || 
+                           data?.order?.quantity ||
+                           data?.directSale?.quantity ||
+                           1;
 
-        // CHAT REDIRECTION
-        const chatId = getChatId();
-        if (chatId && (
-            type === 'CHAT_CREATED' || 
-            type === 'MESSAGE_RECEIVED' || 
-            type === 'BID_WON' || 
-            type === 'ITEM_SOLD' || 
-            type === 'OFFER_ACCEPTED' || 
-            type === 'ORDER' || 
-            type === 'ORDER_RECEIVED'
-        )) {
-          console.log('🚀 Redirecting to chat:', chatId);
-          redirectPath = `/dashboard/chat?chatId=${chatId}`;
-        }
-        else {
-            // SELLER NOTIFICATIONS - Redirect to dashboard management pages
-            
-            const titleLower = notification.title?.toLowerCase() || '';
-            const messageLower = notification.message?.toLowerCase() || '';
-            
-            console.log('🔍 Checking seller notifications (BellNotifications):', {
-                titleLower,
-                messageLower,
-                type: type,
-                hasCommande: titleLower.includes('commande') || messageLower.includes('commande'),
-                hasNouvelle: titleLower.includes('nouvelle'),
-                hasConfirmee: titleLower.includes('confirmée') || titleLower.includes('confirmed')
-            });
+          // Comprehensive Seller Name Extraction — covers every possible field path
+          const owner = data?.directSale?.owner || data?.order?.directSale?.owner;
+          const seller = data?.seller || data?.order?.seller;
+          const sellerFirstLast = (seller?.firstName && seller?.lastName)
+            ? `${seller.firstName} ${seller.lastName}`
+            : (owner?.firstName && owner?.lastName)
+              ? `${owner.firstName} ${owner.lastName}`
+              : (data?.senderFirstName && data?.senderLastName)
+                ? `${data.senderFirstName} ${data.senderLastName}`
+                : null;
+          const sellerName: string | null =
+            // Company name takes priority (professional/reseller accounts)
+            seller?.companyName || seller?.entreprise ||
+            owner?.companyName || owner?.entreprise ||
+            data?.companyName ||
+            // Then full name paths
+            sellerFirstLast ||
+            seller?.name || seller?.username ||
+            owner?.name || owner?.username ||
+            data?.sellerName || data?.ownerName || data?.vendorName ||
+            data?.seller_name || data?.owner_name ||
+            data?.directSale?.sellerName ||
+            data?.senderName ||
+            null;
 
-            // Check if seller is receiving offers/bids on THEIR items
-            const isSellerReceivingTenderBid = !titleLower.includes('créée') &&
-                                              type === 'NEW_OFFER' && 
-                                              (data?.tender || data?.tenderId || 
-                                                messageLower.includes('soumission') ||
-                                                messageLower.includes('appel d\'offres'));
-            
-            const isSellerReceivingAuctionBid = !titleLower.includes('créée') &&
-                                                (type === 'BID_CREATED' ||
-                                                (type === 'NEW_OFFER' && 
-                                                (data?.auction || data?.auctionId ||
-                                                  messageLower.includes('enchère'))));
-            
-            // Seller receiving a new order (nouvelle commande) - exclude "créée" notifications
-            const isSellerReceivingDirectSaleOrder = (
-                (titleLower.includes('nouvelle') && titleLower.includes('commande') && !titleLower.includes('créée')) ||
-                (type === 'ORDER' && !titleLower.includes('confirmée') && !titleLower.includes('confirmed')) ||
-                (type === 'NEW_OFFER' && (titleLower.includes('commande') || messageLower.includes('commande')))
-            );
+          const price = data?.directSale?.price || data?.order?.price || data?.price;
 
-            console.log('🎯 Seller notification checks (BellNotifications):', {
-                isSellerReceivingTenderBid,
-                isSellerReceivingAuctionBid,
-                isSellerReceivingDirectSaleOrder
-            });
+          const image = normalizeImageUrl(
+            data?.directSale?.thumbs?.[0]?.url || 
+            data?.directSale?.thumbs?.[0] || 
+            data?.directSale?.images?.[0] || 
+            data?.directSale?.image ||
+            data?.image || data?.thumbnail
+          );
 
-            if (isSellerReceivingTenderBid) {
-                console.log('🔄 Redirecting to Tender Bids Dashboard (Received Tab)');
-                redirectPath = '/dashboard/tender-bids?tab=received';
-            }
-            else if (isSellerReceivingAuctionBid) {
-                console.log('🔄 Redirecting to Auction Offers Dashboard (Received Tab)');
-                redirectPath = '/dashboard/offers?tab=received';
-            }
-            else if (isSellerReceivingDirectSaleOrder) {
-                console.log('✅ REDIRECTING: Direct Sales Orders Dashboard (Received Tab) - Nouvelle Commande');
-                redirectPath = '/dashboard/direct-sales/orders?tab=received';
-            }
-            // GENERIC FALLBACK based on available data
-            else if (getChatId()) {
-              redirectPath = `/dashboard/chat?chatId=${getChatId()}`;
-            }
-        }
-    }
+          if (contactNumber) {
+              setModalData({
+                  contactNumber,
+                  chatId: cid,
+                  saleTitle,
+                  image,
+                  quantity: Number(quantity),
+                  price: price ? Number(price) : undefined,
+                  sellerName: sellerName || undefined
+              });
+              setModalOpen(true);
+          }
+ else if (cid) {
+              redirectPath = `/dashboard/chat?chatId=${cid}`;
+          } else {
+              redirectPath = '/dashboard/direct-sales/orders?tab=my';
+          }
+      }
+      else if (notification.type === 'FEEDBACK_REMINDER' || titleLower.includes('avis sur votre achat') || titleLower.includes('rate experience')) {
+          console.log('📝 Opening Feedback Modal for notification:', notification._id);
+          // Open Feedback Modal
+          setFeedbackModalData({
+              auctionId: data?.auctionId || data?._id || (data?.entityType === 'BID' ? data?.entityId : ''),
+              auctionTitle: data?.title || data?.auctionTitle || "Enchère"
+          });
+          setFeedbackModalOpen(true);
+      }
+      // 4. AUCTION/TENDER OFFER REDIRECTION (PRIORITIZED)
+      const isSellerReceivingTenderBid = !titleLower.includes('créée') && 
+                                        (notification.type === 'NEW_OFFER' || notification.type === 'BID_PLACED' || titleLower.includes('offre')) && 
+                                        (data?.tender || data?.tenderId || messageLower.includes('soumission') || messageLower.includes('appel d\'offres'));
+      
+      const isSellerReceivingAuctionBid = !titleLower.includes('créée') && 
+                                          (notification.type === 'BID_CREATED' || 
+                                           notification.type === 'NEW_OFFER' || 
+                                           notification.type === 'BID_PLACED' ||
+                                           messageLower.includes('enchère') ||
+                                           titleLower.includes('offre') ||
+                                           titleLower.includes('nouvelle offre')) && 
+                                          (data?.auction || data?.auctionId || data?.entityType === 'BID' || (messageLower.includes('enchère') && !messageLower.includes('soumission')));
 
-    if (!redirectPath) {
-        console.log('⚠️ No redirect condition matched for this notification');
-    }
+      const isSellerReceivingDirectSaleOrder = (
+          (titleLower.includes('nouvelle') && titleLower.includes('commande') && !titleLower.includes('créée')) ||
+          (notification.type === 'ORDER' && !titleLower.includes('confirmée')) ||
+          (notification.type === 'NEW_OFFER' && (titleLower.includes('commande') || messageLower.includes('commande')))
+      );
 
-    // Execute redirect FIRST
-    if (redirectPath) {
-        console.log('🎯 Executing redirect to:', redirectPath);
+      if (isSellerReceivingAuctionBid) {
+          const aId = data?.auctionId || 
+                      data?.auction?._id || 
+                      (typeof data?.auction === 'string' ? data.auction : null) || 
+                      data?.bid?.auction || 
+                      data?.offer?.auction ||
+                      (data?.entityType === 'BID' ? data?.entityId : null);
+          
+          const bId = data?.bidId || 
+                      data?.offerId || 
+                      data?.bid?._id || 
+                      data?.offer?._id || 
+                      data?.id || 
+                      data?._id || 
+                      data?.entityId;
+          
+          if (aId && bId) {
+              redirectPath = `/dashboard/auctions/${String(aId)}/offers/${String(bId)}`;
+          } else {
+              redirectPath = '/dashboard/offers?tab=received';
+          }
+      }
+      else if (isSellerReceivingTenderBid) {
+          redirectPath = '/dashboard/tender-bids?tab=received';
+      }
+      else if (isSellerReceivingDirectSaleOrder) {
+          redirectPath = '/dashboard/direct-sales/orders?tab=received';
+      }
+      // 5. CHAT REDIRECTION (Fallback)
+      else if (data?.chatId) {
+          redirectPath = `/dashboard/chat?conversationId=${data.chatId}`;
+      }
+      // 6. OTHER
+      else if (notification.type === 'OFFER_ACCEPTED') {
+          const tenderId = data?.tender?._id || data?.tenderId || data?.tender;
+          const auctionId = data?.auction?._id || data?.auctionId || data?.auction;
+          const dsId = data?.directSale?._id || data?.directSaleId;
+          if (tenderId && typeof tenderId === 'string') redirectPath = `/tender-details/${tenderId}`;
+          else if (auctionId && typeof auctionId === 'string') redirectPath = `/auction-details/${auctionId}`;
+          else if (dsId && typeof dsId === 'string') redirectPath = `/direct-sale/${dsId}`;
+      }
+      else if (titleLower.includes('soumise') || titleLower.includes('submitted')) {
+          if (data?.tender || data?.tenderId) redirectPath = '/dashboard/tender-bids?tab=my';
+      }
+
+      // Mark as read (non-blocking)
+      markAsRead(notification._id).catch(err => console.error('Failed to mark read:', err));
+      setIsOpen(false);
+
+      if (redirectPath) {
+        console.log('🎯 Redirecting to:', redirectPath);
         router.push(redirectPath);
+      }
+    } catch (error) {
+      console.error('❌ Error handling notification click:', error);
+      setIsOpen(false);
     }
-    
-    // 1. Mark as read if not already (THEN)
-    if (!notification.read) {
-      markAsRead(notification._id);
-    }
-    
-    // 2. Close dropdown (LAST)
-    setIsOpen(false);
   };
 
   // Get notification icon based on type
@@ -529,6 +604,25 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
           100% { transform: rotate(360deg); }
         }
       `}</style>
+      
+      <ConfirmedOrderModal 
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        contactNumber={modalData.contactNumber}
+        chatId={modalData.chatId}
+        saleTitle={modalData.saleTitle}
+        image={modalData.image}
+        quantity={modalData.quantity}
+        price={modalData.price}
+        sellerName={modalData.sellerName}
+      />
+
+      <FeedbackModal 
+        isOpen={feedbackModalOpen}
+        onClose={() => setFeedbackModalOpen(false)}
+        auctionId={feedbackModalData.auctionId}
+        auctionTitle={feedbackModalData.auctionTitle}
+      />
     </div>
   );
 } 

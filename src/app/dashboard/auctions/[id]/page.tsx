@@ -16,6 +16,13 @@ import {
   Chip,
   Paper,
   Slide,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { AuctionsAPI } from '@/services/auctions';
@@ -114,10 +121,11 @@ export default function AuctionDetailPage() {
       const response = await AuctionsAPI.getAuctionById(auctionId);
       console.log("Auction details response:", response);
       
-      if (response && response.data) {
-        console.log('📞 Auction response:', response.data);
-        console.log('📞 Contact Number:', response.data.contactNumber);
-        setAuction(response.data);
+      const auctionData = response.data || response;
+      if (auctionData && (auctionData._id || auctionData.id)) {
+        console.log('📞 Auction response:', auctionData);
+        console.log('📞 Contact Number:', auctionData.contactNumber);
+        setAuction(auctionData);
       }
     } catch (error: any) {
       console.error('Error fetching auction details:', error);
@@ -142,8 +150,10 @@ export default function AuctionDetailPage() {
 
       console.log('Offers response:', offers);
       
-      if (offers && offers.data && Array.isArray(offers.data)) {
-        const formattedParticipants = offers.data
+      const offersData = (offers && offers.data && Array.isArray(offers.data)) ? offers.data : (Array.isArray(offers) ? offers : []);
+
+      if (offersData.length > 0) {
+        const formattedParticipants = offersData
           .map((offer: any) => ({
             name: offer.user?.firstName && offer.user?.lastName 
               ? `${offer.user.firstName} ${offer.user.lastName}` 
@@ -278,31 +288,6 @@ export default function AuctionDetailPage() {
           {auction.title}
         </Typography>
         <Box display="flex" alignItems="center" gap={2}>
-          {auction.status === BID_STATUS.OPEN && participants.length > 0 && (
-            <Button
-              variant="contained"
-              startIcon={<MdChat />}
-              onClick={CreateChat}
-              disabled={chatLoading}
-              sx={{
-                background: 'linear-gradient(90deg, #43e97b 0%, #38f9d7 100%)',
-                color: '#fff',
-                fontWeight: 700,
-                borderRadius: 3,
-                boxShadow: '0 4px 20px 0 rgba(34, 197, 94, 0.15)',
-                px: 3,
-                py: 1.2,
-                fontSize: '1rem',
-                textTransform: 'none',
-                '&:hover': {
-                  background: 'linear-gradient(90deg, #38f9d7 0%, #43e97b 100%)',
-                },
-              }}
-              size="large"
-            >
-              {chatLoading ? <CircularProgress size={22} color="inherit" /> : t('startChat')}
-            </Button>
-          )}
 
           <Paper
             elevation={0}
@@ -417,6 +402,7 @@ export default function AuctionDetailPage() {
           </Card>
         </Grid>
       </Grid>
+
     </Container>
   );
 }

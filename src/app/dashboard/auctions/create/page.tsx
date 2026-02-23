@@ -251,7 +251,7 @@ export default function CreateAuctionPage() {
                             <Grid size={12}>
                                 <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>{t('createAuction.typeOfListing')}</Typography>
                                 <Grid container spacing={2}>
-                                    {[BID_TYPES.PRODUCT, BID_TYPES.SERVICE].map((type) => (
+                                    {[BID_TYPES.PRODUCT].map((type) => (
                                         <Grid size={{ xs: 6, md: 6 }} key={type}>
                                             <SelectionCard 
                                                 title={type === BID_TYPES.PRODUCT ? t('createAuction.product') : t('createAuction.service')}

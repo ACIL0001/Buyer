@@ -768,7 +768,7 @@ export default function ModernChat() {
 
                       <Box flex={1} minWidth={0}>
                         <Typography variant="subtitle2" fontWeight={600} noWrap>
-                          {`${otherUser?.firstName || ''} ${otherUser?.lastName || t('chat.unknown')}`.trim()}
+                          {otherUser?.companyName || `${otherUser?.firstName || ''} ${otherUser?.lastName || ''}`.trim() || t('chat.unknown')}
                         </Typography>
                         <Typography 
                           variant="caption" 
@@ -834,7 +834,7 @@ export default function ModernChat() {
 
                 <Box flex={1}>
                   <Typography variant="h6" fontWeight={600}>
-                    {`${getOtherUser(selectedChat)?.firstName || ''} ${getOtherUser(selectedChat)?.lastName || t('chat.user')}`.trim()}
+                    {getOtherUser(selectedChat)?.companyName || `${getOtherUser(selectedChat)?.firstName || ''} ${getOtherUser(selectedChat)?.lastName || t('chat.user')}`.trim()}
                   </Typography>
                   <Typography variant="caption" color="success.main">
                     {t('chat.online')}

@@ -457,6 +457,9 @@
   },
   "chat": {
     "title": "Chat",
+    "messages": "Messages",
+    "noMessages": "Aucun message",
+    "messagesWillAppear": "Vos messages apparaîtront ici",
     "discussRealTime": "Discutez en temps réel",
     "chooseConversationToStart": "Choisissez une conversation pour commencer",
     "noMessage": "Aucun message",

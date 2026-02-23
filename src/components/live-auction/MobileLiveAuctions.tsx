@@ -353,7 +353,7 @@ const MobileLiveAuctions = () => {
 
         .timer-digit.urgent {
           animation: pulse 0.5s infinite;
-          color: #ff4444;
+          color: white;
         }
       `}</style>
 
@@ -453,9 +453,9 @@ const MobileLiveAuctions = () => {
                             ) : (
                               <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                                 <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.hours}</span>
-                                <span>:</span>
+                                <span style={{ color: 'white' }}>:</span>
                                 <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.minutes}</span>
-                                <span>:</span>
+                                <span style={{ color: 'white' }}>:</span>
                                 <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.seconds}</span>
                               </div>
                             )}

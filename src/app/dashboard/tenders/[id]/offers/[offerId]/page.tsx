@@ -16,7 +16,14 @@ import {
   Paper,
   CircularProgress,
   Divider,
-  Alert
+  Alert,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { TendersAPI } from '@/services/tenders';
@@ -37,8 +44,46 @@ export default function OfferDetailPage() {
 
   const [tender, setTender] = useState<any>(null);
   const [offer, setOffer] = useState<any>(null);
+  const [tenderBids, setTenderBids] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+
+  const fetchTenderBids = useCallback(async () => {
+    try {
+      const response = await TendersAPI.getTenderBids(tenderId);
+      let bidsArray: any[] = [];
+      
+      if (response && response.data && Array.isArray(response.data)) {
+          bidsArray = response.data;
+      } else if (Array.isArray(response)) {
+        bidsArray = response;
+      }
+      
+      // For participants table, we usually show all or user's own depending on role
+      // But looking at the requirement, we'll follow the same logic as the main tender page
+      // which shows all if owner, or just own if not? Actually the main page logic was:
+      // if owner -> all, else -> only own.
+      // Let's check tender owner
+      const tenderResponse = await TendersAPI.getTenderById(tenderId);
+      const tenderData = (tenderResponse as any).data || tenderResponse;
+      const isOwner = (tenderData.owner?._id || tenderData.owner) == auth?.user?._id;
+
+      if (isOwner) {
+         setTenderBids(bidsArray);
+      } else if (auth?.user?._id && bidsArray.length > 0) {
+        const currentUserId = auth.user._id;
+        const userBids = bidsArray.filter((bid: any) => {
+          const bidderId = bid.bidder?._id || bid.bidder || bid.user?._id || bid.user;
+          return String(bidderId) === String(currentUserId);
+        });
+        setTenderBids(userBids);
+      } else {
+        setTenderBids([]);
+      }
+    } catch (error) {
+      console.error('Error fetching tender bids:', error);
+    }
+  }, [tenderId, auth?.user?._id]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -46,20 +91,24 @@ export default function OfferDetailPage() {
       console.log('Fetching data for:', { tenderId, offerId });
       
       // Fetch tender first
-      const tenderData = await TendersAPI.getTenderById(tenderId);
+      const tenderResponse = await TendersAPI.getTenderById(tenderId);
+      const tenderData = (tenderResponse as any).data || tenderResponse;
       console.log('Fetched Tender Data:', tenderData);
       setTender(tenderData);
+
+      // Fetch all bids for context
+      await fetchTenderBids();
 
       // Try to fetch specific bid
       let offerData;
       try {
-        offerData = await TendersAPI.getTenderBidById(offerId);
+        const bidResponse = await TendersAPI.getTenderBidById(offerId);
+        offerData = (bidResponse as any).data || bidResponse;
         console.log('Fetched Offer Data (Direct):', offerData);
       } catch (err) {
         console.warn('Direct bid fetch failed, falling back to list:', err);
-        // Fallback: fetch all bids for this tender and find the one we want
-        // This is useful if the backend doesn't have a specific "get bid by id" endpoint exposed
-        const allBids = await TendersAPI.getTenderBids(tenderId);
+        const allBidsResponse = await TendersAPI.getTenderBids(tenderId);
+        const allBids = (allBidsResponse as any).data || allBidsResponse;
         if (Array.isArray(allBids)) {
             offerData = allBids.find((bid: any) => bid._id === offerId);
         }
@@ -84,7 +133,7 @@ export default function OfferDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [tenderId, offerId, enqueueSnackbar]);
+  }, [tenderId, offerId, enqueueSnackbar, fetchTenderBids]);
 
   useEffect(() => {
     if (tenderId && offerId) {
@@ -152,6 +201,16 @@ export default function OfferDetailPage() {
     if (!avatarPath) return '';
     const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
     return `${baseURL}static/uploads/${avatarPath}`;
+  };
+
+  const formatDate = (date: Date | string) => {
+    return new Date(date).toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
@@ -402,6 +461,113 @@ export default function OfferDetailPage() {
             </Card>
         </Grid>
       </Grid>
+
+      {/* ─── Soumissionnaires / Participants Table ─── */}
+      <Card sx={{ mt: 4, p: 3 }}>
+        <Typography variant="h6" fontWeight={700} mb={2}>
+          Autres offres reçues ({tenderBids.length})
+        </Typography>
+        {tenderBids.length === 0 ? (
+          <Box sx={{ py: 5, textAlign: 'center', color: 'text.secondary' }}>
+            <Typography variant="body1">Aucune autre offre pour le moment</Typography>
+          </Box>
+        ) : (
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableHead>
+                <TableRow sx={{ bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}>
+                  <TableCell sx={{ fontWeight: 700 }}>Soumissionnaire</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Annonce</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }} align="center">Quantité</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }} align="right">Prix proposé</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
+                  {isOwner && <TableCell sx={{ fontWeight: 700 }} align="center">Actions</TableCell>}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {tenderBids.map((bid, idx) => {
+                  const bidder = bid.bidder || bid.user;
+                  const bidderName = bidder
+                    ? (bidder.companyName || bidder.entreprise || `${bidder.firstName || ''} ${bidder.lastName || ''}`.trim() || bidder.email || 'N/A')
+                    : 'N/A';
+                  const initials = bidderName.charAt(0).toUpperCase();
+                  const profileId = bidder?._id || bidder;
+                  const isCurrentOffer = bid._id === offerId;
+                  
+                  return (
+                    <TableRow 
+                        key={bid._id || idx} 
+                        hover
+                        sx={isCurrentOffer ? { bgcolor: alpha(theme.palette.primary.main, 0.08) } : {}}
+                    >
+                      <TableCell>
+                        {typeof profileId === 'string' && profileId.length > 5 ? (
+                          <Tooltip title="Voir le profil" arrow>
+                            <Link href={`/profile/${profileId}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <Avatar sx={{ width: 34, height: 34, fontSize: '0.85rem', bgcolor: isCurrentOffer ? 'primary.main' : 'grey.400' }}>{initials}</Avatar>
+                              <Stack>
+                                <Typography variant="subtitle2" sx={{ '&:hover': { textDecoration: 'underline' }, fontWeight: isCurrentOffer ? 700 : 500 }}>
+                                    {bidderName}
+                                    {isCurrentOffer && <Chip label="Cette offre" size="small" color="primary" sx={{ ml: 1, height: 18, fontSize: '0.65rem' }} />}
+                                </Typography>
+                                {bidder?.email && <Typography variant="caption" color="text.secondary">{bidder.email}</Typography>}
+                              </Stack>
+                            </Link>
+                          </Tooltip>
+                        ) : (
+                          <Stack direction="row" alignItems="center" spacing={1.5}>
+                            <Avatar sx={{ width: 34, height: 34, fontSize: '0.85rem' }}>{initials}</Avatar>
+                            <Typography variant="subtitle2" sx={{ fontWeight: isCurrentOffer ? 700 : 500 }}>{bidderName}</Typography>
+                          </Stack>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
+                          {tender?.title || 'N/A'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2">{tender?.quantity || 1}</Typography>
+                      </TableCell>
+                       <TableCell align="right">
+                        <Typography variant="subtitle2" color="primary.main" fontWeight={700}>
+                          {(bid.bidAmount || bid.price || 0).toLocaleString('fr-FR')} DA
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="caption" color="text.secondary">
+                          {formatDate(bid.createdAt || bid.date)}
+                        </Typography>
+                      </TableCell>
+                      {isOwner && (
+                        <TableCell align="center">
+                          <Button 
+                            variant="outlined" 
+                            size="small" 
+                            startIcon={<MdCheckCircle />}
+                            onClick={() => {
+                                if (isCurrentOffer) {
+                                    handleAcceptOffer();
+                                } else {
+                                    // Normally we would accept foreign bid here
+                                    // but let's keep it simple for now as per main page logic
+                                    enqueueSnackbar('Fonctionnalité disponible dans la page principale de l\'annonce', { variant: 'info' });
+                                }
+                            }}
+                            disabled={tender.status !== 'OPEN' || processing}
+                          >
+                            Accepter
+                          </Button>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Card>
     </Container>
   );
 }

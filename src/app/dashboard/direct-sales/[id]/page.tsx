@@ -20,7 +20,8 @@ import {
   Paper,
   Avatar,
   CircularProgress,
-  Divider
+  Divider,
+  Tooltip,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { DirectSaleAPI } from '@/services/direct-sale';
@@ -92,9 +93,10 @@ export default function DirectSaleDetailPage() {
       const response = await DirectSaleAPI.getDirectSaleById(id);
       console.log('📞 [FRONTEND] Full Direct Sale response:', response);
       
-      if (response && response.data) {
-        console.log('📞 [FRONTEND] Contact Number field:', response.data.contactNumber);
-        setDirectSale(response.data);
+      const directSaleData = response.data || response;
+      if (directSaleData && (directSaleData._id || (directSaleData as any).id)) {
+        console.log('📞 [FRONTEND] Contact Number field:', directSaleData.contactNumber);
+        setDirectSale(directSaleData);
       }
     } catch (error) {
       console.error('Error fetching direct sale:', error);
@@ -296,6 +298,8 @@ export default function DirectSaleDetailPage() {
                  </Card>
             </Grid>
         </Grid>
+
+
     </Container>
   );
 }

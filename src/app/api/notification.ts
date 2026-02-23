@@ -20,7 +20,7 @@ export const NotificationAPI = {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-          'x-access-key': process.env.NEXT_PUBLIC_KEY_API_BYUER as string,
+          'x-access-key': app.apiKey,
         },
         withCredentials: false,
       });
@@ -57,7 +57,7 @@ export const NotificationAPI = {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'x-access-key': process.env.NEXT_PUBLIC_KEY_API_BYUER as string,
+            'x-access-key': app.apiKey,
           },
           withCredentials: false,
         }
@@ -91,7 +91,7 @@ export const NotificationAPI = {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'x-access-key': process.env.NEXT_PUBLIC_KEY_API_BYUER as string,
+            'x-access-key': app.apiKey,
           },
           withCredentials: false,
         }
@@ -121,7 +121,7 @@ export const NotificationAPI = {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-          'x-access-key': process.env.NEXT_PUBLIC_KEY_API_BYUER as string,
+          'x-access-key': app.apiKey,
         },
         withCredentials: false,
       });
@@ -160,7 +160,7 @@ export const NotificationAPI = {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'x-access-key': process.env.NEXT_PUBLIC_KEY_API_BYUER as string,
+            'x-access-key': app.apiKey,
           },
           withCredentials: false,
         }
@@ -173,4 +173,4 @@ export const NotificationAPI = {
       return { success: false };
     }
   }
-}; 
+};

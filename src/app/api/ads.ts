@@ -26,8 +26,8 @@ export const AdsAPI = {
   getAds: async (signal?: AbortSignal): Promise<ApiResponse<Ad[]>> => {
     try {
       // Use Next.js API route instead of calling backend directly
-      // This allows the route to handle backend errors gracefully
-      const res = await fetch('/api/ads', {
+      // Changed to '/api/banners' instead of '/api/ads' to bypass browser ad-blockers throwing "Failed to fetch" errors.
+      const res = await fetch('/api/banners', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

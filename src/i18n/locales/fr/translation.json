@@ -83,7 +83,9 @@
     "secondsAbbr": "s",
     "directSale": "Vente Directe",
     "noTitle": "Sans titre",
-    "comments": "Commentaires"
+    "comments": "Commentaires",
+    "searchIn": "Rechercher dans",
+    "noResults": "Aucun résultat"
   },
   "navigation": {
     "home": "Accueil",
@@ -464,6 +466,7 @@
     "chooseConversationToStart": "Choisissez une conversation pour commencer",
     "noMessage": "Aucun message",
     "startNewConversation": "Commencer une nouvelle conversation",
+    "startConversation": "Commencer une conversation",
     "accessDenied": "Accès refusé",
     "today": "Aujourd'hui",
     "yesterday": "Hier",
@@ -507,7 +510,8 @@
     "hereToHelp": "Nous sommes là pour vous aider !",
     "adminTyping": "L'admin tape...",
     "inputHint": "Appuyez sur Entrée pour envoyer, Maj+Entrée pour une nouvelle ligne",
-    "quickEmojis": "Emojis rapides"
+    "quickEmojis": "Emojis rapides",
+    "typeMessage": "Tapez votre message..."
   },
   "footer": {
     "about": "À propos",
@@ -1263,7 +1267,8 @@
         "date": "Date",
         "user": "Utilisateur",
         "phone": "Téléphone",
-        "auction": "Enchère"
+        "auction": "Enchère",
+        "actions": "Actions"
       },
       "tabs": {
         "received": "Reçus",

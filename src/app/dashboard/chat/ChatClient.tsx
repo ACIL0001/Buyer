@@ -406,46 +406,50 @@ export default function ModernChat() {
         return;
       }
       
-      const lastMessagesMap: Record<string, any> = {};
-      const lastMessagePromises = validChats.map(async (chat: any) => {
-        try {
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Timeout')), 5000)
-          );
+      // Deduplicate chats to prevent the same user appearing multiple times
+      // We keep the chat with the most recent timestamp if duplicates exist
+      const uniqueChatsMap = new Map<string, any>();
+      validChats.forEach((chat: any) => {
+          const partner = chat.users.find((user: any) => user._id !== auth?.user?._id) || chat.users[0];
+          const partnerId = partner?._id;
           
-          const messagesPromise = MessageAPI.getByConversation(chat._id);
-          const messagesResponse: any = await Promise.race([messagesPromise, timeoutPromise]);
-          const messages = messagesResponse?.data || messagesResponse || [];
-          
-          if (Array.isArray(messages) && messages.length > 0) {
-            const sortedMessages = [...messages].sort((a: any, b: any) => {
-              const dateA = new Date(a.createdAt || 0).getTime();
-              const dateB = new Date(b.createdAt || 0).getTime();
-              return dateB - dateA;
-            });
-            lastMessagesMap[chat._id] = sortedMessages[0];
+          if (partnerId) {
+             if (!uniqueChatsMap.has(partnerId)) {
+                uniqueChatsMap.set(partnerId, chat);
+             } else {
+                const existingChat = uniqueChatsMap.get(partnerId);
+                const existingTime = new Date(existingChat.updatedAt || existingChat.createdAt || 0).getTime();
+                const newTime = new Date(chat.updatedAt || chat.createdAt || 0).getTime();
+                // Replace if the current one is newer
+                if (newTime > existingTime) {
+                   uniqueChatsMap.set(partnerId, chat);
+                }
+             }
           }
-        } catch (error) {
-          console.warn(`Error fetching last message for chat ${chat._id}:`, error);
-        }
       });
       
-      await Promise.allSettled(lastMessagePromises);
-      setLastMessages(lastMessagesMap);
+      const deduplicatedChats = Array.from(uniqueChatsMap.values());
       
-      const sortedChats = [...validChats].sort((a: any, b: any) => {
-        const lastMsgA = lastMessagesMap[a._id];
-        const lastMsgB = lastMessagesMap[b._id];
-        
-        const timeA = lastMsgA 
-          ? new Date(lastMsgA.createdAt || 0).getTime()
-          : new Date(a.createdAt || 0).getTime();
-        const timeB = lastMsgB
-          ? new Date(lastMsgB.createdAt || 0).getTime()
-          : new Date(b.createdAt || 0).getTime();
-        
+      // Sort the deduplicated chats by timestamp
+      const sortedChats = deduplicatedChats.sort((a: any, b: any) => {
+        const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+        const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
         return timeB - timeA;
       });
+      
+      // Instead of making N requests to get last messages which causes 429 errors,
+      // we use the lastMessage provided by the chat object itself from the backend if it exists.
+      const lastMessagesMap: Record<string, any> = {};
+      sortedChats.forEach(chat => {
+          if (chat.lastMessage) {
+              const msgText = typeof chat.lastMessage === 'object' ? chat.lastMessage.message : chat.lastMessage;
+              const msgDate = (typeof chat.lastMessage === 'object' && chat.lastMessage.createdAt) 
+                  ? chat.lastMessage.createdAt 
+                  : (chat.updatedAt || chat.createdAt);
+              lastMessagesMap[chat._id] = { message: msgText, createdAt: msgDate };
+          }
+      });
+      setLastMessages(lastMessagesMap);
       
       setChats(sortedChats);
       setError(null);

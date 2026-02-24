@@ -516,9 +516,36 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
                       backgroundColor: '#f8f9fa',
                       fontSize: '12px',
                       fontWeight: 600,
-                      color: '#666'
+                      color: '#666',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
                     }}>
-                      {t('chat.recentMessages')}
+                      <span>{t('chat.recentMessages')}</span>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMarkAllAsRead();
+                        }}
+                        style={{ 
+                          background: 'none', 
+                          border: 'none', 
+                          color: '#0063b1', 
+                          cursor: 'pointer', 
+                          fontSize: '11px', 
+                          padding: 0,
+                          fontWeight: 500,
+                          transition: 'color 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.textDecoration = 'underline';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.textDecoration = 'none';
+                        }}
+                      >
+                         {t('chat.markAllAsRead')}
+                      </button>
                     </div>
                     
                     {chatNotifications.map((notification: any) => {

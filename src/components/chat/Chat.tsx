@@ -155,9 +155,38 @@ export default function Chat() {
       
       console.log('📨 Chats response:', response)
       if (response.data) {
-        setChats(response.data as Chat[])
-        setArr(response.data as Chat[])
-        console.log('✅ Chats loaded:', response.data.length)
+        const rawChats = response.data as Chat[];
+        
+        // Deduplicate chats to prevent the same user appearing multiple times
+        const uniqueChatsMap = new Map<string, Chat>();
+        rawChats.forEach((chat: Chat) => {
+            const partner = chat.users.find(user => user._id !== userId) || chat.users[0];
+            const partnerId = partner?._id;
+            
+            if (partnerId) {
+               if (!uniqueChatsMap.has(partnerId)) {
+                  uniqueChatsMap.set(partnerId, chat);
+               } else {
+                  const existingChat = uniqueChatsMap.get(partnerId)!;
+                  const existingTime = new Date((existingChat as any).updatedAt || existingChat.createdAt || 0).getTime();
+                  const newTime = new Date((chat as any).updatedAt || chat.createdAt || 0).getTime();
+                  // Replace if the current one is newer
+                  if (newTime > existingTime) {
+                     uniqueChatsMap.set(partnerId, chat);
+                  }
+               }
+            }
+        });
+        
+        const deduplicatedChats = Array.from(uniqueChatsMap.values()).sort((a, b) => {
+          const timeA = new Date((a as any).updatedAt || a.createdAt || 0).getTime();
+          const timeB = new Date((b as any).updatedAt || b.createdAt || 0).getTime();
+          return timeB - timeA;
+        });
+
+        setChats(deduplicatedChats)
+        setArr(deduplicatedChats)
+        console.log('✅ Chats loaded:', deduplicatedChats.length)
       } else {
         console.log('⚠️ No chat data in response')
       }

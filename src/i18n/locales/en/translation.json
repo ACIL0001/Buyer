@@ -84,7 +84,9 @@
     "directSale": "Direct Sale",
     "noTitle": "No Title",
     "participant": "participant",
-    "participants": "participants"
+    "participants": "participants",
+    "searchIn": "Search in",
+    "noResults": "No results"
   },
   "navigation": {
     "home": "Home",
@@ -1095,7 +1097,8 @@
         "date": "Date",
         "user": "User",
         "phone": "Phone",
-        "auction": "Auction"
+        "auction": "Auction",
+        "actions": "Actions"
       },
       "tabs": {
         "received": "Received",

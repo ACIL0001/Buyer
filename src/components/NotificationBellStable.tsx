@@ -13,6 +13,7 @@ import { normalizeImageUrl } from '@/utils/url';
 import { ChatAPI } from '@/app/api/chat';
 import ConfirmedOrderModal from '@/components/notifications/ConfirmedOrderModal';
 import AuctionWonModal from '@/components/notifications/AuctionWonModal';
+import TenderWonModal from '@/components/notifications/TenderWonModal';
 
 interface NotificationBellStableProps {
   variant?: 'header' | 'sidebar';
@@ -52,6 +53,25 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
     sellerId?: string;
     quantity?: number;
   }>({ auctionTitle: '', sellerName: '', price: 0 });
+
+  // State for Tender Won Modal
+  const [tenderModalOpen, setTenderModalOpen] = useState(false);
+  const [tenderModalData, setTenderModalData] = useState<{
+    tenderTitle: string;
+    ownerName: string;
+    quantity: number;
+    totalPrice: number;
+    contactNumber: string;
+    chatId?: string;
+    isMieuxDisant: boolean;
+  }>({
+    tenderTitle: '',
+    ownerName: '',
+    quantity: 0,
+    totalPrice: 0,
+    contactNumber: '',
+    isMieuxDisant: false
+  });
   
   // Get notification data
   const { totalUnreadCount, refreshAll } = useTotalNotifications();
@@ -274,16 +294,16 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
            setAuctionWonModalOpen(true);
       }
       // 4. AUCTION/TENDER OFFER REDIRECTION (PRIORITIZED)
-      const isSellerReceivingTenderBid = !titleLower.includes('créée') && 
-                                        (notification.type === 'NEW_OFFER' || notification.type === 'BID_PLACED' || titleLower.includes('offre')) && 
+      const isSellerReceivingTenderBid = !titleLower.includes('créée') && notification.type !== 'OFFER_ACCEPTED' && 
+                                        (notification.type === 'NEW_OFFER' || notification.type === 'BID_PLACED' || (titleLower.includes('offre') && !titleLower.includes('acceptée') && !titleLower.includes('refusée'))) && 
                                         (data?.tender || data?.tenderId || messageLower.includes('soumission') || messageLower.includes('appel d\'offres'));
       
-      const isSellerReceivingAuctionBid = !titleLower.includes('créée') && 
+      const isSellerReceivingAuctionBid = !titleLower.includes('créée') && notification.type !== 'OFFER_ACCEPTED' && 
                                           (notification.type === 'BID_CREATED' || 
                                            notification.type === 'NEW_OFFER' || 
                                            notification.type === 'BID_PLACED' ||
                                            messageLower.includes('enchère') ||
-                                           titleLower.includes('offre') ||
+                                           (titleLower.includes('offre') && !titleLower.includes('acceptée') && !titleLower.includes('refusée')) ||
                                            titleLower.includes('nouvelle offre')) && 
                                           (data?.auction || data?.auctionId || data?.entityType === 'BID' || (messageLower.includes('enchère') && !messageLower.includes('soumission')));
 
@@ -322,18 +342,56 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
           redirectPath = '/dashboard/direct-sales/orders?tab=received';
       }
       // 5. CHAT REDIRECTION (Generic fallback)
-      else if (data?.chatId) {
+      else if (data?.chatId && notification.type !== 'OFFER_ACCEPTED' && notification.type !== 'BID_WON' && !titleLower.includes('acceptée')) {
           redirectPath = `/dashboard/chat?conversationId=${data.chatId}`;
       }
       // 6. OTHER REDIRECTION
-      else if (notification.type === 'OFFER_ACCEPTED') {
+      else if (notification.type === 'OFFER_ACCEPTED' || titleLower.includes('acceptée')) {
           const tenderId = data?.tender?._id || data?.tenderId || data?.tender;
           const auctionId = data?.auction?._id || data?.auctionId || data?.auction;
           const dsId = data?.directSale?._id || data?.directSaleId;
           
-          if (tenderId && typeof tenderId === 'string') redirectPath = `/tender-details/${tenderId}`;
+          if (tenderId && (data?.tenderBid || data?.bidAmount)) {
+            const tenderTitle = data?.tenderTitle || data?.tender?.title || "Appel d'offres";
+            const ownerName = data?.ownerName || (data?.tender?.owner ? `${data.tender.owner.firstName || ''} ${data.tender.owner.lastName || ''}`.trim() : 'Acheteur');
+            const quantity = data?.quantity || data?.tender?.quantity;
+            const totalPrice = data?.bidAmount || data?.tenderBid?.bidAmount;
+            const contactNumber = data?.contactNumber || data?.tender?.contactNumber;
+            const chatId = data?.chatId;
+
+            setTenderModalData({
+              tenderTitle,
+              ownerName,
+              quantity,
+              totalPrice,
+              contactNumber,
+              chatId,
+              isMieuxDisant: true
+            });
+            setTenderModalOpen(true);
+          }
+          else if (tenderId && typeof tenderId === 'string') redirectPath = `/tender-details/${tenderId}`;
           else if (auctionId && typeof auctionId === 'string') redirectPath = `/auction-details/${auctionId}`;
           else if (dsId && typeof dsId === 'string') redirectPath = `/direct-sale/${dsId}`;
+      }
+      else if (notification.type === 'BID_WON' && (data?.tenderId || data?.tender)) {
+          const tenderTitle = data?.tenderTitle || data?.tender?.title || "Appel d'offres";
+          const ownerName = data?.ownerName || 'Acheteur';
+          const quantity = data?.quantity;
+          const totalPrice = data?.finalPrice || data?.bidAmount;
+          const contactNumber = data?.contactNumber;
+          const chatId = data?.chatId;
+
+          setTenderModalData({
+            tenderTitle,
+            ownerName,
+            quantity,
+            totalPrice,
+            contactNumber,
+            chatId,
+            isMieuxDisant: false
+          });
+          setTenderModalOpen(true);
       }
       else if (titleLower.includes('soumise') || titleLower.includes('submitted')) {
           if (data?.tender || data?.tenderId) redirectPath = '/dashboard/tender-bids?tab=my';
@@ -611,6 +669,18 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
         image={auctionWonData.image}
         sellerId={auctionWonData.sellerId}
         quantity={auctionWonData.quantity}
+      />
+
+      <TenderWonModal 
+        isOpen={tenderModalOpen}
+        onClose={() => setTenderModalOpen(false)}
+        tenderTitle={tenderModalData.tenderTitle}
+        ownerName={tenderModalData.ownerName}
+        quantity={tenderModalData.quantity}
+        totalPrice={tenderModalData.totalPrice}
+        contactNumber={tenderModalData.contactNumber}
+        chatId={tenderModalData.chatId}
+        isMieuxDisant={tenderModalData.isMieuxDisant}
       />
     </>
   );

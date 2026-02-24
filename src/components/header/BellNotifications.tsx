@@ -5,7 +5,9 @@ import useTotalNotifications from '@/hooks/useTotalNotifications';
 import { useRouter } from 'next/navigation';
 import { normalizeImageUrl } from '@/utils/url';
 import ConfirmedOrderModal from '@/components/notifications/ConfirmedOrderModal';
+import AuctionWonModal from '@/components/notifications/AuctionWonModal';
 import FeedbackModal from '@/components/notifications/FeedbackModal';
+import TenderWonModal from '@/components/notifications/TenderWonModal';
 
 interface BellNotificationsProps {
   variant?: 'header' | 'sidebar';
@@ -30,14 +32,40 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
     quantity?: number;
     price?: number;
     sellerName?: string;
+    sellerId?: string;
   }>({ contactNumber: '' });
+
+  // State for Auction Won Modal
+  const [auctionWonModalOpen, setAuctionWonModalOpen] = useState(false);
+  const [auctionWonData, setAuctionWonData] = useState<{
+    auctionTitle: string;
+    sellerName: string;
+    price: number;
+    chatId?: string;
+    image?: string;
+    sellerId?: string;
+    quantity?: number;
+  }>({ auctionTitle: '', sellerName: '', price: 0 });
 
   // State for Feedback Modal
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
-  const [feedbackModalData, setFeedbackModalData] = useState<{
+  const [feedbackData, setFeedbackData] = useState<{
     auctionId: string;
     auctionTitle: string;
   }>({ auctionId: '', auctionTitle: '' });
+
+  // State for Tender Won Modal
+  const [tenderModalOpen, setTenderModalOpen] = useState(false);
+  const [tenderModalData, setTenderModalData] = useState<{
+    tenderTitle: string;
+    ownerName: string;
+    quantity?: number | string;
+    totalPrice?: number;
+    contactNumber?: string;
+    chatId?: string;
+    sellerId?: string;
+    isMieuxDisant?: boolean;
+  }>({ tenderTitle: '', ownerName: '', contactNumber: '', sellerId: undefined });
 
   console.log('BellNotifications: notifications count:', notifications.length);
   console.log('BellNotifications: unreadCount:', unreadCount);
@@ -114,9 +142,6 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
           const contactNumber = data?.directSale?.contactNumber || data?.contactNumber || data?.order?.contactNumber;
           const cid = data?.chatId || data?.chat?._id || data?.order?.chatId;
           
-          // Debug: log full data to identify seller fields
-          console.log('📦 ORDER notification full data:', JSON.stringify(data, null, 2));
-
           // Comprehensive Title Extraction
           const saleTitle = data?.directSale?.title || 
                             data?.directSale?.name || 
@@ -133,7 +158,7 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
                            data?.directSale?.quantity ||
                            1;
 
-          // Comprehensive Seller Name Extraction — covers every possible field path
+          // Comprehensive Seller Name Extraction
           const owner = data?.directSale?.owner || data?.order?.directSale?.owner;
           const seller = data?.seller || data?.order?.seller;
           const sellerFirstLast = (seller?.firstName && seller?.lastName)
@@ -144,11 +169,9 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
                 ? `${data.senderFirstName} ${data.senderLastName}`
                 : null;
           const sellerName: string | null =
-            // Company name takes priority (professional/reseller accounts)
             seller?.companyName || seller?.entreprise ||
             owner?.companyName || owner?.entreprise ||
             data?.companyName ||
-            // Then full name paths
             sellerFirstLast ||
             seller?.name || seller?.username ||
             owner?.name || owner?.username ||
@@ -156,17 +179,16 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
             data?.seller_name || data?.owner_name ||
             data?.directSale?.sellerName ||
             data?.senderName ||
-            null;
+            "Vendeur";
 
           const price = data?.directSale?.price || data?.order?.price || data?.price;
-
-          const image = normalizeImageUrl(
-            data?.directSale?.thumbs?.[0]?.url || 
-            data?.directSale?.thumbs?.[0] || 
-            data?.directSale?.images?.[0] || 
-            data?.directSale?.image ||
-            data?.image || data?.thumbnail
-          );
+          const rawImage = data?.directSale?.thumbs?.[0]?.url || 
+                           data?.directSale?.thumbs?.[0] || 
+                           data?.directSale?.images?.[0] || 
+                           data?.directSale?.image ||
+                           data?.directSale?.thumbnail ||
+                           data?.image || data?.thumbnail;
+          const image = normalizeImageUrl(rawImage);
 
           if (contactNumber) {
               setModalData({
@@ -176,88 +198,136 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
                   image,
                   quantity: Number(quantity),
                   price: price ? Number(price) : undefined,
-                  sellerName: sellerName || undefined
+                  sellerName: sellerName || undefined,
+                  sellerId: seller?.id || seller?._id || owner?._id || data?.senderId || undefined
               });
               setModalOpen(true);
-          }
- else if (cid) {
-              redirectPath = `/dashboard/chat?chatId=${cid}`;
+          } else if (cid) {
+              redirectPath = `/dashboard/chat?conversationId=${cid}`;
           } else {
               redirectPath = '/dashboard/direct-sales/orders?tab=my';
           }
       }
+      // 4. AUCTION WON
+      else if (notification.type === 'AUCTION_WON') {
+           let auctionTitle = data?.productTitle || data?.auction?.title;
+
+           if (!auctionTitle && notification.message) {
+                const match = notification.message.match(/l'enchère "([^"]+)"/);
+                if (match && match[1]) {
+                    auctionTitle = match[1];
+                }
+           }
+           if (!auctionTitle) auctionTitle = "Article";
+           const sellerName = data?.sellerName || "Vendeur";
+           const price = Number(data?.amount || data?.price || 0);
+           const chatId = data?.chatId;
+           const sellerId = data?.sellerId || data?.seller?._id || notification.senderId;
+
+           const rawImage = data?.auction?.thumbs?.[0] || data?.image || data?.thumbnail;
+           const image = normalizeImageUrl(rawImage);
+           
+           const quantity = Number(data?.quantity || data?.orderedQuantity || 1);
+
+           setAuctionWonData({ auctionTitle, sellerName, price, chatId, image, sellerId, quantity });
+           setAuctionWonModalOpen(true);
+      }
+      // 5. FEEDBACK REMINDER
       else if (notification.type === 'FEEDBACK_REMINDER' || titleLower.includes('avis sur votre achat') || titleLower.includes('rate experience')) {
-          console.log('📝 Opening Feedback Modal for notification:', notification._id);
-          // Open Feedback Modal
-          setFeedbackModalData({
-              auctionId: data?.auctionId || data?._id || (data?.entityType === 'BID' ? data?.entityId : ''),
-              auctionTitle: data?.title || data?.auctionTitle || "Enchère"
-          });
-          setFeedbackModalOpen(true);
+           const auctionId = data?.auctionId || data?._id || data?.auction?._id || (data?.entityType === 'BID' ? data?.entityId : '');
+           const auctionTitle = data?.title || data?.auctionTitle || data?.productTitle || data?.auction?.title || "Article";
+           
+           if (auctionId) {
+               setFeedbackData({ auctionId, auctionTitle });
+               setFeedbackModalOpen(true);
+           }
       }
-      // 4. AUCTION/TENDER OFFER REDIRECTION (PRIORITIZED)
-      const isSellerReceivingTenderBid = !titleLower.includes('créée') && 
-                                        (notification.type === 'NEW_OFFER' || notification.type === 'BID_PLACED' || titleLower.includes('offre')) && 
-                                        (data?.tender || data?.tenderId || messageLower.includes('soumission') || messageLower.includes('appel d\'offres'));
-      
-      const isSellerReceivingAuctionBid = !titleLower.includes('créée') && 
-                                          (notification.type === 'BID_CREATED' || 
-                                           notification.type === 'NEW_OFFER' || 
-                                           notification.type === 'BID_PLACED' ||
-                                           messageLower.includes('enchère') ||
-                                           titleLower.includes('offre') ||
-                                           titleLower.includes('nouvelle offre')) && 
-                                          (data?.auction || data?.auctionId || data?.entityType === 'BID' || (messageLower.includes('enchère') && !messageLower.includes('soumission')));
-
-      const isSellerReceivingDirectSaleOrder = (
-          (titleLower.includes('nouvelle') && titleLower.includes('commande') && !titleLower.includes('créée')) ||
-          (notification.type === 'ORDER' && !titleLower.includes('confirmée')) ||
-          (notification.type === 'NEW_OFFER' && (titleLower.includes('commande') || messageLower.includes('commande')))
-      );
-
-      if (isSellerReceivingAuctionBid) {
-          const aId = data?.auctionId || 
-                      data?.auction?._id || 
-                      (typeof data?.auction === 'string' ? data.auction : null) || 
-                      data?.bid?.auction || 
-                      data?.offer?.auction ||
-                      (data?.entityType === 'BID' ? data?.entityId : null);
-          
-          const bId = data?.bidId || 
-                      data?.offerId || 
-                      data?.bid?._id || 
-                      data?.offer?._id || 
-                      data?.id || 
-                      data?._id || 
-                      data?.entityId;
-          
-          if (aId && bId) {
-              redirectPath = `/dashboard/auctions/${String(aId)}/offers/${String(bId)}`;
-          } else {
-              redirectPath = '/dashboard/offers?tab=received';
-          }
-      }
-      else if (isSellerReceivingTenderBid) {
-          redirectPath = '/dashboard/tender-bids?tab=received';
-      }
-      else if (isSellerReceivingDirectSaleOrder) {
-          redirectPath = '/dashboard/direct-sales/orders?tab=received';
-      }
-      // 5. CHAT REDIRECTION (Fallback)
-      else if (data?.chatId) {
+      // 6. CHAT REDIRECTION (Fallback)
+      else if (data?.chatId && notification.type !== 'OFFER_ACCEPTED' && notification.type !== 'BID_WON' && !titleLower.includes('acceptée')) {
           redirectPath = `/dashboard/chat?conversationId=${data.chatId}`;
       }
-      // 6. OTHER
-      else if (notification.type === 'OFFER_ACCEPTED') {
-          const tenderId = data?.tender?._id || data?.tenderId || data?.tender;
-          const auctionId = data?.auction?._id || data?.auctionId || data?.auction;
-          const dsId = data?.directSale?._id || data?.directSaleId;
-          if (tenderId && typeof tenderId === 'string') redirectPath = `/tender-details/${tenderId}`;
-          else if (auctionId && typeof auctionId === 'string') redirectPath = `/auction-details/${auctionId}`;
-          else if (dsId && typeof dsId === 'string') redirectPath = `/direct-sale/${dsId}`;
-      }
-      else if (titleLower.includes('soumise') || titleLower.includes('submitted')) {
-          if (data?.tender || data?.tenderId) redirectPath = '/dashboard/tender-bids?tab=my';
+      // 7. SELLER / OTHER NOTIFICATIONS
+      else {
+          const isSellerReceivingTenderBid = !titleLower.includes('créée') && notification.type !== 'OFFER_ACCEPTED' && 
+                                            (notification.type === 'NEW_OFFER' || notification.type === 'BID_PLACED' || (titleLower.includes('offre') && !titleLower.includes('acceptée') && !titleLower.includes('refusée'))) && 
+                                            (data?.tender || data?.tenderId || messageLower.includes('soumission') || messageLower.includes('appel d\'offres'));
+          
+          const isSellerReceivingAuctionBid = !titleLower.includes('créée') && notification.type !== 'OFFER_ACCEPTED' && 
+                                              (notification.type === 'BID_CREATED' || 
+                                               notification.type === 'NEW_OFFER' || 
+                                               notification.type === 'BID_PLACED' ||
+                                               messageLower.includes('enchère') ||
+                                               (titleLower.includes('offre') && !titleLower.includes('acceptée') && !titleLower.includes('refusée')) ||
+                                               titleLower.includes('nouvelle offre')) && 
+                                              (data?.auction || data?.auctionId || data?.entityType === 'BID' || (messageLower.includes('enchère') && !messageLower.includes('soumission')));
+
+          const isSellerReceivingDirectSaleOrder = (
+              (titleLower.includes('nouvelle') && titleLower.includes('commande') && !titleLower.includes('créée')) ||
+              (notification.type === 'ORDER' && !titleLower.includes('confirmée')) ||
+              (notification.type === 'NEW_OFFER' && (titleLower.includes('commande') || messageLower.includes('commande')))
+          );
+
+          if (isSellerReceivingAuctionBid) {
+              const aId = data?.auctionId || data?.auction?._id || (typeof data?.auction === 'string' ? data.auction : null) || data?.bid?.auction || data?.offer?.auction || (data?.entityType === 'BID' ? data?.entityId : null);
+              const bId = data?.bidId || data?.offerId || data?.bid?._id || data?.offer?._id || data?.id || data?._id || data?.entityId;
+              
+              if (aId && bId) redirectPath = `/dashboard/auctions/${String(aId)}/offers/${String(bId)}`;
+              else redirectPath = '/dashboard/offers?tab=received';
+          }
+          else if (isSellerReceivingTenderBid) redirectPath = '/dashboard/tender-bids?tab=received';
+          else if (isSellerReceivingDirectSaleOrder) redirectPath = '/dashboard/direct-sales/orders?tab=received';
+          else if (titleLower.includes('soumise') || titleLower.includes('submitted')) {
+              if (data?.tender || data?.tenderId) redirectPath = '/dashboard/tender-bids?tab=my';
+          }
+          else if (notification.type === 'OFFER_ACCEPTED' || titleLower.includes('acceptée')) {
+              const tenderId = data?.tender?._id || data?.tenderId || data?.tender;
+              const auctionId = data?.auction?._id || data?.auctionId || data?.auction;
+              const dsId = data?.directSale?._id || data?.directSaleId;
+              
+              if (tenderId && (data?.tenderBid || data?.bidAmount)) {
+                const tenderTitle = data?.tenderTitle || data?.tender?.title || "Appel d'offres";
+                const ownerName = data?.ownerName || (data?.tender?.owner ? `${data.tender.owner.firstName || ''} ${data.tender.owner.lastName || ''}`.trim() : 'Acheteur');
+                const quantity = data?.quantity || data?.tender?.quantity;
+                const totalPrice = data?.bidAmount || data?.tenderBid?.bidAmount;
+                const contactNumber = data?.contactNumber || data?.tender?.contactNumber;
+                const chatId = data?.chatId;
+    
+                setTenderModalData({
+                  tenderTitle,
+                  ownerName,
+                  quantity,
+                  totalPrice,
+                  contactNumber,
+                  chatId,
+                  sellerId: data?.ownerId || data?.senderId || data?.tender?.owner?._id || undefined,
+                  isMieuxDisant: true
+                });
+                setTenderModalOpen(true);
+              }
+              else if (tenderId && typeof tenderId === 'string') redirectPath = `/tender-details/${tenderId}`;
+              else if (auctionId && typeof auctionId === 'string') redirectPath = `/auction-details/${auctionId}`;
+              else if (dsId && typeof dsId === 'string') redirectPath = `/direct-sale/${dsId}`;
+          }
+          else if (notification.type === 'BID_WON' && (data?.tenderId || data?.tender)) {
+              const tenderTitle = data?.tenderTitle || data?.tender?.title || "Appel d'offres";
+              const ownerName = data?.ownerName || 'Acheteur';
+              const quantity = data?.quantity;
+              const totalPrice = data?.finalPrice || data?.bidAmount;
+              const contactNumber = data?.contactNumber;
+              const chatId = data?.chatId;
+    
+              setTenderModalData({
+                tenderTitle,
+                ownerName,
+                quantity,
+                totalPrice,
+                contactNumber,
+                chatId,
+                sellerId: data?.ownerId || data?.senderId || data?.tender?.owner?._id || undefined,
+                isMieuxDisant: false
+              });
+              setTenderModalOpen(true);
+          }
       }
 
       // Mark as read (non-blocking)
@@ -615,13 +685,39 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
         quantity={modalData.quantity}
         price={modalData.price}
         sellerName={modalData.sellerName}
+        sellerId={modalData.sellerId}
+      />
+
+      <AuctionWonModal 
+        isOpen={auctionWonModalOpen}
+        onClose={() => setAuctionWonModalOpen(false)}
+        auctionTitle={auctionWonData.auctionTitle}
+        sellerName={auctionWonData.sellerName}
+        price={auctionWonData.price}
+        chatId={auctionWonData.chatId}
+        image={auctionWonData.image}
+        sellerId={auctionWonData.sellerId}
+        quantity={auctionWonData.quantity}
       />
 
       <FeedbackModal 
         isOpen={feedbackModalOpen}
         onClose={() => setFeedbackModalOpen(false)}
-        auctionId={feedbackModalData.auctionId}
-        auctionTitle={feedbackModalData.auctionTitle}
+        auctionId={feedbackData.auctionId}
+        auctionTitle={feedbackData.auctionTitle}
+      />
+
+      <TenderWonModal
+        isOpen={tenderModalOpen}
+        onClose={() => setTenderModalOpen(false)}
+        tenderTitle={tenderModalData.tenderTitle}
+        ownerName={tenderModalData.ownerName}
+        quantity={tenderModalData.quantity}
+        totalPrice={tenderModalData.totalPrice}
+        contactNumber={tenderModalData.contactNumber || ''}
+        chatId={tenderModalData.chatId}
+        sellerId={tenderModalData.sellerId}
+        isMieuxDisant={tenderModalData.isMieuxDisant}
       />
     </div>
   );

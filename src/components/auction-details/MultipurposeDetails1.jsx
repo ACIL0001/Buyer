@@ -1909,6 +1909,44 @@ const MultipurposeDetails1 = () => {
                       </div>
                     </div>
 
+                    <div className="ask-question-area" style={{ marginTop: '15px', textAlign: 'center' }}>
+                       <button 
+                          onClick={(e) => {
+                             e.preventDefault();
+                             setActiveTab('reviews');
+                             const commentsEl = document.getElementById('nav-tabContent');
+                             if (commentsEl) {
+                                commentsEl.scrollIntoView({ behavior: 'smooth' });
+                             } else {
+                                window.scrollBy({ top: 500, behavior: 'smooth' });
+                             }
+                          }}
+                          style={{ 
+                             background: 'none', 
+                             border: 'none', 
+                             color: '#0063b1', 
+                             textDecoration: 'none', 
+                             cursor: 'pointer', 
+                             fontSize: '15px',
+                             fontWeight: '600',
+                             display: 'inline-flex',
+                             alignItems: 'center',
+                             gap: '6px'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.textDecoration = 'underline';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.textDecoration = 'none';
+                          }}
+                       >
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                             <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                          </svg>
+                          {t('auctionDetails.askQuestion') || 'Poser une question'}
+                       </button>
+                    </div>
+
                     {/* Professional User Special Access Box */}
                     {isLogged && auth.user?.type === 'PROFESSIONAL' && (
                       <div className="professional-access-box" style={{

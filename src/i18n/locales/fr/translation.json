@@ -784,6 +784,7 @@
     "page03": "03"
   },
   "auctionDetails": {
+    "askQuestion": "Poser une question",
     "reviews": "Avis",
     "reviewWarning": "Important : Vos commentaires doivent être spécifiquement liés à cette enchère pour être utiles à tous. Merci de votre compréhension.",
     "cannotBidOwn": "Vous ne pouvez pas enchérir sur votre propre enchère.",

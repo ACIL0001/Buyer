@@ -92,7 +92,44 @@ export function useChatNotificationsWithGeneral() {
 
         created = allNotifications.filter((n: any) => {
           const type = (n.type || '').toUpperCase();
-          return type === 'CHAT_CREATED' || type === 'NEW_CHAT';
+          if (type === 'CHAT_CREATED' || type === 'NEW_CHAT') {
+            const sNameStr = String(n.senderName || n.data?.senderName || '').trim();
+            const titleStr = String(n.title || '').toLowerCase();
+            const msgStr = String(n.message || '').toLowerCase();
+            
+            // Ignore CHAT_CREATED notifications from automatic system actions
+            if (n.data?.tender || n.data?.tenderId || n.data?.auction || n.data?.auctionId || n.data?.directSale || n.data?.directSaleId) {
+              return false;
+            }
+            
+            // If there's no sender ID and it's not a real name, it's a system message, ignore it
+            if (!n.senderId && !n.data?.senderId && (!sNameStr || sNameStr.toLowerCase().includes('utilisateur') || sNameStr.toLowerCase().includes('unknown'))) {
+              return false;
+            }
+
+            // Ignore generic unlabeled CHAT_CREATED notifications to avoid "Unknown User" chats
+            if (!sNameStr || sNameStr === 'Utilisateur' || sNameStr === 'User') {
+              return false;
+            }
+            
+            if (sNameStr.toLowerCase().includes('unknown') || 
+                sNameStr.toLowerCase().includes('inconnu') || 
+                sNameStr.toLowerCase().includes('utilisateur inconnu') ||
+                sNameStr.includes('مجهول')) {
+              return false;
+            }
+
+            // Also filter by message content if it looks like the generic system start message
+            if (msgStr.includes('nouvelle conversation') || msgStr.includes('new conversation started')) {
+                // If it's a generic start message and we still don't have a good name, skip it
+                if (sNameStr.toLowerCase().includes('utilisateur') || sNameStr.length < 2) {
+                    return false;
+                }
+            }
+
+            return true;
+          }
+          return false;
         });
         
         setChatCreatedNotifications(created);
@@ -100,6 +137,13 @@ export function useChatNotificationsWithGeneral() {
         unreadMessages = allNotifications.filter((n: any) => {
           const type = (n.type || n.data?.type || '').toUpperCase();
           if (type === 'CHAT_CREATED' || type === 'NEW_CHAT') return false;
+          
+          const sName = String(n.senderName || n.data?.senderName || '').toLowerCase();
+          const isGeneric = sName.includes('unknown') || sName.includes('inconnu') || sName === 'utilisateur' || sName === 'user';
+          const isSystemAction = n.data?.tender || n.data?.tenderId || n.data?.auction || n.data?.auctionId || n.data?.directSale || n.data?.directSaleId;
+          
+          if (isGeneric && isSystemAction) return false;
+
           return type.includes('MESSAGE') || type === 'NEW_MESSAGE' || type === 'MESSAGE_RECEIVED' || type === 'UNREAD_MESSAGE';
         });
 
@@ -315,6 +359,34 @@ export function useChatNotificationsWithGeneral() {
 
     const handleChatCreated = (data: any) => {
       console.log('ChatHook: Real-time chat created:', data);
+      
+      // Filter out automatic CHAT_CREATED notifications from tender/auction/directSale actions
+      if (data.data?.tender || data.data?.tenderId || data.tender || data.tenderId || 
+          data.data?.auction || data.data?.auctionId || data.auction || data.auctionId ||
+          data.data?.directSale || data.data?.directSaleId || data.directSale || data.directSaleId) {
+          console.log('ChatHook: Ignoring automatic CHAT_CREATED event for entity');
+          return;
+      }
+      
+      const rtSenderStr = String(data.senderName || data.data?.senderName || '').trim();
+      
+      if (!data.senderId && !data.data?.senderId && (!rtSenderStr || rtSenderStr.toLowerCase().includes('utilisateur') || rtSenderStr.toLowerCase().includes('unknown'))) {
+          console.log('ChatHook: Ignoring generic CHAT_CREATED event due to lack of senderId');
+          return;
+      }
+
+      if (!rtSenderStr || rtSenderStr === 'Utilisateur' || rtSenderStr === 'User') {
+          console.log('ChatHook: Ignoring generic CHAT_CREATED event due to lack of real senderName');
+          return;
+      }
+      
+      if (rtSenderStr.toLowerCase().includes('unknown') || 
+          rtSenderStr.toLowerCase().includes('inconnu') || 
+          rtSenderStr.toLowerCase().includes('utilisateur inconnu') ||
+          rtSenderStr.includes('مجهول')) {
+          console.log('ChatHook: Ignoring generic CHAT_CREATED event due to generic unknown user name');
+          return;
+      }
       
       const chatId = data.chatId || data.data?.chatId;
       const title = data.title || 'Nouvelle conversation';

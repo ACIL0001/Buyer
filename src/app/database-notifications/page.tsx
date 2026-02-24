@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { normalizeImageUrl } from '@/utils/url';
 import ConfirmedOrderModal from '@/components/notifications/ConfirmedOrderModal';
+import TenderWonModal from '@/components/notifications/TenderWonModal';
 
 interface Notification {
   _id: string;
@@ -37,6 +38,25 @@ export default function DatabaseNotificationsPage() {
     price?: number;
     sellerName?: string;
   }>({ contactNumber: '' });
+
+  // State for Tender Won Modal
+  const [tenderModalOpen, setTenderModalOpen] = useState(false);
+  const [tenderModalData, setTenderModalData] = useState<{
+    tenderTitle: string;
+    ownerName: string;
+    quantity: number;
+    totalPrice: number;
+    contactNumber: string;
+    chatId?: string;
+    isMieuxDisant: boolean;
+  }>({
+    tenderTitle: '',
+    ownerName: '',
+    quantity: 0,
+    totalPrice: 0,
+    contactNumber: '',
+    isMieuxDisant: false
+  });
 
   useEffect(() => {
     fetchNotifications();
@@ -125,18 +145,18 @@ export default function DatabaseNotificationsPage() {
         if (id) redirectPath = `/direct-sale/${id}`;
     }
     // 2. CHAT REDIRECTION
-    else if (data?.chatId) {
+    else if (data?.chatId && type !== 'OFFER_ACCEPTED' && type !== 'BID_WON' && !titleLower.includes('acceptée')) {
         redirectPath = `/dashboard/chat?conversationId=${data.chatId}`;
     }
     // 3. SELLER NOTIFICATIONS
     else {
-         const isSellerReceivingTenderBid = !titleLower.includes('créée') &&
+         const isSellerReceivingTenderBid = !titleLower.includes('créée') && type !== 'OFFER_ACCEPTED' &&
                                           type === 'NEW_OFFER' && 
                                           (data?.tender || data?.tenderId || 
                                            messageLower.includes('soumission') ||
                                            messageLower.includes('appel d\'offres'));
         
-        const isSellerReceivingAuctionBid = !titleLower.includes('créée') &&
+        const isSellerReceivingAuctionBid = !titleLower.includes('créée') && type !== 'OFFER_ACCEPTED' &&
                                             (type === 'BID_CREATED' ||
                                             (type === 'NEW_OFFER' && 
                                              (data?.auction || data?.auctionId ||
@@ -158,17 +178,51 @@ export default function DatabaseNotificationsPage() {
             redirectPath = '/dashboard/direct-sales/orders?tab=received';
         }
         // 4. BUYER NOTIFICATIONS
-        else if (type === 'OFFER_ACCEPTED') {
+        else if (type === 'OFFER_ACCEPTED' || titleLower.includes('acceptée')) {
              const tenderId = data?.tender?._id || data?.tenderId || data?.tender;
-             if (tenderId && typeof tenderId === 'string') redirectPath = `/tender-details/${tenderId}`;
-             else {
-                 const auctionId = data?.auction?._id || data?.auctionId || data?.auction;
-                 if (auctionId && typeof auctionId === 'string') redirectPath = `/auction-details/${auctionId}`;
-                 else {
-                     const dsId = data?.directSale?._id || data?.directSaleId;
-                     if (dsId && typeof dsId === 'string') redirectPath = `/direct-sale/${dsId}`;
-                 }
-             }
+             const auctionId = data?.auction?._id || data?.auctionId || data?.auction;
+             const dsId = data?.directSale?._id || data?.directSaleId;
+
+             if (tenderId && (data?.tenderBid || data?.bidAmount)) {
+                 const tenderTitle = data?.tenderTitle || data?.tender?.title || "Appel d'offres";
+                 const ownerName = data?.ownerName || (data?.tender?.owner ? `${data.tender.owner.firstName || ''} ${data.tender.owner.lastName || ''}`.trim() : 'Acheteur');
+                 const quantity = data?.quantity || data?.tender?.quantity;
+                 const totalPrice = data?.bidAmount || data?.tenderBid?.bidAmount;
+                 const contactNumber = data?.contactNumber || data?.tender?.contactNumber;
+                 const chatId = data?.chatId;
+
+                 setTenderModalData({
+                   tenderTitle,
+                   ownerName,
+                   quantity,
+                   totalPrice,
+                   contactNumber,
+                   chatId,
+                   isMieuxDisant: true
+                 });
+                 setTenderModalOpen(true);
+             } else if (tenderId && typeof tenderId === 'string') redirectPath = `/tender-details/${tenderId}`;
+             else if (auctionId && typeof auctionId === 'string') redirectPath = `/auction-details/${auctionId}`;
+             else if (dsId && typeof dsId === 'string') redirectPath = `/direct-sale/${dsId}`;
+        }
+        else if (type === 'BID_WON' && (data?.tenderId || data?.tender)) {
+             const tenderTitle = data?.tenderTitle || data?.tender?.title || "Appel d'offres";
+             const ownerName = data?.ownerName || 'Acheteur';
+             const quantity = data?.quantity;
+             const totalPrice = data?.finalPrice || data?.bidAmount;
+             const contactNumber = data?.contactNumber;
+             const chatId = data?.chatId;
+
+             setTenderModalData({
+               tenderTitle,
+               ownerName,
+               quantity,
+               totalPrice,
+               contactNumber,
+               chatId,
+               isMieuxDisant: false
+             });
+             setTenderModalOpen(true);
         }
         else if (type === 'ORDER' && (titleLower.includes('confirmée') || titleLower.includes('confirmed'))) {
              const contactNumber = data?.directSale?.contactNumber || data?.contactNumber;
@@ -381,6 +435,18 @@ export default function DatabaseNotificationsPage() {
         quantity={modalData.quantity}
         price={modalData.price}
         sellerName={modalData.sellerName}
+      />
+
+      <TenderWonModal 
+        isOpen={tenderModalOpen}
+        onClose={() => setTenderModalOpen(false)}
+        tenderTitle={tenderModalData.tenderTitle}
+        ownerName={tenderModalData.ownerName}
+        quantity={tenderModalData.quantity}
+        totalPrice={tenderModalData.totalPrice}
+        contactNumber={tenderModalData.contactNumber}
+        chatId={tenderModalData.chatId}
+        isMieuxDisant={tenderModalData.isMieuxDisant}
       />
     </div>
   );

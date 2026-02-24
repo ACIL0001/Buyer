@@ -728,6 +728,7 @@
     "page03": "03"
   },
   "auctionDetails": {
+    "askQuestion": "Ask a question",
     "reviews": "Reviews",
     "reviewWarning": "Important: Your comments must be specifically related to this auction to be useful to everyone. Thank you for your understanding.",
     "noSimilarAuctions": "No similar auctions available at the moment",
@@ -1384,6 +1385,7 @@
     }
   },
   "auctionDetails": {
+    "askQuestion": "Ask a question",
     "cannotBidOwn": "You cannot bid on your own auction.",
     "reviews": "Reviews",
     "reviewWarning": "Important: Your comments must be specifically related to this auction to be useful to everyone. Thank you for your understanding.",

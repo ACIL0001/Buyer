@@ -6,37 +6,36 @@ import { useTranslation } from 'react-i18next';
 import { BiPhone, BiMessageDetail, BiX, BiCheckCircle } from 'react-icons/bi';
 import { useRouter } from 'next/navigation';
 
-interface ConfirmedOrderModalProps {
+interface TenderWonModalProps {
   isOpen: boolean;
   onClose: () => void;
+  tenderTitle: string;
+  ownerName: string;
+  quantity?: number | string;
+  totalPrice?: number;
   contactNumber: string;
   chatId?: string;
-  saleTitle?: string;
-  image?: string;
-  quantity?: number;
-  price?: number;
-  currency?: string;
-  sellerName?: string;
   sellerId?: string;
+  isMieuxDisant?: boolean;
 }
 
-// Direct Sales gold/amber color palette
-const DS_GOLD        = '#DDA902';
-const DS_GOLD_DARK   = '#B88A00';
-const DS_GOLD_LIGHT  = '#FFF8E1';
-const DS_GOLD_BORDER = '#F5D060';
+// Tender green/emerald color palette (differentiating from Direct Sales)
+const T_GREEN        = '#10B981';
+const T_GREEN_DARK   = '#059669';
+const T_GREEN_LIGHT  = '#D1FAE5';
+const T_GREEN_BORDER = '#34D399';
 
-const ConfirmedOrderModal: React.FC<ConfirmedOrderModalProps> = ({
+const TenderWonModal: React.FC<TenderWonModalProps> = ({
   isOpen,
   onClose,
+  tenderTitle,
+  ownerName,
+  quantity,
+  totalPrice,
   contactNumber,
   chatId,
-  saleTitle,
-  quantity,
-  price,
-  currency = 'DA',
-  sellerName,
-  sellerId
+  sellerId,
+  isMieuxDisant
 }) => {
   const { t } = useTranslation();
   const router = useRouter();
@@ -65,12 +64,10 @@ const ConfirmedOrderModal: React.FC<ConfirmedOrderModalProps> = ({
     } else if (chatId) {
       router.push(`/dashboard/chat?chatId=${chatId}`);
       onClose();
+    } else if (contactNumber) {
+      window.location.href = `tel:${contactNumber}`;
     }
   };
-
-  const totalPrice = (price !== undefined && quantity !== undefined && quantity !== null)
-    ? price * quantity
-    : undefined;
 
   if (!mounted) return null;
 
@@ -111,13 +108,13 @@ const ConfirmedOrderModal: React.FC<ConfirmedOrderModalProps> = ({
                 boxShadow: '0 40px 80px -15px rgba(0,0,0,0.30)',
                 position: 'relative',
                 overflow: 'hidden',
-                border: `1px solid ${DS_GOLD_BORDER}`,
+                border: `1px solid ${T_GREEN_BORDER}`,
               }}
             >
-              {/* Top Banner — Gold gradient */}
+              {/* Top Banner — Green gradient */}
               <div style={{
                 height: '110px',
-                background: `linear-gradient(135deg, ${DS_GOLD} 0%, #F5C400 60%, #FFD740 100%)`,
+                background: `linear-gradient(135deg, ${T_GREEN} 0%, #059669 60%, #34D399 100%)`,
                 width: '100%',
                 position: 'absolute',
                 top: 0, left: 0,
@@ -180,12 +177,12 @@ const ConfirmedOrderModal: React.FC<ConfirmedOrderModalProps> = ({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      boxShadow: `0 12px 30px rgba(221,169,2,0.35)`,
+                      boxShadow: `0 12px 30px rgba(16,185,129,0.35)`,
                       marginBottom: '18px',
-                      border: `4px solid ${DS_GOLD_LIGHT}`,
+                      border: `4px solid ${T_GREEN_LIGHT}`,
                     }}
                   >
-                    <BiCheckCircle size={44} color={DS_GOLD} />
+                    <BiCheckCircle size={44} color={T_GREEN} />
                   </motion.div>
 
                   <h2 style={{
@@ -205,30 +202,32 @@ const ConfirmedOrderModal: React.FC<ConfirmedOrderModalProps> = ({
                     textAlign: 'center',
                     fontWeight: '500'
                   }}>
-                    {"Votre commande MazadClick est confirmée."}
+                    {isMieuxDisant 
+                      ? "Votre offre pour l'appel d'offres a été acceptée." 
+                      : "Vous avez remporté l'appel d'offres !"}
                   </p>
                 </div>
 
                 {/* Main Content */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-                  {/* Product Details Card */}
+                  {/* Tender Details Card */}
                   <div style={{
                     background: '#fff',
                     borderRadius: '20px',
                     padding: '18px 22px',
-                    border: `1.5px solid ${DS_GOLD_BORDER}`,
-                    boxShadow: `0 4px 16px rgba(221,169,2,0.08)`
+                    border: `1.5px solid ${T_GREEN_BORDER}`,
+                    boxShadow: `0 4px 16px rgba(16,185,129,0.08)`
                   }}>
                     <div style={{
                       fontSize: '10px',
-                      color: DS_GOLD_DARK,
+                      color: T_GREEN_DARK,
                       textTransform: 'uppercase',
                       fontWeight: '800',
                       letterSpacing: '0.1em',
                       marginBottom: '8px'
                     }}>
-                      {"Détails de l'article"}
+                      {"Détails de l'appel d'offres"}
                     </div>
                     <h3 style={{
                       margin: '0 0 14px',
@@ -237,34 +236,29 @@ const ConfirmedOrderModal: React.FC<ConfirmedOrderModalProps> = ({
                       color: '#111827',
                       lineHeight: '1.25'
                     }}>
-                      {saleTitle}
+                      {tenderTitle}
                     </h3>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {/* Unit price row */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      {/* Quantity row if exists */}
+                      {(quantity !== undefined && quantity !== null) && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '14px', color: '#6b7280', fontWeight: '500' }}>
-                            Prix unitaire
+                            Quantité
                           </span>
-                          {(quantity !== undefined && quantity !== null) && (
-                            <span style={{
-                              fontSize: '12px',
-                              color: '#5a4500',
-                              background: DS_GOLD_LIGHT,
-                              border: `1px solid ${DS_GOLD_BORDER}`,
-                              padding: '3px 10px',
-                              borderRadius: '10px',
-                              fontWeight: '700'
-                            }}>
-                              {"Qté:"} {quantity}
-                            </span>
-                          )}
+                          <span style={{
+                            fontSize: '13px',
+                            color: T_GREEN_DARK,
+                            background: T_GREEN_LIGHT,
+                            border: `1px solid ${T_GREEN_BORDER}`,
+                            padding: '3px 10px',
+                            borderRadius: '10px',
+                            fontWeight: '700'
+                          }}>
+                            {quantity}
+                          </span>
                         </div>
-                        <span style={{ fontSize: '15px', fontWeight: '700', color: '#374151' }}>
-                          {price?.toLocaleString()} {currency}
-                        </span>
-                      </div>
+                      )}
 
                       {/* Total price row */}
                       {totalPrice !== undefined && (
@@ -272,57 +266,54 @@ const ConfirmedOrderModal: React.FC<ConfirmedOrderModalProps> = ({
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
-                          borderTop: `1px solid ${DS_GOLD_BORDER}`,
-                          paddingTop: '10px',
+                          borderTop: (quantity !== undefined && quantity !== null) ? `1px solid ${T_GREEN_BORDER}` : 'none',
+                          paddingTop: (quantity !== undefined && quantity !== null) ? '10px' : '0px',
                         }}>
                           <span style={{ fontSize: '15px', color: '#111827', fontWeight: '800' }}>
-                            Total
+                            Montant de votre offre
                           </span>
                           <div style={{
                             fontSize: '20px',
                             fontWeight: '900',
-                            color: DS_GOLD_DARK,
-                            background: `linear-gradient(135deg, ${DS_GOLD_LIGHT}, #FFF3CD)`,
+                            color: T_GREEN_DARK,
+                            background: `linear-gradient(135deg, ${T_GREEN_LIGHT}, #ECFDF5)`,
                             padding: '4px 16px',
                             borderRadius: '12px',
-                            border: `1.5px solid ${DS_GOLD_BORDER}`,
+                            border: `1.5px solid ${T_GREEN_BORDER}`,
                           }}>
-                            {totalPrice.toLocaleString()} {currency}
+                            {totalPrice.toLocaleString()} DA
                           </div>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Seller & Contact Section */}
+                  {/* Owner & Contact Section */}
                   <div style={{
-                    background: `linear-gradient(135deg, ${DS_GOLD_LIGHT} 0%, #FFFCE8 100%)`,
+                    background: `linear-gradient(135deg, ${T_GREEN_LIGHT} 0%, #F0FDF4 100%)`,
                     borderRadius: '20px',
                     padding: '20px 22px',
-                    border: `1.5px solid ${DS_GOLD_BORDER}`,
+                    border: `1.5px solid ${T_GREEN_BORDER}`,
                   }}>
-                    {/* Seller name */}
+                    {/* Owner name */}
                     <div style={{
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      marginBottom: '16px',
-                      borderBottom: `1px solid ${DS_GOLD_BORDER}`,
-                      paddingBottom: '14px'
                     }}>
                       <div>
                         <div style={{
                           fontSize: '10px',
-                          color: DS_GOLD_DARK,
+                          color: T_GREEN_DARK,
                           textTransform: 'uppercase',
                           fontWeight: '800',
                           letterSpacing: '0.1em',
                           marginBottom: '4px'
                         }}>
-                          Vendu par
+                          Propriétaire
                         </div>
                         <div style={{ fontSize: '18px', fontWeight: '800', color: '#1a1a1a' }}>
-                          {sellerName || 'Vendeur'}
+                          {ownerName || 'Acheteur'}
                         </div>
                       </div>
                       <div style={{
@@ -332,38 +323,11 @@ const ConfirmedOrderModal: React.FC<ConfirmedOrderModalProps> = ({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: `0 4px 10px rgba(221,169,2,0.2)`,
-                        border: `1.5px solid ${DS_GOLD_BORDER}`,
+                        boxShadow: `0 4px 10px rgba(16,185,129,0.2)`,
+                        border: `1.5px solid ${T_GREEN_BORDER}`,
                         fontSize: '18px'
                       }}>
-                        👤
-                      </div>
-                    </div>
-
-                    {/* Contact phone */}
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{
-                        fontSize: '10px',
-                        color: DS_GOLD_DARK,
-                        textTransform: 'uppercase',
-                        fontWeight: '800',
-                        letterSpacing: '0.1em',
-                        marginBottom: '10px'
-                      }}>
-                        Contact Direct
-                      </div>
-                      <div style={{
-                        fontSize: '26px',
-                        fontWeight: '900',
-                        color: DS_GOLD_DARK,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '10px',
-                        fontFamily: 'monospace'
-                      }}>
-                        <BiPhone size={26} color={DS_GOLD} />
-                        {contactNumber || 'Non renseigné'}
+                        🏢
                       </div>
                     </div>
                   </div>
@@ -377,13 +341,13 @@ const ConfirmedOrderModal: React.FC<ConfirmedOrderModalProps> = ({
                   }}>
                     {chatId && (
                       <motion.button
-                        whileHover={{ y: -2, boxShadow: `0 10px 20px rgba(221,169,2,0.35)` }}
+                        whileHover={{ y: -2, boxShadow: `0 10px 20px rgba(16,185,129,0.35)` }}
                         whileTap={{ scale: 0.96 }}
                         onClick={handleChatClick}
                         style={{
                           padding: '16px',
-                          background: `linear-gradient(135deg, ${DS_GOLD}, ${DS_GOLD_DARK})`,
-                          color: '#1a1a1a',
+                          background: `linear-gradient(135deg, ${T_GREEN}, ${T_GREEN_DARK})`,
+                          color: '#fff',
                           border: 'none',
                           borderRadius: '18px',
                           fontSize: '15px',
@@ -393,7 +357,7 @@ const ConfirmedOrderModal: React.FC<ConfirmedOrderModalProps> = ({
                           alignItems: 'center',
                           justifyContent: 'center',
                           gap: '10px',
-                          boxShadow: `0 6px 14px rgba(221,169,2,0.25)`,
+                          boxShadow: `0 6px 14px rgba(16,185,129,0.25)`,
                           transition: 'all 0.3s ease'
                         }}
                       >
@@ -409,7 +373,7 @@ const ConfirmedOrderModal: React.FC<ConfirmedOrderModalProps> = ({
                         padding: '16px',
                         background: 'white',
                         color: '#555',
-                        border: `2px solid ${DS_GOLD_BORDER}`,
+                        border: `2px solid ${T_GREEN_BORDER}`,
                         borderRadius: '18px',
                         fontSize: '15px',
                         fontWeight: '700',
@@ -431,4 +395,4 @@ const ConfirmedOrderModal: React.FC<ConfirmedOrderModalProps> = ({
   );
 };
 
-export default ConfirmedOrderModal;
+export default TenderWonModal;

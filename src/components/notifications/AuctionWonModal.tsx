@@ -50,12 +50,11 @@ const AuctionWonModal: React.FC<AuctionWonModalProps> = ({
   }, [isOpen]);
 
   const handleChatClick = () => {
-    if (chatId) {
-      router.push(`/dashboard/chat?chatId=${chatId}`);
-      onClose();
-    } else if (sellerId) {
-      // Fallback to start chat with user
+    if (sellerId) {
       router.push(`/dashboard/chat?userId=${sellerId}`);
+      onClose();
+    } else if (chatId) {
+      router.push(`/dashboard/chat?chatId=${chatId}`);
       onClose();
     }
   };

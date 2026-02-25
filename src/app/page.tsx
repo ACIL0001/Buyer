@@ -153,32 +153,32 @@ export default function Home() {
 
   const handleAuctionViewAll = () => {
     setAuctionDropdownOpen(false);
-    window.location.href = 'http://localhost:3001/auction-sidebar/';
+    window.location.href = 'https://mazadclick.vercel.app/auction-sidebar/';
   };
 
   const handleTenderViewAll = () => {
     setTenderDropdownOpen(false);
-    window.location.href = 'http://localhost:3001/tenders/';
+    window.location.href = 'https://mazadclick.vercel.app/tenders/';
   };
 
   const handleVenteDirectViewAll = () => {
     setVenteDirectDropdownOpen(false);
-    window.location.href = 'http://localhost:3001/direct-sale/';
+    window.location.href = 'https://mazadclick.vercel.app/direct-sale/';
   };
 
   const handleCreateAuction = () => {
     setAuctionDropdownOpen(false);
-    window.location.href = 'http://localhost:3001/dashboard/auctions/create/';
+    window.location.href = 'https://mazadclick.vercel.app/dashboard/auctions/create/';
   };
 
   const handleCreateTender = () => {
     setTenderDropdownOpen(false);
-    window.location.href = 'http://localhost:3001/dashboard/tenders/create/';
+    window.location.href = 'https://mazadclick.vercel.app/dashboard/tenders/create/';
   };
 
   const handleCreateVenteDirect = () => {
     setVenteDirectDropdownOpen(false);
-    window.location.href = 'http://localhost:3001/dashboard/direct-sales/create/';
+    window.location.href = 'https://mazadclick.vercel.app/dashboard/direct-sales/create/';
   };
 
   // Helper function to get category image URL

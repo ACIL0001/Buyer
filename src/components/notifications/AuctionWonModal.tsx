@@ -107,7 +107,7 @@ const AuctionWonModal: React.FC<AuctionWonModalProps> = ({
               {/* Top Banner Gradient */}
               <div style={{
                 height: '120px',
-                background: 'linear-gradient(135deg, #ffd700 0%, #ffc107 100%)',
+                background: 'linear-gradient(135deg, #0063b1 0%, #004a87 100%)',
                 width: '100%',
                 position: 'absolute',
                 top: 0,

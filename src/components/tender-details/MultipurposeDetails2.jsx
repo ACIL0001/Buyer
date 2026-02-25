@@ -135,7 +135,7 @@ const MultipurposeDetails2 = () => {
   });
   const [allTenders, setAllTenders] = useState([]);
   const [similarTenderTimers, setSimilarTenderTimers] = useState([]);
-  const [activeTab, setActiveTab] = useState("description"); // State for active tab
+  const [activeTab, setActiveTab] = useState("reviews"); // State for active tab
   const [reviewText, setReviewText] = useState(""); // State for review text
   const [reviewRating, setReviewRating] = useState(0); // State for review rating
   const [selectedImageIndex, setSelectedImageIndex] = useState(0); // State for selected image index
@@ -1986,6 +1986,52 @@ const MultipurposeDetails2 = () => {
                       )}
                     </Swiper>
                   </div>
+
+                  {/* Product Description Below Image */}
+                  <div style={{ marginTop: '30px', padding: '20px', background: '#fff', borderRadius: '12px', border: '1px solid #e9ecef', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '15px', color: '#333' }}>{safeTitle}</h3>
+                    <p style={{ fontSize: '15px', lineHeight: '1.6', color: '#555', whiteSpace: 'pre-line' }}>
+                      {safeDescription}
+                    </p>
+                    
+                    {/* Requirements Section */}
+                    {safeRequirements.length > 0 && (
+                      <div style={{ marginTop: '20px' }}>
+                        <h4 style={{ marginBottom: '10px', color: '#333' }}>Exigences:</h4>
+                        <ul className="requirements-list" style={{ paddingLeft: '20px', color: '#555' }}>
+                          {safeRequirements.map((requirement, index) => (
+                            <li key={index} style={{ marginBottom: '5px' }}>
+                              {requirement}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {/* Additional Details */}
+                    <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                      {safeTenderType !== 'SERVICE' && safeQuantity && (
+                        <div style={{ padding: '10px', background: '#f8f9fa', borderRadius: '8px' }}>
+                          <strong>Quantité:</strong> {safeQuantity}
+                        </div>
+                      )}
+                      {safeMinimumPrice > 0 && (
+                        <div style={{ padding: '10px', background: '#f8f9fa', borderRadius: '8px' }}>
+                          <strong>Prix minimum:</strong> {formatPrice(safeMinimumPrice)}
+                        </div>
+                      )}
+                      {safeStartingAt && (
+                        <div style={{ padding: '10px', background: '#f8f9fa', borderRadius: '8px' }}>
+                          <strong>Début:</strong> {new Date(safeStartingAt).toLocaleDateString('fr-FR')}
+                        </div>
+                      )}
+                      {safeEndingAt && (
+                        <div style={{ padding: '10px', background: '#f8f9fa', borderRadius: '8px' }}>
+                          <strong>Fin:</strong> {new Date(safeEndingAt).toLocaleDateString('fr-FR')}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Right Column - Auction Details */}
@@ -2704,6 +2750,44 @@ const MultipurposeDetails2 = () => {
                       </div>
                     )}
 
+                    <div className="ask-question-area" style={{ marginTop: '15px', textAlign: 'center' }}>
+                       <button 
+                          onClick={(e) => {
+                             e.preventDefault();
+                             setActiveTab('reviews');
+                             const commentsEl = document.getElementById('nav-tabContent');
+                             if (commentsEl) {
+                                commentsEl.scrollIntoView({ behavior: 'smooth' });
+                             } else {
+                                window.scrollBy({ top: 500, behavior: 'smooth' });
+                             }
+                          }}
+                          style={{ 
+                             background: 'none', 
+                             border: 'none', 
+                             color: '#0063b1', 
+                             textDecoration: 'none', 
+                             cursor: 'pointer', 
+                             fontSize: '15px',
+                             fontWeight: '600',
+                             display: 'inline-flex',
+                             alignItems: 'center',
+                             gap: '6px'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.textDecoration = 'underline';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.textDecoration = 'none';
+                          }}
+                       >
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                             <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                          </svg>
+                          Poser une question
+                       </button>
+                    </div>
+
                     <ul className="question-and-wishlist-area" style={{ display: 'none' }}></ul>
                   </div>
                 </div>
@@ -2714,18 +2798,6 @@ const MultipurposeDetails2 = () => {
                 <div className="col-12">
                   <div className="auction-details-description-area">
                     <div className="tab-container">
-                      <button
-                        className={`tab-button ${
-                          activeTab === "description" ? "active" : ""
-                        }`}
-                        onClick={() => setActiveTab("description")}
-                        type="button"
-                        role="tab"
-                        aria-controls="nav-description"
-                        aria-selected={activeTab === "description"}
-                      >
-                        Description
-                      </button>
                       <button
                         className={`tab-button ${
                           activeTab === "reviews" ? "active" : ""
@@ -2742,94 +2814,6 @@ const MultipurposeDetails2 = () => {
                     </div>
 
                     <div className="tab-content" id="nav-tabContent">
-                      <div
-                        className={`tab-pane fade ${
-                          activeTab === "description" ? "show active" : ""
-                        }`}
-                        id="nav-description"
-                        role="tabpanel"
-                        aria-labelledby="nav-description-tab"
-                      >
-                        <div className="description-content">
-                          <h3>{safeTitle}</h3>
-                          <p>
-                            {safeDescription}
-                          </p>
-                          
-                          {/* Requirements Section */}
-                          {safeRequirements.length > 0 && (
-                            <div style={{ marginTop: '20px' }}>
-                              <h4 style={{ marginBottom: '10px', color: '#333' }}>Exigences:</h4>
-                              <ul style={{ paddingLeft: '20px' }}>
-                                {safeRequirements.map((requirement, index) => (
-                                  <li key={index} style={{ marginBottom: '5px' }}>
-                                    {requirement}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                          
-                          {/* Additional Details */}
-                          <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                            {safeTenderType !== 'SERVICE' && safeQuantity && (
-                              <div style={{ padding: '10px', background: '#f8f9fa', borderRadius: '8px' }}>
-                                <strong>Quantité:</strong> {safeQuantity}
-                              </div>
-                            )}
-                            {safeMinimumPrice > 0 && (
-                              <div style={{ padding: '10px', background: '#f8f9fa', borderRadius: '8px' }}>
-                                <strong>Prix minimum:</strong> {formatPrice(safeMinimumPrice)}
-                              </div>
-                            )}
-                            {safeStartingAt && (
-                              <div style={{ padding: '10px', background: '#f8f9fa', borderRadius: '8px' }}>
-                                <strong>Début:</strong> {new Date(safeStartingAt).toLocaleDateString('fr-FR')}
-                              </div>
-                            )}
-                            {safeEndingAt && (
-                              <div style={{ padding: '10px', background: '#f8f9fa', borderRadius: '8px' }}>
-                                <strong>Fin:</strong> {new Date(safeEndingAt).toLocaleDateString('fr-FR')}
-                              </div>
-                            )}
-                          </div>
-                          <ul className="features-list">
-                            <li>
-                              <svg
-                                width={13}
-                                height={11}
-                                viewBox="0 0 13 11"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M12.2986 0.0327999C9.89985 0.832756 6.86143 2.97809 4.03623 6.6688L2.36599 4.778C2.09946 4.4871 1.63748 4.4871 1.38872 4.778L0.162693 6.17792C-0.0682981 6.45063 -0.0505298 6.86879 0.19823 7.12332L3.96516 10.814C4.28499 11.1231 4.78251 11.0322 4.99574 10.6504C7.00358 6.92333 9.17134 4.15985 12.7961 0.996384C13.2581 0.596406 12.8672 -0.167189 12.2986 0.0327999Z" />
-                              </svg>
-                              Appel d'offres vérifié
-                            </li>
-                            <li>
-                              <svg
-                                width={13}
-                                height={11}
-                                viewBox="0 0 13 11"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M12.2986 0.0327999C9.89985 0.832756 6.86143 2.97809 4.03623 6.6688L2.36599 4.778C2.09946 4.4871 1.63748 4.4871 1.38872 4.778L0.162693 6.17792C-0.0682981 6.45063 -0.0505298 6.86879 0.19823 7.12332L3.96516 10.814C4.28499 11.1231 4.78251 11.0322 4.99574 10.6504C7.00358 6.92333 9.17134 4.15985 12.7961 0.996384C13.2581 0.596406 12.8672 -0.167189 12.2986 0.0327999Z" />
-                              </svg>
-                              Procédure transparente
-                            </li>
-                            <li>
-                              <svg
-                                width={13}
-                                height={11}
-                                viewBox="0 0 13 11"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M12.2986 0.0327999C9.89985 0.832756 6.86143 2.97809 4.03623 6.6688L2.36599 4.778C2.09946 4.4871 1.63748 4.4871 1.38872 4.778L0.162693 6.17792C-0.0682981 6.45063 -0.0505298 6.86879 0.19823 7.12332L3.96516 10.814C4.28499 11.1231 4.78251 11.0322 4.99574 10.6504C7.00358 6.92333 9.17134 4.15985 12.7961 0.996384C13.2581 0.596406 12.8672 -0.167189 12.2986 0.0327999Z" />
-                              </svg>
-                              Contrat sécurisé
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
 
                       <div
                         className={`tab-pane fade ${

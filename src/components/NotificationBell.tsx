@@ -345,7 +345,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
             }
         }
         // 4. AUCTION WON
-        else if (notification.type === 'AUCTION_WON') {
+        else if (notification.type === 'AUCTION_WON' || (notification.type === 'BID_WON' && (!data?.tenderId && !data?.tender)) || titleLower.includes('remporté l\'enchère') || titleLower.includes('won the auction') || (titleLower.includes('félicitations') && messageLower.includes('enchère'))) {
              let auctionTitle = data?.productTitle || data?.auction?.title;
 
              if (!auctionTitle && notification.message) {

@@ -11,9 +11,6 @@ import { useChatNotificationsWithGeneral } from '@/hooks/useChatNotificationsWit
 import { useCreateSocket } from '@/contexts/socket';
 import { BsChatDots } from 'react-icons/bs';
 import ButtonSwitchApp from "../ButtonSwitchApp/ButtonSwitchApp";
-import ReviewModal from '@/components/ReviewModal';
-import { ReviewAPI } from '@/app/api/review';
-import { NotificationAPI } from '@/app/api/notification';
 import { useTranslation } from 'react-i18next';
 import { getSellerUrl, getFrontendUrl } from '@/config';
 import app from '@/config';
@@ -101,13 +98,6 @@ export const Header = () => {
     transition: 'transform 0.2s',
     transform: 'scale(1)',
   };
-
-  const [bidWonNotifications, setBidWonNotifications] = useState([]);
-
-  // Review Modal State
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [currentBidWonNotification, setCurrentBidWonNotification] = useState(null);
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   // Handle window resize only
   useEffect(() => {
@@ -282,148 +272,18 @@ export const Header = () => {
   useEffect(() => {
     if (!socketContext?.socket) return;
     const handler = (notification) => {
-      console.log('[Header] Received bid won notification:', notification);
-      if (notification && notification.type === 'BID_WON') {
-        setBidWonNotifications((prev) => {
-          // Check for duplicates
-          const exists = prev.some(n => n._id === notification._id);
-          if (exists) return prev;
-          return [notification, ...prev];
-        });
-        // Optionally, show a toast or alert here
-        // e.g., toast.success(notification.title + ': ' + notification.message);
-      }
+      console.log('[Header] Received notification update:', notification);
     };
-    socketContext.socket.on('bidWonNotification', handler);
+    socketContext.socket.on('notificationUpdate', handler);
     return () => {
-      socketContext.socket.off('bidWonNotification', handler);
+      socketContext.socket.off('notificationUpdate', handler);
     };
   }, [socketContext?.socket]);
 
 
 
 
-  // Check for BID_WON notifications on component mount and auth change
-  useEffect(() => {
-    const checkBidWonNotifications = async () => {
-      if (!isLogged || !isReady) return;
-      
-      try {
-        const response = await NotificationAPI.getAllNotifications();
-        
-        // Handle the new response structure: { notifications: [...] }
-        const notifications = response.notifications || response || [];
-        
-        // Get locally ignored notifications
-        const ignoredIds = JSON.parse(localStorage.getItem('reviewed_notifications') || '[]');
-        
-        // Find unread BID_WON notifications that haven't been ignored locally
-        const bidWonNotification = notifications.find(notif => 
-          notif.type === 'BID_WON' && !notif.isRead && !ignoredIds.includes(notif._id)
-        );
-        
-        if (bidWonNotification) {
-          setCurrentBidWonNotification(bidWonNotification);
-          setIsReviewModalOpen(true);
-        }
-      } catch (error) {
-        console.error('Error checking BID_WON notifications:', error);
-      }
-    };
 
-    checkBidWonNotifications();
-  }, [isLogged, isReady]);
-
-  // Helper to ignore notification locally
-  const ignoreNotificationLocally = (id) => {
-    try {
-      const ignoredIds = JSON.parse(localStorage.getItem('reviewed_notifications') || '[]');
-      if (!ignoredIds.includes(id)) {
-        ignoredIds.push(id);
-        localStorage.setItem('reviewed_notifications', JSON.stringify(ignoredIds));
-      }
-    } catch (e) {
-      console.error('Error saving to localStorage:', e);
-    }
-  };
-
-  // Handle review submission
-  const handleReviewSubmit = async (type, comment) => {
-    if (!currentBidWonNotification) return;
-
-    setIsSubmittingReview(true);
-    
-    try {
-      // Get the seller/target user ID from the notification
-      let targetUserId = null;
-      
-      // Check senderId (could be string or populated object)
-      if (currentBidWonNotification.senderId) {
-        targetUserId = typeof currentBidWonNotification.senderId === 'object' 
-          ? currentBidWonNotification.senderId._id 
-          : currentBidWonNotification.senderId;
-      }
-      
-      // Fallback to targetUserId or sellerId in data
-      if (!targetUserId) {
-        targetUserId = currentBidWonNotification.targetUserId || 
-                       currentBidWonNotification.data?.sellerId;
-      }
-      
-      if (!targetUserId) {
-        // Log the notification for debugging
-        console.error('Invalid notification structure:', currentBidWonNotification);
-        throw new Error('Target user ID not found in notification');
-      }
-
-      console.log('Using targetUserId for review:', targetUserId);
-
-      // Submit the review
-      if (type === 'like') {
-        await ReviewAPI.likeUser(targetUserId, comment);
-      } else {
-        await ReviewAPI.dislikeUser(targetUserId, comment);
-      }
-
-      // Mark the notification as read
-      await NotificationAPI.markAsRead(currentBidWonNotification._id);
-      
-      // Ignore locally to be safe
-      ignoreNotificationLocally(currentBidWonNotification._id);
-
-      // Close modal and reset state
-      setIsReviewModalOpen(false);
-      setCurrentBidWonNotification(null);
-      
-      console.log(`Successfully submitted ${type} review for user ${targetUserId}`);
-    } catch (error) {
-      if (error.response && error.response.status === 400) {
-        // Handle 400 Bad Request (Already reviewed/Self review) quietly
-        console.warn('Review skipped: User likely already reviewed this transaction.');
-        try {
-          ignoreNotificationLocally(currentBidWonNotification._id); // Ignore locally
-          await NotificationAPI.markAsRead(currentBidWonNotification._id);
-          setIsReviewModalOpen(false);
-          setCurrentBidWonNotification(null);
-        } catch (markError) {
-          console.warn('Could not mark notification as read:', markError);
-          // If markAsRead fails, we still have the local ignore
-        }
-      } else {
-        // Only log actual unexpected errors
-        console.error('Error submitting review:', error);
-      }
-      // You can show a toast here if needed
-    } finally {
-      setIsSubmittingReview(false);
-    }
-  };
-
-  // Handle modal close
-  const handleReviewModalClose = () => {
-    setIsReviewModalOpen(false);
-    setCurrentBidWonNotification(null);
-  };
 
   return (
     <header 
@@ -1176,15 +1036,7 @@ export const Header = () => {
         }
       `}</style>
 
-      {/* Review Modal for BID_WON notifications */}
-      <ReviewModal
-        isOpen={isReviewModalOpen}
-        onClose={handleReviewModalClose}
-        onSubmitReview={handleReviewSubmit}
-        targetUserId={currentBidWonNotification?.senderId || currentBidWonNotification?.targetUserId || ''}
-        auctionTitle={currentBidWonNotification?.message || currentBidWonNotification?.title}
-        isLoading={isSubmittingReview}
-      />
+
     </header>
   );
 };

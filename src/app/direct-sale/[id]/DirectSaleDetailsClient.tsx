@@ -106,7 +106,7 @@ function DirectSaleDetailContent() {
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
   const [allDirectSales, setAllDirectSales] = useState<DirectSale[]>([]);
-  const [activeTab, setActiveTab] = useState("description");
+  const [activeTab, setActiveTab] = useState("comments");
   const [newComment, setNewComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
   const [showAllComments, setShowAllComments] = useState(false);
@@ -477,6 +477,17 @@ function DirectSaleDetailContent() {
                   ))}
                 </Swiper>
               </div>
+
+              {/* Product Description Below Image */}
+              <div style={{ marginTop: '30px', padding: '20px', background: '#fff', borderRadius: '12px', border: '1px solid #e9ecef', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '15px', color: '#333' }}>
+                  {t('details.productDescription') || "Description du produit"}
+                </h3>
+                <p style={{ fontSize: '15px', lineHeight: '1.6', color: '#555', whiteSpace: 'pre-wrap' }}>
+                  {directSale.description || t('auctionDetails.noDescription') || "Aucune description disponible."}
+                </p>
+              </div>
+
             </div>
 
             {/* Right Column - Details */}
@@ -651,6 +662,42 @@ function DirectSaleDetailContent() {
                     </div>
                   </div>
                 )}
+
+                <div className="ask-question-area" style={{ marginTop: '15px', textAlign: 'center' }}>
+                   <button 
+                      onClick={(e) => {
+                         e.preventDefault();
+                         setActiveTab('comments');
+                         setTimeout(() => {
+                            window.scrollBy({ top: 500, behavior: 'smooth' });
+                         }, 100);
+                      }}
+                      style={{ 
+                         background: 'none', 
+                         border: 'none', 
+                         color: '#0063b1', 
+                         textDecoration: 'none', 
+                         cursor: 'pointer', 
+                         fontSize: '15px',
+                         fontWeight: '600',
+                         display: 'inline-flex',
+                         alignItems: 'center',
+                         gap: '6px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.textDecoration = 'underline';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.textDecoration = 'none';
+                      }}
+                   >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                         <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                      </svg>
+                      {t('auctionDetails.askQuestion') || 'Poser une question'}
+                   </button>
+                </div>
+
               </div>
             </div>
           </div>
@@ -660,12 +707,6 @@ function DirectSaleDetailContent() {
             <div className="col-12">
               <div className="auction-details-description-area">
                 <div className="tab-container">
-                  <button
-                    className={`tab-button ${activeTab === "description" ? "active" : ""}`}
-                    onClick={() => setActiveTab("description")}
-                  >
-                    {t('details.productDescription')}
-                  </button>
                   {directSale.attributes && directSale.attributes.length > 0 && (
                     <button
                       className={`tab-button ${activeTab === "attributes" ? "active" : ""}`}
@@ -683,12 +724,6 @@ function DirectSaleDetailContent() {
                 </div>
 
                 <div className="tab-content">
-                  {activeTab === "description" && (
-                    <div className="description-content fade show active">
-                      <h3>{t('details.productDescription')}</h3>
-                      <p style={{ whiteSpace: 'pre-wrap' }}>{directSale.description}</p>
-                    </div>
-                  )}
                   {activeTab === "attributes" && (
                     <div className="description-content fade show active">
                       <h3>{t('details.features')}</h3>

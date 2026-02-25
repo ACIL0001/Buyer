@@ -70,7 +70,7 @@ const MultipurposeDetails1 = () => {
   });
   const [allAuctions, setAllAuctions] = useState([]);
   const [similarAuctionTimers, setSimilarAuctionTimers] = useState([]);
-  const [activeTab, setActiveTab] = useState("description"); // State for active tab
+  const [activeTab, setActiveTab] = useState("reviews"); // State for active tab
   const [reviewText, setReviewText] = useState(""); // State for review text
   const [reviewRating, setReviewRating] = useState(0); // State for review rating
   const [selectedImageIndex, setSelectedImageIndex] = useState(0); // State for selected image index
@@ -1553,6 +1553,17 @@ const MultipurposeDetails1 = () => {
                       )}
                     </Swiper>
                   </div>
+
+                  {/* Product Description Below Image */}
+                  <div style={{ marginTop: '30px', padding: '20px', background: '#fff', borderRadius: '12px', border: '1px solid #e9ecef', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '15px', color: '#333' }}>
+                      {auctionData?.name || t('auctionDetails.productDetails') || "Détails du Produit"}
+                    </h3>
+                    <p style={{ fontSize: '15px', lineHeight: '1.6', color: '#555', whiteSpace: 'pre-line' }}>
+                      {auctionData?.description || t('auctionDetails.noDescription') || "Aucune description disponible."}
+                    </p>
+                  </div>
+
                 </div>
 
                 {/* Right Column - Auction Details */}
@@ -2210,18 +2221,6 @@ const MultipurposeDetails1 = () => {
                     <div className="tab-container">
                       <button
                         className={`tab-button ${
-                          activeTab === "description" ? "active" : ""
-                        }`}
-                        onClick={() => setActiveTab("description")}
-                        type="button"
-                        role="tab"
-                        aria-controls="nav-description"
-                        aria-selected={activeTab === "description"}
-                      >
-                        {t('common.description')}
-                      </button>
-                      <button
-                        className={`tab-button ${
                           activeTab === "reviews" ? "active" : ""
                         }`}
                         onClick={() => setActiveTab("reviews")}
@@ -2236,57 +2235,6 @@ const MultipurposeDetails1 = () => {
                     </div>
 
                     <div className="tab-content" id="nav-tabContent">
-                      <div
-                        className={`tab-pane fade ${
-                          activeTab === "description" ? "show active" : ""
-                        }`}
-                        id="nav-description"
-                        role="tabpanel"
-                        aria-labelledby="nav-description-tab"
-                      >
-                        <div className="description-content">
-                          <h3>{auctionData?.name || t('auctionDetails.productDetails') || "Détails du Produit"}</h3>
-                          <p>
-                            {auctionData?.description ||
-                              t('auctionDetails.noDescription') || "Aucune description disponible."}
-                          </p>
-                          <ul className="features-list">
-                            <li>
-                              <svg
-                                width={13}
-                                height={11}
-                                viewBox="0 0 13 11"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M12.2986 0.0327999C9.89985 0.832756 6.86143 2.97809 4.03623 6.6688L2.36599 4.778C2.09946 4.4871 1.63748 4.4871 1.38872 4.778L0.162693 6.17792C-0.0682981 6.45063 -0.0505298 6.86879 0.19823 7.12332L3.96516 10.814C4.28499 11.1231 4.78251 11.0322 4.99574 10.6504C7.00358 6.92333 9.17134 4.15985 12.7961 0.996384C13.2581 0.596406 12.8672 -0.167189 12.2986 0.0327999Z" />
-                              </svg>
-                              Produit de Qualité
-                            </li>
-                            <li>
-                              <svg
-                                width={13}
-                                height={11}
-                                viewBox="0 0 13 11"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M12.2986 0.0327999C9.89985 0.832756 6.86143 2.97809 4.03623 6.6688L2.36599 4.778C2.09946 4.4871 1.63748 4.4871 1.38872 4.778L0.162693 6.17792C-0.0682981 6.45063 -0.0505298 6.86879 0.19823 7.12332L3.96516 10.814C4.28499 11.1231 4.78251 11.0322 4.99574 10.6504C7.00358 6.92333 9.17134 4.15985 12.7961 0.996384C13.2581 0.596406 12.8672 -0.167189 12.2986 0.0327999Z" />
-                              </svg>
-                              Excellent État
-                            </li>
-                            <li>
-                              <svg
-                                width={13}
-                                height={11}
-                                viewBox="0 0 13 11"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M12.2986 0.0327999C9.89985 0.832756 6.86143 2.97809 4.03623 6.6688L2.36599 4.778C2.09946 4.4871 1.63748 4.4871 1.38872 4.778L0.162693 6.17792C-0.0682981 6.45063 -0.0505298 6.86879 0.19823 7.12332L3.96516 10.814C4.28499 11.1231 4.78251 11.0322 4.99574 10.6504C7.00358 6.92333 9.17134 4.15985 12.7961 0.996384C13.2581 0.596406 12.8672 -0.167189 12.2986 0.0327999Z" />
-                              </svg>
-                              Livraison Disponible
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
 
                       <div
                         className={`tab-pane fade ${

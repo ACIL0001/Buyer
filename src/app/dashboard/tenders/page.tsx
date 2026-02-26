@@ -197,7 +197,7 @@ export default function TendersPage() {
                     label={evaluationType === 'MIEUX_DISANT' ? '✨ Mieux Disant' : '💰 Moins Disant'}
                     size="small"
                     color={evaluationType === 'MIEUX_DISANT' ? 'info' : 'success'}
-                    variant="soft"
+                    variant="filled"
                     sx={{ 
                       fontWeight: 600,
                       fontSize: '0.7rem',

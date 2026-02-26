@@ -297,7 +297,7 @@ export default function TenderBidsPage() {
                     label={tender.evaluationType === 'MIEUX_DISANT' ? '✨ Mieux Disant' : '💰 Moins Disant'}
                     size="small"
                     color={tender.evaluationType === 'MIEUX_DISANT' ? 'info' : 'success'}
-                    variant="soft"
+                    variant="filled"
                     sx={{ 
                       fontWeight: 600,
                       fontSize: '0.75rem',

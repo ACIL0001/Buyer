@@ -1561,106 +1561,102 @@ const MultipurposeAuctionSidebar = () => {
                                                         </div>
 
 
-                                                        {/* Owner Info */}
                                                         <div style={{
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                            gap: '10px',
-                                                            marginBottom: '16px',
-                                                                }}>
-                                                                    <img
+                                                          display: 'flex',
+                                                          alignItems: 'center',
+                                                          gap: '10px',
+                                                          marginBottom: '16px',
+                                                        }}>
+                                                          {auction.owner && !auction.hidden ? (
+                                                            <Link
+                                                              href={`/profile/${auction.owner._id}`}
+                                                              scroll={false}
+                                                              onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                e.preventDefault();
+                                                                navigateWithTop(`/profile/${auction.owner?._id}`);
+                                                              }}
+                                                              style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '10px',
+                                                                textDecoration: 'none',
+                                                                color: 'inherit',
+                                                              }}
+                                                            >
+                                                              <img
                                                                 src={(() => {
-                                                                    if (auction.hidden) {
-                                                                        return DEFAULT_PROFILE_IMAGE;
-                                                                    }
-                                                                    if (auction.owner?.avatar?.url) {
-                                                                        const imageUrl = auction.owner.avatar.url;
-                                                                        if (imageUrl.startsWith('http')) {
-                                                                            return imageUrl;
-                                                                        } else if (imageUrl.startsWith('/static/')) {
-                                                                            const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                                                            console.log('🎯 AUCTION SIDEBAR USER AVATAR:', {
-                                                                                originalUrl: imageUrl,
-                                                                                finalUrl: finalUrl,
-                                                                                auctionId: auction._id,
-                                                                                ownerName: auction.owner?.firstName || auction.owner?.name
-                                                                            });
-                                                                            return finalUrl;
-                                                                        } else if (imageUrl.startsWith('/')) {
-                                                                            const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                                                            console.log('🎯 AUCTION SIDEBAR USER AVATAR:', {
-                                                                                originalUrl: imageUrl,
-                                                                                finalUrl: finalUrl,
-                                                                                auctionId: auction._id,
-                                                                                ownerName: auction.owner?.firstName || auction.owner?.name
-                                                                            });
-                                                                            return finalUrl;
-                                                                        } else {
-                                                                            const finalUrl = `${app.baseURL}${imageUrl}`;
-                                                                            console.log('🎯 AUCTION SIDEBAR USER AVATAR:', {
-                                                                                originalUrl: imageUrl,
-                                                                                finalUrl: finalUrl,
-                                                                                auctionId: auction._id,
-                                                                                ownerName: auction.owner?.firstName || auction.owner?.name
-                                                                            });
-                                                                            return finalUrl;
-                                                                        }
-                                                                    }
-                                                                    return DEFAULT_PROFILE_IMAGE;
+                                                                  if (auction.owner?.avatar?.url) {
+                                                                    const imageUrl = auction.owner.avatar.url;
+                                                                    if (imageUrl.startsWith('http')) return imageUrl;
+                                                                    return `${app.baseURL}${imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl}`;
+                                                                  }
+                                                                  return DEFAULT_PROFILE_IMAGE;
                                                                 })()}
-                                                                        alt="Owner"
-                                                                        style={{
-                                                                    width: '32px',
-                                                                    height: '32px',
-                                                                    borderRadius: '50%',
-                                                                            objectFit: 'contain',
-                                                                    filter: hasAuctionEnded ? 'grayscale(100%)' : 'none',
-                                                                        }}
-                                                                        onError={(e) => {
-                                                                    const target = e.target;
-                                                                    target.src = DEFAULT_PROFILE_IMAGE;
+                                                                alt="Owner"
+                                                                style={{
+                                                                  width: '32px',
+                                                                  height: '32px',
+                                                                  borderRadius: '50%',
+                                                                  objectFit: 'contain',
+                                                                  filter: hasAuctionEnded ? 'grayscale(100%)' : 'none',
                                                                 }}
-                                                            />
-                                                            <span style={{
+                                                                onError={(e) => {
+                                                                  e.target.src = DEFAULT_PROFILE_IMAGE;
+                                                                }}
+                                                              />
+                                                              <span style={{
+                                                                fontSize: '14px',
+                                                                color: hasAuctionEnded ? '#888' : '#0063b1',
+                                                                fontWeight: '600',
+                                                                transition: 'color 0.3s ease',
+                                                              }}
+                                                              onMouseEnter={(e) => {
+                                                                if (!hasAuctionEnded) {
+                                                                  e.currentTarget.style.color = '#00a3e0';
+                                                                  e.currentTarget.style.textDecoration = 'underline';
+                                                                }
+                                                              }}
+                                                              onMouseLeave={(e) => {
+                                                                if (!hasAuctionEnded) {
+                                                                  e.currentTarget.style.color = '#0063b1';
+                                                                  e.currentTarget.style.textDecoration = 'none';
+                                                                }
+                                                              }}
+                                                              >
+                                                                {(() => {
+                                                                  if (auction.owner?.entreprise) return auction.owner.entreprise;
+                                                                  if (auction.owner?.companyName) return auction.owner.companyName;
+                                                                  if (auction.owner?.firstName && auction.owner?.lastName) return `${auction.owner.firstName} ${auction.owner.lastName}`;
+                                                                  if (auction.owner?.name) return auction.owner.name;
+                                                                  if (auction.seller?.name) return auction.seller.name;
+                                                                  return t('common.seller');
+                                                                })()}
+                                                              </span>
+                                                            </Link>
+                                                          ) : (
+                                                            <>
+                                                              <img
+                                                                src={DEFAULT_PROFILE_IMAGE}
+                                                                alt="Owner"
+                                                                style={{
+                                                                  width: '32px',
+                                                                  height: '32px',
+                                                                  borderRadius: '50%',
+                                                                  objectFit: 'contain',
+                                                                  filter: hasAuctionEnded ? 'grayscale(100%)' : 'none',
+                                                                }}
+                                                              />
+                                                              <span style={{
                                                                 fontSize: '14px',
                                                                 color: hasAuctionEnded ? '#888' : '#666',
-                                                                        fontWeight: '500',
-                                                                    }}>
-                                                                        {(() => {
-                                                                            // Check if seller is hidden (anonymous)
-                                                                            if (auction.hidden === true) {
-                                                                        return t('common.anonymous');
-                                                                            }
-                                                                            
-                                                                            // Prioritize company name over personal name
-                                                                            if (auction.owner?.entreprise) {
-                                                                                return auction.owner.entreprise;
-                                                                            }
-                                                                            if (auction.owner?.companyName) {
-                                                                                return auction.owner.companyName;
-                                                                            }
-                                                                            
-                                                                            // Try owner firstName + lastName
-                                                                            if (auction.owner?.firstName && auction.owner?.lastName) {
-                                                                                return `${auction.owner.firstName} ${auction.owner.lastName}`;
-                                                                            }
-                                                                            // Try owner name field
-                                                                            if (auction.owner?.name) {
-                                                                                return auction.owner.name;
-                                                                            }
-                                                                            // Try seller name
-                                                                            if (auction.seller?.name) {
-                                                                                return auction.seller.name;
-                                                                            }
-                                                                            // Try just firstName
-                                                                            if (auction.owner?.firstName) {
-                                                                                return auction.owner.firstName;
-                                                                            }
-                                                                            // Default fallback
-                                                                    return t('common.seller');
-                                                                        })()}
-                                                            </span>
-                                                            </div>
+                                                                fontWeight: '500',
+                                                              }}>
+                                                                {auction.hidden ? t('common.anonymous') : t('common.seller')}
+                                                              </span>
+                                                            </>
+                                                          )}
+                                                        </div>
 
                                                         {/* View Auction Button */}
                                                         <Link

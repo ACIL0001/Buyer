@@ -156,6 +156,9 @@ const MultipurposeDetails2 = () => {
   const [showAcceptedModal, setShowAcceptedModal] = useState(false); // Owner accepted offer modal
   const [showBidConfirmation, setShowBidConfirmation] = useState(false); // State for bid confirmation modal
   const [refreshKey, setRefreshKey] = useState(0); // Key to trigger re-fetch
+  const [proposalFile, setProposalFile] = useState(null); // File attachment for MIEUX_DISANT proposals
+  const proposalTextareaRef = useRef(null); // Ref for proposal textarea
+  const proposalFileInputRef = useRef(null); // Ref for file input
 
   // Get tender ID from URL params or search params
   const routeId = params?.id;
@@ -842,11 +845,15 @@ const MultipurposeDetails2 = () => {
       let proposal = '';
 
       if (isMieuxDisant) {
-        // For MIEUX_DISANT: Get proposal text
-        const proposalTextarea = document.querySelector(".proposal-textarea");
+        // For MIEUX_DISANT: proposal text (≥10 chars) OR file — at least one required
+        const proposalTextarea = proposalTextareaRef.current || document.querySelector(".proposal-textarea");
         const proposalValue = proposalTextarea?.value?.trim() || "";
-        if (!proposalValue.length) {
-          toast.error("Veuillez rédiger une proposition.");
+        if (proposalValue.length > 0 && proposalValue.length < 10) {
+          toast.error("La proposition doit comporter au moins 10 caractères.");
+          return;
+        }
+        if (proposalValue.length === 0 && !proposalFile) {
+          toast.error("Veuillez rédiger une proposition ou joindre un fichier PDF/DOCX.");
           return;
         }
         proposal = proposalValue;
@@ -945,24 +952,30 @@ const MultipurposeDetails2 = () => {
 
       console.log("[MultipurposeDetails2] Final bid amount:", finalBidAmount);
       console.log("[MultipurposeDetails2] Proposal:", proposal);
-      console.log("[MultipurposeDetails2] Tender data:", tenderData);
-
-      // Prepare the payload for tender bid
-      const payload = {
-        bidAmount: finalBidAmount,
-        ...(proposal && { proposal }), // Add proposal if it exists (for MIEUX_DISANT)
-      };
-
-      console.log("[MultipurposeDetails2] Sending tender bid payload:", payload);
-      console.log("[MultipurposeDetails2] Payload types:", {
-        bidAmount: typeof payload.bidAmount
-      });
+      console.log("[MultipurposeDetails2] Proposal file:", proposalFile?.name);
 
       // Validate required fields
       if (!auth.user._id) {
         toast.error("Utilisateur non valide. Veuillez vous reconnecter.");
         return;
       }
+
+      // Build payload — FormData when file attached (backend now has FileInterceptor), JSON otherwise
+      let payload;
+      if (proposalFile) {
+        const fd = new FormData();
+        fd.append('bidAmount', String(isMieuxDisant ? 0 : finalBidAmount));
+        if (proposal) fd.append('proposal', proposal);
+        fd.append('proposalFile', proposalFile, proposalFile.name);
+        payload = fd;
+      } else {
+        payload = {
+          bidAmount: isMieuxDisant ? 0 : finalBidAmount,
+          ...(proposal && { proposal }),
+        };
+      }
+
+      console.log("[MultipurposeDetails2] Sending tender bid payload:", payload instanceof FormData ? '[FormData with file]' : payload);
 
       try {
         // Send the tender bid using TendersAPI
@@ -996,10 +1009,12 @@ const MultipurposeDetails2 = () => {
         
         // Clear the input
         if (isMieuxDisant) {
-          const proposalTextarea = document.querySelector(".proposal-textarea");
+          const proposalTextarea = proposalTextareaRef.current || document.querySelector(".proposal-textarea");
           if (proposalTextarea) {
             proposalTextarea.value = "";
           }
+          setProposalFile(null);
+          if (proposalFileInputRef.current) proposalFileInputRef.current.value = '';
         } else {
           const bidInput = document.querySelector(".quantity__input");
           if (bidInput) {
@@ -2323,6 +2338,7 @@ const MultipurposeDetails2 = () => {
                           // MIEUX_DISANT: Proposal textarea with button
                           <div style={{ width: "100%" }}>
                             <textarea
+                              ref={proposalTextareaRef}
                               className="proposal-textarea"
                               placeholder="Rédigez votre proposition détaillée ici..."
                               style={{
@@ -2347,6 +2363,281 @@ const MultipurposeDetails2 = () => {
                                 e.target.style.boxShadow = "none";
                               }}
                             />
+                            {/* ── Modern File Upload Widget ── */}
+                            <div style={{ marginBottom: '20px' }}>
+                              {/* Section Label */}
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                marginBottom: '10px',
+                              }}>
+                                <div style={{
+                                  width: '3px',
+                                  height: '16px',
+                                  background: 'linear-gradient(180deg, #0063b1, #00a3e0)',
+                                  borderRadius: '2px',
+                                  flexShrink: 0,
+                                }} />
+                                <span style={{
+                                  fontSize: '13px',
+                                  fontWeight: '700',
+                                  color: '#374151',
+                                  letterSpacing: '0.3px',
+                                  textTransform: 'uppercase',
+                                }}>
+                                  Pièce jointe
+                                </span>
+                                <span style={{
+                                  fontSize: '11px',
+                                  fontWeight: '500',
+                                  color: '#9ca3af',
+                                  background: '#f3f4f6',
+                                  border: '1px solid #e5e7eb',
+                                  borderRadius: '20px',
+                                  padding: '2px 8px',
+                                }}>
+                                  optionnel
+                                </span>
+                              </div>
+
+                              {/* Upload Drop Zone */}
+                              <div
+                                onClick={() => proposalFileInputRef.current?.click()}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  e.currentTarget.style.borderColor = '#0063b1';
+                                  e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0,99,177,0.06) 0%, rgba(0,163,224,0.04) 100%)';
+                                  e.currentTarget.style.transform = 'scale(1.005)';
+                                }}
+                                onDragLeave={(e) => {
+                                  e.currentTarget.style.borderColor = proposalFile ? '#0063b1' : '#d1d5db';
+                                  e.currentTarget.style.background = proposalFile
+                                    ? 'linear-gradient(135deg, rgba(0,99,177,0.05) 0%, rgba(0,163,224,0.03) 100%)'
+                                    : 'linear-gradient(135deg, #fafbfc 0%, #f4f6f8 100%)';
+                                  e.currentTarget.style.transform = 'scale(1)';
+                                }}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  e.currentTarget.style.borderColor = '#d1d5db';
+                                  e.currentTarget.style.transform = 'scale(1)';
+                                  const file = e.dataTransfer.files[0];
+                                  if (file) {
+                                    const ext = file.name.split('.').pop()?.toLowerCase();
+                                    if (ext === 'pdf' || ext === 'docx' || ext === 'doc') {
+                                      setProposalFile(file);
+                                    } else {
+                                      toast.error('Format non supporté. Veuillez utiliser PDF ou DOCX.');
+                                    }
+                                  }
+                                }}
+                                style={{
+                                  position: 'relative',
+                                  border: `2px dashed ${proposalFile ? '#0063b1' : '#d1d5db'}`,
+                                  borderRadius: '16px',
+                                  padding: proposalFile ? '16px 20px' : '28px 20px',
+                                  background: proposalFile
+                                    ? 'linear-gradient(135deg, rgba(0,99,177,0.05) 0%, rgba(0,163,224,0.03) 100%)'
+                                    : 'linear-gradient(135deg, #fafbfc 0%, #f4f6f8 100%)',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                  overflow: 'hidden',
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!proposalFile) {
+                                    e.currentTarget.style.borderColor = '#93c5fd';
+                                    e.currentTarget.style.background = 'linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%)';
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!proposalFile) {
+                                    e.currentTarget.style.borderColor = '#d1d5db';
+                                    e.currentTarget.style.background = 'linear-gradient(135deg, #fafbfc 0%, #f4f6f8 100%)';
+                                  }
+                                }}
+                              >
+                                {/* Subtle bg grid pattern */}
+                                {!proposalFile && (
+                                  <div style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    backgroundImage: `radial-gradient(circle, #e5e7eb 1px, transparent 1px)`,
+                                    backgroundSize: '24px 24px',
+                                    opacity: 0.5,
+                                    pointerEvents: 'none',
+                                  }} />
+                                )}
+
+                                <input
+                                  ref={proposalFileInputRef}
+                                  type="file"
+                                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                  style={{ display: 'none' }}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      const ext = file.name.split('.').pop()?.toLowerCase();
+                                      if (ext === 'pdf' || ext === 'docx' || ext === 'doc') {
+                                        setProposalFile(file);
+                                      } else {
+                                        toast.error('Format non supporté. Veuillez utiliser PDF ou DOCX.');
+                                      }
+                                    }
+                                  }}
+                                />
+
+                                {proposalFile ? (
+                                  /* ── File Selected State ── */
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', zIndex: 1 }}>
+                                    {/* File type icon */}
+                                    <div style={{
+                                      width: '48px',
+                                      height: '48px',
+                                      flexShrink: 0,
+                                      borderRadius: '12px',
+                                      background: proposalFile.name.toLowerCase().endsWith('.pdf')
+                                        ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)'
+                                        : 'linear-gradient(135deg, #4c6ef5 0%, #3b5bdb 100%)',
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      boxShadow: proposalFile.name.toLowerCase().endsWith('.pdf')
+                                        ? '0 4px 12px rgba(238, 90, 36, 0.35)'
+                                        : '0 4px 12px rgba(59, 91, 219, 0.35)',
+                                    }}>
+                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="white" style={{ marginBottom: '1px' }}>
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+                                        <polyline points="14 2 14 8 20 8" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                                      </svg>
+                                      <span style={{ fontSize: '8px', fontWeight: '800', color: 'white', letterSpacing: '0.5px' }}>
+                                        {proposalFile.name.toLowerCase().endsWith('.pdf') ? 'PDF' : 'DOC'}
+                                      </span>
+                                    </div>
+
+                                    {/* File info */}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <p style={{
+                                        margin: '0 0 3px 0',
+                                        fontSize: '14px',
+                                        fontWeight: '700',
+                                        color: '#111827',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                      }}>
+                                        {proposalFile.name}
+                                      </p>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                                          {proposalFile.size >= 1024 * 1024
+                                            ? `${(proposalFile.size / (1024 * 1024)).toFixed(2)} MB`
+                                            : `${(proposalFile.size / 1024).toFixed(1)} KB`}
+                                        </span>
+                                        <span style={{
+                                          width: '3px',
+                                          height: '3px',
+                                          borderRadius: '50%',
+                                          background: '#d1d5db',
+                                          display: 'inline-block',
+                                        }} />
+                                        <span style={{
+                                          fontSize: '11px',
+                                          fontWeight: '600',
+                                          color: '#16a34a',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '3px',
+                                        }}>
+                                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                          </svg>
+                                          Prêt à envoyer
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    {/* Change / Remove actions */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); proposalFileInputRef.current?.click(); }}
+                                        style={{
+                                          background: 'rgba(0,99,177,0.08)',
+                                          border: '1px solid rgba(0,99,177,0.2)',
+                                          borderRadius: '8px',
+                                          cursor: 'pointer',
+                                          color: '#0063b1',
+                                          fontSize: '11px',
+                                          fontWeight: '600',
+                                          padding: '5px 10px',
+                                          transition: 'all 0.2s ease',
+                                          whiteSpace: 'nowrap',
+                                        }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,99,177,0.14)'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(0,99,177,0.08)'; }}
+                                        title="Changer le fichier"
+                                      >
+                                        Changer
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setProposalFile(null);
+                                          if (proposalFileInputRef.current) proposalFileInputRef.current.value = '';
+                                        }}
+                                        style={{
+                                          width: '30px',
+                                          height: '30px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          background: 'rgba(239,68,68,0.08)',
+                                          border: '1px solid rgba(239,68,68,0.2)',
+                                          borderRadius: '8px',
+                                          cursor: 'pointer',
+                                          color: '#ef4444',
+                                          transition: 'all 0.2s ease',
+                                          flexShrink: 0,
+                                        }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.14)'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
+                                        title="Supprimer le fichier"
+                                      >
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                          <line x1="18" y1="6" x2="6" y2="18"/>
+                                          <line x1="6" y1="6" x2="18" y2="18"/>
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  /* ── Empty / Upload State ── */
+                                  <div style={{ textAlign: 'center', position: 'relative', zIndex: 1, pointerEvents: 'none' }}>
+                                    {/* Upload cloud icon */}
+                                    <div style={{
+                                      width: '56px',
+                                      height: '56px',
+                                      margin: '0 auto 14px',
+                                      background: 'linear-gradient(135deg, rgba(0,99,177,0.1) 0%, rgba(0,163,224,0.08) 100%)',
+                                      border: '1.5px solid rgba(0,99,177,0.15)',
+                                      borderRadius: '16px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                    }}>
+                                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0063b1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="16 16 12 12 8 16"/>
+                                        <line x1="12" y1="12" x2="12" y2="21"/>
+                                        <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                                      </svg>
+                                    </div>
+                                    <p style={{ margin: 0, fontSize: '14px', fontWeight: '700', color: '#374151' }}>
+                                      Glissez votre fichier ici
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                             <button
                               className="bid-btn-modern"
                               onClick={isOwner ? undefined : handleBidClick}

@@ -69,7 +69,11 @@ function ProfilePage() {
         queryKey: ['identity'],
         queryFn: async () => {
             const response = await IdentityAPI.getMyIdentity();
-            return response.data as any;
+            const data = response.data as any;
+            if (data && !initialIdentity) {
+                setInitialIdentity(data);
+            }
+            return data;
         },
         retry: 1
     });
@@ -96,11 +100,24 @@ function ProfilePage() {
         jobTitle: "",
         isProfileVisible: true,
     });
+
+    const [initialFormData, setInitialFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        wilaya: "",
+        activitySector: "",
+        companyName: "",
+        jobTitle: "",
+        isProfileVisible: true,
+    });
     
     // Document Upload States
     const [uploadingFile, setUploadingFile] = useState<File | null>(null);
     const [isUploadingDocument, setIsUploadingDocument] = useState<string | null>(null);
     const [isSubmittingIdentity, setIsSubmittingIdentity] = useState(false);
+    const [initialIdentity, setInitialIdentity] = useState<any>(null);
     const [showVerificationPopup, setShowVerificationPopup] = useState(false);
     
     // Refs
@@ -276,7 +293,7 @@ function ProfilePage() {
         });
 
         if (auth.user) {
-            setFormData({
+            const initialData = {
                 firstName: auth.user.firstName || "",
                 lastName: auth.user.lastName || "",
                 email: auth.user.email || "",
@@ -288,7 +305,9 @@ function ProfilePage() {
                 companyName: (auth.user as any).companyName || (auth.user as any).socialReason || "",
                 jobTitle: auth.user.jobTitle || "",
                 isProfileVisible: (auth.user as any).isProfileVisible !== undefined ? (auth.user as any).isProfileVisible : true,
-            });
+            };
+            setFormData(initialData);
+            setInitialFormData(initialData);
         }
         
         // DEVELOPMENT: Force show for testing
@@ -359,8 +378,17 @@ function ProfilePage() {
         }
     };
 
+    const hasChanges = JSON.stringify(formData) !== JSON.stringify(initialFormData);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!hasChanges) {
+            enqueueSnackbar(t("noChangesDetected") || "Aucune modification détectée", { variant: "info" });
+            setIsEditing(false);
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -804,10 +832,26 @@ function ProfilePage() {
         }
     }, [activeTab]); */
 
+    const hasIdentityChanges = JSON.stringify(identity) !== JSON.stringify(initialIdentity);
+    const canSubmitIdentity = identity && 
+        identity._id && 
+        (identity.status !== 'PENDING' && identity.status !== 'VERIFIED') &&
+        (hasIdentityChanges || (identity.status === 'REJECTED' || identity.status === 'NOT_SUBMITTED' || !identity.status));
+
     const handleSubmitIdentity = async () => {
         if (!identity || !identity._id) {
             enqueueSnackbar('Veuillez d\'abord télécharger au moins un document', { variant: 'warning' });
             return;
+        }
+
+        if (identity.status === 'PENDING') {
+            enqueueSnackbar('Votre demande est déjà en cours de vérification', { variant: 'info' });
+            return;
+        }
+
+        if (!canSubmitIdentity && identity.status !== 'REJECTED') {
+             enqueueSnackbar('Aucune modification détectée dans vos documents', { variant: 'info' });
+             return;
         }
 
         try {
@@ -2130,7 +2174,7 @@ function ProfilePage() {
 
                                                             <button
                                                                 type="submit"
-                                                                disabled={isLoading}
+                                                                disabled={isLoading || !hasChanges}
                                                                 className="modern-btn primary"
                                                                 style={{
                                                                     padding: '0.75rem 1.5rem',
@@ -2139,7 +2183,8 @@ function ProfilePage() {
                                                                     background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
                                                                     color: 'white',
                                                                     fontWeight: 600,
-                                                                    cursor: 'pointer',
+                                                                    cursor: isLoading || !hasChanges ? 'not-allowed' : 'pointer',
+                                                                    opacity: isLoading || !hasChanges ? 0.7 : 1,
                                                                     display: 'flex',
                                                                     alignItems: 'center',
                                                                     gap: '0.5rem',
@@ -2234,9 +2279,13 @@ function ProfilePage() {
                                                         <div style={{ padding: '20px 0', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #e2e8f0', marginTop: '20px' }}>
                                                              <button
                                                                  onClick={handleSubmitIdentity}
-                                                                 disabled={isSubmittingIdentity}
+                                                                 disabled={isSubmittingIdentity || !canSubmitIdentity}
                                                                  className="modern-btn primary"
-                                                                 style={{ padding: '12px 24px' }}
+                                                                 style={{ 
+                                                                     padding: '12px 24px',
+                                                                     cursor: (isSubmittingIdentity || !canSubmitIdentity) ? 'not-allowed' : 'pointer',
+                                                                     opacity: (isSubmittingIdentity || !canSubmitIdentity) ? 0.7 : 1
+                                                                 }}
                                                              >
                                                                  {isSubmittingIdentity ? (
                                                                      <>
@@ -2246,7 +2295,11 @@ function ProfilePage() {
                                                                  ) : (
                                                                      <>
                                                                         <i className="bi bi-send"></i>
-                                                                        <span>Soumettre pour vérification</span>
+                                                                        <span>
+                                                                            {identity?.status === 'PENDING' ? 'En cours de vérification' : 
+                                                                             identity?.status === 'VERIFIED' ? 'Déjà vérifié' : 
+                                                                             'Soumettre pour vérification'}
+                                                                        </span>
                                                                      </>
                                                                  )}
                                                              </button>

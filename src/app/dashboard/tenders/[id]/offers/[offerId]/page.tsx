@@ -30,7 +30,7 @@ import { TendersAPI } from '@/services/tenders';
 import { OffersAPI } from '@/services/offers';
 import useAuth from '@/hooks/useAuth';
 import { useSnackbar } from 'notistack';
-import { MdArrowBack, MdCheckCircle, MdCancel, MdAttachMoney, MdSchedule, MdPerson } from 'react-icons/md';
+import { MdArrowBack, MdCheckCircle, MdCancel, MdAttachMoney, MdSchedule, MdPerson, MdVisibility } from 'react-icons/md';
 import app from '@/config';
 
 export default function OfferDetailPage() {
@@ -259,20 +259,121 @@ export default function OfferDetailPage() {
             <Divider sx={{ mb: 3 }} />
             
             {evaluationType === 'MIEUX_DISANT' ? (
-                 <Paper 
-                    variant="outlined" 
-                    sx={{ 
-                        p: 3, 
-                        bgcolor: 'background.default', 
-                        whiteSpace: 'pre-wrap', 
-                        minHeight: 150,
-                        borderRadius: '12px',
-                        border: '1px solid',
-                        borderColor: 'divider'
-                    }}
-                 >
-                    <Typography variant="body1" sx={{ lineHeight: 1.6 }}>{offer.proposal || 'Aucune proposition textuelle fournie.'}</Typography>
-                 </Paper>
+                 <>
+                   {offer.proposal && offer.proposal.trim() !== '' && offer.proposal !== 'Aucune proposition textuelle fournie.' && (
+                     <Paper 
+                        variant="outlined" 
+                        sx={{ 
+                            p: 3, 
+                            bgcolor: 'background.default', 
+                            whiteSpace: 'pre-wrap', 
+                            minHeight: 100,
+                            borderRadius: '12px',
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            mb: (offer.proposalFile || offer.proposalFiles) ? 3 : 0
+                        }}
+                     >
+                        <Typography variant="body1" sx={{ lineHeight: 1.6 }}>{offer.proposal}</Typography>
+                     </Paper>
+                   )}
+
+                   {(offer.proposalFile || (offer.proposalFiles && offer.proposalFiles.length > 0)) && (
+                     <Box sx={{ mt: 2 }}>
+                        <Typography variant="subtitle2" gutterBottom color="text.secondary" fontWeight={600}>
+                            Document(s) de proposition
+                        </Typography>
+                        <Stack spacing={2}>
+                            {/* Record based file */}
+                            {offer.proposalFile && (
+                                <Paper 
+                                    variant="outlined" 
+                                    sx={{ 
+                                        p: 2, 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'space-between',
+                                        borderRadius: '12px',
+                                        bgcolor: alpha(theme.palette.info.main, 0.03),
+                                        border: '1px dashed',
+                                        borderColor: alpha(theme.palette.info.main, 0.3)
+                                    }}
+                                >
+                                    <Stack direction="row" spacing={2} alignItems="center">
+                                        <Avatar sx={{ bgcolor: alpha(theme.palette.info.main, 0.1), color: theme.palette.info.main }}>
+                                            <MdCheckCircle />
+                                        </Avatar>
+                                        <Box>
+                                            <Typography variant="subtitle2" fontWeight={600}>
+                                                {offer.proposalFile.split('/').pop()?.split('-').slice(1).join('-') || 'Proposition technique'}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">Document PDF / Word</Typography>
+                                        </Box>
+                                    </Stack>
+                                    <Button 
+                                        variant="contained" 
+                                        size="small" 
+                                        startIcon={<MdVisibility />}
+                                        href={offer.proposalFile} 
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{ borderRadius: '8px' }}
+                                    >
+                                        Voir
+                                    </Button>
+                                </Paper>
+                            )}
+                            
+                            {/* Array based files (for future proofing or if data came this way) */}
+                            {Array.isArray(offer.proposalFiles) && offer.proposalFiles.map((file: any, index: number) => (
+                                <Paper 
+                                    key={index}
+                                    variant="outlined" 
+                                    sx={{ 
+                                        p: 2, 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'space-between',
+                                        borderRadius: '12px',
+                                        bgcolor: alpha(theme.palette.info.main, 0.03),
+                                        border: '1px dashed',
+                                        borderColor: alpha(theme.palette.info.main, 0.3)
+                                    }}
+                                >
+                                    <Stack direction="row" spacing={2} alignItems="center">
+                                        <Avatar sx={{ bgcolor: alpha(theme.palette.info.main, 0.1), color: theme.palette.info.main }}>
+                                            <MdCheckCircle />
+                                        </Avatar>
+                                        <Box>
+                                            <Typography variant="subtitle2" fontWeight={600}>
+                                                {typeof file === 'string' ? file.split('/').pop()?.split('-').slice(1).join('-') : (file.originalname || `Fichier ${index + 1}`)}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">Document joint</Typography>
+                                        </Box>
+                                    </Stack>
+                                    <Button 
+                                        variant="contained" 
+                                        size="small" 
+                                        startIcon={<MdVisibility />}
+                                        href={typeof file === 'string' ? file : file.url} 
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{ borderRadius: '8px' }}
+                                    >
+                                        Voir
+                                    </Button>
+                                </Paper>
+                            ))}
+                        </Stack>
+                     </Box>
+                   )}
+
+                   {!offer.proposal && !offer.proposalFile && (!offer.proposalFiles || offer.proposalFiles.length === 0) && (
+                     <Box sx={{ py: 4, textAlign: 'center', bgcolor: alpha(theme.palette.grey[500], 0.04), borderRadius: '12px', border: '1px dashed', borderColor: 'divider' }}>
+                        <Typography variant="body2" color="text.secondary">Aucune proposition détaillée fournie.</Typography>
+                     </Box>
+                   )}
+                 </>
             ) : (
                 <Box 
                     sx={{ 
@@ -318,13 +419,9 @@ export default function OfferDetailPage() {
                                     DATE DE SOUMISSION
                                 </Typography>
                                 <Typography variant="subtitle1" fontWeight={700}>
-                                    {(offer.createdAt || offer.date) && !isNaN(new Date(offer.createdAt || offer.date).getTime()) 
-                                        ? new Date(offer.createdAt || offer.date).toLocaleDateString('fr-FR', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric'
-                                          })
-                                        : 'Date invalide'}
+                                    {offer.createdAt || offer.date || offer.updatedAt
+                                        ? formatDate(offer.createdAt || offer.date || offer.updatedAt)
+                                        : 'Date non disponible'}
                                 </Typography>
                             </Box>
                         </Paper>
@@ -333,7 +430,7 @@ export default function OfferDetailPage() {
             </Box>
           </Card>
 
-          {isOwner && offer.status === 'pending' && (
+          {isOwner && offer.status === 'pending' && evaluationType !== 'MOINS_DISANT' && (
               <Stack direction="row" spacing={2} justifyContent="flex-end">
                   <Button 
                     variant="outlined" 
@@ -442,12 +539,14 @@ export default function OfferDetailPage() {
                     <Typography variant="body1" fontWeight={500} gutterBottom sx={{ lineHeight: 1.4 }}>{tender.title}</Typography>
                  </Box>
                  
-                 <Box mb={3}>
-                    <Typography variant="caption" color="text.secondary" fontWeight={600}>BUDGET</Typography>
-                    <Typography variant="h5" color="text.primary" fontWeight={700}>
-                        {(tender.budget || tender.maxBudget || tender.estimatedBudget || tender.amount || 0).toLocaleString()} <Typography component="span" variant="body2" color="text.secondary">DA</Typography>
-                    </Typography>
-                 </Box>
+                 {evaluationType !== 'MIEUX_DISANT' && (
+                   <Box mb={3}>
+                      <Typography variant="caption" color="text.secondary" fontWeight={600}>BUDGET</Typography>
+                      <Typography variant="h5" color="text.primary" fontWeight={700}>
+                          {(tender.budget || tender.maxBudget || tender.estimatedBudget || tender.amount || 0).toLocaleString()} <Typography component="span" variant="body2" color="text.secondary">DA</Typography>
+                      </Typography>
+                   </Box>
+                 )}
 
                  <Button 
                     variant="outlined" 
@@ -479,9 +578,9 @@ export default function OfferDetailPage() {
                   <TableCell sx={{ fontWeight: 700 }}>Soumissionnaire</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Annonce</TableCell>
                   <TableCell sx={{ fontWeight: 700 }} align="center">Quantité</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }} align="right">Prix proposé</TableCell>
+                  {evaluationType !== 'MIEUX_DISANT' && <TableCell sx={{ fontWeight: 700 }} align="right">Prix proposé</TableCell>}
                   <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-                  {isOwner && <TableCell sx={{ fontWeight: 700 }} align="center">Actions</TableCell>}
+                  {isOwner && evaluationType !== 'MOINS_DISANT' && <TableCell sx={{ fontWeight: 700 }} align="center">Actions</TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -529,17 +628,19 @@ export default function OfferDetailPage() {
                       <TableCell align="center">
                         <Typography variant="body2">{tender?.quantity || 1}</Typography>
                       </TableCell>
-                       <TableCell align="right">
-                        <Typography variant="subtitle2" color="primary.main" fontWeight={700}>
-                          {(bid.bidAmount || bid.price || 0).toLocaleString('fr-FR')} DA
-                        </Typography>
-                      </TableCell>
+                       {evaluationType !== 'MIEUX_DISANT' && (
+                        <TableCell align="right">
+                          <Typography variant="subtitle2" color="primary.main" fontWeight={700}>
+                            {(bid.bidAmount || bid.price || 0).toLocaleString('fr-FR')} DA
+                          </Typography>
+                        </TableCell>
+                       )}
                       <TableCell>
                         <Typography variant="caption" color="text.secondary">
                           {formatDate(bid.createdAt || bid.date)}
                         </Typography>
                       </TableCell>
-                      {isOwner && (
+                      {isOwner && evaluationType !== 'MOINS_DISANT' && (
                         <TableCell align="center">
                           <Button 
                             variant="outlined" 
@@ -559,7 +660,7 @@ export default function OfferDetailPage() {
                             Accepter
                           </Button>
                         </TableCell>
-                      )}
+                       )}
                     </TableRow>
                   );
                 })}

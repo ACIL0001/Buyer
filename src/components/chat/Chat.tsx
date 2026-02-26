@@ -296,7 +296,13 @@ export default function Chat() {
   // Handle URL parameters to open specific chat
   useEffect(() => {
     const chatIdParam = searchParams.get('chatId');
-    const userIdParam = searchParams.get('userId');
+    const userIdParam = searchParams.get('userId') || searchParams.get('sellerId');
+    const announceId = searchParams.get('announceId');
+    const announceType = searchParams.get('announceType');
+    
+    if (announceId && announceType) {
+      console.log(`💬 Chat opened from ${announceType} listing: ${announceId}`);
+    }
     
     // Create a stable key for tracking processed params
     const currentParams = `${chatIdParam || ''}_${userIdParam || ''}`;

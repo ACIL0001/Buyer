@@ -828,68 +828,87 @@ const Home1LiveDirectSales = () => {
                             gap: 'clamp(6px, 1.5vw, 10px)',
                             marginBottom: 'clamp(10px, 2vw, 14px)',
                           }}>
-                            <img
-                              src={normalizeImageUrl(directSale.owner?.avatar?.url || directSale.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
-                              alt={displayName}
-                              style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                objectFit: 'contain',
-                              }}
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.src = DEFAULT_PROFILE_IMAGE;
-                              }}
-                            />
                             {directSale.owner && !directSale.hidden ? (
                               <Link
                                 href={`/profile/${directSale.owner?._id}`}
+                                scroll={false}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  navigateWithScroll(`/profile/${directSale.owner?._id}`);
+                                }}
                                 style={{
-                                  fontSize: '14px',
-                                  color: '#8a7e1f',
-                                  fontWeight: '600',
-                                  textDecoration: 'none',
-                                  display: 'inline-flex',
+                                  display: 'flex',
                                   alignItems: 'center',
-                                  gap: '4px',
-                                  transition: 'all 0.3s ease',
-                                  cursor: isSoldOut ? 'not-allowed' : 'pointer',
-                                  pointerEvents: isSoldOut ? 'none' : 'auto',
+                                  gap: '10px',
+                                  textDecoration: 'none',
+                                }}
+                              >
+                                <img
+                                  src={normalizeImageUrl(directSale.owner?.avatar?.url || directSale.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
+                                  alt={displayName}
+                                  style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '50%',
+                                    objectFit: 'contain',
+                                  }}
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = DEFAULT_PROFILE_IMAGE;
+                                  }}
+                                />
+                                <span style={{
+                                  fontSize: '14px',
+                                  color: isSoldOut ? '#888' : '#8a7e1f',
+                                  fontWeight: '600',
+                                  transition: 'color 0.3s ease',
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!isSoldOut) {
+                                    e.currentTarget.style.color = '#3d370e';
                                     e.currentTarget.style.textDecoration = 'underline';
-                                    e.currentTarget.style.color = '#6b5a1a';
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isSoldOut) {
-                                    e.currentTarget.style.textDecoration = 'none';
                                     e.currentTarget.style.color = '#8a7e1f';
+                                    e.currentTarget.style.textDecoration = 'none';
                                   }
                                 }}
-                                onClick={(e) => {
-                                  if (isSoldOut) {
-                                    e.preventDefault();
-                                  }
-                                }}
-                              >
-                                {directSale.owner.entreprise || displayName}
-                                {!isSoldOut && (
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
-                                    <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
-                                  </svg>
-                                )}
+                                >
+                                  {directSale.owner.entreprise || displayName}
+                                  {!isSoldOut && (
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
+                                      <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
+                                    </svg>
+                                  )}
+                                </span>
                               </Link>
                             ) : (
-                              <span style={{
-                                fontSize: '14px',
-                                color: '#8a7e1f',
-                                fontWeight: '500',
-                              }}>
-                                {displayName}
-                              </span>
+                              <>
+                                <img
+                                  src={normalizeImageUrl(directSale.owner?.avatar?.url || directSale.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
+                                  alt={displayName}
+                                  style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '50%',
+                                    objectFit: 'contain',
+                                  }}
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = DEFAULT_PROFILE_IMAGE;
+                                  }}
+                                />
+                                <span style={{
+                                  fontSize: '14px',
+                                  color: '#8a7e1f',
+                                  fontWeight: '500',
+                                }}>
+                                  {displayName}
+                                </span>
+                              </>
                             )}
                           </div>
 

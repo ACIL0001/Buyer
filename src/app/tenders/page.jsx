@@ -1869,28 +1869,85 @@ const MultipurposeTenderSidebar = () => {
                                                             gap: '10px',
                                                             marginBottom: '16px',
                                                         }}>
-                                                            <img
-                                                                src={tender.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE)}
-                                                                alt={displayName}
+                                                            {tender.owner && !tender.hidden ? (
+                                                              <Link
+                                                                href={`/profile/${tender.owner._id}`}
+                                                                scroll={false}
+                                                                onClick={(e) => {
+                                                                  e.stopPropagation();
+                                                                  e.preventDefault();
+                                                                  navigateWithTop(`/profile/${tender.owner?._id}`);
+                                                                }}
                                                                 style={{
-                                                                    width: '32px',
-                                                                    height: '32px',
-                                                                    borderRadius: '50%',
-                                                                    objectFit: 'contain',
-                                                                    filter: hasTenderEnded ? 'grayscale(100%)' : 'none',
+                                                                  display: 'flex',
+                                                                  alignItems: 'center',
+                                                                  gap: '10px',
+                                                                  textDecoration: 'none',
                                                                 }}
-                                                                onError={(e) => {
-                                                                    const target = e.target;
-                                                                    target.src = DEFAULT_PROFILE_IMAGE;
+                                                              >
+                                                                <img
+                                                                    src={tender.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE)}
+                                                                    alt={displayName}
+                                                                    style={{
+                                                                        width: '32px',
+                                                                        height: '32px',
+                                                                        borderRadius: '50%',
+                                                                        objectFit: 'contain',
+                                                                        filter: hasTenderEnded ? 'grayscale(100%)' : 'none',
+                                                                    }}
+                                                                    onError={(e) => {
+                                                                        const target = e.target;
+                                                                        target.src = DEFAULT_PROFILE_IMAGE;
+                                                                    }}
+                                                                />
+                                                                <span style={{
+                                                                    fontSize: '14px',
+                                                                    color: hasTenderEnded ? '#888' : '#0063b1',
+                                                                    fontWeight: '600',
+                                                                    transition: 'color 0.3s ease',
                                                                 }}
-                                                            />
-                                                            <span style={{
-                                                                fontSize: '14px',
-                                                                color: hasTenderEnded ? '#888' : '#666',
-                                                                fontWeight: '500',
-                                                            }}>
-                                                                {displayName}
-                                                            </span>
+                                                                onMouseEnter={(e) => {
+                                                                  if (!hasTenderEnded) {
+                                                                    e.currentTarget.style.color = '#00a3e0';
+                                                                    e.currentTarget.style.textDecoration = 'underline';
+                                                                  }
+                                                                }}
+                                                                onMouseLeave={(e) => {
+                                                                  if (!hasTenderEnded) {
+                                                                    e.currentTarget.style.color = '#0063b1';
+                                                                    e.currentTarget.style.textDecoration = 'none';
+                                                                  }
+                                                                }}
+                                                                >
+                                                                    {displayName}
+                                                                </span>
+                                                              </Link>
+                                                            ) : (
+                                                              <>
+                                                                <img
+                                                                    src={tender.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE)}
+                                                                    alt={displayName}
+                                                                    style={{
+                                                                        width: '32px',
+                                                                        height: '32px',
+                                                                        borderRadius: '50%',
+                                                                        objectFit: 'contain',
+                                                                        filter: hasTenderEnded ? 'grayscale(100%)' : 'none',
+                                                                    }}
+                                                                    onError={(e) => {
+                                                                        const target = e.target;
+                                                                        target.src = DEFAULT_PROFILE_IMAGE;
+                                                                    }}
+                                                                />
+                                                                <span style={{
+                                                                    fontSize: '14px',
+                                                                    color: hasTenderEnded ? '#888' : '#666',
+                                                                    fontWeight: '500',
+                                                                }}>
+                                                                    {displayName}
+                                                                </span>
+                                                              </>
+                                                            )}
                                                         </div>
 
                                                         {/* View Tender Button */}

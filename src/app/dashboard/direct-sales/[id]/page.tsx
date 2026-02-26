@@ -27,7 +27,8 @@ import { useTheme } from '@mui/material/styles';
 import { DirectSaleAPI } from '@/services/direct-sale';
 import { DirectSale } from '@/types/direct-sale';
 import Label from '@/components/Label';
-import { MdShoppingCart, MdLocalOffer, MdStore, MdPerson } from 'react-icons/md';
+import { MdShoppingCart, MdLocalOffer, MdStore, MdPerson, MdCheckCircle, MdCancel } from 'react-icons/md';
+import { Button } from '@mui/material';
 
 // Mock Translation
 const useTranslation = () => {
@@ -126,6 +127,24 @@ export default function DirectSaleDetailPage() {
       setPurchasesLoading(false);
     }
   }, [id]);
+
+  const handleConfirmPurchase = async (purchaseId: string) => {
+    try {
+      await DirectSaleAPI.confirmPurchase(purchaseId);
+      fetchPurchases();
+    } catch (error) {
+      console.error('Error confirming purchase:', error);
+    }
+  };
+
+  const handleRejectPurchase = async (purchaseId: string) => {
+    try {
+      await DirectSaleAPI.cancelPurchase(purchaseId);
+      fetchPurchases();
+    } catch (error) {
+      console.error('Error rejecting purchase:', error);
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -299,6 +318,100 @@ export default function DirectSaleDetailPage() {
             </Grid>
         </Grid>
 
+        {/* Purchases / Orders Table */}
+        <Grid size={{ xs: 12 }}>
+          <Card sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              📦 {t('directSales.detail.orders', { count: purchases.length })}
+            </Typography>
+            {purchasesLoading ? (
+              <Box display="flex" justifyContent="center" py={4}>
+                <CircularProgress size={28} />
+              </Box>
+            ) : purchases.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
+                {t('directSales.detail.noOrders')}
+              </Typography>
+            ) : (
+              <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: 'grey.50' }}>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('directSales.detail.table.buyer')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('common.quantity')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('directSales.detail.table.totalPrice')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('common.date')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>{t('directSales.detail.table.status')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {purchases.map((purchase: any) => {
+                      const buyerName = purchase.buyer?.firstName
+                        ? `${purchase.buyer.firstName} ${purchase.buyer.lastName || ''}`.trim()
+                        : purchase.buyer?.username || purchase.buyer?.email || 'Acheteur';
+                      const buyerId = purchase.buyer?._id || purchase.buyer;
+                      const isPending = purchase.status === 'PENDING';
+                      return (
+                        <TableRow key={purchase._id} hover>
+                          <TableCell>
+                            <Stack direction="row" alignItems="center" spacing={1}>
+                              <Avatar sx={{ width: 28, height: 28, bgcolor: 'primary.main', fontSize: 12 }}>
+                                {buyerName.charAt(0).toUpperCase()}
+                              </Avatar>
+                              <Link href={`/profile/${buyerId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                <Typography variant="body2" sx={{ '&:hover': { textDecoration: 'underline' } }}>
+                                  {buyerName}
+                                </Typography>
+                              </Link>
+                            </Stack>
+                          </TableCell>
+                          <TableCell>{purchase.quantity || 1}</TableCell>
+                          <TableCell>{((purchase.price || directSale.price) * (purchase.quantity || 1)).toLocaleString()} DA</TableCell>
+                          <TableCell>{formatDate(purchase.createdAt)}</TableCell>
+                          <TableCell>
+                            <Chip
+                              label={purchase.status || 'PENDING'}
+                              color={getPurchaseStatusColor(purchase.status) as any}
+                              size="small"
+                              variant="outlined"
+                            />
+                          </TableCell>
+                          <TableCell align="right">
+                            {isPending && (
+                              <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  color="success"
+                                  startIcon={<MdCheckCircle />}
+                                  onClick={() => handleConfirmPurchase(purchase._id)}
+                                  sx={{ textTransform: 'none', fontSize: '12px' }}
+                                >
+                                  Confirmé
+                                </Button>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  color="error"
+                                  startIcon={<MdCancel />}
+                                  onClick={() => handleRejectPurchase(purchase._id)}
+                                  sx={{ textTransform: 'none', fontSize: '12px' }}
+                                >
+                                  Refusé
+                                </Button>
+                              </Stack>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </Card>
+        </Grid>
 
     </Container>
   );

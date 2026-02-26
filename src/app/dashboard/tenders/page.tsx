@@ -45,6 +45,12 @@ export default function TendersPage() {
       format: (value: any) => typeof value === 'object' ? value?.name : value
     },
     { 
+      id: 'evaluationType', 
+      label: 'Type', 
+      alignRight: false, 
+      searchable: false,
+    },
+    { 
       id: 'budget', 
       label: t('dashboard.list.columns.budget'), 
       alignRight: false, 
@@ -166,7 +172,7 @@ export default function TendersPage() {
     return (
       <TableBody>
         {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-          const { _id, title, category, maxBudget, budget, endingAt, deadline, bidsCount, bids, status } = row;
+          const { _id, title, category, maxBudget, budget, endingAt, deadline, bidsCount, bids, status, evaluationType } = row;
           
           const categoryName = typeof category === 'object' ? category?.name : category;
           const displayBudget = maxBudget || budget || 0;
@@ -184,6 +190,30 @@ export default function TendersPage() {
                 <Label variant="ghost" color="default">
                   {categoryName || 'N/A'}
                 </Label>
+              </TableCell>
+              <TableCell align="left">
+                {evaluationType ? (
+                  <Chip 
+                    label={evaluationType === 'MIEUX_DISANT' ? '✨ Mieux Disant' : '💰 Moins Disant'}
+                    size="small"
+                    color={evaluationType === 'MIEUX_DISANT' ? 'info' : 'success'}
+                    variant="soft"
+                    sx={{ 
+                      fontWeight: 600,
+                      fontSize: '0.7rem',
+                      borderRadius: '6px',
+                      ...(evaluationType === 'MIEUX_DISANT' ? {
+                        bgcolor: alpha(theme.palette.info.main, 0.1),
+                        color: theme.palette.info.dark,
+                      } : {
+                        bgcolor: alpha(theme.palette.success.main, 0.1),
+                        color: theme.palette.success.dark,
+                      })
+                    }}
+                  />
+                ) : (
+                  <Typography variant="body2" color="text.secondary">N/A</Typography>
+                )}
               </TableCell>
               <TableCell align="left">{displayBudget > 0 ? displayBudget.toLocaleString(i18n.language, { style: 'currency', currency: 'DZD' }) : 'N/A'}</TableCell>
               <TableCell align="left">{formatDate(displayDate)}</TableCell>
@@ -211,7 +241,7 @@ export default function TendersPage() {
         })}
         {emptyRows > 0 && (
           <TableRow style={{ height: 53 * emptyRows }}>
-            <TableCell colSpan={7} />
+            <TableCell colSpan={8} />
           </TableRow>
         )}
       </TableBody>
@@ -267,7 +297,7 @@ export default function TendersPage() {
       </Box>
       
       {isLoading ? (
-        <TableSkeleton rows={rowsPerPage} columns={7} />
+        <TableSkeleton rows={rowsPerPage} columns={8} />
       ) : tenders.length === 0 ? (
         <Stack 
           spacing={3} 

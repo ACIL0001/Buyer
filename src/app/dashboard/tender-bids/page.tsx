@@ -64,6 +64,7 @@ interface TenderBid {
   createdAt: string;
   status: TenderBidStatus;
   proposal?: string;
+  proposalFile?: string; // URL of the attached file
 }
 
 export default function TenderBidsPage() {
@@ -76,6 +77,7 @@ export default function TenderBidsPage() {
   const COLUMNS = [
     { id: 'bidder.firstName', label: t('dashboard.list.columns.provider'), alignRight: false, searchable: true, sortable: true },
     { id: 'tender.title', label: t('dashboard.list.columns.tender'), alignRight: false, searchable: true, sortable: true },
+    { id: 'tender.evaluationType', label: 'Type', alignRight: false, searchable: false },
     { id: 'bidAmount', label: t('dashboard.list.columns.amountProposal'), alignRight: false, searchable: false, sortable: true },
     { id: 'createdAt', label: t('dashboard.list.columns.date'), alignRight: false, searchable: false, sortable: true },
     { id: 'status', label: t('dashboard.list.columns.status'), alignRight: false, searchable: false },
@@ -93,6 +95,7 @@ export default function TenderBidsPage() {
   const [selectedBid, setSelectedBid] = useState<TenderBid | null>(null);
   const [showBidDetailsDialog, setShowBidDetailsDialog] = useState(false);
   const [filterTab, setFilterTab] = useState<'received' | 'my'>('my');
+  const [evaluationFilter, setEvaluationFilter] = useState<'all' | 'MIEUX_DISANT' | 'MOINS_DISANT'>('all');
   const [error, setError] = useState<string | null>(null);
 
   // Sync tab with URL parameter
@@ -226,20 +229,26 @@ export default function TenderBidsPage() {
     });
   };
 
-  // Filter bids based on current tab
+  // Filter bids based on current tab and evaluation type
   const getFilteredBids = () => {
     if (!tenderBids || tenderBids.length === 0) return [];
     
     const currentUserId = auth?.user?._id;
     if (!currentUserId) return [];
     
+    let result: TenderBid[];
     if (filterTab === 'received') {
-      // Show bids made by others on user's tenders (received bids)
-      return tenderBids.filter((bid: any) => bid.type === 'received');
+      result = tenderBids.filter((bid: any) => bid.type === 'received');
     } else {
-      // Show bids made by current user (my bids)
-      return tenderBids.filter((bid: any) => bid.type === 'my');
+      result = tenderBids.filter((bid: any) => bid.type === 'my');
     }
+
+    // Apply evaluation type filter
+    if (evaluationFilter !== 'all') {
+      result = result.filter((bid) => bid.tender?.evaluationType === evaluationFilter);
+    }
+
+    return result;
   };
 
   const filteredBids = getFilteredBids();
@@ -250,7 +259,7 @@ export default function TenderBidsPage() {
     return (
       <TableBody>
         {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-          const { _id, bidder, tender, bidAmount, deliveryTime, createdAt, status, proposal } = row;
+          const { _id, bidder, tender, bidAmount, deliveryTime, createdAt, status, proposal, proposalFile } = row;
 
           return (
             <TableRow hover key={_id} tabIndex={-1}>
@@ -277,35 +286,90 @@ export default function TenderBidsPage() {
                 </Stack>
               </TableCell>
               <TableCell align="left">
-                <Stack spacing={0.5}>
-                  <Typography variant="subtitle2" noWrap>
-                    {tender?.title || 'N/A'}
-                  </Typography>
-                  {tender?.evaluationType && (
-                    <Chip 
-                      label={tender.evaluationType === 'MIEUX_DISANT' ? 'Best Offer' : 'Lowest Price'}
-                      size="small"
-                      color={tender.evaluationType === 'MIEUX_DISANT' ? 'info' : 'success'}
-                      sx={{ width: 'fit-content', fontSize: '0.7rem' }}
-                    />
-                  )}
-                </Stack>
+                <Typography variant="subtitle2" noWrap>
+                  {tender?.title || 'N/A'}
+                </Typography>
+              </TableCell>
+              
+              <TableCell align="left">
+                {tender?.evaluationType ? (
+                  <Chip 
+                    label={tender.evaluationType === 'MIEUX_DISANT' ? '✨ Mieux Disant' : '💰 Moins Disant'}
+                    size="small"
+                    color={tender.evaluationType === 'MIEUX_DISANT' ? 'info' : 'success'}
+                    variant="soft"
+                    sx={{ 
+                      fontWeight: 600,
+                      fontSize: '0.75rem',
+                      borderRadius: '6px',
+                      ...(tender.evaluationType === 'MIEUX_DISANT' ? {
+                        bgcolor: alpha(theme.palette.info.main, 0.1),
+                        color: theme.palette.info.dark,
+                      } : {
+                        bgcolor: alpha(theme.palette.success.main, 0.1),
+                        color: theme.palette.success.dark,
+                      })
+                    }}
+                  />
+                ) : (
+                  <Typography variant="body2" color="text.secondary">N/A</Typography>
+                )}
               </TableCell>
               <TableCell align="left">
                 {tender?.evaluationType === 'MIEUX_DISANT' ? (
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      maxWidth: 200,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      fontStyle: proposal ? 'normal' : 'italic',
-                      color: proposal ? 'text.primary' : 'text.secondary'
-                    }}
-                  >
-                    {proposal || 'No proposal'}
-                  </Typography>
+                  <Stack spacing={0.5}>
+                    {/* Proposal text */}
+                    {proposal ? (
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          maxWidth: 220,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          color: 'text.primary',
+                        }}
+                        title={proposal}
+                      >
+                        {proposal}
+                      </Typography>
+                    ) : (
+                      !proposalFile && (
+                        <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
+                          Aucune proposition
+                        </Typography>
+                      )
+                    )}
+                    {/* Attached file */}
+                    {proposalFile && (
+                      <Box
+                        component="a"
+                        href={proposalFile}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                        sx={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          textDecoration: 'none',
+                          width: 'fit-content',
+                        }}
+                      >
+                        <Chip
+                          label={
+                            proposalFile.toLowerCase().endsWith('.pdf') ? '📎 PDF' :
+                            proposalFile.toLowerCase().endsWith('.docx') ? '📎 DOCX' : '📎 Fichier'
+                          }
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                          clickable
+                          sx={{ fontSize: '0.65rem', height: 20 }}
+                        />
+                      </Box>
+                    )}
+                  </Stack>
                 ) : (
                   <Typography variant="h6" color="success.main">
                     {bidAmount.toLocaleString()} DA
@@ -335,7 +399,8 @@ export default function TenderBidsPage() {
                   >
                     {t('dashboard.list.viewDetails')}
                   </Button>
-                  {filterTab === 'received' && status === TenderBidStatus.PENDING && (
+                  {/* Accept/Reject only for received MIEUX_DISANT bids (MOINS_DISANT is auto-awarded by lowest price) */}
+                  {filterTab === 'received' && status === TenderBidStatus.PENDING && tender?.evaluationType === 'MIEUX_DISANT' && (
                     <>
                       <Button
                         size="small"
@@ -356,6 +421,16 @@ export default function TenderBidsPage() {
                         {t('dashboard.list.reject')}
                       </Button>
                     </>
+                  )}
+                  {/* Moins Disant: show auto-award badge instead of buttons */}
+                  {filterTab === 'received' && status === TenderBidStatus.PENDING && tender?.evaluationType !== 'MIEUX_DISANT' && (
+                    <Chip
+                      label="Auto-attribution"
+                      size="small"
+                      color="info"
+                      variant="outlined"
+                      title="Le gagnant sera désigné automatiquement au meilleur prix à la clôture"
+                    />
                   )}
                 </Stack>
               </TableCell>
@@ -501,13 +576,14 @@ export default function TenderBidsPage() {
       </Box>
 
       {/* Filter Tabs */}
-      <Card sx={{ mb: 3, borderRadius: 2 }}>
+      <Card sx={{ mb: 2, borderRadius: 2 }}>
         <Tabs
           value={filterTab}
           onChange={(event, newValue) => {
             setFilterTab(newValue);
             setPage(0);
             setSelected([]);
+            setEvaluationFilter('all');
             
             // Update URL parameters
             const params = new URLSearchParams(searchParams.toString());
@@ -535,6 +611,29 @@ export default function TenderBidsPage() {
             value="my" 
           />
         </Tabs>
+      </Card>
+
+      {/* Evaluation Type Sub-filter */}
+      <Card sx={{ mb: 3, borderRadius: 2, px: 2, py: 1 }}>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
+            Type d&apos;évaluation :
+          </Typography>
+          {(['all', 'MIEUX_DISANT', 'MOINS_DISANT'] as const).map((val) => (
+            <Chip
+              key={val}
+              label={
+                val === 'all' ? 'Tous'
+                : val === 'MIEUX_DISANT' ? '✨ Mieux Disant'
+                : '💰 Moins Disant'
+              }
+              onClick={() => { setEvaluationFilter(val); setPage(0); }}
+              color={evaluationFilter === val ? (val === 'MIEUX_DISANT' ? 'info' : val === 'MOINS_DISANT' ? 'success' : 'primary') : 'default'}
+              variant={evaluationFilter === val ? 'filled' : 'outlined'}
+              sx={{ cursor: 'pointer', fontWeight: evaluationFilter === val ? 700 : 400 }}
+            />
+          ))}
+        </Stack>
       </Card>
 
       {renderContent()}

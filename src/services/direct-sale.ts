@@ -15,6 +15,8 @@ export const DirectSaleAPI = {
     getMyOrders: (): Promise<ApiResponse<any[]>> => requests.get('direct-sale/my-orders'),
     confirmPurchase: (purchaseId: string): Promise<ApiResponse<any>> =>
         requests.post(`direct-sale/purchase/${purchaseId}/confirm`, {}),
+    cancelPurchase: (purchaseId: string): Promise<ApiResponse<any>> =>
+        requests.post(`direct-sale/purchase/${purchaseId}/cancel`, {}),
     getPurchasesByDirectSale: (id: string): Promise<ApiResponse<any[]>> =>
         requests.get(`direct-sale/${id}/purchases`),
 };

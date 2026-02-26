@@ -466,75 +466,97 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                 gap: '10px',
                 marginBottom: '16px',
                     }}>
-                        <img
-                    src={(() => {
-                        if (auction.hidden) {
-                            return DEFAULT_PROFILE_IMAGE;
-                        }
-                        const owner = typeof auction.owner === 'object' ? auction.owner : null;
-                        if ((owner as any)?.avatar?.url) {
-                            return normalizeImageUrl((owner as any).avatar.url);
-                        } else if (owner?.photoURL) {
-                             return normalizeImageUrl(owner.photoURL);
-                        }
-                        return DEFAULT_PROFILE_IMAGE;
-                    })()}
-                    alt={displayName}
-                    style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '50%',
-                        objectFit: 'contain',
-                        filter: hasAuctionEnded ? 'grayscale(100%)' : 'none',
-                    }}
-                    onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = DEFAULT_PROFILE_IMAGE;
-                    }}
-                />
-                
+                {auction.owner && !auction.hidden ? (
                     <Link
                         href={`/profile/${typeof auction.owner === 'object' ? (auction.owner as any)._id : auction.owner}`}
                         scroll={false}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            navigateWithScroll(`/profile/${typeof auction.owner === 'object' ? (auction.owner as any)._id : auction.owner}`);
+                        }}
                         style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            textDecoration: 'none',
+                        }}
+                    >
+                        <img
+                            src={(() => {
+                                if (auction.hidden) {
+                                    return DEFAULT_PROFILE_IMAGE;
+                                }
+                                const owner = typeof auction.owner === 'object' ? auction.owner : null;
+                                if ((owner as any)?.avatar?.url) {
+                                    return normalizeImageUrl((owner as any).avatar.url);
+                                } else if (owner?.photoURL) {
+                                     return normalizeImageUrl(owner.photoURL);
+                                }
+                                return DEFAULT_PROFILE_IMAGE;
+                            })()}
+                            alt={displayName}
+                            style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                objectFit: 'contain',
+                                filter: hasAuctionEnded ? 'grayscale(100%)' : 'none',
+                            }}
+                            onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = DEFAULT_PROFILE_IMAGE;
+                            }}
+                        />
+                        <span style={{
                             fontSize: '14px',
                             color: hasAuctionEnded ? '#888' : '#0063b1',
                             fontWeight: '600',
-                            textDecoration: 'none',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            transition: 'all 0.3s ease',
-                            cursor: hasAuctionEnded ? 'not-allowed' : 'pointer',
-                            pointerEvents: hasAuctionEnded ? 'none' : 'auto',
+                            transition: 'color 0.3s ease',
                         }}
                         onMouseEnter={(e) => {
                             if (!hasAuctionEnded) {
+                                e.currentTarget.style.color = '#00a3e0';
                                 e.currentTarget.style.textDecoration = 'underline';
-                                e.currentTarget.style.color = '#004c8c';
                             }
                         }}
                         onMouseLeave={(e) => {
                             if (!hasAuctionEnded) {
-                                e.currentTarget.style.textDecoration = 'none';
                                 e.currentTarget.style.color = '#0063b1';
+                                e.currentTarget.style.textDecoration = 'none';
                             }
                         }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            if (hasAuctionEnded || auction.hidden || !auction.owner) {
-                                e.preventDefault();
-                                return;
-                            }
-                        }}
-                    >
-                        {displayName}
-                        {!hasAuctionEnded && (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
-                                <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
-                            </svg>
-                        )}
+                        >
+                            {displayName}
+                            {!hasAuctionEnded && (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
+                                    <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
+                                </svg>
+                            )}
+                        </span>
                     </Link>
+                ) : (
+                    <>
+                        <img
+                            src={DEFAULT_PROFILE_IMAGE}
+                            alt={displayName}
+                            style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                objectFit: 'contain',
+                                filter: hasAuctionEnded ? 'grayscale(100%)' : 'none',
+                            }}
+                        />
+                        <span style={{
+                            fontSize: '14px',
+                            color: hasAuctionEnded ? '#888' : '#666',
+                            fontWeight: '500',
+                        }}>
+                            {displayName}
+                        </span>
+                    </>
+                )}
             </div>
 
             {/* View Details Button */}
@@ -584,6 +606,53 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                     <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
             </Link>
+
+            {/* Chat / Contact Owner Button */}
+            {isLogged && !hasAuctionEnded && (() => {
+                const ownerId = typeof auction.owner === 'object' ? (auction.owner as any)?._id : auction.owner;
+                const currentUserId = auth.user?._id;
+                const isCurrentUserOwner = ownerId && currentUserId && ownerId === currentUserId;
+                if (isCurrentUserOwner || auction.hidden) return null;
+                const chatUrl = `/chat?announceId=${(auction as any)._id || auction.id}&announceType=auction&sellerId=${ownerId || ''}`;
+                return (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigateWithScroll(chatUrl);
+                        }}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            width: '100%',
+                            padding: '10px 16px',
+                            background: 'transparent',
+                            color: '#0063b1',
+                            border: '1.5px solid #0063b1',
+                            borderRadius: '25px',
+                            fontWeight: '600',
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            marginTop: '8px',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(0, 99, 177, 0.06)';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                        </svg>
+                        Contacter
+                    </button>
+                );
+            })()}
         </div>
     </div>
   );

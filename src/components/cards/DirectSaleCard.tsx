@@ -344,27 +344,79 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
           marginBottom: 'clamp(10px, 2vw, 14px)',
           marginTop: 'auto'
         }}>
-          <img
-            src={sale.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl((typeof sale.owner === 'object' ? (sale.owner?.avatar?.url || sale.owner?.photoURL) : undefined)) || DEFAULT_PROFILE_IMAGE)}
-            alt={displayName}
-            style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '50%',
-              objectFit: 'contain',
-            }}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = DEFAULT_PROFILE_IMAGE;
-            }}
-          />
-          <span style={{
-            fontSize: '12px',
-            color: '#8a7e1f',
-            fontWeight: '500',
-          }}>
-            {displayName}
-          </span>
+          {sale.owner && !sale.hidden ? (
+            <Link
+              href={`/profile/${typeof sale.owner === 'object' ? (sale.owner as any)._id : sale.owner}`}
+              scroll={false}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigateWithScroll(`/profile/${typeof sale.owner === 'object' ? (sale.owner as any)._id : sale.owner}`);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'clamp(6px, 1.5vw, 10px)',
+                textDecoration: 'none',
+              }}
+            >
+              <img
+                src={sale.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl((typeof sale.owner === 'object' ? (sale.owner?.avatar?.url || sale.owner?.photoURL) : undefined)) || DEFAULT_PROFILE_IMAGE)}
+                alt={displayName}
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  objectFit: 'contain',
+                }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = DEFAULT_PROFILE_IMAGE;
+                }}
+              />
+              <span style={{
+                fontSize: '12px',
+                color: '#8a7e1f',
+                fontWeight: '600',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#3d370e';
+                e.currentTarget.style.textDecoration = 'underline';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#8a7e1f';
+                e.currentTarget.style.textDecoration = 'none';
+              }}
+              >
+                {displayName}
+              </span>
+            </Link>
+          ) : (
+            <>
+              <img
+                src={sale.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl((typeof sale.owner === 'object' ? (sale.owner?.avatar?.url || sale.owner?.photoURL) : undefined)) || DEFAULT_PROFILE_IMAGE)}
+                alt={displayName}
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  objectFit: 'contain',
+                }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = DEFAULT_PROFILE_IMAGE;
+                }}
+              />
+              <span style={{
+                fontSize: '12px',
+                color: '#8a7e1f',
+                fontWeight: '500',
+              }}>
+                {displayName}
+              </span>
+            </>
+          )}
         </div>
 
         {/* View Details Button */}
@@ -412,6 +464,53 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
             <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
           </svg>
         </Link>
+
+        {/* Chat / Contact Seller Button */}
+        {isLogged && !isSoldOut && (() => {
+          const ownerId = typeof sale.owner === 'object' ? (sale.owner as any)?._id : sale.owner;
+          const isOwner = ownerId && auth.user?._id && ownerId === auth.user._id;
+          if (isOwner) return null;
+          const sellerId = ownerId || '';
+          const chatUrl = `/chat?announceId=${sale._id}&announceType=directSale&sellerId=${sellerId}`;
+          return (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(chatUrl);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                width: '100%',
+                padding: 'clamp(8px, 1.5vw, 10px) clamp(12px, 2.5vw, 16px)',
+                background: 'transparent',
+                color: '#8a7e1f',
+                border: '1.5px solid #d4af37',
+                borderRadius: '25px',
+                fontWeight: '600',
+                fontSize: 'clamp(12px, 2vw, 13px)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                marginTop: '8px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.08)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+              </svg>
+              Contacter
+            </button>
+          );
+        })()}
       </div>
     </div>
   );

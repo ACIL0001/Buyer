@@ -945,13 +945,41 @@ const Home1LiveTenders = () => {
                                 target.src = DEFAULT_PROFILE_IMAGE;
                               }}
                             />
-                            <span style={{
-                              fontSize: '14px',
-                              color: '#666',
-                              fontWeight: '500',
-                            }}>
-                              {displayName}
-                            </span>
+                            {tender.owner && !tender.hidden ? (
+                              <Link
+                                href={`/profile/${tender.owner._id}`}
+                                scroll={false}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  navigateWithScroll(`/profile/${tender.owner?._id}`);
+                                }}
+                                style={{
+                                  fontSize: '14px',
+                                  color: '#0063b1',
+                                  fontWeight: '600',
+                                  textDecoration: 'none',
+                                  transition: 'color 0.3s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.color = '#00a3e0';
+                                  e.currentTarget.style.textDecoration = 'underline';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.color = '#0063b1';
+                                  e.currentTarget.style.textDecoration = 'none';
+                                }}
+                              >
+                                {displayName}
+                              </Link>
+                            ) : (
+                              <span style={{
+                                fontSize: '14px',
+                                color: '#666',
+                                fontWeight: '500',
+                              }}>
+                                {displayName}
+                              </span>
+                            )}
                           </div>
 
                          {/* Submit Proposal Button */}

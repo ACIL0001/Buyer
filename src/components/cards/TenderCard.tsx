@@ -402,27 +402,79 @@ const TenderCard = ({ tender }: TenderCardProps) => {
           marginBottom: 'clamp(10px, 2vw, 14px)',
           marginTop: 'auto'
         }}>
-          <img
-            src={tender.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE)}
-            alt={displayName}
-            style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '50%',
-              objectFit: 'contain',
-            }}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = DEFAULT_PROFILE_IMAGE;
-            }}
-          />
-          <span style={{
-            fontSize: '12px',
-            color: '#666',
-            fontWeight: '500',
-          }}>
-            {displayName}
-          </span>
+          {tender.owner && !tender.hidden ? (
+            <Link
+              href={`/profile/${typeof tender.owner === 'object' ? tender.owner._id : tender.owner}`}
+              scroll={false}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigateWithScroll(`/profile/${typeof tender.owner === 'object' ? tender.owner._id : tender.owner}`);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'clamp(6px, 1.5vw, 10px)',
+                textDecoration: 'none',
+              }}
+            >
+              <img
+                src={tender.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE)}
+                alt={displayName}
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  objectFit: 'contain',
+                }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = DEFAULT_PROFILE_IMAGE;
+                }}
+              />
+              <span style={{
+                fontSize: '12px',
+                color: '#0063b1',
+                fontWeight: '600',
+                transition: 'color 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#00a3e0';
+                e.currentTarget.style.textDecoration = 'underline';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#0063b1';
+                e.currentTarget.style.textDecoration = 'none';
+              }}
+              >
+                {displayName}
+              </span>
+            </Link>
+          ) : (
+            <>
+              <img
+                src={tender.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE)}
+                alt={displayName}
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  objectFit: 'contain',
+                }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = DEFAULT_PROFILE_IMAGE;
+                }}
+              />
+              <span style={{
+                fontSize: '12px',
+                color: '#666',
+                fontWeight: '500',
+              }}>
+                {displayName}
+              </span>
+            </>
+          )}
         </div>
 
         {/* Submit Offer Button */}
@@ -470,6 +522,53 @@ const TenderCard = ({ tender }: TenderCardProps) => {
             <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
           </svg>
         </Link>
+
+        {/* Chat / Contact Tender Owner Button */}
+        {isLogged && !isEnded && (() => {
+          const ownerId = typeof tender.owner === 'object' ? (tender.owner as any)?._id : tender.owner;
+          const currentUserId = auth.user?._id;
+          const isCurrentUserOwner = ownerId && currentUserId && ownerId === currentUserId;
+          if (isCurrentUserOwner || (tender as any).hidden) return null;
+          const chatUrl = `/chat?announceId=${tender._id}&announceType=tender&sellerId=${ownerId || ''}`;
+          return (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(chatUrl);
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                width: '100%',
+                padding: 'clamp(8px, 1.5vw, 10px) clamp(12px, 2.5vw, 16px)',
+                background: 'transparent',
+                color: '#27F5CC',
+                border: '1.5px solid #27F5CC',
+                borderRadius: '25px',
+                fontWeight: '600',
+                fontSize: 'clamp(12px, 2vw, 13px)',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                marginTop: '8px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(39, 245, 204, 0.08)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+              </svg>
+              Contacter l&apos;acheteur
+            </button>
+          );
+        })()}
       </div>
     </div>
   );

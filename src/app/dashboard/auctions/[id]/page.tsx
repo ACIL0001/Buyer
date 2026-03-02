@@ -1,408 +1,173 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import {
-  Box,
-  Card,
-  Grid,
-  Stack,
-  Avatar,
-  Button,
-  Container,
-  Typography,
-  CircularProgress,
-  Chip,
-  Paper,
-  Slide,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Tooltip,
-} from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { AuctionsAPI } from '@/services/auctions';
-import { Auction } from '@/types/auction';
-import User from '@/types/User';
-import { OffersAPI } from '@/services/offers';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCreateSocket } from '@/contexts/socket';
 import useAuth from '@/hooks/useAuth';
-import Label from '@/components/Label';
-import {
-  MdCheckCircle,
-  MdChat,
-  MdEmojiEvents,
-  MdOpenInNew,
-  MdTimer,
-} from 'react-icons/md';
+import { DashboardKeyframes, StatusBadge, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
 
-// Local Mock Translation
-const useTranslation = () => {
-  const t = (key: string, options?: any) => {
-    const trans: Record<string, string> = {
-      'details': 'Détails',
-      'auctionDetails': "Détails de l'enchère",
-      'notFound': 'Enchère non trouvée',
-      'unknownUser': 'Utilisateur inconnu',
-      'winnerBanner': 'Gagnant',
-      'phone': 'Téléphone',
-      'startChat': 'Démarrer le chat',
-      'statusLabel': 'Statut',
-      'description': 'Description',
-      'initialPrice': 'Prix initial',
-      'currentPrice': 'Prix actuel',
-      'participants': 'Participants',
-      'noParticipants': 'Aucun participant pour le moment',
-      'information': 'Informations',
-      'type': 'Type',
-      'typeProduct': 'Produit',
-      'typeService': 'Service',
-      'mode': 'Mode',
-      'modeExpress': 'Express',
-      'modeAutomatic': 'Automatique',
-      'modeClassic': 'Classique',
-      'timeline': 'Chronologie',
-      'startDate': 'Date de début',
-      'endDate': 'Date de fin',
-      'errors.noValidParticipant': 'Aucun participant valide trouvé',
-    };
-    return trans[key] || key;
+const ACCENT = '#0063b1';
+
+enum BID_STATUS { OPEN = 'OPEN', CLOSED = 'CLOSED', ON_AUCTION = 'ACCEPTED', ARCHIVED = 'ARCHIVED' }
+enum AUCTION_TYPE { CLASSIC = 'CLASSIC', EXPRESS = 'EXPRESS', AUTO_SUB_BID = 'AUTO_SUB_BID' }
+
+function statusCfg(s: string) {
+  const map: Record<string, any> = {
+    OPEN:     { label: 'Ouvert',   color: '#0284c7', bg: '#e0f2fe', dot: true },
+    ACCEPTED: { label: 'En cours', color: '#16a34a', bg: '#dcfce7', dot: true },
+    CLOSED:   { label: 'Clôturé', color: '#dc2626', bg: '#fee2e2' },
+    ARCHIVED: { label: 'Archivé', color: '#64748b', bg: '#f1f5f9' },
   };
-  return { t, i18n: { language: 'fr' } };
-};
-
-// Local enums for UI matching the backend
-enum BID_STATUS {
-    OPEN = 'OPEN',
-    CLOSED = 'CLOSED',
-    ON_AUCTION = 'ACCEPTED', // Backend uses ACCEPTED for on-auction
-    ARCHIVED = 'ARCHIVED'
+  return map[s] || { label: s, color: '#64748b', bg: '#f1f5f9' };
 }
 
-enum AUCTION_TYPE {
-    CLASSIC = 'CLASSIC',
-    EXPRESS = 'EXPRESS',
-    AUTO_SUB_BID = 'AUTO_SUB_BID'
+function fmtDate(d: any) {
+  if (!d) return 'N/A';
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
+function fmtPrice(n: number) { return `${(n || 0).toLocaleString('fr-FR')} DA`; }
 
-interface Participant {
-  name: string;
-  avatar: string;
-  bidAmount: number;
-  bidDate: Date | string;
-  user: User;
-}
+const card: React.CSSProperties = { background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid rgba(0,0,0,0.06)', padding: 24, marginBottom: 20 };
 
 export default function AuctionDetailPage() {
-  const theme = useTheme();
-  const { t, i18n } = useTranslation();
   const params = useParams();
   const id = params?.id as string;
   const router = useRouter();
-  
-  const [auction, setAuction] = useState<Auction | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [participants, setParticipants] = useState<Participant[]>([]);
-  const [participantsLoading, setParticipantsLoading] = useState(true);
-  const [chatLoading, setChatLoading] = useState(false);
   const { auth, isLogged } = useAuth();
-  const fetchInProgress = useRef(false);
-
-  const getAuctionDetails = useCallback(async (auctionId: string) => {
-    if (fetchInProgress.current) return;
-
-    try {
-      fetchInProgress.current = true;
-      setLoading(true);
-      console.log('Fetching auction details for ID:', auctionId);
-      const response = await AuctionsAPI.getAuctionById(auctionId);
-      console.log("Auction details response:", response);
-      
-      const auctionData = response.data || response;
-      if (auctionData && (auctionData._id || auctionData.id)) {
-        console.log('📞 Auction response:', auctionData);
-        console.log('📞 Contact Number:', auctionData.contactNumber);
-        setAuction(auctionData);
-      }
-    } catch (error: any) {
-      console.error('Error fetching auction details:', error);
-    } finally {
-      setLoading(false);
-      fetchInProgress.current = false;
-    }
-  }, []);
-
-  const getAuctionParticipants = useCallback(async (auctionId: string) => {
-    // Wait for authentication to be ready if needed
-    if (!isLogged && !auth?.user) {
-        // Just proceed if public or wait? logic from seller app says wait for auth
-        // But for viewing details might be public? 
-        // For now, let's assume valid auth is needed for offers
-    }
-
-    setParticipantsLoading(true);
-    try {
-      console.log('Fetching participants for auction ID:', auctionId);
-      const offers = await OffersAPI.getOffersByBidId(auctionId);
-
-      console.log('Offers response:', offers);
-      
-      const offersData = (offers && offers.data && Array.isArray(offers.data)) ? offers.data : (Array.isArray(offers) ? offers : []);
-
-      if (offersData.length > 0) {
-        const formattedParticipants = offersData
-          .map((offer: any) => ({
-            name: offer.user?.firstName && offer.user?.lastName 
-              ? `${offer.user.firstName} ${offer.user.lastName}` 
-              : offer.user?.email || t('unknownUser'),
-            avatar: (offer.user?.avatar as any)?.url || (offer.user?.avatar as any)?.path || '',
-            bidAmount: offer.price || 0,
-            bidDate: offer.createdAt || new Date(),
-            user: offer.user as User
-          }))
-          .sort((a, b) => new Date(b.bidDate).getTime() - new Date(a.bidDate).getTime());
-        
-        setParticipants(formattedParticipants);
-      } else {
-        setParticipants([]);
-      }
-    } catch (error: any) {
-      console.error('Error fetching participants:', error);
-      setParticipants([]);
-    } finally {
-      setParticipantsLoading(false);
-    }
-  }, [isLogged, auth?.user]);
+  const queryClient = useQueryClient();
+  const { socket } = useCreateSocket() || {};
 
   useEffect(() => {
-    if (id) {
-      getAuctionDetails(id);
-      getAuctionParticipants(id);
-    }
-  }, [id, getAuctionDetails, getAuctionParticipants]);
+    if (!socket || !id) return;
+    const handleRefetch = () => queryClient.invalidateQueries({ queryKey: ['auction', id] });
+    socket.on('newListingCreated', handleRefetch);
+    socket.on('notification', handleRefetch);
+    return () => {
+      socket.off('newListingCreated', handleRefetch);
+      socket.off('notification', handleRefetch);
+    };
+  }, [socket, id, queryClient]);
 
-  const formatDate = (date: Date | string) => {
-    if (!date) return 'N/A';
-    try {
-      return new Date(date).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch (error) {
-      return 'Invalid Date';
-    }
-  };
+  const { data: auction, isLoading: loading } = useQuery({
+    queryKey: ['auction', id],
+    queryFn: async () => {
+      const { AuctionsAPI } = await import('@/services/auctions');
+      const r = await AuctionsAPI.getAuctionById(id);
+      return r.data || r;
+    },
+    enabled: isLogged && !!id,
+    staleTime: 60000,
+  });
 
-  const getStatusColor = (status: BID_STATUS) => {
-    switch (status) {
-      case BID_STATUS.OPEN: return 'info';
-      case BID_STATUS.ON_AUCTION: return 'success';
-      case BID_STATUS.CLOSED: return 'error';
-      case BID_STATUS.ARCHIVED: return 'default';
-      default: return 'default';
-    }
-  };
+  if (loading) return <DetailPageSkeleton accentColor="#0063b1" />;
 
-  const CreateChat = async () => {
-    if (!participants.length || !participants[0]?.user || !auth.user) return;
-
-    setChatLoading(true);
-    // TODO: Implement Chat logic or navigation
-    console.log('Create chat logic placeholder');
-    setChatLoading(false);
-  };
-
-  const WinnerBanner = ({ winner }: { winner: User }) => (
-    <Slide in direction="down" timeout={600}>
-      <Paper
-        elevation={6}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          p: 2.5,
-          mb: 3,
-          borderRadius: 3,
-          background: 'linear-gradient(90deg, #43e97b 0%, #38f9d7 100%)',
-          color: '#fff',
-          boxShadow: '0 8px 32px 0 rgba(34, 197, 94, 0.15)',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <MdEmojiEvents size={40} style={{ color: '#fff', marginRight: 16 }} />
-        <Avatar
-          src={(winner?.avatar as any)?.url || (winner?.avatar as any)?.path || ''}
-          alt={winner?.firstName || 'Winner'}
-          sx={{ width: 56, height: 56, border: '2px solid #fff', boxShadow: 2 }}
-        >
-          {winner?.firstName?.charAt(0) || 'W'}
-        </Avatar>
-        <Box>
-          <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: 1 }}>
-            {t('winnerBanner')}
-          </Typography>
-          <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-            <b>{winner?.firstName || ''} {winner?.lastName || ''}</b>
-          </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 400, opacity: 0.9 }}>
-            <b>{t('phone')}: {winner?.phone || 'N/A'}</b>
-          </Typography>
-        </Box>
-      </Paper>
-    </Slide>
+  if (!auction) return (
+    <div style={{ textAlign: 'center', padding: '60px 24px' }}>
+      <div style={{ fontSize: 52, marginBottom: 16 }}>🏷️</div>
+      <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569' }}>Enchère non trouvée</p>
+      <button onClick={() => router.push('/dashboard/auctions')} style={{ marginTop: 16, padding: '10px 22px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>← Retour</button>
+    </div>
   );
 
-  if (loading) {
-    return (
-      <Container maxWidth="xl" sx={{ mt: 3, mb: 10 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <CircularProgress />
-        </Box>
-      </Container>
-    );
-  }
-
-  if (!auction) {
-    return (
-      <Container maxWidth="xl" sx={{ mt: 3, mb: 10 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <Typography variant="h6">{t('notFound')}</Typography>
-        </Box>
-      </Container>
-    );
-  }
+  const auctionWinnerId = typeof auction.winner === 'object' ? auction.winner?._id : auction.winner;
+  const isWinner = (u: any) => {
+    const uId = typeof u === 'object' ? u?._id : u;
+    return auctionWinnerId && uId && auctionWinnerId === uId;
+  };
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 3, mb: 10 }}>
-      {auction.winner && <WinnerBanner winner={auction.winner} />}
-      
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4" gutterBottom>
-          {auction.title}
-        </Typography>
-        <Box display="flex" alignItems="center" gap={2}>
+    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+      <DashboardKeyframes />
+      {/* Winner Banner */}
+      {auction.winner && typeof auction.winner === 'object' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 24px', borderRadius: 14, background: 'linear-gradient(90deg, #f59e0b, #fbbf24)', color: '#fff', marginBottom: 20, boxShadow: '0 8px 24px rgba(245,158,11,0.3)' }}>
+          <span style={{ fontSize: 36 }}>🏆</span>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.04em' }}>GAGNANT</div>
+            <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{auction.winner.firstName} {auction.winner.lastName}</div>
+            {auction.winner.phone && <div style={{ opacity: 0.85, fontSize: '0.875rem' }}>📞 {auction.winner.phone}</div>}
+          </div>
+        </div>
+      )}
 
-          <Paper
-            elevation={0}
-            sx={{
-              p: 1.5,
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: 2,
-              bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  bgcolor: (theme) => {
-                    const color = getStatusColor(auction.status as any);
-                    return (theme.palette as any)[color]?.main || theme.palette.primary.main;
-                  },
-                  animation: 'pulse 2s infinite',
-                }}
-              />
-              <Typography variant="subtitle2" sx={{ color: 'text.primary', fontWeight: 600 }}>
-                {t('statusLabel')}
-              </Typography>
-            </Box>
-            <Chip
-              label={auction.status === BID_STATUS.OPEN 
-                ? 'Open' 
-                : auction.status === BID_STATUS.ON_AUCTION ? 'On Auction' 
-                : auction.status === BID_STATUS.CLOSED ? 'Closed'
-                : auction.status === BID_STATUS.ARCHIVED ? 'Archived'
-                : auction.status}
-              color={getStatusColor(auction.status as any) as any}
-              variant="filled"
-              size="small"
-              sx={{ fontWeight: 600, borderRadius: 1.5, minWidth: 80 }}
-            />
-          </Paper>
-        </Box>
-      </Stack>
+      {/* Hero Header */}
+      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT}40`, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08), transparent 60%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <button onClick={() => router.push('/dashboard/auctions')} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, marginBottom: 14 }}>← Retour aux enchères</button>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <h1 style={{ color: '#fff', fontSize: 'clamp(1.2rem, 3vw, 1.8rem)', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>{auction.title}</h1>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', margin: '6px 0 0' }}>🏷️ Détails de l'enchère</p>
+            </div>
+            <StatusBadge config={statusCfg(auction.status)} />
+          </div>
+        </div>
+      </div>
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Card sx={{ p: 2, mb: 3, minHeight: '200px', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h6" sx={{ mb: 1 }}>{t('details')}</Typography>
-            <Stack spacing={1} sx={{ flex: 1 }}>
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="body2" color="text.secondary">{t('description')}</Typography>
-                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{auction.description}</Typography>
-              </Box>
-              <Grid container spacing={2} sx={{ mt: 2 }}>
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="body2" color="text.secondary">{t('initialPrice')}</Typography>
-                  <Typography variant="h6">{(auction.startingPrice || 0).toFixed(2)} DA</Typography>
-                </Grid>
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="body2" color="text.secondary">{t('currentPrice')}</Typography>
-                  <Typography variant="h6" color="primary.main">{(auction.currentPrice || auction.startingPrice || 0).toFixed(2)} DA</Typography>
-                </Grid>
-              </Grid>
-            </Stack>
-          </Card>
-        </Grid>
+      {/* Metric tiles */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 20 }}>
+        {[
+          { label: 'Prix de départ', value: fmtPrice(auction.startingPrice), color: '#64748b', icon: '💰' },
+          { label: 'Prix actuel', value: fmtPrice(auction.currentPrice || auction.startingPrice), color: '#10b981', icon: '📈' },
+          { label: 'Offres estimées', value: (auction as any).offersCount || (auction as any).offers?.length || 'N/A', color: ACCENT, icon: '👥' },
+        ].map(t => (
+          <div key={t.label} style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', borderLeft: `4px solid ${t.color}`, display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: `${t.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{t.icon}</div>
+            <div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: t.color, lineHeight: 1 }}>{t.value}</div>
+              <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 4 }}>{t.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Card sx={{ p: 2, mb: 3, display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="h6" sx={{ mb: 1 }}>{t('information')}</Typography>
-            <Stack spacing={2} sx={{ flex: 1, justifyContent: 'space-around' }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary">{t('type')}</Typography>
-                <Label variant="ghost" color="default">
-                  {auction.bidType === 'PRODUCT' ? t('typeProduct') : t('typeService')}
-                </Label>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">{t('mode')}</Typography>
-                <Label variant="ghost" color={auction.auctionType === AUCTION_TYPE.EXPRESS ? 'warning' : 'default'}>
-                  {auction.auctionType === AUCTION_TYPE.EXPRESS
-                    ? `${t('modeExpress')} (MEZROUB)`
-                    : auction.auctionType === AUCTION_TYPE.AUTO_SUB_BID
-                    ? t('modeAutomatic')
-                    : t('modeClassic')}
-                </Label>
-              </Box>
-              {auction.contactNumber && (
-                <Box>
-                  <Typography variant="body2" color="text.secondary">Numéro de contact</Typography>
-                  <Typography variant="body1" fontWeight="600">{auction.contactNumber}</Typography>
-                </Box>
-              )}
-            </Stack>
-          </Card>
+      {/* Main grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, alignItems: 'start' }}>
+        {/* Left: Description */}
+        <div style={{ ...card, gridColumn: 'span 2' } as any}>
+          <h3 style={{ margin: '0 0 12px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📝 Description</h3>
+          <p style={{ color: '#475569', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>{auction.description || 'Aucune description fournie.'}</p>
+        </div>
 
-          <Card sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>{t('timeline')}</Typography>
-            <Stack spacing={2}>
-              <Box>
-                <Typography variant="body2" color="text.secondary">{t('startDate')}</Typography>
-                <Typography variant="body1">{formatDate(auction.startingAt)}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">{t('endDate')}</Typography>
-                <Typography variant="body1">{formatDate(auction.endingAt)}</Typography>
-              </Box>
-            </Stack>
-          </Card>
-        </Grid>
-      </Grid>
+        {/* Info card */}
+        <div style={card}>
+          <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>ℹ️ Informations</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Type</div>
+              <span style={{ padding: '3px 10px', borderRadius: 12, background: '#f1f5f9', color: '#475569', fontSize: '0.78rem', fontWeight: 600 }}>{auction.bidType === 'PRODUCT' ? '📦 Produit' : '🔧 Service'}</span>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Mode</div>
+              <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: '0.78rem', fontWeight: 600, background: auction.auctionType === 'EXPRESS' ? '#fef3c7' : '#f1f5f9', color: auction.auctionType === 'EXPRESS' ? '#d97706' : '#475569' }}>
+                {auction.auctionType === 'EXPRESS' ? '⚡ Express' : auction.auctionType === 'AUTO_SUB_BID' ? '🤖 Auto' : '🏛️ Classique'}
+              </span>
+            </div>
+            {auction.contactNumber && (
+              <div>
+                <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Contact</div>
+                <div style={{ fontWeight: 600, color: '#1e293b' }}>📞 {auction.contactNumber}</div>
+              </div>
+            )}
+          </div>
+        </div>
 
-    </Container>
+        {/* Timeline card */}
+        <div style={card}>
+          <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📅 Chronologie</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {[{ label: 'Début', value: fmtDate(auction.startingAt) }, { label: 'Fin', value: fmtDate(auction.endingAt) }].map(r => (
+              <div key={r.label}>
+                <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{r.label}</div>
+                <div style={{ fontWeight: 600, color: '#334155', fontSize: '0.9rem' }}>{r.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+    </div>
   );
 }

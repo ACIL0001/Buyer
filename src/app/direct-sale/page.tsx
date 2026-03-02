@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/header/Header";
 import Footer from "@/components/footer/Footer";
+import DynamicScrollToTop from "@/components/common/DynamicScrollToTop";
 import useAuth from "@/hooks/useAuth";
 import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
 import { SnackbarProvider } from 'notistack';
@@ -36,6 +37,7 @@ export default function DirectSalePage() {
                 100% { transform: rotate(360deg); }
               }
             `}</style>
+            <DynamicScrollToTop colorSchema="yellow" />
           </SnackbarProvider>
         </RequestProvider>
       </AxiosInterceptor>

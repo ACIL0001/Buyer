@@ -1,117 +1,85 @@
 import React from 'react';
-import { 
-  Box, 
-  Stepper, 
-  Step, 
-  StepLabel, 
-  Typography, 
-  useTheme, 
-  alpha,
-  StepConnector,
-  stepConnectorClasses,
-  StepIconProps
-} from '@mui/material';
+import { Box, Typography, useTheme, alpha } from '@mui/material';
 import { motion } from 'framer-motion';
-import { MdCheck } from 'react-icons/md';
 
-interface WizardStepperProps {
-  activeStep: number;
-  steps: string[];
-}
-
-// Custom Connector
-const ColorlibConnector = React.memo((props: any) => {
+export default function WizardStepper({ activeStep, steps }: { activeStep: number, steps: string[] }) {
     const theme = useTheme();
+    const progress = ((activeStep) / (steps.length - 1)) * 100;
+
     return (
-        <StepConnector 
-            {...props} 
-            sx={{
-                [`&.${stepConnectorClasses.alternativeLabel}`]: {
-                    top: 16,
-                },
-                [`&.${stepConnectorClasses.active}`]: {
-                    [`& .${stepConnectorClasses.line}`]: {
-                        backgroundImage: `linear-gradient(95deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                    },
-                },
-                [`&.${stepConnectorClasses.completed}`]: {
-                    [`& .${stepConnectorClasses.line}`]: {
-                        backgroundImage: `linear-gradient(95deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                    },
-                },
-                [`& .${stepConnectorClasses.line}`]: {
-                    height: 2,
-                    border: 0,
-                    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : '#eaeaf0',
-                    borderRadius: 1,
-                },
-            }} 
-        />
-    );
-});
-
-ColorlibConnector.displayName = 'ColorlibConnector';
-
-// Custom Step Icon
-function ColorlibStepIcon(props: StepIconProps) {
-  const { active, completed, className } = props;
-  const theme = useTheme();
-
-  const styles = {
-    root: {
-      backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[700] : '#eaeaf0',
-      zIndex: 1,
-      color: completed ? '#fff' : theme.palette.text.secondary,
-      width: 32,
-      height: 32,
-      display: 'flex',
-      borderRadius: '50%',
-      justifyContent: 'center',
-      alignItems: 'center',
-      boxShadow: 'none',
-      border: `2px solid ${completed || active ? 'transparent' : theme.palette.divider}`,
-      transition: 'all 0.3s ease',
-      ...(active && {
-        backgroundImage: `linear-gradient(136deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-        boxShadow: `0 4px 10px 0 ${alpha(theme.palette.primary.main, 0.25)}`,
-        color: '#fff',
-        border: 'none',
-      }),
-      ...(completed && {
-        backgroundImage: `linear-gradient(136deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-        border: 'none',
-      }),
-    }
-  };
-
-  return (
-    <div className={className} style={styles.root}>
-      {completed ? <MdCheck size={18} /> : <Typography fontWeight="bold" variant="caption">{props.icon}</Typography>}
-    </div>
-  );
-}
-
-export default function WizardStepper({ activeStep, steps }: WizardStepperProps) {
-  return (
-    <Box sx={{ width: '100%', mb: 3 }}>
-      <Stepper alternativeLabel activeStep={activeStep} connector={<ColorlibConnector />}>
-        {steps.map((label) => (
-          <Step key={label}>
-            <StepLabel StepIconComponent={ColorlibStepIcon}>
-                <Typography 
-                    variant="caption" 
-                    fontWeight={600} 
-                    sx={{ 
-                        mt: 0.5, 
-                        color: (theme) => alpha(theme.palette.text.primary, activeStep >= steps.indexOf(label) ? 1 : 0.5) 
+        <Box sx={{ mb: { xs: 5, md: 8 }, mt: 2, px: { xs: 1, sm: 5 } }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                {steps.map((label, index) => {
+                    const isActive = index === activeStep;
+                    const isPassed = index < activeStep;
+                    return (
+                        <Box key={label} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', width: '100%', zIndex: 1 }}>
+                            <Box 
+                                component={motion.div}
+                                initial={false}
+                                animate={{
+                                    backgroundColor: isActive || isPassed ? theme.palette.primary.main : alpha(theme.palette.text.disabled, 0.1),
+                                    scale: isActive ? 1.15 : 1,
+                                    color: isActive || isPassed ? '#fff' : theme.palette.text.secondary
+                                }}
+                                sx={{
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: 700,
+                                    fontSize: '0.85rem',
+                                    mb: 1.5,
+                                    boxShadow: isActive ? `0 0 0 6px ${alpha(theme.palette.primary.main, 0.15)}` : 'none',
+                                    transition: 'box-shadow 0.3s ease'
+                                }}
+                            >
+                                {isPassed ? (
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                ) : index + 1}
+                            </Box>
+                            <Typography 
+                                variant="caption" 
+                                fontWeight={isActive ? 800 : 500}
+                                sx={{ 
+                                    color: isActive ? 'text.primary' : 'text.disabled',
+                                    textAlign: 'center',
+                                    fontSize: '0.75rem',
+                                    letterSpacing: '0.02em',
+                                    textTransform: 'uppercase',
+                                    transition: 'color 0.3s ease'
+                                }}
+                            >
+                                {label}
+                            </Typography>
+                        </Box>
+                    );
+                })}
+            </Box>
+            
+            {/* Progress Bar Background */}
+            <Box sx={{ position: 'relative', height: 4, bgcolor: alpha(theme.palette.text.disabled, 0.1), borderRadius: 2, mt: -7, mb: 7, zIndex: 0, mx: '10%' }}>
+                {/* Active Progress */}
+                <Box 
+                    component={motion.div}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                    sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        height: '100%',
+                        borderRadius: 2,
+                        background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                        boxShadow: `0 0 10px ${alpha(theme.palette.primary.main, 0.5)}`
                     }}
-                >
-                    {label}
-                </Typography>
-            </StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-    </Box>
-  );
+                />
+            </Box>
+        </Box>
+    );
 }

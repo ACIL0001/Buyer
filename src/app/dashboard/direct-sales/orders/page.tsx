@@ -1,65 +1,23 @@
 'use client';
 
-import {
-  Box,
-  Container,
-  Typography,
-  Button,
-  Chip,
-  Stack,
-  TableBody,
-  TableCell,
-  TableRow,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
-  Tabs,
-  Tab,
-  Avatar,
-  Tooltip,
-} from '@mui/material';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { MdVisibility } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useCreateSocket } from '@/contexts/socket';
 import useAuth from '@/hooks/useAuth';
-import ResponsiveTable from '@/components/Tables/ResponsiveTable';
+import Link from 'next/link';
+import DashboardPageShell from '@/components/dashboard/DashboardPageShell';
+import {
+  StatusBadge, ActionBtn, tableStyles, DashboardKeyframes,
+  SimplePagination, PillTabs, ConfirmDialog, ListPageSkeleton,
+} from '@/components/dashboard/dashboardHelpers';
 
 interface Order {
   _id: string;
-  directSale?: {
-    _id: string;
-    title: string;
-    owner?: {
-        firstName?: string;
-        lastName?: string;
-        email?: string;
-        phone?: string;
-        companyName?: string;
-        entreprise?: string;
-    };
-  } | null;
-  buyer?: {
-    _id?: string;
-    firstName: string;
-    lastName: string;
-    email?: string;
-    phone?: string;
-    companyName?: string;
-    entreprise?: string;
-  } | null;
-  seller?: {
-    _id?: string;
-    firstName: string;
-    lastName: string;
-    email?: string;
-    phone?: string;
-    companyName?: string;
-    entreprise?: string;
-  } | null;
+  directSale?: { _id: string; title: string; owner?: { firstName?: string; lastName?: string; email?: string; phone?: string; companyName?: string; entreprise?: string; }; } | null;
+  buyer?: { _id?: string; firstName: string; lastName: string; email?: string; phone?: string; companyName?: string; entreprise?: string; } | null;
+  seller?: { _id?: string; firstName: string; lastName: string; email?: string; phone?: string; companyName?: string; entreprise?: string; } | null;
   quantity: number;
   unitPrice: number;
   totalPrice: number;
@@ -67,392 +25,240 @@ interface Order {
   createdAt: string;
 }
 
+function statusConfig(s: string) {
+  const map: Record<string, any> = {
+    CONFIRMED: { label: 'Confirmé',  color: '#16a34a', bg: '#dcfce7' },
+    PENDING:   { label: 'En attente', color: '#d97706', bg: '#fef3c7', dot: true },
+    CANCELLED: { label: 'Annulé',     color: '#dc2626', bg: '#fee2e2' },
+    COMPLETED: { label: 'Complété',   color: '#0284c7', bg: '#e0f2fe' },
+  };
+  return map[s] || { label: s, color: '#64748b', bg: '#f1f5f9' };
+}
+
+function formatDate(d: string) {
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
 export default function OrdersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t, i18n } = useTranslation();
   const { isLogged } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [purchases, setPurchases] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [confirming, setConfirming] = useState(false);
+
   const [tabValue, setTabValue] = useState(0);
-
-  // Table state
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
-  const [orderBy, setOrderBy] = useState('createdAt');
-  const [filterName, setFilterName] = useState('');
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [confirmTarget, setConfirmTarget] = useState<Order | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
-  // Sync tab with URL parameter
+  const queryClient = useQueryClient();
+  const { socket } = useCreateSocket() || {};
+
   useEffect(() => {
-    const tabParam = searchParams.get('tab');
-    if (tabParam === 'received') {
-      setTabValue(0);
-    } else if (tabParam === 'made' || tabParam === 'my') {
-      setTabValue(1);
-    }
+    const tab = searchParams.get('tab');
+    if (tab === 'received') setTabValue(0);
+    else if (tab === 'made' || tab === 'my') setTabValue(1);
   }, [searchParams]);
 
-  useEffect(() => {
-    if (isLogged) {
-        fetchData();
-    }
-  }, [isLogged]);
+  useEffect(() => { setPage(0); setSearch(''); }, [tabValue]);
 
-  // Reset pagination when switching tabs
   useEffect(() => {
-    setPage(0);
-    setFilterName('');
-    setSelected([]);
-  }, [tabValue]);
+    if (!socket) return;
+    const handleRefetch = () => queryClient.invalidateQueries({ queryKey: ['orders', 'my'] });
+    socket.on('newListingCreated', handleRefetch);
+    socket.on('notification', handleRefetch);
+    return () => {
+      socket.off('newListingCreated', handleRefetch);
+      socket.off('notification', handleRefetch);
+    };
+  }, [socket, queryClient]);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
+  const { data, isLoading: isQueryLoading, refetch } = useQuery({
+    queryKey: ['orders', 'my'],
+    queryFn: async () => {
       const { DirectSaleAPI } = await import('@/services/direct-sale');
-      
-      const [ordersData, purchasesData] = await Promise.all([
-        DirectSaleAPI.getMyOrders(),
-        DirectSaleAPI.getMyPurchases()
-      ]);
+      const [ordersData, purchasesData] = await Promise.all([DirectSaleAPI.getMyOrders(), DirectSaleAPI.getMyPurchases()]);
+      const o = Array.isArray(ordersData) ? ordersData.filter((o: any) => o.directSale) : [];
+      const p = Array.isArray(purchasesData) ? purchasesData.filter((p: any) => p.directSale) : [];
+      return { orders: o, purchases: p };
+    },
+    enabled: isLogged,
+    staleTime: 30000,
+    placeholderData: keepPreviousData,
+  });
 
-      setOrders(Array.isArray(ordersData) ? ordersData.filter((o: any) => o.directSale) : []);
-      setPurchases(Array.isArray(purchasesData) ? purchasesData.filter((p: any) => p.directSale) : []);
-    } catch (error: any) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const orders = data?.orders || [];
+  const purchases = data?.purchases || [];
+  const isLoading = isQueryLoading || confirming;
 
   const handleConfirm = async () => {
-    if (!selectedOrder) return;
-
+    if (!confirmTarget) return;
+    setConfirming(true);
     try {
-      setConfirming(true);
       const { DirectSaleAPI } = await import('@/services/direct-sale');
-      await DirectSaleAPI.confirmPurchase(selectedOrder._id);
-      setConfirmDialogOpen(false);
-      setSelectedOrder(null);
-      fetchData();
-    } catch (error: any) {
-      console.error('Error confirming order:', error);
-    } finally {
-      setConfirming(false);
-    }
+      await DirectSaleAPI.confirmPurchase(confirmTarget._id);
+      setConfirmTarget(null);
+      await refetch();
+    } catch (e) { console.error(e); }
+    finally { setConfirming(false); }
   };
 
-  const getStatusColor = (status: string): 'success' | 'warning' | 'error' | 'info' | 'default' => {
-    switch (status) {
-      case 'CONFIRMED':
-        return 'success';
-      case 'PENDING':
-        return 'warning';
-      case 'CANCELLED':
-        return 'error';
-      case 'COMPLETED':
-        return 'info';
-      default:
-        return 'default';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'CONFIRMED':
-        return t('dashboard.orders.status.confirmed');
-      case 'PENDING':
-        return t('dashboard.orders.status.pending');
-      case 'CANCELLED':
-        return t('dashboard.orders.status.cancelled');
-      case 'COMPLETED':
-        return t('dashboard.orders.status.completed');
-      default:
-        return status;
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(i18n.language, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-    
-    // Update URL parameters
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('tab', newValue === 0 ? 'received' : 'made');
-    router.push(`/dashboard/direct-sales/orders?${params.toString()}`);
-  };
-
-  const getColumns = (isPurchase: boolean) => [
-      { id: 'directSale.title', label: t('dashboard.orders.columns.product'), alignRight: false, searchable: true, sortable: true },
-      { 
-          id: isPurchase ? 'seller.firstName' : 'buyer.firstName',
-          label: isPurchase ? t('dashboard.orders.columns.seller') : t('dashboard.orders.columns.buyer'), 
-          alignRight: false, 
-          searchable: true,
-          sortable: true
-      },
-      { id: 'quantity', label: t('dashboard.orders.columns.quantity'), alignRight: true, searchable: false, sortable: true },
-      { 
-          id: 'unitPrice', 
-          label: t('dashboard.orders.columns.unitPrice'), 
-          alignRight: true, 
-          searchable: false, 
-          sortable: true,
-          format: (value: number) => `${value.toLocaleString(i18n.language)} DA`
-      },
-      { 
-          id: 'totalPrice', 
-          label: t('dashboard.orders.columns.total'), 
-          alignRight: true, 
-          searchable: false, 
-          sortable: true,
-          format: (value: number) => `${value.toLocaleString(i18n.language)} DA`
-      },
-      { id: 'status', label: t('dashboard.orders.columns.status'), alignRight: false, searchable: false, sortable: true },
-      { 
-          id: 'createdAt', 
-          label: t('dashboard.orders.columns.date'), 
-          alignRight: false, 
-          searchable: false, 
-          sortable: true,
-          format: (value: string) => formatDate(value)
-      },
-      { id: 'actions', label: t('dashboard.orders.columns.actions'), alignRight: true, searchable: false }
-  ];
-
-  const TableBodyComponent = ({ data }: { data: Order[] }) => {
-    const isPurchase = tabValue === 1;
-    
-    // Slice data for pagination
-    const paginatedData = data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
-    
-    return (
-      <TableBody>
-        {paginatedData.map((order) => {
-            const counterparty = isPurchase
-                ? (order.seller || order.directSale?.owner)
-                : order.buyer;
-            
-            const displayName = counterparty
-                ? (counterparty.companyName || counterparty.entreprise || `${counterparty.firstName || ''} ${counterparty.lastName || ''}`.trim())
-                : (isPurchase ? t('dashboard.orders.unknownSeller') : t('dashboard.orders.unknownBuyer'));
-
-            const initials = displayName ? displayName.charAt(0).toUpperCase() : '?';
-            const profileId = (counterparty as any)?._id;
-            const counterpartyPhone = counterparty?.phone || t('dashboard.orders.phoneUnavailable');
-
-            return (
-            <TableRow hover key={order._id} tabIndex={-1}>
-                {/* Product */}
-                <TableCell>
-                  <Typography variant="subtitle2" noWrap>
-                    {order.directSale?.title || t('dashboard.orders.unknownProduct')}
-                  </Typography>
-                </TableCell>
-                
-                {/* Counterparty (Buyer or Seller) — clickable profile link */}
-                <TableCell>
-                  {profileId ? (
-                    <Tooltip title={isPurchase ? 'Voir le profil du vendeur' : 'Voir le profil de l\'acheteur'} arrow>
-                      <Link
-                        href={`/profile/${profileId}`}
-                        style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: 10 }}
-                      >
-                        <Avatar sx={{ width: 34, height: 34, fontSize: '0.85rem', bgcolor: isPurchase ? 'primary.main' : 'secondary.main', cursor: 'pointer' }}>
-                          {initials}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="subtitle2" noWrap sx={{ '&:hover': { textDecoration: 'underline' } }}>
-                            {displayName}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {counterpartyPhone}
-                          </Typography>
-                        </Box>
-                      </Link>
-                    </Tooltip>
-                  ) : (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Avatar sx={{ width: 34, height: 34, fontSize: '0.85rem' }}>{initials}</Avatar>
-                      <Box>
-                        <Typography variant="subtitle2" noWrap>{displayName}</Typography>
-                        <Typography variant="caption" color="text.secondary">{counterpartyPhone}</Typography>
-                      </Box>
-                    </Box>
-                  )}
-                </TableCell>
-                
-                {/* Quantity */}
-                <TableCell align="right">{order.quantity}</TableCell>
-                
-                {/* Unit Price */}
-                <TableCell align="right">{order.unitPrice.toLocaleString(i18n.language)} DA</TableCell>
-                
-                {/* Total Price */}
-                <TableCell align="right">
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                    {order.totalPrice.toLocaleString(i18n.language)} DA
-                </Typography>
-                </TableCell>
-                
-                {/* Status */}
-                <TableCell>
-                <Chip
-                    label={getStatusLabel(order.status)}
-                    color={getStatusColor(order.status)}
-                    size="small"
-                    variant="outlined"
-                />
-                </TableCell>
-                
-                {/* Date */}
-                <TableCell>{formatDate(order.createdAt)}</TableCell>
-                
-                {/* Actions */}
-                <TableCell align="right">
-                <Stack direction="row" spacing={1} justifyContent="flex-end">
-                    <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<MdVisibility />}
-                    onClick={() => {
-                        if (order.directSale?._id && order._id) {
-                          router.push(`/dashboard/direct-sales/${order.directSale._id}/orders/${order._id}`);
-                        } else {
-                          console.error('Direct sale ID or Order ID not found for order:', order._id);
-                        }
-                    }}
-                    >
-                    {t('dashboard.list.viewDetails')}
-                    </Button>
-                    {!isPurchase && order.status === 'PENDING' && (
-                    <Button
-                        size="small"
-                        variant="contained"
-                        color="success"
-                        onClick={() => {
-                        setSelectedOrder(order);
-                        setConfirmDialogOpen(true);
-                        }}
-                    >
-                        {t('dashboard.orders.confirm')}
-                    </Button>
-                    )}
-                </Stack>
-                </TableCell>
-            </TableRow>
-            );
-        })}
-        {emptyRows > 0 && (
-            <TableRow style={{ height: 53 * emptyRows }}>
-            <TableCell colSpan={8} />
-            </TableRow>
-        )}
-      </TableBody>
-    );
-  };
-
-  const currentData = tabValue === 0 ? orders : purchases;
+  const current = tabValue === 0 ? orders : purchases;
   const isPurchase = tabValue === 1;
 
+  const filtered = useMemo(() => {
+    if (!search.trim()) return current;
+    const s = search.toLowerCase();
+    return current.filter(o =>
+      o.directSale?.title?.toLowerCase().includes(s) ||
+      (isPurchase ? o.seller?.firstName : o.buyer?.firstName)?.toLowerCase().includes(s) ||
+      (isPurchase ? o.seller?.lastName : o.buyer?.lastName)?.toLowerCase().includes(s)
+    );
+  }, [current, search, isPurchase]);
+
+  const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  const pending = current.filter(o => o.status === 'PENDING').length;
+  const confirmed = current.filter(o => o.status === 'CONFIRMED').length;
+  const cancelled = current.filter(o => o.status === 'CANCELLED').length;
+
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.status !== 'CANCELLED' ? o.totalPrice : 0), 0);
+
+  const stats = [
+    { label: 'Total commandes', value: current.length, color: '#0063b1', icon: '📦' },
+    { label: 'En attente', value: pending, color: '#f59e0b', icon: '⏳' },
+    { label: 'Confirmées', value: confirmed, color: '#10b981', icon: '✅' },
+    { label: 'Annulées', value: cancelled, color: '#ef4444', icon: '❌' },
+  ];
+
+  if (isQueryLoading && (!orders.length && !purchases.length)) return <ListPageSkeleton accentColor="#d97706" />;
+
   return (
-    <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h3" sx={{ fontWeight: 700 }}>
-          {t('dashboard.orders.title')}
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          {t('dashboard.orders.subtitle')}
-        </Typography>
-      </Box>
-
-      {loading && orders.length === 0 && purchases.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <CircularProgress />
-          <Typography sx={{ mt: 2 }}>{t('dashboard.orders.loading')}</Typography>
-        </Box>
-      ) : (
-        <>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-            <Tabs value={tabValue} onChange={handleTabChange} aria-label="orders tabs">
-              <Tab label={t('dashboard.orders.tabs.received')} />
-              <Tab label={t('dashboard.orders.tabs.made')} />
-            </Tabs>
-          </Box>
-          
-          <ResponsiveTable
-            data={currentData}
-            columns={getColumns(isPurchase)}
-            page={page}
-            setPage={setPage}
-            order={order}
-            setOrder={setOrder}
-            orderBy={orderBy}
-            setOrderBy={setOrderBy}
-            filterName={filterName}
-            setFilterName={setFilterName}
-            rowsPerPage={rowsPerPage}
-            setRowsPerPage={setRowsPerPage}
-            TableBody={TableBodyComponent}
-            searchFields={['directSale.title', isPurchase ? 'seller.firstName' : 'buyer.firstName']}
-            selected={selected}
-            setSelected={setSelected}
-          />
-        </>
-      )}
-
-      <Dialog 
-        open={confirmDialogOpen} 
-        onClose={() => setConfirmDialogOpen(false)} 
-        maxWidth="sm" 
-        fullWidth
+    <>
+      <DashboardKeyframes />
+      <DashboardPageShell
+        title={t('dashboard.orders.title', 'Gestion des commandes')}
+        subtitle={t('dashboard.orders.subtitle', 'Suivez toutes vos commandes')}
+        icon="📦"
+        accentColor="#d97706"
+        stats={stats}
+        headerActions={
+          <button onClick={() => refetch()} disabled={isLoading} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'rgba(255,255,255,0.2)', color: '#fff', borderRadius: '10px', fontWeight: 700, fontSize: '0.85rem', border: '1.5px solid rgba(255,255,255,0.35)', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1 }}>
+            🔄 Actualiser
+          </button>
+        }
       >
-        <DialogTitle>{t('dashboard.orders.confirmOrder')}</DialogTitle>
-        <DialogContent>
-          <Typography>
-            {t('dashboard.orders.confirmMessage', {
-              buyer: selectedOrder?.buyer 
-                ? `${selectedOrder.buyer.firstName || ''} ${selectedOrder.buyer.lastName || ''}`.trim() || t('dashboard.orders.unknownBuyer')
-                : t('dashboard.orders.unknownBuyer'),
-              product: selectedOrder?.directSale?.title || t('dashboard.orders.unknownProduct')
-            })}
-          </Typography>
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="body2" color="text.secondary">
-              {t('dashboard.orders.quantityLabel')} {selectedOrder?.quantity}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t('dashboard.orders.totalLabel')} {selectedOrder?.totalPrice.toLocaleString(i18n.language)} DA
-            </Typography>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDialogOpen(false)}>{t('dashboard.orders.cancel')}</Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={confirming}
-            variant="contained"
-            color="success"
-          >
-            {confirming ? <CircularProgress size={20} /> : t('dashboard.orders.confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+        {/* Tabs */}
+        <div style={{ padding: '16px 20px 0' }}>
+          <PillTabs
+            value={tabValue === 0 ? 'received' : 'made'}
+            onChange={(v) => { setTabValue(v === 'received' ? 0 : 1); router.push(`/dashboard/direct-sales/orders?tab=${v}`); }}
+            tabs={[
+              { value: 'received', label: t('dashboard.orders.tabs.received', 'Commandes reçues'), count: orders.length },
+              { value: 'made', label: t('dashboard.orders.tabs.made', 'Mes achats'), count: purchases.length },
+            ]}
+          />
+        </div>
+
+        {/* Toolbar */}
+        <div style={tableStyles.toolbar}>
+          <span style={{ color: '#64748b', fontSize: '0.85rem' }}>{filtered.length} commande{filtered.length !== 1 ? 's' : ''}</span>
+          <div style={tableStyles.searchWrap}>
+            <span style={tableStyles.searchIcon}>🔍</span>
+            <input style={tableStyles.searchInput} placeholder="Rechercher..." value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} />
+          </div>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div style={tableStyles.emptyState}>
+            <div style={{ fontSize: '52px', marginBottom: '16px' }}>📦</div>
+            <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569', margin: '0 0 8px' }}>Aucune commande</p>
+            <p style={{ color: '#94a3b8', margin: 0 }}>{isPurchase ? "Vous n'avez pas encore passé de commandes." : "Vous n'avez pas encore reçu de commandes."}</p>
+          </div>
+        ) : (
+          <table style={tableStyles.table}>
+            <thead>
+              <tr>
+                {['Produit', isPurchase ? 'Vendeur' : 'Acheteur', 'Qté', 'Prix unitaire', 'Total', 'Statut', 'Date', ''].map(h => (
+                  <th key={h} style={tableStyles.th}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map(order => {
+                const counterparty = isPurchase ? (order.seller || order.directSale?.owner) : order.buyer;
+                const displayName = counterparty
+                  ? (counterparty.companyName || counterparty.entreprise || `${counterparty.firstName || ''} ${counterparty.lastName || ''}`.trim())
+                  : (isPurchase ? 'Vendeur inconnu' : 'Acheteur inconnu');
+                const initials = displayName?.charAt(0).toUpperCase() || '?';
+                const profileId = (counterparty as any)?._id;
+
+                return (
+                  <tr key={order._id} className="db-row" style={tableStyles.trHover}>
+                    <td style={tableStyles.td}>
+                      <span style={{ fontWeight: 600, color: '#1e293b' }}>{order.directSale?.title || 'Produit inconnu'}</span>
+                    </td>
+                    <td style={tableStyles.td}>
+                      {profileId ? (
+                        <Link href={`/profile/${profileId}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
+                          <div style={tableStyles.avatar(isPurchase ? '#0063b1' : '#7c3aed')}>{initials}</div>
+                          <div>
+                            <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1e293b' }}>{displayName}</div>
+                            {counterparty?.phone && <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{counterparty.phone}</div>}
+                          </div>
+                        </Link>
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={tableStyles.avatar()}>{initials}</div>
+                          <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1e293b' }}>{displayName}</div>
+                        </div>
+                      )}
+                    </td>
+                    <td style={{ ...tableStyles.td, textAlign: 'center' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '50%', background: '#f1f5f9', color: '#475569', fontWeight: 700, fontSize: '0.8rem' }}>{order.quantity}</span>
+                    </td>
+                    <td style={tableStyles.td}>{order.unitPrice?.toLocaleString(i18n.language)} DA</td>
+                    <td style={tableStyles.td}>
+                      <span style={{ fontWeight: 700, color: '#0063b1', fontSize: '0.95rem' }}>{order.totalPrice?.toLocaleString(i18n.language)} DA</span>
+                    </td>
+                    <td style={tableStyles.td}><StatusBadge config={statusConfig(order.status)} /></td>
+                    <td style={{ ...tableStyles.td, color: '#64748b', fontSize: '0.82rem' }}>{formatDate(order.createdAt)}</td>
+                    <td style={{ ...tableStyles.td, textAlign: 'right' }} onClick={e => e.stopPropagation()}>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                        <ActionBtn
+                          label="Détails"
+                          icon="👁️"
+                          onClick={() => {
+                            if (order.directSale?._id && order._id)
+                              router.push(`/dashboard/direct-sales/${order.directSale._id}/orders/${order._id}`);
+                          }}
+                        />
+                        {!isPurchase && order.status === 'PENDING' && (
+                          <ActionBtn label="Confirmer" icon="✅" variant="success" onClick={() => setConfirmTarget(order)} />
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+
+        {filtered.length > 0 && (
+          <SimplePagination page={page} rowsPerPage={rowsPerPage} total={filtered.length} onPageChange={setPage} onRowsPerPageChange={setRowsPerPage} />
+        )}
+      </DashboardPageShell>
+
+      <ConfirmDialog
+        open={!!confirmTarget}
+        title="Confirmer la commande"
+        message={`Confirmer la commande de "${confirmTarget?.directSale?.title || 'ce produit'}" pour ${confirmTarget?.buyer ? `${confirmTarget.buyer.firstName} ${confirmTarget.buyer.lastName}` : 'cet acheteur'} ? Total : ${confirmTarget?.totalPrice?.toLocaleString() || 0} DA`}
+        confirmLabel={confirming ? 'Confirmation...' : 'Confirmer'}
+        cancelLabel="Annuler"
+        onCancel={() => setConfirmTarget(null)}
+        onConfirm={handleConfirm}
+      />
+    </>
   );
 }

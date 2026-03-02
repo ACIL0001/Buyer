@@ -314,11 +314,11 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
       }
       // 5. AUCTION/TENDER OFFER REDIRECTION (PRIORITIZED)
       else {
-          const isSellerReceivingTenderBid = !titleLower.includes('créée') && notification.type !== 'OFFER_ACCEPTED' && 
-                                            (notification.type === 'NEW_OFFER' || notification.type === 'BID_PLACED' || (titleLower.includes('offre') && !titleLower.includes('acceptée') && !titleLower.includes('refusée'))) && 
+          const isSellerReceivingTenderBid = !titleLower.includes('créée') && notification.type !== 'OFFER_ACCEPTED' && notification.type !== 'BID_WON' && 
+                                            (notification.type === 'NEW_OFFER' || notification.type === 'BID_PLACED' || (titleLower.includes('offre') && !titleLower.includes('acceptée') && !titleLower.includes('refusée') && !titleLower.includes('remporté'))) && 
                                             (data?.tender || data?.tenderId || messageLower.includes('soumission') || messageLower.includes('appel d\'offres'));
           
-          const isSellerReceivingAuctionBid = !titleLower.includes('créée') && notification.type !== 'OFFER_ACCEPTED' && 
+          const isSellerReceivingAuctionBid = !titleLower.includes('créée') && notification.type !== 'OFFER_ACCEPTED' && notification.type !== 'BID_WON' && !titleLower.includes('remporté') && 
                                               (notification.type === 'BID_CREATED' || 
                                                notification.type === 'NEW_OFFER' || 
                                                notification.type === 'BID_PLACED' ||
@@ -396,7 +396,7 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
           }
           else if (notification.type === 'BID_WON' && (data?.tenderId || data?.tender)) {
               const tenderTitle = data?.tenderTitle || data?.tender?.title || "Appel d'offres";
-              const ownerName = data?.ownerName || 'Acheteur';
+              const ownerName = data?.ownerName || (notification as any)?.senderName || (notification as any)?.data?.senderName || data?.buyerName || 'Acheteur';
               const quantity = data?.quantity;
               const totalPrice = data?.finalPrice || data?.bidAmount;
               const contactNumber = data?.contactNumber;
@@ -572,7 +572,8 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
                         const priceAmount = priceMatch ? priceMatch[1] : null;
                         const title = priceAmount ? notification.title.replace(/\s*-\s*[\d,]+\.?\d*\s*DA/i, '').trim() : notification.title;
                         const sender = (notification as any).data?.sender || (notification as any).data?.bidder || (notification as any).data?.user;
-                        const senderName = (notification as any).senderName || 
+                        const senderName = (notification as any).data?.ownerName ||
+                                         (notification as any).senderName || 
                                          (notification as any).data?.senderName || 
                                          (notification as any).data?.bidderName || 
                                          (sender?.firstName ? `${sender.firstName} ${sender.lastName || ''}`.trim() : null) ||

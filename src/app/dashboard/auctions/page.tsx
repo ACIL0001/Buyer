@@ -1,52 +1,29 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
-import {
-  Stack,
-  Button,
-  TableRow,
-  TableBody,
-  TableCell,
-  Container,
-  Typography,
-  Chip,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Box,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Grid,
-} from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
-import { MdAdd, MdRefresh } from 'react-icons/md';
-import ResponsiveTable from '@/components/Tables/ResponsiveTable';
-import Label from '@/components/Label';
 import useAuth from '@/hooks/useAuth';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import TableSkeleton from '@/components/skeletons/TableSkeleton';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useCreateSocket } from '@/contexts/socket';
+import DashboardPageShell from '@/components/dashboard/DashboardPageShell';
+import {
+  StatusBadge, PillChip, ActionBtn, HeaderAddBtn, tableStyles,
+  DashboardKeyframes, SimplePagination, ConfirmDialog, ListPageSkeleton,
+} from '@/components/dashboard/dashboardHelpers';
 
-// Types (simplified - in production these would come from a types file)
 enum AUCTION_TYPE {
   CLASSIC = 'CLASSIC',
   EXPRESS = 'EXPRESS',
-  AUTO_SUB_BID = 'AUTO_SUB_BID'
+  AUTO_SUB_BID = 'AUTO_SUB_BID',
 }
-
 enum BID_STATUS {
   OPEN = 'OPEN',
   ON_AUCTION = 'ON_AUCTION',
   CLOSED = 'CLOSED',
-  ARCHIVED = 'ARCHIVED'
+  ARCHIVED = 'ARCHIVED',
 }
-
 interface Auction {
   _id: string;
   title: string;
@@ -63,382 +40,219 @@ interface Auction {
   wilaya?: string;
 }
 
+function statusConfig(status: BID_STATUS) {
+  const map: Record<string, { label: string; color: string; bg: string; dot?: boolean }> = {
+    OPEN:       { label: 'Ouvert',     color: '#0284c7', bg: '#e0f2fe', dot: true },
+    ON_AUCTION: { label: 'En cours',   color: '#16a34a', bg: '#dcfce7', dot: true },
+    CLOSED:     { label: 'Fermé',      color: '#dc2626', bg: '#fee2e2' },
+    ARCHIVED:   { label: 'Archivé',    color: '#64748b', bg: '#f1f5f9' },
+  };
+  return map[status] || { label: status, color: '#64748b', bg: '#f1f5f9' };
+}
+
+function auctionTypeLabel(type: AUCTION_TYPE) {
+  const map: Record<string, string> = {
+    CLASSIC: 'Classique', EXPRESS: 'Express', AUTO_SUB_BID: 'Auto',
+  };
+  return map[type] || type;
+}
+
+function formatDate(d: string) {
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function formatPrice(n: number) {
+  return n?.toLocaleString('fr-FR') + ' DA';
+}
+
+function isFinished(a: Auction) {
+  return new Date(a.endingAt) <= new Date() || a.status === BID_STATUS.CLOSED;
+}
+
 export default function AuctionsPage() {
   const router = useRouter();
-  const theme = useTheme();
-  const { t, i18n } = useTranslation();
-  const queryClient = useQueryClient();
-  
-  const COLUMNS = [
-    { id: 'title', label: t('dashboard.list.columns.title'), alignRight: false, searchable: true, sortable: true },
-    { id: 'bidType', label: t('dashboard.list.columns.type'), alignRight: false, searchable: false },
-    { id: 'auctionType', label: t('dashboard.list.columns.mode'), alignRight: false, searchable: false },
-    { id: 'startingPrice', label: t('dashboard.list.columns.startingPrice'), alignRight: false, searchable: false, sortable: true },
-    { id: 'currentPrice', label: t('dashboard.list.columns.currentPrice'), alignRight: false, searchable: false, sortable: true },
-    { id: 'endingAt', label  : t('dashboard.list.columns.endsAt'), alignRight: false, searchable: false, sortable: true },
-    { id: 'status', label: t('dashboard.list.columns.status'), alignRight: false, searchable: false },
-    { id: 'actions', label: t('dashboard.list.columns.actions'), alignRight: true, searchable: false }
-  ];
-  
-  const [page, setPage] = useState(0);
-  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
-  const [orderBy, setOrderBy] = useState('endingAt');
-  const [filterName, setFilterName] = useState('');
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState('ALL');
+  const { t } = useTranslation();
   const { isLogged } = useAuth();
-  
-  // Refactored to React Query
-  const { data: auctionsData = [], isLoading: loading } = useQuery({
+  const queryClient = useQueryClient();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [relaunchTarget, setRelaunchTarget] = useState<string | null>(null);
+
+  const { socket } = useCreateSocket() || {};
+  useEffect(() => {
+    if (!socket) return;
+    const handleRefetch = () => queryClient.invalidateQueries({ queryKey: ['my-auctions'] });
+    socket.on('newListingCreated', handleRefetch);
+    socket.on('notification', handleRefetch);
+    return () => {
+      socket.off('newListingCreated', handleRefetch);
+      socket.off('notification', handleRefetch);
+    };
+  }, [socket, queryClient]);
+
+  const { data: auctionsData = [], isLoading } = useQuery({
     queryKey: ['my-auctions'],
     queryFn: async () => {
-       const { AuctionsAPI } = await import('@/services/auctions');
-       const response = await AuctionsAPI.getAuctions();
-       if (Array.isArray(response)) return response;
-       if (response?.data && Array.isArray(response.data)) return response.data;
-       return [];
+      const { AuctionsAPI } = await import('@/services/auctions');
+      const res = await AuctionsAPI.getAuctions();
+      if (Array.isArray(res)) return res;
+      if (res?.data && Array.isArray(res.data)) return res.data;
+      return [];
     },
     enabled: isLogged,
-    staleTime: Infinity,
-    refetchInterval: 30000, // Poll every 30 seconds
+    staleTime: 30000,
+    placeholderData: keepPreviousData,
   });
 
-  const auctions = (auctionsData || []) as Auction[];
+  const auctions = auctionsData as Auction[];
+  const active = useMemo(() => auctions.filter(a => !isFinished(a)), [auctions]);
+  const finished = useMemo(() => auctions.filter(a => isFinished(a)), [auctions]);
 
-  const [finishedAuctions, setFinishedAuctions] = useState<Auction[]>([]);
-  const [activeAuctions, setActiveAuctions] = useState<Auction[]>([]);
+  const filtered = useMemo(() => {
+    let list = statusFilter === 'ACTIVE' ? active : statusFilter === 'FINISHED' ? finished : auctions;
+    if (search.trim()) list = list.filter(a => a.title.toLowerCase().includes(search.toLowerCase()));
+    return list;
+  }, [auctions, active, finished, statusFilter, search]);
 
-  // Update filtered lists when data changes
-  useEffect(() => {
-    if (auctions) {
-      const now = new Date();
-      const active = auctions.filter(auction => {
-        const endTime = new Date(auction.endingAt);
-        return endTime > now && auction.status !== BID_STATUS.CLOSED;
-      });
-      const finished = auctions.filter(auction => {
-        const endTime = new Date(auction.endingAt);
-        return endTime <= now || auction.status === BID_STATUS.CLOSED;
-      });
-      setActiveAuctions(active);
-      setFinishedAuctions(finished);
-    }
-  }, [auctions]);
+  const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
-  // Removed manual effect and fetchAuctions
-  /*
-  const isFetchingRef = useRef(false);
+  const stats = [
+    { label: 'Total', value: auctions.length, color: '#0063b1', icon: '📋' },
+    { label: 'Actives', value: active.length, color: '#10b981', icon: '✅' },
+    { label: 'Terminées', value: finished.length, color: '#f59e0b', icon: '⏳' },
+    { label: 'Archivées', value: auctions.filter(a => a.status === BID_STATUS.ARCHIVED).length, color: '#64748b', icon: '🗄️' },
+  ];
 
-  useEffect(() => {
-    // ...
-  }, [isLogged]);
-
-  const fetchAuctions = async () => {
-    // ...
-  };
-  */
-  
-
-  // Removed fetchAuctions definition
-
-  const getStatusColor = (status: BID_STATUS): 'info' | 'success' | 'error' | 'default' => {
-    switch (status) {
-      case BID_STATUS.OPEN:
-        return 'info';
-      case BID_STATUS.ON_AUCTION:
-        return 'success';
-      case BID_STATUS.CLOSED:
-        return 'error';
-      case BID_STATUS.ARCHIVED:
-        return 'default';
-      default:
-        return 'default';
-    }
-  };
-
-  const getStatusLabel = (status: BID_STATUS) => {
-    switch (status) {
-      case BID_STATUS.OPEN:
-        return t('dashboard.auctions.status.OPEN', 'Open');
-      case BID_STATUS.ON_AUCTION:
-        return t('dashboard.auctions.status.ON_AUCTION', 'On Auction');
-      case BID_STATUS.CLOSED:
-        return t('dashboard.auctions.status.CLOSED', 'Closed');
-      case BID_STATUS.ARCHIVED:
-        return t('dashboard.auctions.status.ARCHIVED', 'Archived');
-      default:
-        return status;
-    }
-  };
-
-  const getAuctionTypeLabel = (type: AUCTION_TYPE) => {
-    switch (type) {
-      case AUCTION_TYPE.CLASSIC:
-        return t('dashboard.auctions.type.CLASSIC', 'Classic');
-      case AUCTION_TYPE.EXPRESS:
-        return t('dashboard.auctions.type.EXPRESS', 'Express');
-      case AUCTION_TYPE.AUTO_SUB_BID:
-        return t('dashboard.auctions.type.AUTO_SUB_BID', 'Automatic');
-      default:
-        return type;
-    }
-  };
-
-  const getAuctionTypeColor = (type: AUCTION_TYPE): 'default' | 'warning' | 'info' => {
-    switch (type) {
-      case AUCTION_TYPE.CLASSIC:
-        return 'default';
-      case AUCTION_TYPE.EXPRESS:
-        return 'warning';
-      case AUCTION_TYPE.AUTO_SUB_BID:
-        return 'info';
-      default:
-        return 'default';
-    }
-  };
-
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString(i18n.language, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatPrice = (price: number) => {
-    return price.toLocaleString(i18n.language, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  };
-
-  const isAuctionFinished = (auction: Auction) => {
-    const now = new Date();
-    const endTime = new Date(auction.endingAt);
-    return endTime < now || auction.status === BID_STATUS.CLOSED;
-  };
-
-  const getFilteredAuctions = () => {
-    switch (statusFilter) {
-      case 'ACTIVE':
-        return activeAuctions;
-      case 'FINISHED':
-        return finishedAuctions;
-      case 'ALL':
-      default:
-        return auctions;
-    }
-  };
-
-  const TableBodyComponent = ({ data = [] }: { data: Auction[] }) => {
-    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
-
-    return (
-      <TableBody>
-        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-          const { _id, title, bidType, auctionType, startingPrice, currentPrice, endingAt, status } = row;
-
-          return (
-            <TableRow
-              hover
-              key={_id}
-              tabIndex={-1}
-            >
-              <TableCell component="th" scope="row" padding="none" sx={{ pl: 2 }}>
-                <Typography variant="subtitle2" noWrap>
-                  {title}
-                </Typography>
-              </TableCell>
-              <TableCell align="left">
-                <Label variant="ghost" color="default">
-                  {bidType === 'PRODUCT' ? t('dashboard.auctions.type.PRODUCT', 'Product') : t('dashboard.auctions.type.SERVICE', 'Service')}
-                </Label>
-              </TableCell>
-              <TableCell align="left">
-                <Label variant="ghost" color={getAuctionTypeColor(auctionType)}>
-                  {getAuctionTypeLabel(auctionType)}
-                </Label>
-              </TableCell>
-              <TableCell align="left">{formatPrice(startingPrice)} DA</TableCell>
-              <TableCell align="left">{formatPrice(currentPrice)} DA</TableCell>
-              <TableCell align="left">{formatDate(endingAt)}</TableCell>
-              <TableCell align="left">
-                <Chip
-                  label={getStatusLabel(status)}
-                  color={getStatusColor(status)}
-                  variant="outlined"
-                  size="small"
-                />
-              </TableCell>
-              <TableCell align="right">
-                <Stack direction="row" spacing={1}>
-                  <Button
-                    component={Link}
-                    href={`/dashboard/auctions/${_id}`}
-                    size="small"
-                    variant="outlined"
-                  >
-                    {t('dashboard.list.view')}
-                  </Button>
-                  {(statusFilter === 'FINISHED' || (statusFilter === 'ALL' && isAuctionFinished(row))) && (
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="primary"
-                        onClick={(e) => {
-                         e.stopPropagation();
-                         queryClient.invalidateQueries({ queryKey: ['my-auctions'] });
-                         // Handle relaunch (future)
-                       }}
-                      startIcon={<MdRefresh />}
-                    >
-                      {t('dashboard.list.relaunch')}
-                    </Button>
-                  )}
-                </Stack>
-              </TableCell>
-            </TableRow>
-          );
-        })}
-        {emptyRows > 0 && (
-          <TableRow style={{ height: 53 * emptyRows }}>
-            <TableCell colSpan={8} />
-          </TableRow>
-        )}
-      </TableBody>
-    );
-  };
+  if (isLoading) return <ListPageSkeleton accentColor="#0063b1" />;
 
   return (
-    <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-      <Box
-        sx={{
-          borderRadius: 3,
-          p: { xs: 2, sm: 3 },
-          mb: { xs: 3, sm: 4, md: 5 },
-          background: theme.palette.mode === 'light'
-            ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.02)})`
-            : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.18)}, ${alpha(theme.palette.primary.main, 0.06)})`,
-          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
-        }}
+    <>
+      <DashboardKeyframes />
+      <DashboardPageShell
+        title={t('dashboard.list.myAuctions', 'Mes Enchères')}
+        subtitle={`${auctions.length} enchère${auctions.length !== 1 ? 's' : ''} au total`}
+        icon="🏷️"
+        stats={stats}
+        headerActions={
+          <HeaderAddBtn label={t('dashboard.list.newAuction', 'Nouvelle enchère')} href="/dashboard/auctions/create/" />
+        }
       >
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
-          alignItems={{ xs: 'stretch', sm: 'center' }} 
-          justifyContent="space-between" 
-          spacing={{ xs: 2, sm: 2 }}
-        >
-          <Typography 
-            variant="h4" 
-            gutterBottom
-            sx={{ 
-              m: 0,
-              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
-              textAlign: { xs: 'center', sm: 'left' }
-            }}
-          >
-            {t('dashboard.list.myAuctions')}
-          </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>{t('dashboard.list.filterByStatus')}</InputLabel>
-              <Select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                label={t('dashboard.list.filterByStatus')}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    background: theme.palette.mode === 'light' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.25)',
-                    backdropFilter: 'blur(8px)'
-                  }
-                }}
-              >
-                <MenuItem value="ALL">{t('dashboard.list.allAuctions')}</MenuItem>
-                <MenuItem value="ACTIVE">{t('dashboard.list.activeAuctions')}</MenuItem>
-                <MenuItem value="FINISHED">{t('dashboard.list.finishedAuctions')}</MenuItem>
-              </Select>
-            </FormControl>
-            <Button
-              variant="contained"
-              component={Link}
-              href="/dashboard/auctions/create/"
-              startIcon={<MdAdd />}
-              sx={{
-                minWidth: { xs: '100%', sm: 'auto' },
-                py: { xs: 1.5, sm: 1 }
-              }}
-            >
-              {t('dashboard.list.newAuction')}
-            </Button>
-          </Stack>
-        </Stack>
-      </Box>
-      
-      {loading && (
-        <TableSkeleton rows={5} columns={COLUMNS.length} />
-      )}
+        {/* Toolbar */}
+        <div style={tableStyles.toolbar}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <PillChip label="Toutes" active={statusFilter === 'ALL'} onClick={() => { setStatusFilter('ALL'); setPage(0); }} count={auctions.length} />
+            <PillChip label="Actives" active={statusFilter === 'ACTIVE'} onClick={() => { setStatusFilter('ACTIVE'); setPage(0); }} count={active.length} color="#10b981" />
+            <PillChip label="Terminées" active={statusFilter === 'FINISHED'} onClick={() => { setStatusFilter('FINISHED'); setPage(0); }} count={finished.length} color="#f59e0b" />
+          </div>
+          <div style={tableStyles.searchWrap}>
+            <span style={tableStyles.searchIcon}>🔍</span>
+            <input
+              style={tableStyles.searchInput}
+              placeholder="Rechercher..."
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage(0); }}
+            />
+          </div>
+        </div>
 
-      {!loading && getFilteredAuctions() && getFilteredAuctions().length > 0 ? (
-        <ResponsiveTable
-          data={getFilteredAuctions()}
-          columns={COLUMNS}
-          page={page}
-          setPage={setPage}
-          order={order}
-          setOrder={setOrder}
-          orderBy={orderBy}
-          setOrderBy={setOrderBy}
-          filterName={filterName}
-          setFilterName={setFilterName}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          TableBody={TableBodyComponent}
-          searchFields={['title']}
-          selected={selected}
-          setSelected={setSelected}
-          onRowClick={(row) => router.push(`/dashboard/auctions/${row._id}`)}
-        />
-      ) : !loading && (
-        <Stack 
-          spacing={3} 
-          alignItems="center" 
-          justifyContent="center" 
-          sx={{ 
-            py: 8, 
-            textAlign: 'center',
-            backgroundColor: 'background.paper',
-            borderRadius: 2,
-            border: '1px dashed',
-            borderColor: 'divider'
-          }}
-        >
-          <Typography variant="h5" color="text.secondary">
-            {statusFilter === 'ACTIVE' && t('dashboard.list.activeAuctions')}
-            {statusFilter === 'FINISHED' && t('dashboard.list.finishedAuctions')}
-            {statusFilter === 'ALL' && t('dashboard.list.noAuctions')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400 }}>
-            {statusFilter === 'ACTIVE' && t('dashboard.list.noAuctions')}
-            {statusFilter === 'FINISHED' && t('dashboard.list.noAuctions')}
-            {statusFilter === 'ALL' && t('dashboard.list.createFirstAuction')}
-          </Typography>
-          <Button
-            variant="contained"
-            component={Link}
-            href="/dashboard/auctions/create/"
-            startIcon={<MdAdd />}
-            sx={{ px: 4, py: 1.5 }}
-          >
-            {t('dashboard.list.newAuction')}
-          </Button>
-        </Stack>
-      )}
-    </Container>
+        {/* Table */}
+        {filtered.length === 0 ? (
+          <div style={tableStyles.emptyState}>
+            <div style={{ fontSize: '52px', marginBottom: '16px' }}>🏷️</div>
+            <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569', margin: '0 0 8px' }}>Aucune enchère trouvée</p>
+            <p style={{ color: '#94a3b8', margin: '0 0 24px' }}>Créez votre première enchère pour commencer</p>
+            <a href="/dashboard/auctions/create/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 22px', background: '#0063b1', color: '#fff', borderRadius: '10px', fontWeight: 700, textDecoration: 'none', fontSize: '0.9rem' }}>
+              ＋ Nouvelle enchère
+            </a>
+          </div>
+        ) : (
+          <table style={tableStyles.table}>
+            <thead>
+              <tr>
+                {['Titre', 'Type', 'Mode', 'Prix de départ', 'Prix actuel', 'Fin', 'Statut', ''].map(h => (
+                  <th key={h} style={tableStyles.th}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map(row => (
+                <tr
+                  key={row._id}
+                  className="db-row"
+                  onClick={() => router.push(`/dashboard/auctions/${row._id}`)}
+                  style={tableStyles.trHover}
+                >
+                  <td style={tableStyles.td}>
+                    <span style={{ fontWeight: 600, color: '#1e293b' }}>{row.title}</span>
+                  </td>
+                  <td style={tableStyles.td}>
+                    <span style={{ padding: '3px 9px', borderRadius: '12px', background: '#f1f5f9', color: '#475569', fontSize: '0.76rem', fontWeight: 600 }}>
+                      {row.bidType === 'PRODUCT' ? '📦 Produit' : '🔧 Service'}
+                    </span>
+                  </td>
+                  <td style={tableStyles.td}>
+                    <span style={{
+                      padding: '3px 9px', borderRadius: '12px', fontSize: '0.76rem', fontWeight: 600,
+                      background: row.auctionType === 'EXPRESS' ? '#fef3c7' : row.auctionType === 'AUTO_SUB_BID' ? '#e0f2fe' : '#f1f5f9',
+                      color: row.auctionType === 'EXPRESS' ? '#d97706' : row.auctionType === 'AUTO_SUB_BID' ? '#0284c7' : '#475569',
+                    }}>
+                      {row.auctionType === 'EXPRESS' ? '⚡' : row.auctionType === 'AUTO_SUB_BID' ? '🤖' : '🏛️'} {auctionTypeLabel(row.auctionType)}
+                    </span>
+                  </td>
+                  <td style={tableStyles.td}>{formatPrice(row.startingPrice)}</td>
+                  <td style={tableStyles.td}>
+                    <span style={{ fontWeight: 700, color: row.currentPrice > row.startingPrice ? '#10b981' : '#334155' }}>
+                      {formatPrice(row.currentPrice)}
+                    </span>
+                  </td>
+                  <td style={{ ...tableStyles.td, color: '#64748b', fontSize: '0.82rem' }}>{formatDate(row.endingAt)}</td>
+                  <td style={tableStyles.td}>
+                    <StatusBadge config={statusConfig(row.status)} />
+                  </td>
+                  <td style={{ ...tableStyles.td, textAlign: 'right' }} onClick={e => e.stopPropagation()}>
+                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                      <ActionBtn label="Voir" icon="👁️" href={`/dashboard/auctions/${row._id}`} />
+                      {isFinished(row) && (
+                        <ActionBtn
+                          label="Relancer"
+                          icon="🔄"
+                          variant="success"
+                          onClick={() => setRelaunchTarget(row._id)}
+                        />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        {filtered.length > 0 && (
+          <SimplePagination
+            page={page}
+            rowsPerPage={rowsPerPage}
+            total={filtered.length}
+            onPageChange={setPage}
+            onRowsPerPageChange={setRowsPerPage}
+          />
+        )}
+      </DashboardPageShell>
+
+      <ConfirmDialog
+        open={!!relaunchTarget}
+        title="Relancer l'enchère"
+        message="Voulez-vous vraiment relancer cette enchère ? Une nouvelle session commencera."
+        confirmLabel="Relancer"
+        cancelLabel="Annuler"
+        onCancel={() => setRelaunchTarget(null)}
+        onConfirm={() => {
+          queryClient.invalidateQueries({ queryKey: ['my-auctions'] });
+          setRelaunchTarget(null);
+        }}
+      />
+    </>
   );
 }

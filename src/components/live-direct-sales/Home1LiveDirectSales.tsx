@@ -11,7 +11,7 @@ import { useMemo, useState, useEffect, useCallback } from "react";
 import { DirectSaleAPI } from "@/app/api/direct-sale";
 import app from '@/config';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CardSkeleton from '../skeletons/CardSkeleton';
 import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
@@ -19,6 +19,7 @@ import "../auction-details/st.css";
 import "../auction-details/modern-details.css";
 import { useRouter } from "next/navigation";
 import ShareButton from '@/components/common/ShareButton';
+import { useCreateSocket } from '@/contexts/socket';
 
 // Default image constants
 const DEFAULT_DIRECT_SALE_IMAGE = "/assets/images/logo-white.png";
@@ -104,9 +105,26 @@ const Home1LiveDirectSales = () => {
     });
   }, [allDirectSalesResponse, auth.user]);
 
+  const queryClient = useQueryClient();
+  const socketContext = useCreateSocket();
+  const socket = socketContext?.socket;
+
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
   const [animatedCards, setAnimatedCards] = useState<number[]>([]);
   const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
+
+  // Real-time: invalidate direct-sales query when a new direct sale is created
+  useEffect(() => {
+    if (!socket) return;
+    const handler = (data: { type: string }) => {
+      if (data?.type === 'directSale') {
+        queryClient.invalidateQueries({ queryKey: ['direct-sales'] });
+      }
+    };
+    socket.on('newListingCreated', handler);
+    return () => { socket.off('newListingCreated', handler); };
+  }, [socket, queryClient]);
+
 
   const handleImageError = (saleId: string) => {
     setImageErrors(prev => ({ ...prev, [saleId]: true }));

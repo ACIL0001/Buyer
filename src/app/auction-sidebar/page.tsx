@@ -3,6 +3,7 @@
 import MultipurposeAuctionSidebar from "@/components/auction-sidebar/MultipurposeAuctionSidebar";
 import Footer from "@/components/footer/Footer";
 import Header from "@/components/header/Header";
+import DynamicScrollToTop from "@/components/common/DynamicScrollToTop";
 import { SnackbarProvider } from 'notistack';
 import RequestProvider from "@/contexts/RequestContext";
 import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
@@ -208,6 +209,7 @@ const AuctionSidebarPage = () => {
                 </section>
               </main>
               <Footer />
+              <DynamicScrollToTop colorSchema="blue" />
             </AxiosInterceptor>
           </RequestProvider>
         </SnackbarProvider>

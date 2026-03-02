@@ -106,7 +106,23 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
 
   const isEnded = timer.hasEnded;
   const hasAuctionEnded = isEnded; // Alias for compatibility with copied JSX
-  const isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30 && parseInt(timer.days) === 0;
+  
+  // Calculate if less than 5% time remaining
+  let isUrgent = false;
+  if (!isEnded) {
+      if (auction.startingAt && (auction.endingAt || auction.endDate)) {
+          const start = Date.parse(auction.startingAt);
+          const end = Date.parse(auction.endingAt || auction.endDate!);
+          const now = Date.now();
+          const totalDuration = end - start;
+          const remaining = end - now;
+          if (totalDuration > 0 && remaining <= totalDuration * 0.05) {
+              isUrgent = true;
+          }
+      } else {
+          isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30 && parseInt(timer.days) === 0;
+      }
+  }
 
   // Determine the display name for the auction owner
   let displayName;
@@ -256,8 +272,8 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                         backdropFilter: 'blur(4px)',
                         padding: '4px 8px',
                         borderRadius: '12px',
-                        color: '#d32f2f', // Red for urgency
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                        color: isUrgent ? '#d32f2f' : '#000000', // Black by default, red when urgent
+                        boxShadow: isUrgent ? '0 0 10px rgba(211, 47, 47, 0.5)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
                         border: '1px solid rgba(0, 0, 0, 0.05)',
                         zIndex: 2,
                         display: 'flex',
@@ -265,6 +281,7 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                         gap: '4px',
                         fontSize: '10px',
                         fontWeight: '700',
+                        animation: isUrgent ? 'pulse 1s infinite' : 'none',
                     }}
             >
                     <span>{timer.days || "00"}j</span>:

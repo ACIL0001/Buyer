@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import AuctionCard from '@/components/cards/AuctionCard';
 import TenderCard from '@/components/cards/TenderCard';
 import DirectSaleCard from '@/components/cards/DirectSaleCard';
+import DynamicScrollToTop from '@/components/common/DynamicScrollToTop';
 import app from '../../config';
 import { useQuery } from '@tanstack/react-query';
 import CardSkeleton from '@/components/skeletons/CardSkeleton';
@@ -1288,6 +1289,7 @@ export default function CategoryClient() {
       </div>
 
     </div>
+      <DynamicScrollToTop colorSchema="gradient" />
     </>
   );
 }

@@ -14,7 +14,9 @@ import {
   FormControlLabel,
   Switch,
   Divider,
+  Skeleton,
 } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import * as Yup from 'yup';
 import { useFormik, FormikProvider } from 'formik';
 import { useTranslation } from 'react-i18next';
@@ -32,6 +34,8 @@ import {
     MdPaid,
     MdPhone,
 } from 'react-icons/md';
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import useAuth from '@/hooks/useAuth';
 
 // Shared Wizard Components
@@ -72,12 +76,77 @@ export default function CreateTenderPage() {
     const router = useRouter();
     const { auth, isLogged } = useAuth();
     const { t } = useTranslation();
+
+    const pageTheme = React.useMemo(() => createTheme(theme, {
+        palette: {
+            primary: { main: '#059669' }, // Green
+            secondary: { main: '#10b981' }, // Lighter green
+        },
+        components: {
+            MuiOutlinedInput: {
+                styleOverrides: {
+                    root: {
+                        borderRadius: '16px',
+                        backgroundColor: alpha('#888', 0.05),
+                        '& fieldset': { borderColor: 'transparent', transition: 'all 0.2s ease' },
+                        transition: 'all 0.2s ease-in-out',
+                        '&:hover fieldset': {
+                            borderColor: alpha('#888', 0.15),
+                        },
+                        '&.Mui-focused': {
+                            backgroundColor: theme.palette.background.paper,
+                            '& fieldset': {
+                                borderColor: theme.palette.primary.main,
+                                borderWidth: '2px',
+                            },
+                        },
+                    }
+                }
+            },
+            MuiSwitch: {
+                styleOverrides: {
+                    root: {
+                        width: 42,
+                        height: 26,
+                        padding: 0,
+                        '& .MuiSwitch-switchBase': {
+                            padding: 0,
+                            margin: 2,
+                            transitionDuration: '300ms',
+                            '&.Mui-checked': {
+                                transform: 'translateX(16px)',
+                                color: '#fff',
+                                '& + .MuiSwitch-track': {
+                                    backgroundColor: '#059669',
+                                    opacity: 1,
+                                    border: 0,
+                                },
+                            },
+                        },
+                        '& .MuiSwitch-thumb': {
+                            boxSizing: 'border-box',
+                            width: 22,
+                            height: 22,
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                        },
+                        '& .MuiSwitch-track': {
+                            borderRadius: 26 / 2,
+                            backgroundColor: '#E9E9EA',
+                            opacity: 1,
+                        },
+                    }
+                }
+            }
+        }
+    }), [theme]);
     
     // State
     const [activeStep, setActiveStep] = useState(0);
     const [categories, setCategories] = useState<any[]>([]);
     const [attachments, setAttachments] = useState<File[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isHydrated, setIsHydrated] = useState(false);
+    const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
     // Formik
     const validationSchema = Yup.object().shape({
@@ -128,18 +197,53 @@ export default function CreateTenderPage() {
             return;
         }
         loadCategories();
+        
+        // Restore session state
+        const savedSession = sessionStorage.getItem('mazadclick-create-tender-draft');
+        if (savedSession) {
+            try {
+                const { step, values } = JSON.parse(savedSession);
+                if (step !== undefined) setActiveStep(step);
+                if (values) formik.setValues(values);
+            } catch (e) {
+                console.error("Failed to restore session draft", e);
+            }
+        }
+        setIsHydrated(true);
     }, [isLogged]);
+
+    // Save session state on change
+    useEffect(() => {
+        if (isHydrated) {
+            sessionStorage.setItem('mazadclick-create-tender-draft', JSON.stringify({
+                step: activeStep,
+                values: formik.values
+            }));
+        }
+    }, [activeStep, formik.values, isHydrated]);
 
     const loadCategories = async () => {
         try {
+            const cached = sessionStorage.getItem('mazadclick-categories-cache');
+            if (cached) {
+                setCategories(JSON.parse(cached));
+                setIsLoadingCategories(false);
+            }
+
             const { CategoryAPI } = await import('@/services/category');
             const response = await CategoryAPI.getCategoryTree();
             let categoryData: any[] = [];
             if (response?.data && Array.isArray(response.data)) categoryData = response.data;
             else if (Array.isArray(response)) categoryData = response;
-            if (categoryData.length > 0) setCategories(categoryData);
+            
+            if (categoryData.length > 0) {
+                setCategories(categoryData);
+                sessionStorage.setItem('mazadclick-categories-cache', JSON.stringify(categoryData));
+            }
         } catch (error) {
             console.error('Error loading categories', error);
+        } finally {
+            setIsLoadingCategories(false);
         }
     };
 
@@ -218,6 +322,7 @@ export default function CreateTenderPage() {
             });
 
             await TendersAPI.create(formData);
+            sessionStorage.removeItem('mazadclick-create-tender-draft');
             router.push('/dashboard/tenders');
         } catch (error) {
             console.error('Error creating tender', error);
@@ -366,7 +471,7 @@ export default function CreateTenderPage() {
                         {/* PROJECT INFO */}
                         <Grid size={{ xs: 12, md: 8 }}>
                              <Typography variant="h6" gutterBottom fontWeight="bold">{t('createTender.projectInfo')}</Typography>
-                             <Box sx={{ p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}>
+                             <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4 }}>
                                  <TextField
                                     fullWidth
                                     label={t('createTender.tenderTitle')}
@@ -398,7 +503,7 @@ export default function CreateTenderPage() {
                                     ? "Quantité et Détails" 
                                     : t('createTender.budgetAndDetails')}
                             </Typography>
-                            <Box sx={{ p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 {formik.values.evaluationType !== TENDER_EVALUATION_TYPES.MIEUX_DISANT && (
                                     <TextField
                                         fullWidth
@@ -429,7 +534,7 @@ export default function CreateTenderPage() {
                         {/* LOCATION */}
                         <Grid size={{ xs: 12, md: 6 }}>
                              <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>{t('createTender.location')}</Typography>
-                             <Box sx={{ p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}>
+                             <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4 }}>
                                  <TextField
                                     fullWidth
                                     select
@@ -459,7 +564,7 @@ export default function CreateTenderPage() {
                         {/* SETTINGS */}
                         <Grid size={{ xs: 12, md: 6 }}>
                             <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>{t('createTender.settings')}</Typography>
-                            <Box sx={{ p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}>
+                            <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4 }}>
                                 <FormControlLabel
                                     control={<Switch checked={formik.values.hidden} onChange={formik.handleChange} name="hidden" />}
                                     label={
@@ -503,29 +608,54 @@ export default function CreateTenderPage() {
     };
 
     return (
+        <ThemeProvider theme={pageTheme}>
         <FormikProvider value={formik}>
             <WizardWrapper 
                 title={t('createTender.title')}
                 subtitle={t('createTender.subtitle')}
+                onBack={activeStep > 0 ? handleBack : undefined}
+                backLabel={t('createTender.back')}
             >
                 <WizardStepper activeStep={activeStep} steps={steps} />
                 
-                <Box sx={{ minHeight: 400 }}>
-                    {renderStepContent(activeStep)}
+                <Box sx={{ minHeight: 200, position: 'relative' }}>
+                    {(!isHydrated || isLoadingCategories) ? (
+                        <Box sx={{ p: 2 }}>
+                            <Skeleton variant="text" width="40%" height={50} sx={{ mx: 'auto', mb: 3 }} />
+                            <Grid container spacing={2}>
+                                {[1, 2].map((i) => (
+                                    <Grid size={{ xs: 12, sm: 6 }} key={i}>
+                                        <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 4 }} />
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        </Box>
+                    ) : (
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={activeStep}
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -15 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                {renderStepContent(activeStep)}
+                            </motion.div>
+                        </AnimatePresence>
+                    )}
                 </Box>
 
                 <WizardNavigation 
-                    onBack={activeStep > 0 ? handleBack : undefined}
                     onNext={activeStep < steps.length - 1 ? handleNext : () => formik.handleSubmit()}
                     isLastStep={activeStep === steps.length - 1}
                     isSubmitting={isSubmitting}
                     disableNext={!validateStep(activeStep)}
                     hideNext={activeStep === 0 || activeStep === 1 || activeStep === 2}
-                    backLabel={t('createTender.back')}
                     nextLabel={t('createTender.nextStep')}
                     submitLabel={t('createTender.publishTender')}
                 />
             </WizardWrapper>
         </FormikProvider>
+        </ThemeProvider>
     );
 }

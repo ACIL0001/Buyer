@@ -1,59 +1,54 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import Link from 'next/link';
-import {
-  Stack,
-  Button,
-  TableRow,
-  TableBody,
-  TableCell,
-  Container,
-  Typography,
-  Chip,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Box,
-} from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
-import { MdAdd } from 'react-icons/md';
-import ResponsiveTable from '@/components/Tables/ResponsiveTable';
-import Label from '@/components/Label';
 import useAuth from '@/hooks/useAuth';
 import { DirectSale, SALE_STATUS } from '@/types/direct-sale';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import TableSkeleton from '@/components/skeletons/TableSkeleton';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useCreateSocket } from '@/contexts/socket';
+import DashboardPageShell from '@/components/dashboard/DashboardPageShell';
+import {
+  StatusBadge, PillChip, ActionBtn, HeaderAddBtn, tableStyles,
+  DashboardKeyframes, SimplePagination, ConfirmDialog, ListPageSkeleton,
+} from '@/components/dashboard/dashboardHelpers';
 
-// Local types for UI removed in favor of global types
+function statusConfig(status: SALE_STATUS) {
+  const map: Record<string, any> = {
+    ACTIVE:       { label: 'Actif',       color: '#16a34a', bg: '#dcfce7', dot: true },
+    SOLD:         { label: 'Vendu',        color: '#0284c7', bg: '#e0f2fe' },
+    INACTIVE:     { label: 'Inactif',      color: '#d97706', bg: '#fef3c7' },
+    OUT_OF_STOCK: { label: 'Rupture',      color: '#dc2626', bg: '#fee2e2' },
+    PAUSED:       { label: 'Suspendu',     color: '#7c3aed', bg: '#ede9fe' },
+    ARCHIVED:     { label: 'Archivé',      color: '#64748b', bg: '#f1f5f9' },
+    SOLD_OUT:     { label: 'Épuisé',       color: '#dc2626', bg: '#fee2e2' },
+  };
+  return map[status] || { label: status, color: '#64748b', bg: '#f1f5f9' };
+}
 
 export default function DirectSalesPage() {
   const router = useRouter();
-  const theme = useTheme();
   const { t } = useTranslation();
-  
-  const COLUMNS = [
-    { id: 'title', label: t('dashboard.list.columns.title'), alignRight: false, searchable: true, sortable: true },
-    { id: 'category', label: t('dashboard.list.columns.category'), alignRight: false, searchable: false },
-    { id: 'price', label: t('dashboard.list.columns.price'), alignRight: false, searchable: false, sortable: true },
-    { id: 'stock', label: t('dashboard.list.columns.stock'), alignRight: false, searchable: false, sortable: true },
-    { id: 'ordersCount', label: t('dashboard.list.columns.orders'), alignRight: false, searchable: false, sortable: true },
-    { id: 'status', label: t('dashboard.list.columns.status'), alignRight: false, searchable: false },
-    { id: 'actions', label: '', alignRight: true, searchable: false }
-  ];
-  
-  const [page, setPage] = useState(0);
-  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
-  const [orderBy, setOrderBy] = useState('createdAt');
-  const [filterName, setFilterName] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [selected, setSelected] = useState<string[]>([]);
   const { isLogged } = useAuth();
   const queryClient = useQueryClient();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const { socket } = useCreateSocket() || {};
+  useEffect(() => {
+    if (!socket) return;
+    const handleRefetch = () => queryClient.invalidateQueries({ queryKey: ['direct-sales', 'my'] });
+    socket.on('newListingCreated', handleRefetch);
+    socket.on('notification', handleRefetch);
+    return () => {
+      socket.off('newListingCreated', handleRefetch);
+      socket.off('notification', handleRefetch);
+    };
+  }, [socket, queryClient]);
 
   const { data: sales = [], isLoading } = useQuery({
     queryKey: ['direct-sales', 'my'],
@@ -61,220 +56,151 @@ export default function DirectSalesPage() {
       const { DirectSaleAPI } = await import('@/services/direct-sale');
       const response = await DirectSaleAPI.getMyDirectSales();
       const rawData = response.data || (Array.isArray(response) ? response : []);
-      
-      // Normalize data for table: ensure category/productCategory are not objects to avoid MobileCard crash
       return rawData.map((item: any) => ({
         ...item,
-        category: typeof item.category === 'object' ? item.category.name : item.category,
-        productCategory: typeof item.productCategory === 'object' ? item.productCategory.name : item.productCategory
+        category: typeof item.category === 'object' ? item.category?.name : item.category,
+        productCategory: typeof item.productCategory === 'object' ? item.productCategory?.name : item.productCategory,
       })) as DirectSale[];
     },
     enabled: isLogged,
+    staleTime: 30000,
+    placeholderData: keepPreviousData,
   });
 
-  const getStatusColor = (status: SALE_STATUS): 'success' | 'info' | 'warning' | 'error' => {
-    switch (status) {
-      case SALE_STATUS.ACTIVE:
-        return 'success';
-      case SALE_STATUS.SOLD:
-        return 'info';
-      case SALE_STATUS.INACTIVE:
-        return 'warning';
-      case SALE_STATUS.OUT_OF_STOCK:
-        return 'error';
-      default:
-        return 'info';
-    }
+  const saleList = sales as DirectSale[];
+
+  const filtered = useMemo(() => {
+    let list = statusFilter === 'ALL' ? saleList : saleList.filter(s => s.status === statusFilter);
+    if (search.trim()) list = list.filter(s => s.title?.toLowerCase().includes(search.toLowerCase()));
+    return list;
+  }, [saleList, statusFilter, search]);
+
+  const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { DirectSaleAPI } = await import('@/services/direct-sale');
+      await DirectSaleAPI.delete(deleteTarget);
+      queryClient.invalidateQueries({ queryKey: ['direct-sales', 'my'] });
+    } catch (e) { console.error(e); }
+    finally { setDeleting(false); setDeleteTarget(null); }
   };
 
-  const getFilteredSales = () => {
-    if (statusFilter === 'ALL') return sales;
-    return sales.filter(sale => sale.status === statusFilter);
-  };
+  const active = saleList.filter(s => s.status === SALE_STATUS.ACTIVE);
+  const outOfStock = saleList.filter(s => s.status === SALE_STATUS.OUT_OF_STOCK || (s as any).status === 'SOLD_OUT');
+  const sold = saleList.filter(s => s.status === SALE_STATUS.SOLD);
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm(t('dashboard.list.confirmDelete') || 'Are you sure you want to delete this sale?')) {
-      try {
-        const { DirectSaleAPI } = await import('@/services/direct-sale');
-        await DirectSaleAPI.delete(id);
-        queryClient.invalidateQueries({ queryKey: ['direct-sales', 'my'] });
-      } catch (error) {
-        console.error('Error deleting sale:', error);
-      }
-    }
-  };
+  const stats = [
+    { label: 'Total', value: saleList.length, color: '#0063b1', icon: '🛍️' },
+    { label: 'Actifs', value: active.length, color: '#10b981', icon: '✅' },
+    { label: 'Rupture de stock', value: outOfStock.length, color: '#ef4444', icon: '⚠️' },
+    { label: 'Vendus', value: sold.length, color: '#0284c7', icon: '💰' },
+  ];
 
-  const TableBodyComponent = ({ data = [] }: { data: DirectSale[] }) => {
-    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
-
-    return (
-      <TableBody>
-        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-          const { _id, title, productCategory, category, price, quantity, stock, ordersCount, status } = row;
-
-          const categoryName = (typeof productCategory === 'object' ? productCategory?.name : productCategory) || 
-                               (typeof category === 'object' ? category?.name : category);
-          const displayStock = quantity !== undefined ? quantity : (stock || 0);
-
-          return (
-            <TableRow hover key={_id} tabIndex={-1}>
-              <TableCell component="th" scope="row" padding="none" sx={{ pl: 2 }}>
-                <Typography variant="subtitle2" noWrap>
-                  {title}
-                </Typography>
-              </TableCell>
-              <TableCell align="left">
-                <Label variant="ghost" color="default">
-                  {categoryName || 'N/A'}
-                </Label>
-              </TableCell>
-              <TableCell align="left">{price.toFixed(2)} DA</TableCell>
-              <TableCell align="left">{displayStock}</TableCell>
-              <TableCell align="left">{ordersCount || 0}</TableCell>
-              <TableCell align="left">
-                <Chip
-                  label={status}
-                  color={getStatusColor(status)}
-                  variant="outlined"
-                  size="small"
-                />
-              </TableCell>
-              <TableCell align="right">
-                <Button
-                  component={Link}
-                  href={`/dashboard/direct-sales/${_id}`}
-                  size="small"
-                  variant="outlined"
-                >
-                  {t('dashboard.list.view') || 'View'}
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="error"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent row click
-                    handleDelete(_id);
-                  }}
-                  sx={{ ml: 1 }}
-                >
-                  {t('dashboard.list.delete') || 'Delete'}
-                </Button>
-              </TableCell>
-            </TableRow>
-          );
-        })}
-        {emptyRows > 0 && (
-          <TableRow style={{ height: 53 * emptyRows }}>
-            <TableCell colSpan={7} />
-          </TableRow>
-        )}
-      </TableBody>
-    );
-  };
+  if (isLoading) return <ListPageSkeleton accentColor="#d97706" />;
 
   return (
-    <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-      <Box
-        sx={{
-          borderRadius: 3,
-          p: { xs: 2, sm: 3 },
-          mb: { xs: 3, sm: 4, md: 5 },
-          background: theme.palette.mode === 'light'
-            ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.02)})`
-            : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.18)}, ${alpha(theme.palette.primary.main, 0.06)})`,
-          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
-        }}
+    <>
+      <DashboardKeyframes />
+      <DashboardPageShell
+        title={t('dashboard.list.myDirectSales', 'Mes Ventes Directes')}
+        subtitle={`${saleList.length} vente${saleList.length !== 1 ? 's' : ''} au total`}
+        icon="🛍️"
+        accentColor="#d97706"
+        stats={stats}
+        headerActions={
+          <HeaderAddBtn label={t('dashboard.list.newSale', 'Nouvelle vente')} href="/dashboard/direct-sales/create/" />
+        }
       >
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
-          alignItems={{ xs: 'stretch', sm: 'center' }} 
-          justifyContent="space-between" 
-          spacing={{ xs: 2, sm: 2 }}
-        >
-          <Typography 
-            variant="h4" 
-            gutterBottom
-            sx={{ 
-              m: 0,
-              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
-              textAlign: { xs: 'center', sm: 'left' }
-            }}
-          >
-            {t('dashboard.list.myDirectSales')}
-          </Typography>
-          <Button
-            variant="contained"
-            component={Link}
-            href="/dashboard/direct-sales/create/"
-            startIcon={<MdAdd />}
-            sx={{
-              minWidth: { xs: '100%', sm: 'auto' },
-              py: { xs: 1.5, sm: 1 }
-            }}
-          >
+        {/* Toolbar */}
+        <div style={tableStyles.toolbar}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <PillChip label="Tous" active={statusFilter === 'ALL'} onClick={() => { setStatusFilter('ALL'); setPage(0); }} count={saleList.length} />
+            <PillChip label="Actifs" active={statusFilter === 'ACTIVE'} onClick={() => { setStatusFilter('ACTIVE'); setPage(0); }} count={active.length} color="#10b981" />
+            <PillChip label="Inactifs" active={statusFilter === 'INACTIVE'} onClick={() => { setStatusFilter('INACTIVE'); setPage(0); }} count={saleList.filter(s => (s as any).status === 'INACTIVE').length} color="#d97706" />
+            <PillChip label="Vendus" active={statusFilter === 'SOLD'} onClick={() => { setStatusFilter('SOLD'); setPage(0); }} count={sold.length} color="#0284c7" />
+          </div>
+          <div style={tableStyles.searchWrap}>
+            <span style={tableStyles.searchIcon}>🔍</span>
+            <input style={tableStyles.searchInput} placeholder="Rechercher..." value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} />
+          </div>
+        </div>
 
-            {t('dashboard.list.newSale')}
-          </Button>
-        </Stack>
-      </Box>
-      
-      {isLoading ? (
-        <TableSkeleton rows={rowsPerPage} columns={7} />
-      ) : sales.length === 0 ? (
-        <Stack 
-          spacing={3} 
-          alignItems="center" 
-          justifyContent="center" 
-          sx={{ 
-            py: 8, 
-            textAlign: 'center',
-            backgroundColor: 'background.paper',
-            borderRadius: 2,
-            border: '1px dashed',
-            borderColor: 'divider'
-          }}
-        >
-          <Typography variant="h5" color="text.secondary">
-            {t('dashboard.list.noSales')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400 }}>
-            {t('dashboard.list.createFirstSale')}
-          </Typography>
-          <Button
-            variant="contained"
-            component={Link}
-            href="/dashboard/direct-sales/create/"
-            startIcon={<MdAdd />}
-            sx={{ px: 4, py: 1.5 }}
-          >
-            {t('dashboard.list.newSale')}
-          </Button>
-        </Stack>
-      ) : (
-        <ResponsiveTable
-          data={getFilteredSales()}
-          columns={COLUMNS}
-          page={page}
-          setPage={setPage}
-          order={order}
-          setOrder={setOrder}
-          orderBy={orderBy}
-          setOrderBy={setOrderBy}
-          filterName={filterName}
-          setFilterName={setFilterName}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
-          TableBody={TableBodyComponent}
-          searchFields={['title']}
-          selected={selected}
-          setSelected={setSelected}
-          onRowClick={(row) => router.push(`/dashboard/direct-sales/${row._id}`)}
-        />
-      )}
-    </Container>
+        {filtered.length === 0 ? (
+          <div style={tableStyles.emptyState}>
+            <div style={{ fontSize: '52px', marginBottom: '16px' }}>🛍️</div>
+            <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569', margin: '0 0 8px' }}>Aucune vente directe</p>
+            <p style={{ color: '#94a3b8', margin: '0 0 24px' }}>Créez votre première vente directe</p>
+            <a href="/dashboard/direct-sales/create/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 22px', background: '#0063b1', color: '#fff', borderRadius: '10px', fontWeight: 700, textDecoration: 'none' }}>
+              ＋ Nouvelle vente
+            </a>
+          </div>
+        ) : (
+          <table style={tableStyles.table}>
+            <thead>
+              <tr>
+                {['Titre', 'Catégorie', 'Prix unitaire', 'Stock', 'Commandes', 'Statut', ''].map(h => (
+                  <th key={h} style={tableStyles.th}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map(row => {
+                const { _id, title, productCategory, category, price, quantity, stock, ordersCount, status } = row;
+                const catName = (typeof productCategory === 'object' ? (productCategory as any)?.name : productCategory) || (typeof category === 'object' ? (category as any)?.name : category);
+                const displayStock = quantity !== undefined ? quantity : (stock || 0);
+                const displayOrders = ordersCount || 0;
+                return (
+                  <tr key={_id} className="db-row" onClick={() => router.push(`/dashboard/direct-sales/${_id}`)} style={tableStyles.trHover}>
+                    <td style={tableStyles.td}><span style={{ fontWeight: 600, color: '#1e293b' }}>{title}</span></td>
+                    <td style={tableStyles.td}>
+                      <span style={{ padding: '3px 9px', borderRadius: '12px', background: '#f1f5f9', color: '#475569', fontSize: '0.76rem', fontWeight: 600 }}>{catName || 'N/A'}</span>
+                    </td>
+                    <td style={tableStyles.td}>
+                      <span style={{ fontWeight: 700, color: '#0063b1' }}>{price?.toFixed(2)} DA</span>
+                    </td>
+                    <td style={tableStyles.td}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontWeight: 600, color: displayStock === 0 ? '#ef4444' : '#334155' }}>{displayStock}</span>
+                        {displayStock === 0 && <span style={{ fontSize: '0.7rem', color: '#ef4444', fontWeight: 600 }}>Épuisé</span>}
+                      </div>
+                    </td>
+                    <td style={tableStyles.td}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: '28px', height: '28px', borderRadius: '50%', background: displayOrders > 0 ? '#dcfce7' : '#f1f5f9', color: displayOrders > 0 ? '#16a34a' : '#94a3b8', fontWeight: 700, fontSize: '0.8rem', padding: '0 6px' }}>
+                        {displayOrders}
+                      </span>
+                    </td>
+                    <td style={tableStyles.td}><StatusBadge config={statusConfig(status)} /></td>
+                    <td style={{ ...tableStyles.td, textAlign: 'right' }} onClick={e => e.stopPropagation()}>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                        <ActionBtn label="Voir" icon="👁️" href={`/dashboard/direct-sales/${_id}`} />
+                        <ActionBtn label="Supprimer" icon="🗑️" variant="danger" onClick={() => setDeleteTarget(_id)} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+
+        {filtered.length > 0 && (
+          <SimplePagination page={page} rowsPerPage={rowsPerPage} total={filtered.length} onPageChange={setPage} onRowsPerPageChange={setRowsPerPage} />
+        )}
+      </DashboardPageShell>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Supprimer la vente directe"
+        message="Êtes-vous sûr de vouloir supprimer cette vente directe ? Cette action est irréversible."
+        confirmLabel={deleting ? 'Suppression...' : 'Supprimer'}
+        cancelLabel="Annuler"
+        danger
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+      />
+    </>
   );
 }

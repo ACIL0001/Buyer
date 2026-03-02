@@ -24,6 +24,10 @@ import {
     MdInsertChartOutlined
 } from 'react-icons/md';
 import useAuth from '@/hooks/useAuth';
+import { useState, useEffect, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCreateSocket } from '@/contexts/socket';
+import { ListPageSkeleton, DashboardKeyframes } from '@/components/dashboard/dashboardHelpers';
 
 // ----------- Design Constants & Mock Data -----------
 
@@ -42,126 +46,34 @@ const COLORS = {
     finance_indigo: { bg: '#E8EAF6', main: '#3F51B5', light: '#C5CAE9' },// Indigo
 };
 
-const STATS_PERFORMANCE = [
-    { 
-        label: "dashboard.stats.totalAuctions", 
-        value: 2, 
-        trend: "+10%", 
-        trendColor: "success.main",
-        category: "auction",
-        icon: MdGavel
-    },
-    { 
-        label: "dashboard.stats.activeAuctions", 
-        value: 0, 
-        trend: "- 0%", 
-        trendColor: "text.disabled",
-        category: "auction",
-        icon: MdGavel
-    },
-    { 
-        label: "dashboard.stats.totalTenders", 
-        value: 2, 
-        trend: "+20%", 
-        trendColor: "success.main",
-        category: "submission",
-        icon: MdEmail
-    },
-    { 
-        label: "dashboard.stats.activeTenders", 
-        value: 2, 
-        trend: "+4%", 
-        trendColor: "success.main",
-        category: "submission",
-        icon: MdEmail
-    },
-    { 
-        label: "dashboard.stats.totalSales", 
-        value: 2, 
-        trend: "+17%", 
-        trendColor: "success.main",
-        category: "direct",
-        icon: MdStore
-    },
-    { 
-        label: "dashboard.stats.activeSales", 
-        value: 2, 
-        trend: "+3%", 
-        trendColor: "success.main",
-        category: "direct",
-        icon: MdStore
-    },
-];
+function buildStatsPerformance(data: any = {}) {
+    return [
+        { label: "dashboard.stats.totalAuctions", value: data.auctionsTotal || 0, trend: null, trendColor: null, category: "auction", icon: MdGavel },
+        { label: "dashboard.stats.activeAuctions", value: data.auctionsActive || 0, trend: null, trendColor: null, category: "auction", icon: MdGavel },
+        { label: "dashboard.stats.totalTenders", value: data.tendersTotal || 0, trend: null, trendColor: null, category: "submission", icon: MdEmail },
+        { label: "dashboard.stats.activeTenders", value: data.tendersActive || 0, trend: null, trendColor: null, category: "submission", icon: MdEmail },
+        { label: "dashboard.stats.totalSales", value: data.salesTotal || 0, trend: null, trendColor: null, category: "direct", icon: MdStore },
+        { label: "dashboard.stats.activeSales", value: data.salesActive || 0, trend: null, trendColor: null, category: "direct", icon: MdStore },
+    ];
+}
 
-const STATS_OFFERS = [
-    { 
-        label: "dashboard.stats.totalOffers", 
-        value: 7, 
-        trend: "+21%", 
-        trendColor: "success.main", 
-        category: "offer", 
-        icon: MdPaid 
-    },
-    { 
-        label: "dashboard.stats.pendingOffers", 
-        value: 7, 
-        trend: null, 
-        trendColor: null, 
-        category: "pending", 
-        icon: MdPendingActions 
-    },
-    { 
-        label: "dashboard.stats.tenderSubmissions", 
-        value: 0, 
-        trend: "- 0%", 
-        trendColor: "text.disabled", 
-        category: "response", 
-        icon: MdOutbox 
-    },
-    { 
-        label: "dashboard.stats.pendingTenderSubmissions", 
-        value: 0, 
-        trend: null, 
-        trendColor: null, 
-        category: "waiting", 
-        icon: MdDescription 
-    },
-];
+function buildStatsOffers(data: any = {}) {
+    return [
+        { label: "dashboard.stats.totalOffers", value: data.offersTotal || 0, trend: null, trendColor: null, category: "offer", icon: MdPaid },
+        { label: "dashboard.stats.pendingOffers", value: data.offersPending || 0, trend: null, trendColor: null, category: "pending", icon: MdPendingActions },
+        { label: "dashboard.stats.tenderSubmissions", value: data.tenderSubmissionsTotal || 0, trend: null, trendColor: null, category: "response", icon: MdOutbox },
+        { label: "dashboard.stats.pendingTenderSubmissions", value: data.tenderSubmissionsPending || 0, trend: null, trendColor: null, category: "waiting", icon: MdDescription },
+    ];
+}
 
-const STATS_FINANCE = [
-    { 
-        label: "dashboard.stats.totalEarnings", 
-        value: "0 DA", 
-        trend: "- 0%", 
-        trendColor: "text.disabled", 
-        category: "finance_green", 
-        icon: MdMonetizationOn 
-    },
-    { 
-        label: "dashboard.stats.averagePrice", 
-        value: "0 DA", 
-        trend: "- 0%", 
-        trendColor: "text.disabled", 
-        category: "finance_blue", 
-        icon: MdShowChart 
-    },
-    { 
-        label: "dashboard.stats.totalViews", 
-        value: 0, 
-        trend: "- 0%", 
-        trendColor: "text.disabled", 
-        category: "finance_blue", 
-        icon: MdVisibility 
-    },
-    { 
-        label: "dashboard.stats.conversionRate", 
-        value: "0.0%", 
-        trend: "- 0%", 
-        trendColor: "text.disabled", 
-        category: "finance_indigo", 
-        icon: MdTrendingUp 
-    },
-];
+function buildStatsFinance(data: any = {}) {
+    return [
+        { label: "dashboard.stats.totalEarnings", value: `${data.totalEarnings || 0} DA`, trend: null, trendColor: null, category: "finance_green", icon: MdMonetizationOn },
+        { label: "dashboard.stats.averagePrice", value: `${data.avgPrice || 0} DA`, trend: null, trendColor: null, category: "finance_blue", icon: MdShowChart },
+        { label: "dashboard.stats.totalViews", value: data.totalViews || 0, trend: null, trendColor: null, category: "finance_blue", icon: MdVisibility },
+        { label: "dashboard.stats.conversionRate", value: `${data.conversionRate || "0.0"}%`, trend: null, trendColor: null, category: "finance_indigo", icon: MdTrendingUp },
+    ];
+}
 
 const QUICK_ACTIONS = [
     { 
@@ -403,9 +315,97 @@ const StatCard = ({ item }: { item: any }) => {
 
 export default function DashboardPage() {
     const { t } = useTranslation();
+    const { isLogged, auth } = useAuth();
+    const queryClient = useQueryClient();
+    const { socket } = useCreateSocket() || {};
+
+    useEffect(() => {
+        if (!socket) return;
+        const handleRefetch = () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+        socket.on('newListingCreated', handleRefetch);
+        socket.on('notification', handleRefetch);
+        return () => {
+            socket.off('newListingCreated', handleRefetch);
+            socket.off('notification', handleRefetch);
+        };
+    }, [socket, queryClient]);
+
+    const { data: statsData, isLoading } = useQuery({
+        queryKey: ['dashboard-stats'],
+        queryFn: async () => {
+            if (!auth?.user?._id) return null;
+            const [
+                { AuctionsAPI }, { TendersAPI }, { DirectSaleAPI }, { OffersAPI }
+            ] = await Promise.all([
+                import('@/services/auctions'), import('@/services/tenders'),
+                import('@/services/direct-sale'), import('@/services/offers')
+            ]);
+            const [ar, tr, sr, or, pr, tbr] = await Promise.allSettled([
+                AuctionsAPI.getAuctions(),
+                TendersAPI.getTenders(),
+                DirectSaleAPI.getMyDirectSales(),
+                OffersAPI.getOffers({ data: { _id: auth.user._id } }),
+                DirectSaleAPI.getMyOrders(),
+                TendersAPI.getTenderBidsByBidder(auth.user._id)
+            ]);
+
+            const auctions = ar.status === 'fulfilled' ? ((ar.value as any)?.data || (Array.isArray(ar.value) ? ar.value : [])) : [];
+            const tenders = tr.status === 'fulfilled' ? ((tr.value as any)?.data || (Array.isArray(tr.value) ? tr.value : [])) : [];
+            const sales = sr.status === 'fulfilled' ? ((sr.value as any)?.data || (Array.isArray(sr.value) ? sr.value : [])) : [];
+            const offers = or.status === 'fulfilled' ? ((or.value as any)?.data || (Array.isArray(or.value) ? or.value : [])) : [];
+            const orders = pr.status === 'fulfilled' ? ((pr.value as any)?.data || (Array.isArray(pr.value) ? pr.value : [])) : [];
+            const tenderBids = tbr.status === 'fulfilled' ? ((tbr.value as any)?.data || (Array.isArray(tbr.value) ? tbr.value : [])) : [];
+
+            const auctionsTotal = auctions.length;
+            const auctionsActive = auctions.filter((a: any) => new Date(a.endingAt) > new Date() && a.status !== 'CLOSED' && a.status !== 'ARCHIVED').length;
+            const tendersTotal = tenders.length;
+            const tendersActive = tenders.filter((t: any) => t.status === 'OPEN').length;
+            const salesTotal = sales.length;
+            const salesActive = sales.filter((s: any) => s.status === 'ACTIVE').length;
+
+            const currentUserId = auth?.user?._id;
+            if (!currentUserId) return null;
+
+            const myOffers = offers.filter((o: any) => o.user?._id === currentUserId || (o.bid && (o.bid as any).user === currentUserId));
+            const offersTotal = myOffers.length;
+            const offersPending = myOffers.filter((o: any) => o.status === 'PENDING' || !o.status).length;
+            
+            const tenderSubmissionsTotal = tenderBids.length;
+            const tenderSubmissionsPending = tenderBids.filter((b: any) => b.status === 'pending').length;
+
+            const confirmedOrders = orders.filter((o: any) => o.status === 'CONFIRMED' || o.status === 'COMPLETED');
+            const totalEarnings = confirmedOrders.reduce((acc: number, o: any) => acc + (o.totalPrice || o.total || 0), 0);
+            const avgPrice = confirmedOrders.length ? Math.round(totalEarnings / confirmedOrders.length) : 0;
+            const totalViews = sales.reduce((acc: number, s: any) => acc + (s.views || 0), 0) + auctions.reduce((acc: number, a: any) => acc + (a.views || 0), 0) + tenders.reduce((acc: number, t: any) => acc + (t.views || 0), 0);
+            const conversionRate = (salesTotal > 0 ? (confirmedOrders.length / salesTotal) * 100 : 0).toFixed(1);
+
+            return {
+                auctionsTotal, auctionsActive, tendersTotal, tendersActive, salesTotal, salesActive,
+                offersTotal, offersPending, tenderSubmissionsTotal, tenderSubmissionsPending,
+                totalEarnings: totalEarnings.toLocaleString('fr-FR'),
+                avgPrice: avgPrice.toLocaleString('fr-FR'),
+                totalViews: totalViews.toLocaleString('fr-FR'),
+                conversionRate
+            };
+        },
+        enabled: isLogged && !!auth?.user?._id,
+        staleTime: 60000,
+    });
+
+    const statsPerformance = buildStatsPerformance(statsData || {});
+    const statsOffers = buildStatsOffers(statsData || {});
+    const statsFinance = buildStatsFinance(statsData || {});
+
+    if (isLoading && isLogged) return (
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+            <DashboardKeyframes />
+            <ListPageSkeleton accentColor="#1976D2" />
+        </Container>
+    );
 
     return (
         <Container maxWidth="xl" sx={{ py: 4 }}>
+            <DashboardKeyframes />
             {/* Quick Actions Section */}
             <SectionHeader icon={MdRocketLaunch} title={t('dashboard.quickActions')} />
             
@@ -423,7 +423,7 @@ export default function DashboardPage() {
             <SectionHeader icon={MdTrendingUp} title={t('dashboard.performance')} />
             
             <Grid container spacing={3} sx={{ mb: 6 }}>
-                {STATS_PERFORMANCE.map((stat, index) => (
+                {statsPerformance.map((stat, index) => (
                     <Zoom in={true} style={{ transitionDelay: `${index * 50}ms` }} key={index}>
                         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                             <StatCard item={stat} />
@@ -436,7 +436,7 @@ export default function DashboardPage() {
             <SectionHeader icon={MdEmail} title={t('dashboard.offersOverview')} />
             
             <Grid container spacing={3} sx={{ mb: 6 }}>
-                {STATS_OFFERS.map((stat, index) => (
+                {statsOffers.map((stat, index) => (
                     <Zoom in={true} style={{ transitionDelay: `${index * 50}ms` }} key={index}>
                         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                             <StatCard item={stat} />
@@ -449,7 +449,7 @@ export default function DashboardPage() {
             <SectionHeader icon={MdMonetizationOn} title={t('dashboard.financialOverview')} />
             
             <Grid container spacing={3}>
-                {STATS_FINANCE.map((stat, index) => (
+                {statsFinance.map((stat, index) => (
                     <Zoom in={true} style={{ transitionDelay: `${index * 50}ms` }} key={index}>
                         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                             <StatCard item={stat} />

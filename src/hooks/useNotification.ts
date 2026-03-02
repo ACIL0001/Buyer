@@ -228,23 +228,18 @@ export default function useNotification() {
         notification.type === 'MESSAGE_ADMIN' ||
         notification.type === 'ADMIN_MESSAGE_SENT';
 
-      // Check deeply for chat-related data
-      const hasChatData =
-        (notification as any).chatId ||
-        notification.data?.chatId ||
-        notification.data?.messageId ||
-        notification.data?.isSocket === true;
-
       const isAdminMessage =
         notification.title?.includes('Nouveau message de l\'admin') ||
         notification.type === 'MESSAGE_ADMIN' ||
         notification.data?.senderId === 'admin';
 
-      // If it looks like a chat message or chat notification, IGNORE IT in the general bell
-      if (isChatType || hasChatData || isAdminMessage) {
+      // Only block explicitly chat/message-type notifications, NOT general notifications
+      // that merely carry a chatId for navigation purposes (e.g. BID_WON)
+      if (isChatType || isAdminMessage) {
         console.log('🔔 useNotification: Ignoring chat-related notification:', notification._id);
         return;
       }
+
 
       // Handle both reciver/receiver property names for consistency
       if (notification.receiver && !notification.reciver) {

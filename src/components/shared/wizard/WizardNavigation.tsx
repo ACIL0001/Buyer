@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, CircularProgress } from '@mui/material';
+import { Box, Button, CircularProgress, alpha } from '@mui/material';
 import { MdArrowBack, MdArrowForward, MdCheck } from 'react-icons/md';
 
 import { useTranslation } from 'react-i18next';
@@ -30,6 +30,7 @@ export default function WizardNavigation({
 }: WizardNavigationProps & { hideNext?: boolean }) {
     const { t } = useTranslation();
     
+    // Safety check missing translations in parent
     const finalBackLabel = backLabel || t('common.back');
     const finalNextLabel = nextLabel || t('common.next');
     const finalSubmitLabel = submitLabel || t('common.submit');
@@ -38,24 +39,30 @@ export default function WizardNavigation({
         <Box sx={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
-            mt: 3, 
-            pt: 2, 
-            borderTop: '1px solid',
-            borderColor: 'divider'
+            mt: { xs: 4, md: 8 }, 
+            pt: 4, 
+            borderTop: '2px dashed',
+            borderColor: (theme) => alpha(theme.palette.divider, 0.4)
         }}>
             <Button
-                variant="outlined"
+                variant="text"
                 onClick={onBack}
                 disabled={disableBack || !onBack}
                 startIcon={<MdArrowBack />}
                 sx={{ 
-                    borderRadius: 2,
+                    borderRadius: 4,
                     px: 3,
+                    py: 1.5,
+                    fontWeight: 700,
+                    textTransform: 'none',
+                    fontSize: '1rem',
+                    color: 'text.secondary',
                     opacity: !onBack ? 0 : 1,
-                    visibility: !onBack ? 'hidden' : 'visible'
+                    visibility: !onBack ? 'hidden' : 'visible',
+                    '&:hover': { bgcolor: (theme) => alpha(theme.palette.text.primary, 0.05), color: 'text.primary' }
                 }}
             >
-                {backLabel}
+                {finalBackLabel}
             </Button>
             
             {!hideNext && (
@@ -65,12 +72,25 @@ export default function WizardNavigation({
                     disabled={disableNext || isSubmitting}
                     endIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : (isLastStep ? <MdCheck /> : <MdArrowForward />)}
                     sx={{ 
-                        borderRadius: 2,
-                        px: 3,
-                        boxShadow: 'none',
+                        borderRadius: 4,
+                        px: { xs: 4, md: 6 },
+                        py: 1.5,
+                        fontWeight: 700,
+                        textTransform: 'none',
+                        fontSize: '1.05rem',
+                        boxShadow: (theme) => `0 8px 24px -6px ${alpha(theme.palette.primary.main, 0.5)}`,
+                        background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                        transition: 'transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s',
+                        '&:hover': {
+                            transform: 'translateY(-3px)',
+                            boxShadow: (theme) => `0 12px 30px -6px ${alpha(theme.palette.primary.main, 0.6)}`,
+                        },
+                        '&:active': {
+                            transform: 'translateY(1px)'
+                        }
                     }}
                 >
-                    {isSubmitting ? 'Processing...' : (isLastStep ? submitLabel : nextLabel)}
+                    {isSubmitting ? 'Processing...' : (isLastStep ? finalSubmitLabel : finalNextLabel)}
                 </Button>
             )}
         </Box>

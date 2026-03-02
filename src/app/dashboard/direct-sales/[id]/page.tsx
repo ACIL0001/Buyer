@@ -1,418 +1,174 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import {
-  Box,
-  Card,
-  Container,
-  Grid,
-  Typography,
-  Chip,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Avatar,
-  CircularProgress,
-  Divider,
-  Tooltip,
-} from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { DirectSaleAPI } from '@/services/direct-sale';
-import { DirectSale } from '@/types/direct-sale';
-import Label from '@/components/Label';
-import { MdShoppingCart, MdLocalOffer, MdStore, MdPerson, MdCheckCircle, MdCancel } from 'react-icons/md';
-import { Button } from '@mui/material';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCreateSocket } from '@/contexts/socket';
+import useAuth from '@/hooks/useAuth';
+import { DashboardKeyframes, StatusBadge, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
 
-// Mock Translation
-const useTranslation = () => {
-  const t = (key: string, options?: any) => {
-    const trans: Record<string, string> = {
-      'directSales.detail.orders': `Commandes (${options?.count || 0})`,
-      'directSales.detail.table.buyer': 'Acheteur',
-      'common.quantity': 'Quantité',
-      'directSales.detail.table.totalPrice': 'Prix Total',
-      'directSales.detail.table.status': 'Statut',
-      'common.date': 'Date',
-      'directSales.detail.noOrders': 'Aucune commande pour le moment',
-      'common.price': 'Prix',
-      'directSales.detail.availableQuantity': 'Quantité disponible',
-      'directSales.unlimited': 'Illimité',
-      'directSales.detail.outOf': `sur ${options?.total}`,
-      'directSales.detail.categories': 'Catégories',
-      'directSales.detail.mainCategory': 'Catégorie principale',
-      'directSales.detail.subCategory': 'Sous-catégorie',
-      'directSales.detail.sellerType': 'Type de vendeur',
-      'directSales.detail.professional': 'Professionnel',
-      'directSales.detail.individual': 'Particulier',
-      'common.location': 'Localisation',
-      'directSales.create.form.wilaya': 'Wilaya',
-      'directSales.detail.place': 'Lieu',
-      'common.address': 'Adresse',
-      'directSales.detail.notSpecified': 'Non spécifié',
-      'directSales.detail.timeline': 'Chronologie',
-      'common.createdAt': 'Créé le',
-      'common.updatedAt': 'Mis à jour le',
-      'directSales.status.active': 'Actif',
-      'directSales.status.soldOut': 'Épuisé',
-      'directSales.status.inactive': 'Inactif',
-    };
-    return trans[key] || key;
+const ACCENT = '#d97706';
+
+function saleStatusCfg(s: string) {
+  const m: Record<string, any> = {
+    ACTIVE: { label: 'Actif', color: '#16a34a', bg: '#dcfce7', dot: true },
+    SOLD_OUT: { label: 'Épuisé', color: '#dc2626', bg: '#fee2e2' },
+    INACTIVE: { label: 'Inactif', color: '#d97706', bg: '#fef3c7' },
+    SOLD: { label: 'Vendu', color: '#0284c7', bg: '#e0f2fe' },
   };
-  return { t };
-};
-
-// Local types for UI
-enum SALE_STATUS {
-  ACTIVE = 'ACTIVE',
-  SOLD_OUT = 'SOLD_OUT',
-  INACTIVE = 'INACTIVE'
+  return m[s] || { label: s, color: '#64748b', bg: '#f1f5f9' };
 }
 
+
+function fmtDate(d: any) {
+  if (!d) return 'N/A';
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+const card: React.CSSProperties = { background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid rgba(0,0,0,0.06)', padding: 24, marginBottom: 20 };
+
 export default function DirectSaleDetailPage() {
-  const theme = useTheme();
-  const { t } = useTranslation();
   const params = useParams();
   const id = params?.id as string;
   const router = useRouter();
 
-  const [directSale, setDirectSale] = useState<DirectSale | null>(null);
-  const [purchases, setPurchases] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [purchasesLoading, setPurchasesLoading] = useState(true);
-
-  const fetchDirectSale = useCallback(async () => {
-    try {
-      setLoading(true);
-      console.log('🌐 [FRONTEND] Fetching direct sale with ID:', id);
-      const response = await DirectSaleAPI.getDirectSaleById(id);
-      console.log('📞 [FRONTEND] Full Direct Sale response:', response);
-      
-      const directSaleData = response.data || response;
-      if (directSaleData && (directSaleData._id || (directSaleData as any).id)) {
-        console.log('📞 [FRONTEND] Contact Number field:', directSaleData.contactNumber);
-        setDirectSale(directSaleData);
-      }
-    } catch (error) {
-      console.error('Error fetching direct sale:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  const fetchPurchases = useCallback(async () => {
-    setPurchasesLoading(true);
-    try {
-      const response = await DirectSaleAPI.getPurchasesByDirectSale(id);
-      let purchasesData: any[] = [];
-      
-      if (response) {
-        if (Array.isArray(response.data)) {
-          purchasesData = response.data;
-        } else if (Array.isArray(response)) {
-          purchasesData = response;
-        }
-      }
-      setPurchases(purchasesData);
-    } catch (error) {
-      console.error('Error fetching purchases:', error);
-      setPurchases([]);
-    } finally {
-      setPurchasesLoading(false);
-    }
-  }, [id]);
-
-  const handleConfirmPurchase = async (purchaseId: string) => {
-    try {
-      await DirectSaleAPI.confirmPurchase(purchaseId);
-      fetchPurchases();
-    } catch (error) {
-      console.error('Error confirming purchase:', error);
-    }
-  };
-
-  const handleRejectPurchase = async (purchaseId: string) => {
-    try {
-      await DirectSaleAPI.cancelPurchase(purchaseId);
-      fetchPurchases();
-    } catch (error) {
-      console.error('Error rejecting purchase:', error);
-    }
-  };
+  const { isLogged } = useAuth();
+  const queryClient = useQueryClient();
+  const { socket } = useCreateSocket() || {};
 
   useEffect(() => {
-    if (id) {
-      fetchDirectSale();
-      fetchPurchases();
-    }
-  }, [id, fetchDirectSale, fetchPurchases]);
+    if (!socket || !id) return;
+    const handleRefetch = () => queryClient.invalidateQueries({ queryKey: ['direct-sale', id] });
+    socket.on('newListingCreated', handleRefetch);
+    socket.on('notification', handleRefetch);
+    return () => {
+      socket.off('newListingCreated', handleRefetch);
+      socket.off('notification', handleRefetch);
+    };
+  }, [socket, id, queryClient]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const { data: sale, isLoading: loading } = useQuery({
+    queryKey: ['direct-sale', id],
+    queryFn: async () => {
+      const { DirectSaleAPI } = await import('@/services/direct-sale');
+      const r = await DirectSaleAPI.getDirectSaleById(id);
+      return r.data || r;
+    },
+    enabled: isLogged && !!id,
+    staleTime: 60000,
+  });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'ACTIVE': return 'success';
-      case 'SOLD_OUT': return 'warning';
-      case 'INACTIVE': return 'default';
-      default: return 'default';
-    }
-  };
+  if (loading) return <DetailPageSkeleton accentColor="#d97706" />;
 
-  const getPurchaseStatusColor = (status: string) => {
-      switch (status) {
-        case 'CONFIRMED': return 'success';
-        case 'PENDING': return 'warning';
-        case 'CANCELLED': return 'error';
-        case 'REFUNDED': return 'info';
-        default: return 'default';
-      }
-  };
+  if (!sale) return (
+    <div style={{ textAlign: 'center', padding: '60px 24px' }}>
+      <div style={{ fontSize: 52, marginBottom: 16 }}>🛍️</div>
+      <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569' }}>Vente directe non trouvée</p>
+      <button onClick={() => router.push('/dashboard/direct-sales')} style={{ marginTop: 16, padding: '10px 22px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>← Retour</button>
+    </div>
+  );
 
-  if (loading) {
-    return (
-      <Container maxWidth="xl" sx={{ mt: 3 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <CircularProgress />
-        </Box>
-      </Container>
-    );
-  }
-
-  if (!directSale) {
-    return (
-      <Container maxWidth="xl" sx={{ mt: 3 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <Typography variant="h6">Vente directe non trouvée</Typography>
-        </Box>
-      </Container>
-    );
-  }
-
-  const availableQuantity = directSale.quantity === 0 ? t('directSales.unlimited') : directSale.quantity - (directSale.soldQuantity || 0);
+  const category = typeof sale.productCategory === 'object' ? sale.productCategory?.name : sale.productCategory;
+  const subCategory = typeof sale.productSubCategory === 'object' ? sale.productSubCategory?.name : sale.productSubCategory;
+  const avail = sale.quantity === 0 ? '∞ Illimité' : Math.max(0, (sale.quantity || 0) - (sale.soldQuantity || 0));
+  const stockPct = sale.quantity > 0 ? Math.round(((sale.soldQuantity || 0) / sale.quantity) * 100) : 0;
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 3, mb: 10 }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-          <Typography variant="h4" gutterBottom>
-            Détails de la vente
-          </Typography>
-          <Chip
-            label={t(`directSales.status.${directSale.status.toLowerCase()}`) || directSale.status}
-            color={getStatusColor(directSale.status) as any}
-            variant="filled"
-          />
-        </Stack>
+    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+      <DashboardKeyframes />
 
-        <Grid container spacing={3}>
-            <Grid size={{ xs: 12, md: 8 }}>
-                {/* Product Details */}
-                <Card sx={{ p: 3, mb: 3 }}>
-                    <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
-                        {directSale.title}
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                        {directSale.description}
-                    </Typography>
+      {/* Hero */}
+      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT}40`, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08), transparent 60%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <button onClick={() => router.push('/dashboard/direct-sales')} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, marginBottom: 14 }}>← Retour aux ventes</button>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <h1 style={{ color: '#fff', fontSize: 'clamp(1.2rem, 3vw, 1.8rem)', fontWeight: 800, margin: 0 }}>{sale.title}</h1>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', margin: '6px 0 0' }}>🛍️ Vente directe</p>
+            </div>
+            <StatusBadge config={saleStatusCfg(sale.status)} />
+          </div>
+        </div>
+      </div>
 
-                    <Grid container spacing={3}>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                            <Typography variant="body2" color="text.secondary" gutterBottom>
-                                {t('common.price')}
-                            </Typography>
-                            <Typography variant="h4" color="primary.main" sx={{ fontWeight: 700 }}>
-                                {directSale.price.toLocaleString()} DA
-                            </Typography>
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                            <Typography variant="body2" color="text.secondary" gutterBottom>
-                                {t('directSales.detail.availableQuantity')}
-                            </Typography>
-                            <Typography variant="h6">
-                                {availableQuantity}
-                                {directSale.quantity !== 0 && (
-                                    <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                                        {t('directSales.detail.outOf', { total: directSale.quantity })}
-                                    </Typography>
-                                )}
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                </Card>
-            </Grid>
+      {/* Metric tiles */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 20 }}>
+        {[
+          { label: 'Prix unitaire', value: `${(sale.price || 0).toLocaleString('fr-FR')} DA`, color: ACCENT, icon: '💰' },
+          { label: 'Stock disponible', value: avail, color: sale.quantity > 0 && (avail as number) === 0 ? '#ef4444' : '#10b981', icon: '📦' },
+          { label: 'Vendus', value: sale.soldQuantity || 0, color: '#0284c7', icon: '✅' },
+        ].map(t => (
+          <div key={t.label} style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', borderLeft: `4px solid ${t.color}`, display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: `${t.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{t.icon}</div>
+            <div>
+              <div style={{ fontSize: typeof t.value === 'number' ? '1.6rem' : '1rem', fontWeight: 800, color: t.color, lineHeight: 1 }}>{t.value}</div>
+              <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 4 }}>{t.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
-            {/* Sidebar Info */}
-            <Grid size={{ xs: 12, md: 4 }}>
-                 <Card sx={{ p: 3, mb: 3 }}>
-                    <Typography variant="h6" sx={{ mb: 2 }}>{t('directSales.detail.categories')}</Typography>
-                    <Stack spacing={2}>
-                        <Box>
-                             <Typography variant="body2" color="text.secondary">{t('directSales.detail.mainCategory')}</Typography>
-                             <Label variant="ghost" color="primary">
-                                {typeof directSale.productCategory === 'object' ? directSale.productCategory?.name : directSale.productCategory || 'N/A'}
-                             </Label>
-                        </Box>
-                         {directSale.productSubCategory && (
-                            <Box>
-                                <Typography variant="body2" color="text.secondary">{t('directSales.detail.subCategory')}</Typography>
-                                <Label variant="ghost" color="secondary">
-                                    {typeof directSale.productSubCategory === 'object' ? directSale.productSubCategory.name : directSale.productSubCategory}
-                                </Label>
-                            </Box>
-                        )}
-                         <Box>
-                            <Typography variant="body2" color="text.secondary">{t('directSales.detail.sellerType')}</Typography>
-                            <Label variant="ghost" color={directSale.isPro ? 'warning' : 'success'}>
-                                {directSale.isPro ? t('directSales.detail.professional') : t('directSales.detail.individual')}
-                            </Label>
-                        </Box>
-                    </Stack>
-                 </Card>
+      {/* Description — full width */}
+      <div style={card}>
+        <h3 style={{ margin: '0 0 12px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📝 Description</h3>
+        <p style={{ color: '#475569', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>{sale.description || 'Aucune description.'}</p>
+        {sale.quantity > 0 && (
+          <div style={{ marginTop: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: '#64748b', fontWeight: 600, marginBottom: 6 }}>
+              <span>Stock vendu</span><span>{sale.soldQuantity || 0} / {sale.quantity}</span>
+            </div>
+            <div style={{ height: 8, borderRadius: 8, background: '#f1f5f9', overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: 8, background: stockPct >= 80 ? '#ef4444' : ACCENT, width: `${stockPct}%`, transition: 'width 0.4s ease' }} />
+            </div>
+          </div>
+        )}
+      </div>
 
-                 <Card sx={{ p: 3, mb: 3 }}>
-                    <Typography variant="h6" sx={{ mb: 2 }}>{t('common.location')}</Typography>
-                    <Stack spacing={2}>
-                        <Box>
-                            <Typography variant="body2" color="text.secondary">{t('directSales.create.form.wilaya')}</Typography>
-                            <Typography variant="body1" fontWeight={500}>{directSale.wilaya}</Typography>
-                        </Box>
-                        <Box>
-                            <Typography variant="body2" color="text.secondary">{t('directSales.detail.place')}</Typography>
-                             <Typography variant="body1" fontWeight={500}>{directSale.place || directSale.location || t('directSales.detail.notSpecified')}</Typography>
-                        </Box>
-                        {directSale.contactNumber && (
-                            <Box>
-                                <Typography variant="body2" color="text.secondary">Numéro de contact</Typography>
-                                <Typography variant="body1" fontWeight={500}>{directSale.contactNumber}</Typography>
-                            </Box>
-                        )}
-                    </Stack>
-                 </Card>
+      {/* Info cards — 3-column row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20 }}>
+        {/* Categories */}
+        <div style={card}>
+          <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>🏷️ Catégories</h3>
+          {[
+            { label: 'Catégorie principale', value: category || 'N/A' },
+            ...(subCategory ? [{ label: 'Sous-catégorie', value: subCategory }] : []),
+            { label: 'Type vendeur', value: sale.isPro ? '🏢 Professionnel' : '👤 Particulier' },
+          ].map(r => (
+            <div key={r.label} style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{r.label}</div>
+              <span style={{ padding: '3px 10px', borderRadius: 12, background: '#f1f5f9', color: '#475569', fontSize: '0.8rem', fontWeight: 600 }}>{r.value}</span>
+            </div>
+          ))}
+        </div>
 
-                 <Card sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ mb: 2 }}>{t('directSales.detail.timeline')}</Typography>
-                    <Stack spacing={2}>
-                        <Box>
-                             <Typography variant="body2" color="text.secondary">{t('common.createdAt')}</Typography>
-                             <Typography variant="body1">{formatDate(directSale.createdAt)}</Typography>
-                        </Box>
-                         <Box>
-                             <Typography variant="body2" color="text.secondary">{t('common.updatedAt')}</Typography>
-                             <Typography variant="body1">{formatDate(directSale.updatedAt)}</Typography>
-                        </Box>
-                    </Stack>
-                 </Card>
-            </Grid>
-        </Grid>
+        {/* Location */}
+        <div style={card}>
+          <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📍 Localisation</h3>
+          {[
+            { label: 'Wilaya', value: sale.wilaya },
+            { label: 'Lieu', value: sale.place || sale.location || 'N/A' },
+            ...(sale.contactNumber ? [{ label: 'Contact', value: sale.contactNumber }] : []),
+          ].map(r => (
+            <div key={r.label} style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{r.label}</div>
+              <div style={{ fontWeight: 600, color: '#334155' }}>{r.value || 'N/A'}</div>
+            </div>
+          ))}
+        </div>
 
-        {/* Purchases / Orders Table */}
-        <Grid size={{ xs: 12 }}>
-          <Card sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              📦 {t('directSales.detail.orders', { count: purchases.length })}
-            </Typography>
-            {purchasesLoading ? (
-              <Box display="flex" justifyContent="center" py={4}>
-                <CircularProgress size={28} />
-              </Box>
-            ) : purchases.length === 0 ? (
-              <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
-                {t('directSales.detail.noOrders')}
-              </Typography>
-            ) : (
-              <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow sx={{ bgcolor: 'grey.50' }}>
-                      <TableCell sx={{ fontWeight: 700 }}>{t('directSales.detail.table.buyer')}</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>{t('common.quantity')}</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>{t('directSales.detail.table.totalPrice')}</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>{t('common.date')}</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }}>{t('directSales.detail.table.status')}</TableCell>
-                      <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {purchases.map((purchase: any) => {
-                      const buyerName = purchase.buyer?.firstName
-                        ? `${purchase.buyer.firstName} ${purchase.buyer.lastName || ''}`.trim()
-                        : purchase.buyer?.username || purchase.buyer?.email || 'Acheteur';
-                      const buyerId = purchase.buyer?._id || purchase.buyer;
-                      const isPending = purchase.status === 'PENDING';
-                      return (
-                        <TableRow key={purchase._id} hover>
-                          <TableCell>
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                              <Avatar sx={{ width: 28, height: 28, bgcolor: 'primary.main', fontSize: 12 }}>
-                                {buyerName.charAt(0).toUpperCase()}
-                              </Avatar>
-                              <Link href={`/profile/${buyerId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                <Typography variant="body2" sx={{ '&:hover': { textDecoration: 'underline' } }}>
-                                  {buyerName}
-                                </Typography>
-                              </Link>
-                            </Stack>
-                          </TableCell>
-                          <TableCell>{purchase.quantity || 1}</TableCell>
-                          <TableCell>{((purchase.price || directSale.price) * (purchase.quantity || 1)).toLocaleString()} DA</TableCell>
-                          <TableCell>{formatDate(purchase.createdAt)}</TableCell>
-                          <TableCell>
-                            <Chip
-                              label={purchase.status || 'PENDING'}
-                              color={getPurchaseStatusColor(purchase.status) as any}
-                              size="small"
-                              variant="outlined"
-                            />
-                          </TableCell>
-                          <TableCell align="right">
-                            {isPending && (
-                              <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-                                <Button
-                                  size="small"
-                                  variant="contained"
-                                  color="success"
-                                  startIcon={<MdCheckCircle />}
-                                  onClick={() => handleConfirmPurchase(purchase._id)}
-                                  sx={{ textTransform: 'none', fontSize: '12px' }}
-                                >
-                                  Confirmé
-                                </Button>
-                                <Button
-                                  size="small"
-                                  variant="outlined"
-                                  color="error"
-                                  startIcon={<MdCancel />}
-                                  onClick={() => handleRejectPurchase(purchase._id)}
-                                  sx={{ textTransform: 'none', fontSize: '12px' }}
-                                >
-                                  Refusé
-                                </Button>
-                              </Stack>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </Card>
-        </Grid>
+        {/* Timeline */}
+        <div style={card}>
+          <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📅 Chronologie</h3>
+          {[{ label: 'Créé le', value: fmtDate(sale.createdAt) }, { label: 'Mis à jour', value: fmtDate(sale.updatedAt) }].map(r => (
+            <div key={r.label} style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{r.label}</div>
+              <div style={{ fontWeight: 600, color: '#334155', fontSize: '0.88rem' }}>{r.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-    </Container>
+    </div>
   );
 }

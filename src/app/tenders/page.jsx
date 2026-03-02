@@ -10,6 +10,7 @@ import { SubCategoryAPI } from '@/app/api/subcategory'
 import app from '@/config'; // Import the app config
 import { useTranslation } from 'react-i18next';
 import Header from '@/components/header/Header';
+import Footer from '@/components/footer/Footer';
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -17,9 +18,11 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import PageSkeleton from '@/components/skeletons/PageSkeleton';
 import ShareButton from '@/components/common/ShareButton';
+import DynamicScrollToTop from '@/components/common/DynamicScrollToTop';
+import { useCreateSocket } from '@/contexts/socket';
 
 
 // Define BID_TYPE enum to match server definition
@@ -91,6 +94,22 @@ const MultipurposeTenderSidebar = () => {
     const { t } = useTranslation();
     const router = useRouter();
     const { isLogged, auth } = useAuth();
+    const queryClient = useQueryClient();
+    const socketContext = useCreateSocket();
+    const socket = socketContext?.socket;
+
+    // Real-time: invalidate tenders query when a new tender is created
+    useEffect(() => {
+        if (!socket) return;
+        const handler = (data) => {
+            if (data?.type === 'tender') {
+                queryClient.invalidateQueries({ queryKey: ['tenders'] });
+            }
+        };
+        socket.on('newListingCreated', handler);
+        return () => { socket.off('newListingCreated', handler); };
+    }, [socket, queryClient]);
+
     // Default countdown timer for the page (fallback)
     const defaultTimer = useCountdownTimer("2024-08-23 11:42:00");
 
@@ -1632,8 +1651,8 @@ const MultipurposeTenderSidebar = () => {
                                                                     backdropFilter: 'blur(4px)',
                                                                     padding: '4px 8px',
                                                                     borderRadius: '12px',
-                                                                    color: '#d32f2f',
-                                                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                                    color: isUrgent ? '#d32f2f' : '#000000', // Black by default
+                                                                    boxShadow: isUrgent ? '0 0 10px rgba(211, 47, 47, 0.5)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
                                                                     border: '1px solid rgba(0, 0, 0, 0.05)',
                                                                     zIndex: 2,
                                                                     display: 'flex',
@@ -1641,15 +1660,19 @@ const MultipurposeTenderSidebar = () => {
                                                                     gap: '4px',
                                                                     fontSize: '10px',
                                                                     fontWeight: '700',
+                                                                    animation: isUrgent ? 'pulse 1s infinite' : 'none',
                                                             }}
                                                             >
-                                                                <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.days}</span>
-                                                                <span style={{ color: 'white' }}>:</span>
-                                                                <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.hours}</span>
-                                                                <span style={{ color: 'white' }}>:</span>
-                                                                <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.minutes}</span>
-                                                                <span style={{ color: 'white' }}>:</span>
-                                                                <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.seconds}</span>
+                                                                {hasTenderEnded ? (
+                                                                    <span>{t('common.finished') || 'Terminée'}</span>
+                                                                ) : (
+                                                                    <>
+                                                                        <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.days || "00"}j</span>:
+                                                                        <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.hours || "00"}h</span>:
+                                                                        <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.minutes || "00"}m</span>:
+                                                                        <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.seconds || "00"}s</span>
+                                                                    </>
+                                                                )}
                                                             </div>
 
                                                         {/* Share Button - Bottom Right */}
@@ -2312,6 +2335,8 @@ const MultipurposeTenderSidebar = () => {
                 )}
             </div>
         </div>
+        <Footer />
+        <DynamicScrollToTop colorSchema="green" />
         </>
     )
 }

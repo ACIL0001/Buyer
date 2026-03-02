@@ -1,563 +1,265 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
-import Link from 'next/link';
-import {
-  Stack,
-  Button,
-  TableRow,
-  TableBody,
-  TableCell,
-  Container,
-  Typography,
-  CircularProgress,
-  Chip,
-  Alert,
-  Box,
-  Tabs,
-  Tab,
-  Card,
-  Avatar,
-  Tooltip,
-} from '@mui/material';
-import { MdRefresh } from 'react-icons/md';
-import { alpha, useTheme } from '@mui/material/styles';
-import ResponsiveTable from '@/components/Tables/ResponsiveTable';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useCreateSocket } from '@/contexts/socket';
 import useAuth from '@/hooks/useAuth';
+import Link from 'next/link';
+import DashboardPageShell from '@/components/dashboard/DashboardPageShell';
+import {
+  StatusBadge, ActionBtn, tableStyles, DashboardKeyframes,
+  SimplePagination, PillTabs, ListPageSkeleton,
+} from '@/components/dashboard/dashboardHelpers';
 
-// Types
 interface Bid {
-  _id: string;
-  title: string;
-  currentPrice: number;
+  _id: string; title: string; currentPrice: number;
   status: 'active' | 'pending' | 'expired' | 'completed';
-  endDate: string;
-  category?: string;
+  endDate: string; category?: string;
 }
-
 interface User {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  username?: string;
-  email: string;
-  phone: string;
-  companyName?: string;
-  entreprise?: string;
+  _id: string; firstName: string; lastName: string; username?: string;
+  email: string; phone: string; companyName?: string; entreprise?: string;
+}
+interface Offer {
+  _id: string; price: number; createdAt: string;
+  status?: 'PENDING' | 'ACCEPTED' | 'DECLINED';
+  bid: Bid; user: User;
 }
 
-interface Offer {
-  _id: string;
-  price: number;
-  createdAt: string;
-  status?: 'PENDING' | 'ACCEPTED' | 'DECLINED';
-  bid: Bid;
-  user: User;
+function offerStatusConfig(offer: Offer) {
+  const isExpired = offer.bid?.endDate && new Date(offer.bid.endDate) < new Date();
+  const s = offer.status;
+  if (isExpired || s === 'DECLINED') return { label: 'Décliné', color: '#dc2626', bg: '#fee2e2' };
+  if (s === 'ACCEPTED') return { label: 'Accepté', color: '#16a34a', bg: '#dcfce7' };
+  return { label: 'En attente', color: '#d97706', bg: '#fef3c7', dot: true as boolean };
+}
+
+function formatDate(d: string) {
+  if (!d) return 'N/A';
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+function formatPrice(n: number) {
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'DZD', minimumFractionDigits: 0 }).format(n);
 }
 
 export default function OffersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const theme = useTheme();
   const { auth, isLogged } = useAuth();
-  const { t, i18n } = useTranslation();
-  
-  const COLUMNS = [
-    { id: 'user', label: t('dashboard.list.columns.user'), alignRight: false, searchable: true, sortable: true },
-    { id: 'tel', label: t('dashboard.list.columns.phone'), alignRight: false, searchable: true, sortable: true },
-    { id: 'bidTitle', label: t('dashboard.list.columns.auction'), alignRight: false, searchable: true, sortable: true },
-    { id: 'price', label: t('dashboard.list.columns.price'), alignRight: false, searchable: false, sortable: true },
-    { id: 'status', label: t('dashboard.list.columns.status'), alignRight: false, searchable: false, sortable: true },
-    { id: 'createdAt', label: t('dashboard.list.columns.date'), alignRight: false, searchable: false, sortable: true },
-    { id: 'actions', label: t('dashboard.list.columns.actions'), alignRight: true, searchable: false, sortable: false }
-  ];
+  const { t } = useTranslation();
 
-  const [offers, setOffers] = useState<Offer[]>([]);
-  const [page, setPage] = useState(0);
-  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
-  const [orderBy, setOrderBy] = useState('createdAt');
-  const [filterName, setFilterName] = useState('');
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [filterTab, setFilterTab] = useState<'received' | 'my'>('my');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [isMutating, setIsMutating] = useState(false);
 
-  // Sync tab with URL parameter
+  const queryClient = useQueryClient();
+  const { socket } = useCreateSocket() || {};
+
   useEffect(() => {
-    const tabParam = searchParams.get('tab');
-    if (tabParam === 'received' || tabParam === 'my') {
-      setFilterTab(tabParam as 'received' | 'my');
-    }
+    const tab = searchParams.get('tab');
+    if (tab === 'received' || tab === 'my') setFilterTab(tab as 'received' | 'my');
   }, [searchParams]);
 
   useEffect(() => {
-    if (isLogged && auth?.user?._id) {
-      fetchOffers();
-    }
-  }, [isLogged, auth?.user?._id]);
+    if (!socket) return;
+    const handleRefetch = () => queryClient.invalidateQueries({ queryKey: ['offers', 'my'] });
+    socket.on('newListingCreated', handleRefetch);
+    socket.on('notification', handleRefetch);
+    return () => {
+      socket.off('newListingCreated', handleRefetch);
+      socket.off('notification', handleRefetch);
+    };
+  }, [socket, queryClient]);
 
-  const fetchOffers = async (forceRefresh = false) => {
-    if (!auth?.user?._id) {
-      setError('User not authenticated');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    
-    try {
+  const { data: offersData = [], isLoading: isQueryLoading, error, refetch } = useQuery({
+    queryKey: ['offers', 'my'],
+    queryFn: async () => {
+      if (!auth?.user?._id) return [];
       const { OffersAPI } = await import('@/services/offers');
-      const userId = auth.user._id;
-      
-      const response = await OffersAPI.getOffers({ data: { _id: userId } });
-      
-      let offersData: Offer[] = [];
-      
-      if (response && response.data && Array.isArray(response.data)) {
-        offersData = response.data;
-      } else if (Array.isArray(response)) {
-        offersData = response;
-      }
-      
-      setOffers(offersData);
-      
-    } catch (error: any) {
-      console.error("Error fetching offers:", error);
-      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to load offers';
-      setError(errorMessage);
-      // Set empty array on error instead of keeping stale data
-      setOffers([]);
-    } finally {
-      setLoading(false);
-    }
+      const res = await OffersAPI.getOffers({ data: { _id: auth.user._id } });
+      let data: Offer[] = res?.data && Array.isArray(res.data) ? res.data : Array.isArray(res) ? res : [];
+      return data;
+    },
+    enabled: isLogged && !!auth?.user?._id,
+    staleTime: 30000,
+    placeholderData: keepPreviousData,
+  });
+
+  const offers = offersData as Offer[];
+  const isLoading = isQueryLoading || isMutating;
+
+  const handleAccept = async (id: string) => {
+    setIsMutating(true);
+    try { const { OffersAPI } = await import('@/services/offers'); await OffersAPI.acceptOffer(id); await refetch(); }
+    catch {} finally { setIsMutating(false); }
+  };
+  const handleReject = async (id: string) => {
+    setIsMutating(true);
+    try { const { OffersAPI } = await import('@/services/offers'); await OffersAPI.rejectOffer(id); await refetch(); }
+    catch {} finally { setIsMutating(false); }
+  };
+  const handleDelete = async (id: string) => {
+    setIsMutating(true);
+    try { const { OffersAPI } = await import('@/services/offers'); await OffersAPI.deleteOffer(id); await refetch(); }
+    catch {} finally { setIsMutating(false); }
   };
 
-  const handleRefresh = () => {
-    fetchOffers(true);
-  };
+  const userId = auth?.user?._id;
+  const received = useMemo(() => offers.filter(o => o.user._id !== userId), [offers, userId]);
+  const myOffers = useMemo(() => offers.filter(o => o.user._id === userId), [offers, userId]);
+  const current = filterTab === 'received' ? received : myOffers;
 
-  const handleAcceptOffer = async (offerId: string) => {
-    try {
-      setLoading(true);
-      const { OffersAPI } = await import('@/services/offers');
-      await OffersAPI.acceptOffer(offerId);
-      fetchOffers(true);
-    } catch (error: any) {
-      console.error('Error accepting offer:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRejectOffer = async (offerId: string) => {
-    try {
-      setLoading(true);
-      const { OffersAPI } = await import('@/services/offers');
-      await OffersAPI.rejectOffer(offerId);
-      fetchOffers(true);
-    } catch (error: any) {
-      console.error('Error rejecting offer:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteOffer = async (offerId: string) => {
-    try {
-      setLoading(true);
-      const { OffersAPI } = await import('@/services/offers');
-      await OffersAPI.deleteOffer(offerId);
-      fetchOffers(true);
-    } catch (error: any) {
-      console.error('Error deleting offer:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    if (!selected || selected.length === 0) return;
-    try {
-      setLoading(true);
-      const { OffersAPI } = await import('@/services/offers');
-      await Promise.all(selected.map((id) => OffersAPI.deleteOffer(id)));
-      setSelected([]);
-      fetchOffers(true);
-    } catch (error: any) {
-      console.error('Error bulk deleting offers:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatDate = (date: Date | string) => {
-    if (!date) return 'N/A';
-    return new Date(date).toLocaleDateString(i18n.language, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatPrice = (price: number) => {
-    if (typeof price !== 'number') return 'N/A';
-    return new Intl.NumberFormat(i18n.language, {
-      style: 'currency',
-      currency: 'DZD',
-      minimumFractionDigits: 2,
-    }).format(price);
-  };
-
-  const getOfferStatusChip = (offer: Offer) => {
-    const isActive = offer.bid?.status === 'active';
-    const isExpired = offer.bid?.endDate && new Date(offer.bid.endDate) < new Date();
-    
-    if (isExpired) {
-      return <Chip label={t('dashboard.orders.status.cancelled')} size="small" color="error" variant="outlined" />;
-    }
-    if (isActive) {
-      return <Chip label={t('dashboard.orders.status.confirmed')} size="small" color="success" variant="outlined" />;
-    }
-    return <Chip label={t('dashboard.orders.status.pending')} size="small" color="warning" variant="outlined" />;
-  };
-
-  // Filter offers based on current tab
-  const getFilteredOffers = () => {
-    if (!offers || offers.length === 0) return [];
-    
-    const currentUserId = auth?.user?._id;
-    if (!currentUserId) return [];
-    
-    if (filterTab === 'received') {
-      // Show offers made by other users (received offers)
-      return offers.filter(offer => offer.user._id !== currentUserId);
-    } else {
-      // Show offers made by current user (my offers)
-      return offers.filter(offer => offer.user._id === currentUserId);
-    }
-  };
-
-  const filteredOffers = getFilteredOffers();
-
-  const TableBodyComponent = ({ data = [] }: { data: Offer[] }) => {
-    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - data.length) : 0;
-
-    return (
-      <TableBody>
-        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row: Offer) => {
-          const { _id, user, price, createdAt, bid } = row;
-
-          return (
-            <TableRow
-              hover
-              key={_id}
-              tabIndex={-1}
-              sx={{ cursor: 'pointer', '&:hover': { backgroundColor: theme.palette.action.hover } }}
-            >
-              <TableCell component="th" scope="row" padding="none" sx={{ pl: 2 }}>
-                <Stack direction="row" alignItems="center" spacing={1.5}>
-                  <Tooltip title="Voir le profil de l'acheteur" arrow>
-                    <Link
-                      href={`/profile/${user?._id}`}
-                      style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: 12 }}
-                    >
-                      <Avatar sx={{ width: 34, height: 34, fontSize: '0.85rem', bgcolor: 'secondary.main', cursor: 'pointer' }}>
-                        {(user?.companyName || user?.firstName || '?').charAt(0).toUpperCase()}
-                      </Avatar>
-                      <Stack direction="column" spacing={0.25}>
-                        <Typography variant="subtitle2" noWrap fontWeight={500} sx={{ '&:hover': { textDecoration: 'underline' } }}>
-                          {user?.companyName || user?.entreprise || (user?.firstName && user?.lastName
-                            ? `${user.firstName} ${user.lastName}`
-                            : user?.username || 'N/A')}
-                        </Typography>
-                        {user?.email && (
-                          <Typography variant="caption" color="text.secondary">{user.email}</Typography>
-                        )}
-                      </Stack>
-                    </Link>
-                  </Tooltip>
-                </Stack>
-              </TableCell>
-              
-              <TableCell align="left">
-                <Typography variant="body2">{user?.phone || 'N/A'}</Typography>
-              </TableCell>
-              
-              <TableCell align="left">
-                <Stack direction="column" spacing={0.5}>
-                  <Typography variant="subtitle2" noWrap>{bid?.title || 'N/A'}</Typography>
-                  {bid?.category && (
-                    <Typography variant="caption" color="text.secondary">{bid.category}</Typography>
-                  )}
-                </Stack>
-              </TableCell>
-              
-              <TableCell align="left">
-                <Typography variant="subtitle2" fontWeight={600}>{formatPrice(price)}</Typography>
-              </TableCell>
-              
-              <TableCell align="left">{getOfferStatusChip(row)}</TableCell>
-              
-              <TableCell align="left">
-                <Typography variant="body2" color="text.secondary">{formatDate(createdAt)}</Typography>
-              </TableCell>
-              
-              <TableCell align="right">
-                <Stack direction="row" spacing={1}>
-                  {bid?._id && (
-                    <Button
-                      component={Link}
-                      href={filterTab === 'received' ? `/dashboard/auctions/${bid._id}/offers/${_id}` : `/dashboard/auctions/${bid._id}`}
-                      size="small"
-                      variant="outlined"
-                      color="primary"
-                    >
-                      {t('dashboard.list.view')}
-                    </Button>
-                  )}
-                  
-                  {filterTab === 'received' ? (
-                    // Actions for received offers (offers made by others)
-                    <>
-                      {(row.status || 'PENDING') === 'PENDING' && (
-                        <>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="success"
-                            onClick={() => handleAcceptOffer(_id)}
-                            disabled={loading}
-                          >
-                            {t('dashboard.list.accept')}
-                          </Button>
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            color="error"
-                            onClick={() => handleRejectOffer(_id)}
-                            disabled={loading}
-                          >
-                            {t('dashboard.list.reject')}
-                          </Button>
-                        </>
-                      )}
-                      
-                      {(row.status || 'PENDING') !== 'PENDING' && (
-                        <Chip
-                          label={(row.status || 'PENDING') === 'ACCEPTED' ? t('dashboard.orders.status.confirmed') : t('dashboard.orders.status.cancelled')}
-                          color={(row.status || 'PENDING') === 'ACCEPTED' ? 'success' : 'error'}
-                          variant="outlined"
-                          size="small"
-                        />
-                      )}
-                    </>
-                  ) : (
-                    // Actions for my offers (offers made by current user)
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleDeleteOffer(_id)}
-                      disabled={loading}
-                    >
-                      {t('dashboard.list.delete')}
-                    </Button>
-                  )}
-                </Stack>
-              </TableCell>
-            </TableRow>
-          );
-        })}
-        
-        {emptyRows > 0 && (
-          <TableRow style={{ height: 53 * emptyRows }}>
-            <TableCell colSpan={COLUMNS.length} />
-          </TableRow>
-        )}
-      </TableBody>
+  const filtered = useMemo(() => {
+    if (!search.trim()) return current;
+    const s = search.toLowerCase();
+    return current.filter(o =>
+      o.user.firstName?.toLowerCase().includes(s) ||
+      o.user.lastName?.toLowerCase().includes(s) ||
+      o.user.companyName?.toLowerCase().includes(s) ||
+      o.bid?.title?.toLowerCase().includes(s)
     );
-  };
+  }, [current, search]);
 
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
-          <CircularProgress size={40} />
-          <Typography variant="body1" sx={{ mt: 2 }}>{t('dashboard.list.refreshing')}</Typography>
-        </Stack>
-      );
-    }
+  const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
-    if (error) {
-      return (
-        <Alert 
-          severity="error" 
-          sx={{ mb: 3 }}
-          action={
-            <Button color="inherit" size="small" onClick={handleRefresh} variant="outlined">
-              {t('dashboard.list.retry')}
-            </Button>
-          }
-        >
-          {error}
-        </Alert>
-      );
-    }
+  const pending = current.filter(o => !o.status || o.status === 'PENDING').length;
+  const accepted = current.filter(o => o.status === 'ACCEPTED').length;
+  const declined = current.filter(o => o.status === 'DECLINED').length;
 
-    if (!offers || offers.length === 0) {
-      return (
-        <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            {t('dashboard.list.noOffers')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" textAlign="center">
-            {t('dashboard.list.noBidsYet')}
-          </Typography>
-        </Stack>
-      );
-    }
+  const stats = [
+    { label: 'Total', value: current.length, color: '#0063b1', icon: '📋' },
+    { label: 'En attente', value: pending, color: '#f59e0b', icon: '⏳' },
+    { label: 'Acceptées', value: accepted, color: '#10b981', icon: '✅' },
+    { label: 'Déclinées', value: declined, color: '#ef4444', icon: '❌' },
+  ];
 
-    if (filteredOffers.length === 0) {
-      return (
-        <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            {filterTab === 'received' ? t('dashboard.list.noOffers') : t('dashboard.list.noOffers')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" textAlign="center">
-            {filterTab === 'received' 
-              ? t('dashboard.list.noReceivedOffers', 'You haven\'t received any offers yet.')
-              : t('dashboard.list.noOffersMade', 'You haven\'t made any offers yet.')}
-          </Typography>
-        </Stack>
-      );
-    }
-
-    return (
-      <ResponsiveTable
-        data={filteredOffers}
-        columns={COLUMNS}
-        page={page}
-        setPage={setPage}
-        order={order}
-        setOrder={setOrder}
-        orderBy={orderBy}
-        setOrderBy={setOrderBy}
-        filterName={filterName}
-        setFilterName={setFilterName}
-        rowsPerPage={rowsPerPage}
-        setRowsPerPage={setRowsPerPage}
-
-        TableBody={TableBodyComponent}
-        searchFields={['user.firstName', 'user.lastName', 'user.phone', 'bid.title']}
-        selected={selected}
-        setSelected={setSelected}
-      />
-    );
-  };
+  if (isQueryLoading && !offers.length) return <ListPageSkeleton accentColor="#0063b1" />;
 
   return (
-    <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-      <Box
-        sx={{
-          borderRadius: 3,
-          p: { xs: 2, sm: 3 },
-          mb: { xs: 3, sm: 4, md: 5 },
-          background: theme.palette.mode === 'light'
-            ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.primary.main, 0.02)})`
-            : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.18)}, ${alpha(theme.palette.primary.main, 0.06)})`,
-          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          backdropFilter: 'blur(8px)',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
-        }}
+    <>
+      <DashboardKeyframes />
+      <DashboardPageShell
+        title={filterTab === 'received' ? 'Offres Reçues' : 'Mes Offres'}
+        subtitle="Gestion des offres d'enchères"
+        icon="💼"
+        stats={stats}
+        headerActions={
+          <button onClick={() => refetch()} disabled={isLoading} style={{
+            display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px',
+            background: 'rgba(255,255,255,0.2)', color: '#fff', borderRadius: '10px',
+            fontWeight: 700, fontSize: '0.85rem', border: '1.5px solid rgba(255,255,255,0.35)',
+            cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1,
+          }}>
+            🔄 {isLoading ? 'Actualisation...' : 'Actualiser'}
+          </button>
+        }
       >
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
-          alignItems={{ xs: 'stretch', sm: 'center' }} 
-          justifyContent="space-between" 
-          spacing={{ xs: 2, sm: 2 }}
-        >
-          <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} spacing={2}>
-            <Typography variant="h4" sx={{ m: 0 }}>
-              {filterTab === 'received' ? t('dashboard.list.receivedOffers') : t('dashboard.list.myOffers')}
-            </Typography>
-            {selected.length > 0 && filterTab === 'my' && (
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={handleBulkDelete}
-                disabled={loading}
-                sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
-              >
-                {t('dashboard.list.deleteSelected', { count: selected.length })}
-              </Button>
-            )}
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={handleRefresh}
-              disabled={loading}
-              startIcon={<MdRefresh />}
-              sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
-            >
-              {t('dashboard.list.refresh')}
-            </Button>
-          </Stack>
-          
-          <Button
-            variant="outlined"
-            onClick={handleRefresh}
-            disabled={loading}
-            startIcon={loading ? <CircularProgress size={16} /> : undefined}
-            sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
-          >
-            {loading ? t('dashboard.list.refreshing') : t('dashboard.list.refresh')}
-          </Button>
-        </Stack>
-      </Box>
-
-      {/* Filter Tabs */}
-      <Card sx={{ mb: 3, borderRadius: 2 }}>
-        <Tabs
-          value={filterTab}
-          onChange={(event, newValue) => {
-            setFilterTab(newValue);
-            setPage(0); // Reset to first page when switching tabs
-            setSelected([]); // Clear selection when switching tabs
-            
-            // Update URL parameters
-            const params = new URLSearchParams(searchParams.toString());
-            params.set('tab', newValue);
-            router.push(`/dashboard/offers?${params.toString()}`);
-          }}
-          sx={{
-            '& .MuiTab-root': {
-              minHeight: 48,
-              fontWeight: 600,
-              textTransform: 'none',
-              fontSize: '16px',
-            },
-            '& .Mui-selected': {
-              color: theme.palette.primary.main,
-            },
-          }}
-        >
-          <Tab 
-            label={`${t('dashboard.list.receivedOffers')} (${offers.filter(offer => offer.user._id !== auth?.user?._id).length})`} 
-            value="received" 
+        {/* Tabs */}
+        <div style={{ padding: '16px 20px 0' }}>
+          <PillTabs
+            value={filterTab}
+            onChange={(v) => { setFilterTab(v as 'received' | 'my'); setPage(0); router.push(`/dashboard/offers?tab=${v}`); }}
+            tabs={[
+              { value: 'received', label: 'Offres Reçues', count: received.length },
+              { value: 'my', label: 'Mes Offres', count: myOffers.length },
+            ]}
           />
-          <Tab 
-            label={`${t('dashboard.list.myOffers')} (${offers.filter(offer => offer.user._id === auth?.user?._id).length})`} 
-            value="my" 
-          />
-        </Tabs>
-      </Card>
+        </div>
 
-      {renderContent()}
-    </Container>
+        {/* Toolbar */}
+        <div style={tableStyles.toolbar}>
+          <span style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: 500 }}>
+            {filtered.length} offre{filtered.length !== 1 ? 's' : ''}
+          </span>
+          <div style={tableStyles.searchWrap}>
+            <span style={tableStyles.searchIcon}>🔍</span>
+            <input style={tableStyles.searchInput} placeholder="Rechercher..." value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} />
+          </div>
+        </div>
+
+        {error && (
+          <div style={{ margin: '16px 20px', padding: '12px 16px', background: '#fee2e2', borderRadius: '10px', color: '#dc2626', fontSize: '0.875rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>⚠️ {(error as any)?.message || 'Erreur'}</span>
+            <button onClick={() => refetch()} style={{ background: 'none', border: 'none', color: '#dc2626', fontWeight: 700, cursor: 'pointer' }}>Réessayer</button>
+          </div>
+        )}
+
+        {filtered.length === 0 ? (
+          <div style={tableStyles.emptyState}>
+            <div style={{ fontSize: '52px', marginBottom: '16px' }}>💼</div>
+            <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569', margin: '0 0 8px' }}>Aucune offre trouvée</p>
+            <p style={{ color: '#94a3b8', margin: 0 }}>{filterTab === 'received' ? "Vous n'avez pas encore reçu d'offres." : "Vous n'avez pas encore fait d'offres."}</p>
+          </div>
+        ) : (
+          <table style={tableStyles.table}>
+            <thead>
+              <tr>
+                {['Utilisateur', 'Téléphone', 'Enchère', 'Montant', 'Statut', 'Date', ''].map(h => (
+                  <th key={h} style={tableStyles.th}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map(row => {
+                const { _id, user, price, createdAt, bid } = row;
+                const displayName = user?.companyName || user?.entreprise || (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username || 'N/A');
+                const initials = displayName.charAt(0).toUpperCase();
+                return (
+                  <tr key={_id} className="db-row" style={tableStyles.trHover}>
+                    <td style={tableStyles.td}>
+                      <Link href={`/profile/${user?._id}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
+                        <div style={tableStyles.avatar('#0063b1')}>{initials}</div>
+                        <div>
+                          <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>{displayName}</div>
+                          {user?.email && <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{user.email}</div>}
+                        </div>
+                      </Link>
+                    </td>
+                    <td style={{ ...tableStyles.td, color: '#64748b' }}>{user?.phone || 'N/A'}</td>
+                    <td style={tableStyles.td}>
+                      <div style={{ fontWeight: 600, color: '#1e293b' }}>{bid?.title || 'N/A'}</div>
+                      {bid?.category && <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{bid.category}</div>}
+                    </td>
+                    <td style={tableStyles.td}>
+                      <span style={{ fontWeight: 700, color: '#10b981', fontSize: '0.95rem' }}>{formatPrice(price)}</span>
+                    </td>
+                    <td style={tableStyles.td}><StatusBadge config={offerStatusConfig(row)} /></td>
+                    <td style={{ ...tableStyles.td, color: '#64748b', fontSize: '0.82rem' }}>{formatDate(createdAt)}</td>
+                    <td style={{ ...tableStyles.td, textAlign: 'right' }}>
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                        {bid?._id && (
+                          <ActionBtn
+                            label="Voir"
+                            icon="👁️"
+                            href={filterTab === 'received' ? `/dashboard/auctions/${bid._id}/offers/${_id}` : `/dashboard/auctions/${bid._id}`}
+                          />
+                        )}
+                        {filterTab === 'received' && (!row.status || row.status === 'PENDING') && (
+                          <>
+                            <ActionBtn label="Accepter" icon="✅" variant="success" onClick={() => handleAccept(_id)} disabled={isLoading} />
+                            <ActionBtn label="Refuser" icon="❌" variant="danger" onClick={() => handleReject(_id)} disabled={isLoading} />
+                          </>
+                        )}
+                        {filterTab === 'my' && (
+                          <ActionBtn label="Supprimer" icon="🗑️" variant="danger" onClick={() => handleDelete(_id)} disabled={isLoading} />
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+
+        {filtered.length > 0 && (
+          <SimplePagination page={page} rowsPerPage={rowsPerPage} total={filtered.length} onPageChange={setPage} onRowsPerPageChange={setRowsPerPage} />
+        )}
+      </DashboardPageShell>
+    </>
   );
 }

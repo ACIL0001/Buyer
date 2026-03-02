@@ -2475,16 +2475,17 @@ const FloatingAdminChat: React.FC = () => {
         }
 
         .chat-fab {
-          width: 72px;
-          height: 72px;
+          width: 60px;
+          height: 60px;
           border-radius: 50%;
           background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
           border: none;
           color: white;
-          font-size: 28px;
+          font-size: 24px;
           cursor: pointer;
           box-shadow: 0 12px 40px rgba(59, 130, 246, 0.4);
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          animation: chat-pulse 2s infinite cubic-bezier(0.66, 0, 0, 1);
           position: relative;
           display: flex;
           align-items: center;
@@ -2502,22 +2503,28 @@ const FloatingAdminChat: React.FC = () => {
         .chat-fab:active {
           transform: scale(1.05) translateY(-1px);
         }
+        
+        @keyframes chat-pulse {
+          to {
+            box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
+          }
+        }
 
         .unread-badge {
           position: absolute;
-          top: -6px;
-          right: -6px;
+          top: -4px;
+          right: -4px;
           background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
           color: white;
           border-radius: 50%;
-          min-width: 28px;
-          height: 28px;
+          min-width: 18px;
+          height: 18px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 13px;
+          font-size: 10px;
           font-weight: 700;
-          border: 3px solid white;
+          border: 2px solid white;
           box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
           animation: bounce 2s infinite;
         }
@@ -3689,9 +3696,9 @@ const FloatingAdminChat: React.FC = () => {
           }
           
           .chat-fab {
-            width: 64px;
-            height: 64px;
-            font-size: 24px;
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
           }
         }
 
@@ -3711,9 +3718,9 @@ const FloatingAdminChat: React.FC = () => {
           }
           
           .chat-fab {
-            width: 60px;
-            height: 60px;
-            font-size: 22px;
+            width: 30px;
+            height: 30px;
+            font-size: 14px;
           }
 
           .input-container {

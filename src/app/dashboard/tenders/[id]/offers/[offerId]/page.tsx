@@ -3,672 +3,311 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import {
-  Box,
-  Card,
-  Container,
-  Grid,
-  Typography,
-  Stack,
-  Chip,
-  Button,
-  Avatar,
-  Paper,
-  CircularProgress,
-  Divider,
-  Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Tooltip
-} from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
 import { TendersAPI } from '@/services/tenders';
-import { OffersAPI } from '@/services/offers';
 import useAuth from '@/hooks/useAuth';
 import { useSnackbar } from 'notistack';
-import { MdArrowBack, MdCheckCircle, MdCancel, MdAttachMoney, MdSchedule, MdPerson, MdVisibility } from 'react-icons/md';
-import app from '@/config';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCreateSocket } from '@/contexts/socket';
+import { DashboardKeyframes, StatusBadge, ActionBtn, tableStyles, ConfirmDialog, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
 
-export default function OfferDetailPage() {
+const ACCENT = '#059669';
+
+function offerStatusCfg(s: string) {
+  const m: Record<string, any> = {
+    pending:  { label: 'En attente', color: '#d97706', bg: '#fef3c7', dot: true },
+    accepted: { label: 'Acceptée',   color: '#16a34a', bg: '#dcfce7' },
+    declined: { label: 'Rejetée',    color: '#dc2626', bg: '#fee2e2' },
+  };
+  return m[s?.toLowerCase()] || { label: s, color: '#64748b', bg: '#f1f5f9' };
+}
+
+function fmtDate(d: any) {
+  if (!d) return 'N/A';
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+const card: React.CSSProperties = { background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid rgba(0,0,0,0.06)', padding: 24, marginBottom: 20 };
+
+export default function TenderOfferDetailPage() {
   const params = useParams();
   const tenderId = params?.id as string;
   const offerId = params?.offerId as string;
   const router = useRouter();
   const { auth } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
-  const theme = useTheme();
 
-  const [tender, setTender] = useState<any>(null);
-  const [offer, setOffer] = useState<any>(null);
-  const [tenderBids, setTenderBids] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [acceptDialog, setAcceptDialog] = useState(false);
+  const [rejectDialog, setRejectDialog] = useState(false);
 
-  const fetchTenderBids = useCallback(async () => {
-    try {
-      const response = await TendersAPI.getTenderBids(tenderId);
-      let bidsArray: any[] = [];
-      
-      if (response && response.data && Array.isArray(response.data)) {
-          bidsArray = response.data;
-      } else if (Array.isArray(response)) {
-        bidsArray = response;
-      }
-      
-      // For participants table, we usually show all or user's own depending on role
-      // But looking at the requirement, we'll follow the same logic as the main tender page
-      // which shows all if owner, or just own if not? Actually the main page logic was:
-      // if owner -> all, else -> only own.
-      // Let's check tender owner
-      const tenderResponse = await TendersAPI.getTenderById(tenderId);
-      const tenderData = (tenderResponse as any).data || tenderResponse;
-      const isOwner = (tenderData.owner?._id || tenderData.owner) == auth?.user?._id;
-
-      if (isOwner) {
-         setTenderBids(bidsArray);
-      } else if (auth?.user?._id && bidsArray.length > 0) {
-        const currentUserId = auth.user._id;
-        const userBids = bidsArray.filter((bid: any) => {
-          const bidderId = bid.bidder?._id || bid.bidder || bid.user?._id || bid.user;
-          return String(bidderId) === String(currentUserId);
-        });
-        setTenderBids(userBids);
-      } else {
-        setTenderBids([]);
-      }
-    } catch (error) {
-      console.error('Error fetching tender bids:', error);
-    }
-  }, [tenderId, auth?.user?._id]);
-
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      console.log('Fetching data for:', { tenderId, offerId });
-      
-      // Fetch tender first
-      const tenderResponse = await TendersAPI.getTenderById(tenderId);
-      const tenderData = (tenderResponse as any).data || tenderResponse;
-      console.log('Fetched Tender Data:', tenderData);
-      setTender(tenderData);
-
-      // Fetch all bids for context
-      await fetchTenderBids();
-
-      // Try to fetch specific bid
-      let offerData;
-      try {
-        const bidResponse = await TendersAPI.getTenderBidById(offerId);
-        offerData = (bidResponse as any).data || bidResponse;
-        console.log('Fetched Offer Data (Direct):', offerData);
-      } catch (err) {
-        console.warn('Direct bid fetch failed, falling back to list:', err);
-        const allBidsResponse = await TendersAPI.getTenderBids(tenderId);
-        const allBids = (allBidsResponse as any).data || allBidsResponse;
-        if (Array.isArray(allBids)) {
-            offerData = allBids.find((bid: any) => bid._id === offerId);
-        }
-        console.log('Fetched Offer Data (Fallback):', offerData);
-      }
-      
-      if (offerData) {
-        setOffer(Array.isArray(offerData) ? offerData[0] : offerData);
-      } else {
-        throw new Error("Offer not found");
-      }
-
-      console.log('Fetched Tender Data:', tenderData);
-      console.log('Fetched Offer Data:', offerData);
-
-      setTender(tenderData);
-      // Ensure offerData is handled correctly if it returns an array
-      setOffer(Array.isArray(offerData) ? offerData[0] : offerData);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      enqueueSnackbar('Erreur lors du chargement des données', { variant: 'error' });
-    } finally {
-      setLoading(false);
-    }
-  }, [tenderId, offerId, enqueueSnackbar, fetchTenderBids]);
+  const queryClient = useQueryClient();
+  const { socket } = useCreateSocket() || {};
 
   useEffect(() => {
-    if (tenderId && offerId) {
-      fetchData();
-    } else {
-        console.warn('Missing tenderId or offerId:', { tenderId, offerId });
-    }
-  }, [tenderId, offerId, fetchData]);
+    if (!socket || !tenderId) return;
+    const handleRefetch = () => queryClient.invalidateQueries({ queryKey: ['tender-offer', tenderId, offerId] });
+    socket.on('newListingCreated', handleRefetch);
+    socket.on('notification', handleRefetch);
+    return () => {
+      socket.off('newListingCreated', handleRefetch);
+      socket.off('notification', handleRefetch);
+    };
+  }, [socket, tenderId, offerId, queryClient]);
 
-  const handleAcceptOffer = async () => {
-    try {
-      setProcessing(true);
-      await TendersAPI.acceptTenderBid(offerId);
-      enqueueSnackbar('Offre acceptée avec succès', { variant: 'success' });
-      fetchData(); // Refresh data
-    } catch (error) {
-      console.error('Error accepting offer:', error);
-      enqueueSnackbar('Erreur lors de l\'acceptation de l\'offre', { variant: 'error' });
-    } finally {
-      setProcessing(false);
-    }
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['tender-offer', tenderId, offerId],
+    queryFn: async () => {
+      const tr = await TendersAPI.getTenderById(tenderId);
+      const tenderData = (tr as any).data || tr;
+      const br = await TendersAPI.getTenderBids(tenderId);
+      const allBidsArr = br?.data && Array.isArray(br.data) ? br.data : Array.isArray(br) ? br : [];
+      let offerData: any;
+      try {
+        const or = await TendersAPI.getTenderBidById(offerId);
+        offerData = (or as any).data || or;
+      } catch {
+        offerData = allBidsArr.find((b: any) => b._id === offerId);
+      }
+      return { tender: tenderData, offer: Array.isArray(offerData) ? offerData[0] : offerData, allBids: allBidsArr };
+    },
+    enabled: !!tenderId && !!offerId,
+    staleTime: 60000,
+  });
+
+  const getAvatarUrl = (u: any) => {
+    const p = u?.avatar?.path || u?.bidder?.avatar?.path;
+    if (!p) return '';
+    const { baseURL } = require('@/config').default || require('@/config');
+    const base = baseURL?.endsWith('/') ? baseURL : `${baseURL}/`;
+    return `${base}static/uploads/${p}`;
   };
 
-  const handleRejectOffer = async () => {
-    try {
-        setProcessing(true);
-        await TendersAPI.rejectTenderBid(offerId);
-        enqueueSnackbar('Offre rejetée', { variant: 'info' });
-        fetchData();
-    } catch (error) {
-        console.error('Error rejecting offer:', error);
-        enqueueSnackbar('Erreur lors du rejet de l\'offre', { variant: 'error' });
-    } finally {
-        setProcessing(false);
-    }
-  }
-
-  if (loading) {
-    return (
-      <Container maxWidth="lg" sx={{ mt: 3 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <CircularProgress />
-        </Box>
-      </Container>
-    );
-  }
-
-  if (!tender || !offer) {
-    return (
-      <Container maxWidth="lg" sx={{ mt: 3 }}>
-        <Alert severity="error">Offre ou appel d'offres introuvable.</Alert>
-        <Button startIcon={<MdArrowBack />} onClick={() => router.back()} sx={{ mt: 2 }}>
-          Retour
-        </Button>
-      </Container>
-    );
-  }
-
-  const isOwner = (tender.owner?._id || tender.owner) == auth?.user?._id;
-  const evaluationType = tender.evaluationType || 'MOINS_DISANT';
-
-  // Helper function to get avatar URL
-  const getAvatarUrl = () => {
-    const avatarPath = offer?.user?.avatar?.path || offer?.bidder?.avatar?.path;
-    if (!avatarPath) return '';
-    const baseURL = app.baseURL.endsWith('/') ? app.baseURL : `${app.baseURL}/`;
-    return `${baseURL}static/uploads/${avatarPath}`;
+  const handleAccept = async () => {
+    setProcessing(true);
+    try { await TendersAPI.acceptTenderBid(offerId); enqueueSnackbar('Offre acceptée', { variant: 'success' }); await refetch(); }
+    catch { enqueueSnackbar('Erreur', { variant: 'error' }); }
+    finally { setProcessing(false); setAcceptDialog(false); }
   };
 
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const handleReject = async () => {
+    setProcessing(true);
+    try { await TendersAPI.rejectTenderBid(offerId); enqueueSnackbar('Offre rejetée', { variant: 'info' }); await refetch(); }
+    catch { enqueueSnackbar('Erreur', { variant: 'error' }); }
+    finally { setProcessing(false); setRejectDialog(false); }
   };
+
+  if (isLoading) return <DetailPageSkeleton accentColor="#059669" />;
+
+  const tender = data?.tender;
+  const offer = data?.offer;
+  const allBids = data?.allBids || [];
+
+  if (!tender || !offer) return (
+    <div style={{ textAlign: 'center', padding: '60px 24px' }}>
+      <div style={{ fontSize: 52, marginBottom: 16 }}>🔍</div>
+      <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569' }}>Offre ou appel d'offres introuvable</p>
+      <button onClick={() => router.back()} style={{ marginTop: 16, padding: '10px 22px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>← Retour</button>
+    </div>
+  );
+
+  const evalType = tender.evaluationType || 'MOINS_DISANT';
+  const tenderOwnerId = typeof tender.owner === 'object' ? tender.owner?._id : tender.owner;
+  const isOwner = tenderOwnerId == auth?.user?._id;
+  const bidder = offer.bidder || offer.user;
+  const bidderId = typeof bidder === 'object' ? bidder?._id : bidder;
+  const bidderName = bidder?.companyName || bidder?.entreprise || `${bidder?.firstName || ''} ${bidder?.lastName || ''}`.trim() || 'N/A';
+  const budget = tender.maxBudget || tender.budget || tender.estimatedBudget || 0;
+  const showActions = isOwner && offer.status === 'pending' && evalType !== 'MOINS_DISANT';
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 3, mb: 10 }}>
-        <Button 
-            startIcon={<MdArrowBack />} 
-            onClick={() => router.push(`/dashboard/tenders/${tenderId}`)}
-            sx={{ mb: 3 }}
-        >
-            Retour à l'appel d'offres
-        </Button>
+    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+      <DashboardKeyframes />
 
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={3}>
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>
-          Détails de l'offre
-        </Typography>
-        <Chip 
-            label={offer.status === 'pending' ? 'En attente' : offer.status === 'accepted' ? 'Acceptée' : 'Rejetée'} 
-            color={offer.status === 'pending' ? 'warning' : offer.status === 'accepted' ? 'success' : 'error'} 
-            variant="filled"
-            sx={{ 
-              fontWeight: 'bold',
-              borderRadius: '8px',
-              paddingX: 1,
-              textTransform: 'uppercase'
-            }}
-        />
-      </Stack>
+      {/* Hero */}
+      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT}40`, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08), transparent 60%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <button onClick={() => router.push(`/dashboard/tenders/${tenderId}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, marginBottom: 14 }}>← Retour à l'appel d'offres</button>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <h1 style={{ color: '#fff', fontSize: 'clamp(1.1rem, 3vw, 1.6rem)', fontWeight: 800, margin: 0 }}>Détails de la soumission</h1>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', margin: '6px 0 0' }}>📄 {tender.title}</p>
+            </div>
+            <StatusBadge config={offerStatusCfg(offer.status)} />
+          </div>
+        </div>
+      </div>
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Card 
-            sx={{ 
-              p: 4, 
-              mb: 3, 
-              boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)', 
-              borderRadius: '16px',
-              transition: 'transform 0.2s',
-              '&:hover': { transform: 'translateY(-2px)', boxShadow: '0px 8px 25px rgba(0, 0, 0, 0.1)' }
-            }}
-          >
-            <Typography variant="h6" gutterBottom color="text.secondary" fontWeight={600}>
-                Proposition
-            </Typography>
-            
-            <Divider sx={{ mb: 3 }} />
-            
-            {evaluationType === 'MIEUX_DISANT' ? (
-                 <>
-                   {offer.proposal && offer.proposal.trim() !== '' && offer.proposal !== 'Aucune proposition textuelle fournie.' && (
-                     <Paper 
-                        variant="outlined" 
-                        sx={{ 
-                            p: 3, 
-                            bgcolor: 'background.default', 
-                            whiteSpace: 'pre-wrap', 
-                            minHeight: 100,
-                            borderRadius: '12px',
-                            border: '1px solid',
-                            borderColor: 'divider',
-                            mb: (offer.proposalFile || offer.proposalFiles) ? 3 : 0
-                        }}
-                     >
-                        <Typography variant="body1" sx={{ lineHeight: 1.6 }}>{offer.proposal}</Typography>
-                     </Paper>
-                   )}
+      {/* Layout */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)', gap: 20, alignItems: 'start' }}>
+        <div>
+          {/* Proposal / Amount */}
+          <div style={card}>
+            <h3 style={{ margin: '0 0 4px', fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Proposition</h3>
+            <div style={{ borderBottom: '1px solid #f1f5f9', marginBottom: 20, paddingBottom: 12 }} />
 
-                   {(offer.proposalFile || (offer.proposalFiles && offer.proposalFiles.length > 0)) && (
-                     <Box sx={{ mt: 2 }}>
-                        <Typography variant="subtitle2" gutterBottom color="text.secondary" fontWeight={600}>
-                            Document(s) de proposition
-                        </Typography>
-                        <Stack spacing={2}>
-                            {/* Record based file */}
-                            {offer.proposalFile && (
-                                <Paper 
-                                    variant="outlined" 
-                                    sx={{ 
-                                        p: 2, 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        justifyContent: 'space-between',
-                                        borderRadius: '12px',
-                                        bgcolor: alpha(theme.palette.info.main, 0.03),
-                                        border: '1px dashed',
-                                        borderColor: alpha(theme.palette.info.main, 0.3)
-                                    }}
-                                >
-                                    <Stack direction="row" spacing={2} alignItems="center">
-                                        <Avatar sx={{ bgcolor: alpha(theme.palette.info.main, 0.1), color: theme.palette.info.main }}>
-                                            <MdCheckCircle />
-                                        </Avatar>
-                                        <Box>
-                                            <Typography variant="subtitle2" fontWeight={600}>
-                                                {offer.proposalFile.split('/').pop()?.split('-').slice(1).join('-') || 'Proposition technique'}
-                                            </Typography>
-                                            <Typography variant="caption" color="text.secondary">Document PDF / Word</Typography>
-                                        </Box>
-                                    </Stack>
-                                    <Button 
-                                        variant="contained" 
-                                        size="small" 
-                                        startIcon={<MdVisibility />}
-                                        href={offer.proposalFile} 
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        sx={{ borderRadius: '8px' }}
-                                    >
-                                        Voir
-                                    </Button>
-                                </Paper>
-                            )}
-                            
-                            {/* Array based files (for future proofing or if data came this way) */}
-                            {Array.isArray(offer.proposalFiles) && offer.proposalFiles.map((file: any, index: number) => (
-                                <Paper 
-                                    key={index}
-                                    variant="outlined" 
-                                    sx={{ 
-                                        p: 2, 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        justifyContent: 'space-between',
-                                        borderRadius: '12px',
-                                        bgcolor: alpha(theme.palette.info.main, 0.03),
-                                        border: '1px dashed',
-                                        borderColor: alpha(theme.palette.info.main, 0.3)
-                                    }}
-                                >
-                                    <Stack direction="row" spacing={2} alignItems="center">
-                                        <Avatar sx={{ bgcolor: alpha(theme.palette.info.main, 0.1), color: theme.palette.info.main }}>
-                                            <MdCheckCircle />
-                                        </Avatar>
-                                        <Box>
-                                            <Typography variant="subtitle2" fontWeight={600}>
-                                                {typeof file === 'string' ? file.split('/').pop()?.split('-').slice(1).join('-') : (file.originalname || `Fichier ${index + 1}`)}
-                                            </Typography>
-                                            <Typography variant="caption" color="text.secondary">Document joint</Typography>
-                                        </Box>
-                                    </Stack>
-                                    <Button 
-                                        variant="contained" 
-                                        size="small" 
-                                        startIcon={<MdVisibility />}
-                                        href={typeof file === 'string' ? file : file.url} 
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        sx={{ borderRadius: '8px' }}
-                                    >
-                                        Voir
-                                    </Button>
-                                </Paper>
-                            ))}
-                        </Stack>
-                     </Box>
-                   )}
-
-                   {!offer.proposal && !offer.proposalFile && (!offer.proposalFiles || offer.proposalFiles.length === 0) && (
-                     <Box sx={{ py: 4, textAlign: 'center', bgcolor: alpha(theme.palette.grey[500], 0.04), borderRadius: '12px', border: '1px dashed', borderColor: 'divider' }}>
-                        <Typography variant="body2" color="text.secondary">Aucune proposition détaillée fournie.</Typography>
-                     </Box>
-                   )}
-                 </>
+            {evalType === 'MIEUX_DISANT' ? (
+              <>
+                {offer.proposal && offer.proposal.trim() && offer.proposal !== 'Aucune proposition textuelle fournie.' && (
+                  <div style={{ padding: '16px 20px', borderRadius: 12, border: '1.5px solid #e2e8f0', background: '#f8fafc', marginBottom: 16, whiteSpace: 'pre-wrap', lineHeight: 1.7, color: '#334155' }}>
+                    {offer.proposal}
+                  </div>
+                )}
+                {(offer.proposalFile || (offer.proposalFiles && offer.proposalFiles.length > 0)) && (
+                  <div>
+                    <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, marginBottom: 10 }}>📎 Documents joints</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {offer.proposalFile && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 12, background: '#e0f2fe18', border: '1.5px dashed #0284c740' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 10, background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>📄</div>
+                            <div>
+                              <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>
+                                {offer.proposalFile.split('/').pop()?.split('-').slice(1).join('-') || 'Proposition technique'}
+                              </div>
+                              <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Document PDF / Word</div>
+                            </div>
+                          </div>
+                          <a href={offer.proposalFile} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 14px', borderRadius: 8, background: ACCENT, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem' }}>Voir</a>
+                        </div>
+                      )}
+                      {Array.isArray(offer.proposalFiles) && offer.proposalFiles.map((file: any, idx: number) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 12, background: '#e0f2fe18', border: '1.5px dashed #0284c740' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 10, background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>📎</div>
+                            <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>
+                              {typeof file === 'string' ? file.split('/').pop() : (file.originalname || `Fichier ${idx + 1}`)}
+                            </div>
+                          </div>
+                          <a href={typeof file === 'string' ? file : file.url} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 14px', borderRadius: 8, background: ACCENT, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem' }}>Voir</a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {!offer.proposal && !offer.proposalFile && (!offer.proposalFiles || offer.proposalFiles.length === 0) && (
+                  <div style={{ padding: '32px', textAlign: 'center', borderRadius: 12, background: '#f8fafc', border: '1.5px dashed #e2e8f0', color: '#94a3b8' }}>Aucune proposition fournie</div>
+                )}
+              </>
             ) : (
-                <Box 
-                    sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        p: 3, 
-                        borderRadius: '12px', 
-                        bgcolor: alpha(theme.palette.primary.main, 0.05),
-                        border: '1px solid',
-                        borderColor: alpha(theme.palette.primary.main, 0.1)
-                    }}
-                >
-                    <MdAttachMoney size={32} color={theme.palette.primary.main} />
-                    <Box ml={2}>
-                        <Typography variant="caption" color="text.secondary" fontWeight={500} textTransform="uppercase">
-                            Montant proposé
-                        </Typography>
-                        <Typography variant="h3" color="primary" fontWeight="800">
-                            {(offer.price || offer.bidAmount || offer.amount || 0).toLocaleString()} <Typography component="span" variant="h5" color="text.secondary">DA</Typography>
-                        </Typography>
-                    </Box>
-                </Box>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '20px 24px', borderRadius: 14, background: `${ACCENT}08`, border: `1.5px solid ${ACCENT}20` }}>
+                <span style={{ fontSize: 40 }}>💰</span>
+                <div>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 800, color: ACCENT, lineHeight: 1 }}>{(offer.price || offer.bidAmount || offer.amount || 0).toLocaleString('fr-FR')}</div>
+                  <div style={{ color: '#64748b', fontWeight: 600, marginTop: 4 }}>DA proposé</div>
+                </div>
+              </div>
             )}
 
-            <Box sx={{ mt: 4 }}>
-                <Grid container spacing={3}>
-                    <Grid size={{ xs: 12 }}>
-                        <Paper 
-                            variant="outlined" 
-                            sx={{ 
-                                p: 2, 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                borderRadius: '12px',
-                                borderColor: 'divider'
-                            }}
-                        >
-                            <Avatar sx={{ bgcolor: alpha(theme.palette.info.main, 0.1), color: theme.palette.info.main, mr: 2 }}>
-                                <MdSchedule />
-                            </Avatar>
-                            <Box>
-                                <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                                    DATE DE SOUMISSION
-                                </Typography>
-                                <Typography variant="subtitle1" fontWeight={700}>
-                                    {offer.createdAt || offer.date || offer.updatedAt
-                                        ? formatDate(offer.createdAt || offer.date || offer.updatedAt)
-                                        : 'Date non disponible'}
-                                </Typography>
-                            </Box>
-                        </Paper>
-                    </Grid>
-                </Grid>
-            </Box>
-          </Card>
+            {/* Submission date */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', borderRadius: 12, background: '#f8fafc', border: '1px solid #f1f5f9', marginTop: 16 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>📅</div>
+              <div>
+                <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date de soumission</div>
+                <div style={{ fontWeight: 700, color: '#334155', marginTop: 2 }}>{fmtDate(offer.createdAt || offer.date)}</div>
+              </div>
+            </div>
+          </div>
 
-          {isOwner && offer.status === 'pending' && evaluationType !== 'MOINS_DISANT' && (
-              <Stack direction="row" spacing={2} justifyContent="flex-end">
-                  <Button 
-                    variant="outlined" 
-                    color="error"
-                    size="large"
-                    startIcon={<MdCancel />}
-                    onClick={handleRejectOffer}
-                    disabled={processing}
-                    sx={{ px: 4, borderRadius: '8px' }}
-                  >
-                      Refuser
-                  </Button>
-                  <Button 
-                    variant="contained" 
-                    color="success"
-                    size="large"
-                    startIcon={<MdCheckCircle />}
-                    onClick={handleAcceptOffer}
-                    disabled={processing}
-                    sx={{ px: 4, borderRadius: '8px', boxShadow: '0 4px 14px 0 rgba(0,167,111,0.39)' }}
-                  >
-                      Accepter
-                  </Button>
-              </Stack>
+          {/* Accept / Reject actions */}
+          {showActions && (
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <ActionBtn label="Refuser" icon="❌" variant="danger" size="md" onClick={() => setRejectDialog(true)} disabled={processing} />
+              <ActionBtn label="Accepter" icon="✅" variant="success" size="md" onClick={() => setAcceptDialog(true)} disabled={processing} />
+            </div>
           )}
-        </Grid>
+        </div>
 
-        <Grid size={{ xs: 12, md: 4 }}>
-            <Card 
-                sx={{ 
-                    p: 3, 
-                    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)', 
-                    borderRadius: '16px'
-                }}
-            >
-                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 600 }}>
-                    <MdPerson /> Soumissionnaire
-                </Typography>
-                <Divider sx={{ mb: 3 }} />
-                {(offer?.user?._id || offer?.bidder?._id) ? (
-                  <Link href={`/profile/${offer?.user?._id || offer?.bidder?._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <Stack direction="row" alignItems="center" spacing={2} sx={{ cursor: 'pointer', '&:hover': { opacity: 0.8 } }}>
-                      <Avatar 
-                        src={getAvatarUrl()} 
-                        alt={offer?.user?.firstName || offer?.bidder?.firstName}
-                        sx={{ width: 56, height: 56 }}
-                      >
-                        {(offer?.user?.firstName || offer?.bidder?.firstName)?.charAt(0)}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={600}>
-                          {offer?.user?.firstName || offer?.bidder?.firstName} {offer?.user?.lastName || offer?.bidder?.lastName}
-                        </Typography>
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <Typography variant="body2" color="text.secondary">
-                             {offer?.user?.email || offer?.bidder?.email}
-                          </Typography>
-                          {(offer?.user?.phone || offer?.bidder?.phone) && (
-                            <Chip label={offer?.user?.phone || offer?.bidder?.phone} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />
-                          )}
-                        </Stack>
-                      </Box>
-                    </Stack>
-                  </Link>
-                ) : (
-                  <Stack spacing={3} alignItems="center" textAlign="center">
-                      <Avatar 
-                          src={offer.user?.avatar?.url || offer.bidder?.avatar?.url} 
-                          alt={offer.user?.firstName || offer.bidder?.firstName}
-                          sx={{ width: 80, height: 80, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: `2px solid ${theme.palette.primary.light}` }}
-                      >
-                          {(offer.user?.firstName || offer.bidder?.firstName)?.[0]}
-                      </Avatar>
-                      <Box>
-                          <Typography variant="h6" fontWeight="bold">
-                              {offer.user?.firstName || offer.bidder?.firstName} {offer.user?.lastName || offer.bidder?.lastName}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                              {offer.user?.email || offer.bidder?.email}
-                          </Typography>
-                          <Chip 
-                              label={offer.user?.phone || offer.bidder?.phone || offer.phone || 'Tél non disponible'} 
-                              size="small" 
-                              variant="outlined" 
-                              sx={{ mt: 1 }} 
-                          />
-                      </Box>
-                  </Stack>
-                )}
-            </Card>
+        {/* Right sidebar */}
+        <div>
+          {/* Bidder card */}
+          <div style={card}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>👤 Soumissionnaire</h3>
+            {bidder && bidderId ? (
+              <Link href={`/profile/${bidderId}`} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: `${ACCENT}20`, color: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', border: `2px solid ${ACCENT}30`, flexShrink: 0 }}>{bidderName.charAt(0).toUpperCase()}</div>
+                <div>
+                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '1rem' }}>{bidderName}</div>
+                  {(bidder as any).email && <div style={{ color: '#64748b', fontSize: '0.82rem', marginTop: 2 }}>{(bidder as any).email}</div>}
+                  {((bidder as any).phone || offer.phone) && <div style={{ marginTop: 6 }}><span style={{ padding: '2px 8px', borderRadius: 8, background: '#f1f5f9', color: '#475569', fontSize: '0.75rem', fontWeight: 600 }}>📞 {(bidder as any).phone || offer.phone}</span></div>}
+                </div>
+              </Link>
+            ) : (
+              <div style={{ color: '#94a3b8' }}>Infos non disponibles</div>
+            )}
+          </div>
 
-            <Card 
-                sx={{ 
-                    p: 3, 
-                    mt: 3, 
-                    boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)', 
-                    borderRadius: '16px',
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%)`
-                }}
-            >
-                 <Typography variant="h6" gutterBottom fontWeight={600}>Info Appel d'offres</Typography>
-                 <Divider sx={{ mb: 2 }} />
-                 
-                 <Box mb={2}>
-                    <Typography variant="caption" color="text.secondary" fontWeight={600}>TITRE</Typography>
-                    <Typography variant="body1" fontWeight={500} gutterBottom sx={{ lineHeight: 1.4 }}>{tender.title}</Typography>
-                 </Box>
-                 
-                 {evaluationType !== 'MIEUX_DISANT' && (
-                   <Box mb={3}>
-                      <Typography variant="caption" color="text.secondary" fontWeight={600}>BUDGET</Typography>
-                      <Typography variant="h5" color="text.primary" fontWeight={700}>
-                          {(tender.budget || tender.maxBudget || tender.estimatedBudget || tender.amount || 0).toLocaleString()} <Typography component="span" variant="body2" color="text.secondary">DA</Typography>
-                      </Typography>
-                   </Box>
-                 )}
+          {/* Tender info card */}
+          <div style={{ ...card, background: `linear-gradient(135deg, ${ACCENT}08, #fff)` }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📄 Info Appel d'offres</h3>
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Titre</div>
+              <div style={{ fontWeight: 600, color: '#1e293b' }}>{tender.title}</div>
+            </div>
+            {evalType !== 'MIEUX_DISANT' && budget > 0 && (
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Budget</div>
+                <div style={{ fontWeight: 800, color: ACCENT, fontSize: '1.1rem' }}>{budget.toLocaleString('fr-FR')} DA</div>
+              </div>
+            )}
+            <button onClick={() => router.push(`/dashboard/tenders/${tenderId}`)} style={{ width: '100%', padding: 10, borderRadius: 10, border: `1.5px solid ${ACCENT}`, background: 'transparent', color: ACCENT, fontWeight: 700, cursor: 'pointer', fontSize: '0.875rem' }}>
+              Voir l'appel d'offres →
+            </button>
+          </div>
+        </div>
+      </div>
 
-                 <Button 
-                    variant="outlined" 
-                    fullWidth 
-                    color="primary"
-                    sx={{ borderRadius: '8px' }}
-                    onClick={() => router.push(`/dashboard/tenders/${tenderId}`)}
-                >
-                    Voir l'appel d'offres
-                 </Button>
-            </Card>
-        </Grid>
-      </Grid>
-
-      {/* ─── Soumissionnaires / Participants Table ─── */}
-      <Card sx={{ mt: 4, p: 3 }}>
-        <Typography variant="h6" fontWeight={700} mb={2}>
-          Autres offres reçues ({tenderBids.length})
-        </Typography>
-        {tenderBids.length === 0 ? (
-          <Box sx={{ py: 5, textAlign: 'center', color: 'text.secondary' }}>
-            <Typography variant="body1">Aucune autre offre pour le moment</Typography>
-          </Box>
+      {/* All bids table */}
+      <div style={card}>
+        <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📑 Autres soumissions ({allBids.length})</h3>
+        {allBids.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '32px', color: '#94a3b8' }}>Aucune autre soumission</div>
         ) : (
-          <TableContainer component={Paper} variant="outlined">
-            <Table size="small">
-              <TableHead>
-                <TableRow sx={{ bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}>
-                  <TableCell sx={{ fontWeight: 700 }}>Soumissionnaire</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Annonce</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }} align="center">Quantité</TableCell>
-                  {evaluationType !== 'MIEUX_DISANT' && <TableCell sx={{ fontWeight: 700 }} align="right">Prix proposé</TableCell>}
-                  <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-                  {isOwner && evaluationType !== 'MOINS_DISANT' && <TableCell sx={{ fontWeight: 700 }} align="center">Actions</TableCell>}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {tenderBids.map((bid, idx) => {
-                  const bidder = bid.bidder || bid.user;
-                  const bidderName = bidder
-                    ? (bidder.companyName || bidder.entreprise || `${bidder.firstName || ''} ${bidder.lastName || ''}`.trim() || bidder.email || 'N/A')
-                    : 'N/A';
-                  const initials = bidderName.charAt(0).toUpperCase();
-                  const profileId = bidder?._id || bidder;
-                  const isCurrentOffer = bid._id === offerId;
-                  
-                  return (
-                    <TableRow 
-                        key={bid._id || idx} 
-                        hover
-                        sx={isCurrentOffer ? { bgcolor: alpha(theme.palette.primary.main, 0.08) } : {}}
-                    >
-                      <TableCell>
-                        {typeof profileId === 'string' && profileId.length > 5 ? (
-                          <Tooltip title="Voir le profil" arrow>
-                            <Link href={`/profile/${profileId}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: 12 }}>
-                              <Avatar sx={{ width: 34, height: 34, fontSize: '0.85rem', bgcolor: isCurrentOffer ? 'primary.main' : 'grey.400' }}>{initials}</Avatar>
-                              <Stack>
-                                <Typography variant="subtitle2" sx={{ '&:hover': { textDecoration: 'underline' }, fontWeight: isCurrentOffer ? 700 : 500 }}>
-                                    {bidderName}
-                                    {isCurrentOffer && <Chip label="Cette offre" size="small" color="primary" sx={{ ml: 1, height: 18, fontSize: '0.65rem' }} />}
-                                </Typography>
-                                {bidder?.email && <Typography variant="caption" color="text.secondary">{bidder.email}</Typography>}
-                              </Stack>
-                            </Link>
-                          </Tooltip>
-                        ) : (
-                          <Stack direction="row" alignItems="center" spacing={1.5}>
-                            <Avatar sx={{ width: 34, height: 34, fontSize: '0.85rem' }}>{initials}</Avatar>
-                            <Typography variant="subtitle2" sx={{ fontWeight: isCurrentOffer ? 700 : 500 }}>{bidderName}</Typography>
-                          </Stack>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
-                          {tender?.title || 'N/A'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body2">{tender?.quantity || 1}</Typography>
-                      </TableCell>
-                       {evaluationType !== 'MIEUX_DISANT' && (
-                        <TableCell align="right">
-                          <Typography variant="subtitle2" color="primary.main" fontWeight={700}>
-                            {(bid.bidAmount || bid.price || 0).toLocaleString('fr-FR')} DA
-                          </Typography>
-                        </TableCell>
-                       )}
-                      <TableCell>
-                        <Typography variant="caption" color="text.secondary">
-                          {formatDate(bid.createdAt || bid.date)}
-                        </Typography>
-                      </TableCell>
-                      {isOwner && evaluationType !== 'MOINS_DISANT' && (
-                        <TableCell align="center">
-                          <Button 
-                            variant="outlined" 
-                            size="small" 
-                            startIcon={<MdCheckCircle />}
-                            onClick={() => {
-                                if (isCurrentOffer) {
-                                    handleAcceptOffer();
-                                } else {
-                                    // Normally we would accept foreign bid here
-                                    // but let's keep it simple for now as per main page logic
-                                    enqueueSnackbar('Fonctionnalité disponible dans la page principale de l\'annonce', { variant: 'info' });
-                                }
-                            }}
-                            disabled={tender.status !== 'OPEN' || processing}
-                          >
-                            Accepter
-                          </Button>
-                        </TableCell>
-                       )}
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <table style={tableStyles.table}>
+            <thead>
+              <tr>
+                {['Soumissionnaire', 'Annonce', evalType !== 'MIEUX_DISANT' ? 'Montant' : 'Proposition', 'Date', ...(isOwner && evalType !== 'MOINS_DISANT' ? [''] : [])].map(h => <th key={h} style={tableStyles.th}>{h}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {allBids.map((b: any, i: number) => {
+                const bd = b.bidder || b.user;
+                const bName = bd?.companyName || bd?.entreprise || `${bd?.firstName || ''} ${bd?.lastName || ''}`.trim() || 'N/A';
+                const isCurrent = b._id === offerId;
+                return (
+                  <tr key={b._id || i} className="db-row" style={{ ...tableStyles.trHover, background: isCurrent ? `${ACCENT}06` : undefined }}>
+                    <td style={tableStyles.td}>
+                      <Link href={`/profile/${bd?._id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
+                        <div style={{ width: 34, height: 34, borderRadius: '50%', background: isCurrent ? `${ACCENT}20` : '#f1f5f9', color: isCurrent ? ACCENT : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.82rem', flexShrink: 0 }}>{bName.charAt(0).toUpperCase()}</div>
+                        <div>
+                          <span style={{ fontWeight: isCurrent ? 700 : 500, color: '#1e293b' }}>{bName}</span>
+                          {isCurrent && <span style={{ marginLeft: 8, padding: '1px 7px', borderRadius: 8, background: ACCENT, color: '#fff', fontSize: '0.68rem', fontWeight: 700 }}>Cette offre</span>}
+                          {bd?.email && <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{bd.email}</div>}
+                        </div>
+                      </Link>
+                    </td>
+                    <td style={{ ...tableStyles.td, color: '#64748b', fontSize: '0.82rem', maxWidth: 180 }}><div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tender?.title}</div></td>
+                    <td style={tableStyles.td}>
+                      {evalType !== 'MIEUX_DISANT'
+                        ? <span style={{ fontWeight: 700, color: '#10b981' }}>{(b.bidAmount || b.price || 0).toLocaleString('fr-FR')} DA</span>
+                        : <span style={{ color: '#475569', fontSize: '0.82rem' }}>{b.proposal ? b.proposal.slice(0, 50) + '…' : '—'}</span>}
+                    </td>
+                    <td style={{ ...tableStyles.td, color: '#64748b', fontSize: '0.82rem' }}>{fmtDate(b.createdAt || b.date)}</td>
+                    {isOwner && evalType !== 'MOINS_DISANT' && (
+                      <td style={{ ...tableStyles.td, textAlign: 'right' }}>
+                        {isCurrent && b.status === 'pending' && <ActionBtn label="Accepter" icon="✅" variant="success" onClick={() => setAcceptDialog(true)} />}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
-      </Card>
-    </Container>
+      </div>
+
+      <ConfirmDialog open={acceptDialog} title="Accepter la soumission" message={`Accepter l'offre de "${bidderName}" ? Cette action attribuera l'appel d'offres.`} confirmLabel={processing ? '…' : 'Accepter'} onConfirm={handleAccept} onCancel={() => setAcceptDialog(false)} />
+      <ConfirmDialog open={rejectDialog} title="Refuser la soumission" message={`Refuser l'offre de "${bidderName}" ?`} confirmLabel={processing ? '…' : 'Refuser'} danger onConfirm={handleReject} onCancel={() => setRejectDialog(false)} />
+    </div>
   );
 }

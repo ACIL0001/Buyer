@@ -1,272 +1,175 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import {
-  Box,
-  Card,
-  Container,
-  Grid,
-  Typography,
-  Stack,
-  Chip,
-  Button,
-  Divider,
-  Avatar,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  LinearProgress,
-  Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  CircularProgress,
-  Tooltip,
-} from '@mui/material';
-import Link from 'next/link';
-import { useTheme } from '@mui/material/styles';
-import { TendersAPI } from '@/services/tenders';
-import { OffersAPI } from '@/services/offers';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCreateSocket } from '@/contexts/socket';
 import useAuth from '@/hooks/useAuth';
-import { useTranslation } from 'react-i18next';
-import { useSnackbar } from 'notistack';
-import { MdExpandMore, MdDelete, MdCheckCircle, MdInfo, MdTimer } from 'react-icons/md';
+import { DashboardKeyframes, StatusBadge, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
 
-enum TENDER_STATUS {
-    OPEN = 'OPEN',
-    CLOSED = 'CLOSED',
-    AWARDED = 'AWARDED',
-    ARCHIVED = 'ARCHIVED'
+const ACCENT = '#059669';
+
+function statusCfg(s: string) {
+  const map: Record<string, any> = {
+    OPEN: { label: 'Ouvert', color: '#0284c7', bg: '#e0f2fe', dot: true },
+    AWARDED: { label: 'Attribué', color: '#16a34a', bg: '#dcfce7' },
+    CLOSED: { label: 'Clôturé', color: '#d97706', bg: '#fef3c7' },
+    CANCELLED: { label: 'Annulé', color: '#dc2626', bg: '#fee2e2' },
+    ARCHIVED: { label: 'Archivé', color: '#64748b', bg: '#f1f5f9' },
+  };
+  return map[s] || { label: s, color: '#64748b', bg: '#f1f5f9' };
 }
+
+
+function fmtDate(d: any) {
+  if (!d) return 'N/A';
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function timeRemaining(endAt: string) {
+  const diff = new Date(endAt).getTime() - Date.now();
+  if (diff <= 0) return 'Terminé';
+  const d = Math.floor(diff / 86400000), h = Math.floor((diff % 86400000) / 3600000), m = Math.floor((diff % 3600000) / 60000);
+  if (d > 0) return `${d}j ${h}h ${m}m`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+const card: React.CSSProperties = { background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid rgba(0,0,0,0.06)', padding: 24, marginBottom: 20 };
 
 export default function TenderDetailPage() {
   const params = useParams();
   const id = params?.id as string;
-  const { t } = useTranslation();
-  const theme = useTheme();
   const router = useRouter();
-  const { auth } = useAuth();
-  const { enqueueSnackbar } = useSnackbar();
 
-  const [tender, setTender] = useState<any>(null);
-  const [tenderBids, setTenderBids] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedBid, setSelectedBid] = useState<any>(null);
-  const [showBidDetailsDialog, setShowBidDetailsDialog] = useState(false);
-  const [expandedDetails, setExpandedDetails] = useState(true);
 
-  const fetchTenderDetails = useCallback(async () => {
-    try {
-      const response = await TendersAPI.getTenderById(id);
-      console.log('📞 Tender response:', response);
-      const tenderData = response.data || response;
-      if (tenderData && (tenderData._id || (tenderData as any).id)) {
-          console.log('📞 Contact Number:', tenderData.contactNumber);
-          setTender(tenderData);
-      }
-    } catch (error) {
-      console.error('Error fetching tender details:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  const fetchTenderBids = useCallback(async () => {
-    if (!tender) return;
-
-    try {
-      const response = await TendersAPI.getTenderBids(id);
-      let bidsArray: any[] = [];
-      
-      if (response && response.data && Array.isArray(response.data)) {
-          bidsArray = response.data;
-      } else if (Array.isArray(response)) {
-        bidsArray = response;
-      }
-      
-      const isOwner = (tender.owner?._id || tender.owner) == auth?.user?._id;
-
-      if (isOwner) {
-         // Show all bids for owner
-         setTenderBids(bidsArray);
-      } else if (auth?.user?._id && bidsArray.length > 0) {
-        // Filter to show only the current user's bids
-        const currentUserId = auth.user._id;
-        const userBids = bidsArray.filter((bid: any) => {
-          const bidderId = bid.bidder?._id || bid.bidder || bid.user?._id || bid.user;
-          return String(bidderId) === String(currentUserId);
-        });
-        setTenderBids(userBids);
-      } else {
-        setTenderBids([]);
-      }
-    } catch (error) {
-      console.error('Error fetching tender bids:', error);
-      setTenderBids([]);
-    }
-  }, [id, auth?.user?._id, tender]);
+  const { isLogged } = useAuth();
+  const queryClient = useQueryClient();
+  const { socket } = useCreateSocket() || {};
 
   useEffect(() => {
-    if (id) {
-      fetchTenderDetails();
-    }
-  }, [id, fetchTenderDetails]);
+    if (!socket || !id) return;
+    const handleRefetch = () => queryClient.invalidateQueries({ queryKey: ['tender', id] });
+    socket.on('newListingCreated', handleRefetch);
+    socket.on('notification', handleRefetch);
+    return () => {
+      socket.off('newListingCreated', handleRefetch);
+      socket.off('notification', handleRefetch);
+    };
+  }, [socket, id, queryClient]);
 
-  useEffect(() => {
-    if (tender) {
-        fetchTenderBids();
-    }
-  }, [tender, fetchTenderBids]);
+  const { data: tender, isLoading: loading } = useQuery({
+    queryKey: ['tender', id],
+    queryFn: async () => {
+      const { TendersAPI } = await import('@/services/tenders');
+      const r = await TendersAPI.getTenderById(id);
+      return r.data || r;
+    },
+    enabled: isLogged && !!id,
+    staleTime: 60000,
+  });
 
-  const handleAcceptBid = async (bid: any) => {
-      try {
-          await OffersAPI.acceptOffer(bid._id);
-          enqueueSnackbar('Offre acceptée avec succès', { variant: 'success' });
-          fetchTenderBids(); // Refresh list
-      } catch (error) {
-          console.error('Error accepting bid:', error);
-          enqueueSnackbar('Erreur lors de l\'acceptation de l\'offre', { variant: 'error' });
-      }
-  };
+  if (loading) return <DetailPageSkeleton accentColor="#059669" />;
 
-  const calculateTimeRemaining = () => {
-    if (!tender) return null;
-    const now = new Date().getTime();
-    const endTime = new Date(tender.endingAt).getTime();
-    const timeLeft = endTime - now;
+  if (!tender) return (
+    <div style={{ textAlign: 'center', padding: '60px 24px' }}>
+      <div style={{ fontSize: 52, marginBottom: 16 }}>📄</div>
+      <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569' }}>Appel d'offres non trouvé</p>
+      <button onClick={() => router.push('/dashboard/tenders')} style={{ marginTop: 16, padding: '10px 22px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>← Retour</button>
+    </div>
+  );
 
-    if (timeLeft <= 0) return 'Terminé';
-
-    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (days > 0) return `${days}j ${hours}h ${minutes}m`;
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
-  };
-
-  const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  if (loading) {
-    return (
-      <Container maxWidth="xl" sx={{ mt: 3 }}>
-         <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <CircularProgress />
-        </Box>
-      </Container>
-    );
-  }
-
-  if (!tender) {
-    return (
-      <Container maxWidth="xl" sx={{ mt: 3 }}>
-        <Box sx={{ py: 4, textAlign: 'center' }}>
-          <Typography variant="h6" color="text.secondary">
-            Appel d'offres non trouvé
-          </Typography>
-          <Button onClick={() => router.push('/dashboard/tenders')} sx={{ mt: 2 }}>
-            Retour à la liste
-          </Button>
-        </Box>
-      </Container>
-    );
-  }
-
-  const evaluationType = tender.evaluationType || 'MOINS_DISANT';
-  const timeRemaining = calculateTimeRemaining();
-  const isOwner = (tender.owner?._id || tender.owner) == auth?.user?._id;
+  const evalType = tender.evaluationType || 'MOINS_DISANT';
+  const category = typeof tender.category === 'object' ? tender.category?.name : tender.category;
+  const budget = tender.maxBudget || tender.budget || 0;
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 3, mb: 10 }}>
-      <Stack mb={3}>
-        <Typography variant="h4">Tenders Details</Typography>
-      </Stack>
+    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+      <DashboardKeyframes />
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, lg: 8 }}>
-          <Card sx={{ p: 3, mb: 3 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
-              {tender.status === TENDER_STATUS.OPEN && (
-                <Chip icon={<MdTimer />} label={`Temps restant: ${timeRemaining}`} color="warning" variant="outlined" />
+      {/* Hero */}
+      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT}40`, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08), transparent 60%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <button onClick={() => router.push('/dashboard/tenders')} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, marginBottom: 14 }}>← Retour</button>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <h1 style={{ color: '#fff', fontSize: 'clamp(1.2rem, 3vw, 1.8rem)', fontWeight: 800, margin: 0 }}>{tender.title}</h1>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', margin: '6px 0 0' }}>📄 Détails de l'appel d'offres</p>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              {tender.status === 'OPEN' && tender.endingAt && (
+                <span style={{ padding: '4px 12px', borderRadius: 20, background: 'rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.78rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.3)' }}>⏱ {timeRemaining(tender.endingAt)}</span>
               )}
-            </Stack>
-            <Typography variant="body1" paragraph>
-              {tender.description}
-            </Typography>
-          </Card>
+              <StatusBadge config={statusCfg(tender.status)} />
+            </div>
+          </div>
+        </div>
+      </div>
 
-          <Card sx={{ p: 3, mb: 3 }}>
-            <Accordion 
-                expanded={expandedDetails} 
-                onChange={(e, isExpanded) => setExpandedDetails(isExpanded)}
-                sx={{ boxShadow: 'none', '&:before': { display: 'none' } }}
-            >
-                <AccordionSummary expandIcon={<MdExpandMore />}>
-                    <Typography variant="h6">Détails de l'appel d'offres</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <Grid container spacing={2}>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                            <Typography variant="body2" color="text.secondary">Date de début</Typography>
-                            <Typography variant="body1">{formatDate(tender.startingAt)}</Typography>
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6 }}>
-                            <Typography variant="body2" color="text.secondary">Date de fin</Typography>
-                            <Typography variant="body1">{formatDate(tender.endingAt)}</Typography>
-                        </Grid>
-                        <Grid size={{ xs: 12 }}>
-                            <Typography variant="body2" color="text.secondary">Localisation</Typography>
-                            <Typography variant="body1">{tender.place || tender.location}, {tender.wilaya}</Typography>
-                        </Grid>
-                        {tender.category && (
-                            <Grid size={{ xs: 12 }}>
-                                <Typography variant="body2" color="text.secondary">Catégorie</Typography>
-                                <Typography variant="body1">{typeof tender.category === 'object' ? tender.category.name : tender.category}</Typography>
-                            </Grid>
-                        )}
-                        {tender.contactNumber && (
-                            <Grid size={{ xs: 12 }}>
-                                <Typography variant="body2" color="text.secondary">Numéro de contact</Typography>
-                                <Typography variant="body1">{tender.contactNumber}</Typography>
-                            </Grid>
-                        )}
-                    </Grid>
-                </AccordionDetails>
-            </Accordion>
-          </Card>
-        </Grid>
+      {/* Metric tiles */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 20 }}>
+        {[
+          { label: 'Budget max.', value: budget > 0 ? `${budget.toLocaleString('fr-FR')} DA` : 'N/A', color: '#0284c7', icon: '💰' },
+          { label: 'Évaluation', value: evalType === 'MIEUX_DISANT' ? 'Mieux Disant' : 'Moins Disant', color: evalType === 'MIEUX_DISANT' ? '#0284c7' : ACCENT, icon: evalType === 'MIEUX_DISANT' ? '✨' : '💰' },
+        ].map(t => (
+          <div key={t.label} style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', borderLeft: `4px solid ${t.color}`, display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: `${t.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{t.icon}</div>
+            <div>
+              <div style={{ fontSize: typeof t.value === 'number' ? '1.6rem' : '0.95rem', fontWeight: 800, color: t.color, lineHeight: 1 }}>{t.value}</div>
+              <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 4 }}>{t.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
-        <Grid size={{ xs: 12, lg: 4 }}>
-            <Alert 
-              severity={evaluationType === 'MIEUX_DISANT' ? 'info' : 'success'}
-              sx={{ mb: 3 }}
-            >
-              <Typography variant="subtitle2">
-                Type: {evaluationType === 'MIEUX_DISANT' ? 'Mieux Disant (Qualité)' : 'Moins Disant (Prix)'}
-              </Typography>
-            </Alert>
-        </Grid>
-      </Grid>
-
-
-    </Container>
+      {/* Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)', gap: 20, alignItems: 'start' }}>
+        <div>
+          <div style={card}>
+            <h3 style={{ margin: '0 0 12px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📝 Description</h3>
+            <p style={{ color: '#475569', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>{tender.description || (tender as any).about || 'Aucune description.'}</p>
+          </div>
+          <div style={card}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📋 Détails</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              {[
+                { label: 'Date de début', value: fmtDate(tender.startingAt) },
+                { label: 'Date de fin', value: fmtDate(tender.endingAt) },
+                { label: 'Localisation', value: [tender.place || tender.location, tender.wilaya].filter(Boolean).join(', ') || 'N/A' },
+                { label: 'Catégorie', value: category || 'N/A' },
+                ...(tender.contactNumber ? [{ label: 'Contact', value: tender.contactNumber }] : []),
+              ].map(r => (
+                <div key={r.label}>
+                  <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{r.label}</div>
+                  <div style={{ fontWeight: 600, color: '#334155', fontSize: '0.9rem' }}>{r.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style={{ ...card, borderLeft: `4px solid ${evalType === 'MIEUX_DISANT' ? '#0284c7' : ACCENT}` }}>
+            <h3 style={{ margin: '0 0 12px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>Type d'évaluation</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, background: evalType === 'MIEUX_DISANT' ? '#e0f2fe' : '#dcfce7' }}>
+              <span style={{ fontSize: 28 }}>{evalType === 'MIEUX_DISANT' ? '✨' : '💰'}</span>
+              <div>
+                <div style={{ fontWeight: 700, color: evalType === 'MIEUX_DISANT' ? '#0284c7' : ACCENT }}>{evalType === 'MIEUX_DISANT' ? 'Mieux Disant' : 'Moins Disant'}</div>
+                <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: 2 }}>{evalType === 'MIEUX_DISANT' ? 'Sélection sur la qualité' : 'Sélection sur le prix'}</div>
+              </div>
+            </div>
+          </div>
+          <div style={card}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📅 Chronologie</h3>
+            {[{ label: 'Début', value: fmtDate(tender.startingAt) }, { label: 'Fin', value: fmtDate(tender.endingAt) }].map(r => (
+              <div key={r.label} style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{r.label}</div>
+                <div style={{ fontWeight: 600, color: '#334155', fontSize: '0.9rem' }}>{r.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

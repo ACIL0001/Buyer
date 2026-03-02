@@ -10,9 +10,10 @@ import app from '@/config'; // Import the app config
 import { normalizeImageUrl } from '@/utils/url';
 import { useTranslation } from 'react-i18next';
 import useAuth from '@/hooks/useAuth';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import PageSkeleton from '@/components/skeletons/PageSkeleton';
 import ShareButton from '../common/ShareButton';
+import { useCreateSocket } from '@/contexts/socket';
 
 // Define BID_TYPE enum to match server definition
 const BID_TYPE = {
@@ -32,7 +33,22 @@ const MultipurposeAuctionSidebar = () => {
     const { t } = useTranslation();
     const router = useRouter();
     const { isLogged, auth } = useAuth();
-    
+    const queryClient = useQueryClient();
+    const socketContext = useCreateSocket();
+    const socket = socketContext?.socket;
+
+    // Real-time: invalidate auctions query when a new auction is created
+    useEffect(() => {
+        if (!socket) return;
+        const handler = (data) => {
+            if (data?.type === 'auction') {
+                queryClient.invalidateQueries({ queryKey: ['auctions'] });
+            }
+        };
+        socket.on('newListingCreated', handler);
+        return () => { socket.off('newListingCreated', handler); };
+    }, [socket, queryClient]);
+
     // Helper function for navigation with scroll to top
     const navigateWithTop = (path) => {
         window.scrollTo(0, 0);
@@ -1180,7 +1196,25 @@ const MultipurposeAuctionSidebar = () => {
                                 ) : paginatedAuctions && paginatedAuctions.length > 0 ? (
                                     paginatedAuctions.map((auction, index) => {
                                         const thumbObj = auction.thumbs && auction.thumbs.length > 0 ? auction.thumbs[0] : null;
-                                        const hasAuctionEnded = auctionTimers[auction._id]?.hasEnded || false; // Check if the auction has ended
+                                        const timer = auctionTimers[auction._id] || { days: "00", hours: "00", minutes: "00", seconds: "00", hasEnded: false };
+                                        const hasAuctionEnded = timer.hasEnded; // Check if the auction has ended
+                                        
+                                        // Calculate if less than 5% time remaining
+                                        let isUrgent = false;
+                                        if (!hasAuctionEnded) {
+                                            if (auction.startingAt && (auction.endingAt || auction.endDate)) {
+                                                const start = Date.parse(auction.startingAt);
+                                                const end = Date.parse(auction.endingAt || auction.endDate);
+                                                const now = Date.now();
+                                                const totalDuration = end - start;
+                                                const remaining = end - now;
+                                                if (totalDuration > 0 && remaining <= totalDuration * 0.05) {
+                                                    isUrgent = true;
+                                                }
+                                            } else {
+                                                isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30 && parseInt(timer.days) === 0;
+                                            }
+                                        }
                                         return (
                                             <div
                                                 key={auction._id}
@@ -1353,8 +1387,8 @@ const MultipurposeAuctionSidebar = () => {
                                                                     backdropFilter: 'blur(4px)',
                                                                     padding: '4px 8px',
                                                                     borderRadius: '12px',
-                                                                    color: '#d32f2f', // Red for urgency
-                                                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                                                    color: isUrgent ? '#d32f2f' : '#000000', // Black by default, red when urgent
+                                                                    boxShadow: isUrgent ? '0 0 10px rgba(211, 47, 47, 0.5)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
                                                                     border: '1px solid rgba(0, 0, 0, 0.05)',
                                                                     zIndex: 2,
                                                                     display: 'flex',
@@ -1362,6 +1396,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                     gap: '4px',
                                                                     fontSize: '10px',
                                                                     fontWeight: '700',
+                                                                    animation: isUrgent ? 'pulse 1s infinite' : 'none',
                                                                 }}
                                                         >
                                                                 <span>{auctionTimers[auction._id]?.days || "00"}j</span>:

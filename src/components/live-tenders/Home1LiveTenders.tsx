@@ -11,7 +11,7 @@ import { useMemo, useState, useEffect, useCallback } from "react";
 import { TendersAPI } from "@/app/api/tenders";
 import app from '@/config';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CardSkeleton from '../skeletons/CardSkeleton';
 import { Tender, TENDER_STATUS } from '@/types/tender';
 import useAuth from '@/hooks/useAuth';
@@ -20,6 +20,7 @@ import "../auction-details/st.css";
 import "../auction-details/modern-details.css";
 import { useRouter } from "next/navigation";
 import ShareButton from '@/components/common/ShareButton';
+import { useCreateSocket } from '@/contexts/socket';
 
 // Default image constants
 const DEFAULT_TENDER_IMAGE = "/assets/images/logo-white.png";
@@ -105,11 +106,28 @@ const Home1LiveTenders = () => {
     });
   }, [allTendersResponse, auth.user]);
 
+  const queryClient = useQueryClient();
+  const socketContext = useCreateSocket();
+  const socket = socketContext?.socket;
+
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
   const [timers, setTimers] = useState<{ [key: string]: Timer }>({});
   const [animatedCards, setAnimatedCards] = useState<number[]>([]);
   const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
   const [workingImageUrls, setWorkingImageUrls] = useState<{ [key: string]: string }>({});
+
+  // Real-time: invalidate tenders query when a new tender is created
+  useEffect(() => {
+    if (!socket) return;
+    const handler = (data: { type: string }) => {
+      if (data?.type === 'tender') {
+        queryClient.invalidateQueries({ queryKey: ['tenders'] });
+      }
+    };
+    socket.on('newListingCreated', handler);
+    return () => { socket.off('newListingCreated', handler); };
+  }, [socket, queryClient]);
+
 
   const handleImageError = (tenderId: string, _tender?: any) => {
     setImageErrors(prev => ({ ...prev, [tenderId]: true }));
@@ -717,67 +735,75 @@ const Home1LiveTenders = () => {
                             </div>
                           )}
 
-                          {/* Timer Overlay */}
+                          {/* Badges Container */}
                           <div style={{
                             position: 'absolute',
                             top: '10px',
-                            right: '10px',
-                            background: isEnded
-                              ? 'rgba(0,0,0,0.55)'
-                              : (isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'linear-gradient(45deg, #27F5CC, #00D4AA)'),
-                            color: 'white',
-                            padding: '8px 12px',
-                            borderRadius: '20px',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                            left: '8px',
+                            right: '8px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            gap: '4px',
+                            zIndex: 10,
                           }}>
-                            {isEnded ? (
-                              <span style={{ fontWeight: 800 }}>{t('common.finished')}</span>
-                            ) : (
-                              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                                <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.hours}</span>
-                                <span style={{ color: 'white' }}>:</span>
-                                <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.minutes}</span>
-                                <span style={{ color: 'white' }}>:</span>
-                                <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.seconds}</span>
-                              </div>
-                            )}
-                          </div>
+                            {/* Left Side: Type & Owner */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
+                                {/* Type Badge */}
+                                <div style={{
+                                  background: 'rgba(255, 255, 255, 0.9)',
+                                  color: '#333',
+                                  padding: '4px 10px',
+                                  borderRadius: '15px',
+                                  fontSize: '11px',
+                                  fontWeight: '600',
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                }}>
+                                  {tender.tenderType === 'PRODUCT' ? t('common.product') : t('common.service')}
+                                </div>
 
-                          {/* Type Badge */}
-                          <div style={{
-                            position: 'absolute',
-                            top: '10px',
-                            left: '10px',
-                            background: 'rgba(255, 255, 255, 0.9)',
-                            color: '#333',
-                            padding: '6px 12px',
-                            borderRadius: '15px',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                          }}>
-                            {tender.tenderType === 'PRODUCT' ? t('common.product') : t('common.service')}
-                          </div>
-
-                          {/* Owner Badge */}
-                          {isTenderOwner(tender) && (
-                            <div style={{
-                              position: 'absolute',
-                              top: '10px',
-                              left: '50%',
-                              transform: 'translateX(-50%)',
-                              background: 'rgba(255, 193, 7, 0.9)',
-                              color: '#212529',
-                              padding: '6px 12px',
-                              borderRadius: '15px',
-                              fontSize: '12px',
-                              fontWeight: '600',
-                              whiteSpace: 'nowrap',
-                            }}>
-                              {t('liveTenders.yourTender')}
+                                {/* Owner Badge */}
+                                {isTenderOwner(tender) && (
+                                  <div style={{
+                                    background: 'rgba(255, 193, 7, 0.9)',
+                                    color: '#212529',
+                                    padding: '4px 10px',
+                                    borderRadius: '15px',
+                                    fontSize: '11px',
+                                    fontWeight: '600',
+                                    whiteSpace: 'nowrap',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                  }}>
+                                    {t('liveTenders.yourTender')}
+                                  </div>
+                                )}
                             </div>
-                          )}
+
+                            {/* Right Side: Timer Overlay */}
+                            <div style={{
+                              background: isEnded
+                                ? 'rgba(0,0,0,0.65)'
+                                : (isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'linear-gradient(45deg, #27F5CC, #00D4AA)'),
+                              color: 'white',
+                              padding: '6px 10px',
+                              borderRadius: '20px',
+                              fontSize: '11px',
+                              fontWeight: '600',
+                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                            }}>
+                              {isEnded ? (
+                                <span style={{ fontWeight: 800 }}>{t('common.finished')}</span>
+                              ) : (
+                                <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+                                  <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.hours}</span>
+                                  <span style={{ color: 'white' }}>:</span>
+                                  <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.minutes}</span>
+                                  <span style={{ color: 'white' }}>:</span>
+                                  <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.seconds}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
 
                           {/* Share Button - Positioned in bottom-right of image */}
                           <div style={{

@@ -9,9 +9,10 @@ import app from '@/config'
 import { useTranslation } from 'react-i18next'
 import useAuth from '@/hooks/useAuth'
 import { normalizeImageUrl } from '@/utils/url'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import PageSkeleton from '@/components/skeletons/PageSkeleton'
 import ShareButton from '../common/ShareButton'
+import { useCreateSocket } from '@/contexts/socket'
 
 
 // Define SALE_TYPE enum
@@ -66,6 +67,21 @@ const MultipurposeDirectSaleSidebar = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const { isLogged, auth } = useAuth();
+  const queryClient = useQueryClient();
+  const socketContext = useCreateSocket();
+  const socket = socketContext?.socket;
+
+  // Real-time: invalidate directSales query when a new direct sale is created
+  useEffect(() => {
+    if (!socket) return;
+    const handler = (data: { type: string }) => {
+      if (data?.type === 'directSale') {
+        queryClient.invalidateQueries({ queryKey: ['directSales'] });
+      }
+    };
+    socket.on('newListingCreated', handler);
+    return () => { socket.off('newListingCreated', handler); };
+  }, [socket, queryClient]);
 
   const [activeColumn, setActiveColumn] = useState(3);
   const [currentPage, setCurrentPage] = useState(1);

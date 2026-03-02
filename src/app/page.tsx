@@ -8,6 +8,7 @@ import Home1LiveTenders from "@/components/live-tenders/Home1LiveTenders";
 import Home1LiveDirectSales from "@/components/live-direct-sales/Home1LiveDirectSales";
 // import Home1Category from "@/components/category/Home1Category"; // Commented out - not needed
 import Footer from "@/components/footer/FooterWithErrorBoundary";
+import DynamicScrollToTop from "@/components/common/DynamicScrollToTop";
 import RequestProvider from "@/contexts/RequestContext";
 
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
@@ -153,32 +154,32 @@ export default function Home() {
 
   const handleAuctionViewAll = () => {
     setAuctionDropdownOpen(false);
-    window.location.href = 'https://mazadclick.vercel.app/auction-sidebar/';
+    window.location.href = 'http://localhost:3001/auction-sidebar/';
   };
 
   const handleTenderViewAll = () => {
     setTenderDropdownOpen(false);
-    window.location.href = 'https://mazadclick.vercel.app/tenders/';
+    window.location.href = 'http://localhost:3001/tenders/';
   };
 
   const handleVenteDirectViewAll = () => {
     setVenteDirectDropdownOpen(false);
-    window.location.href = 'https://mazadclick.vercel.app/direct-sale/';
+    window.location.href = 'http://localhost:3001/direct-sale/';
   };
 
   const handleCreateAuction = () => {
     setAuctionDropdownOpen(false);
-    window.location.href = 'https://mazadclick.vercel.app/dashboard/auctions/create/';
+    window.location.href = 'http://localhost:3001/dashboard/auctions/create/';
   };
 
   const handleCreateTender = () => {
     setTenderDropdownOpen(false);
-    window.location.href = 'https://mazadclick.vercel.app/dashboard/tenders/create/';
+    window.location.href = 'http://localhost:3001/dashboard/tenders/create/';
   };
 
   const handleCreateVenteDirect = () => {
     setVenteDirectDropdownOpen(false);
-    window.location.href = 'https://mazadclick.vercel.app/dashboard/direct-sales/create/';
+    window.location.href = 'http://localhost:3001/dashboard/direct-sales/create/';
   };
 
   // Helper function to get category image URL
@@ -2801,6 +2802,7 @@ export default function Home() {
                 </main>
                 <Footer />
                 <ResponsiveTest />
+                <DynamicScrollToTop colorSchema="gradient" />
               </AxiosInterceptor>
             </RequestProvider>
           </SnackbarProvider>

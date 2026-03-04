@@ -125,7 +125,7 @@ export default function PlansClient() {
             }
             
             return (
-              <div key={plan._id || index} className={`plan-card ${isPopular ? 'popular' : ''}`}>
+              <div key={plan._id || index} className={`plan-card ${isPopular ? 'popular' : ''} disabled`}>
                 {isPopular && (
                   <div className="popular-badge">
                     {translate('plans.popular', 'Populaire')}

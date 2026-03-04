@@ -126,6 +126,7 @@ export default function CategoryClient() {
       return categoryData;
     }
   });
+  const safeCategories = Array.isArray(categories) ? categories : [];
 
   const { data: allAuctionsResponse, isLoading: auctionsLoading } = useQuery({
     queryKey: ['auctions', 'all'],
@@ -141,6 +142,7 @@ export default function CategoryClient() {
       return (Array.isArray(tendersData) ? tendersData : []).map((t: any) => ({ ...t, id: t._id || t.id }));
     }
   });
+  const safeTenders = Array.isArray(tenders) ? tenders : [];
 
   const { data: allDirectSales = [], isLoading: directSalesLoading } = useQuery({
     queryKey: ['direct-sales', 'all'],
@@ -150,14 +152,15 @@ export default function CategoryClient() {
       return (Array.isArray(directSalesData) ? directSalesData : []).map((s: any) => ({ ...s, id: s._id || s.id }));
     }
   });
+  const safeDirectSales = Array.isArray(allDirectSales) ? allDirectSales : [];
 
   // Derived state for filtered items based on selected category
   const { auctions, categoryTenders, categoryDirectSales } = useMemo(() => {
-    if (!selectedCategory || !categories.length) {
+    if (!selectedCategory || !safeCategories.length) {
       return { auctions: [], categoryTenders: [], categoryDirectSales: [] };
     }
 
-    const selectedCategoryObj = findCategoryById(categories, selectedCategory);
+    const selectedCategoryObj = findCategoryById(safeCategories, selectedCategory);
     let allCategoryIds: string[] = [selectedCategory];
     if (selectedCategoryObj) {
       allCategoryIds = getAllSubcategoryIds(selectedCategoryObj);
@@ -169,12 +172,12 @@ export default function CategoryClient() {
       return catId && allCategoryIds.includes(catId);
     });
 
-    const filteredTenders = tenders.filter((tender: any) => {
+    const filteredTenders = safeTenders.filter((tender: any) => {
       const catId = tender.productCategory?._id || tender.category?._id;
       return catId && allCategoryIds.includes(catId);
     });
 
-    const filteredDirectSales = allDirectSales.filter((sale: any) => {
+    const filteredDirectSales = safeDirectSales.filter((sale: any) => {
       const catId = sale.productCategory?._id || sale.category?._id;
       return catId && allCategoryIds.includes(catId);
     });
@@ -184,7 +187,7 @@ export default function CategoryClient() {
       categoryTenders: filteredTenders, 
       categoryDirectSales: filteredDirectSales
     };
-  }, [selectedCategory, categories, allAuctions, tenders, allDirectSales]);
+  }, [selectedCategory, safeCategories, allAuctions, safeTenders, safeDirectSales]);
 
   const itemsLoading = auctionsLoading || tendersLoading || directSalesLoading;
 
@@ -218,11 +221,11 @@ export default function CategoryClient() {
 
   // Filter categories by type
   const filteredCategories = useMemo(() => {
-    let filtered = categories;
+    let filtered = safeCategories;
     
     // Filter by type
     if (filterType !== 'ALL') {
-      filtered = categories.filter((category: Category) => {
+      filtered = safeCategories.filter((category: Category) => {
         const categoryType = (category.type || '').toString().toUpperCase();
         return categoryType === filterType;
       });
@@ -253,28 +256,28 @@ export default function CategoryClient() {
     const searchLower = searchTerm.toLowerCase().trim();
     
     // Search categories
-    const resultsCategories = categories.filter((category: Category) => {
+    const resultsCategories = safeCategories.filter((category: Category) => {
       const name = (category.name || '').toLowerCase();
       const description = (category.description || '').toLowerCase();
       return name.includes(searchLower) || description.includes(searchLower);
     });
 
     // Search auctions
-    const resultsAuctions = (auctions.length > 0 ? auctions : allAuctions).filter((auction: any) => {
+    const resultsAuctions = (auctions.length > 0 ? auctions : (Array.isArray(allAuctions) ? allAuctions : [])).filter((auction: any) => {
       const title = (auction.title || auction.name || '').toLowerCase();
       const description = (auction.description || '').toLowerCase();
       return title.includes(searchLower) || description.includes(searchLower);
     });
 
     // Search tenders
-    const resultsTenders = (categoryTenders.length > 0 ? categoryTenders : tenders).filter((tender: any) => {
+    const resultsTenders = (categoryTenders.length > 0 ? categoryTenders : safeTenders).filter((tender: any) => {
       const title = (tender.title || '').toLowerCase();
       const description = (tender.description || '').toLowerCase();
       return title.includes(searchLower) || description.includes(searchLower);
     });
 
     // Search direct sales
-    const resultsDirectSales = (categoryDirectSales.length > 0 ? categoryDirectSales : allDirectSales).filter((sale: any) => {
+    const resultsDirectSales = (categoryDirectSales.length > 0 ? categoryDirectSales : safeDirectSales).filter((sale: any) => {
       const title = (sale.title || '').toLowerCase();
       const description = (sale.description || '').toLowerCase();
       return title.includes(searchLower) || description.includes(searchLower);
@@ -286,7 +289,7 @@ export default function CategoryClient() {
       tenders: resultsTenders,
       directSales: resultsDirectSales
     };
-  }, [searchTerm, categories, auctions, tenders, allDirectSales, allAuctions, categoryTenders, categoryDirectSales]);
+  }, [searchTerm, safeCategories, auctions, safeTenders, safeDirectSales, allAuctions, categoryTenders, categoryDirectSales]);
 
   const { filteredAuctions, filteredTenders, filteredDirectSales } = useMemo(() => {
     if (showSearchResults) {
@@ -673,7 +676,7 @@ export default function CategoryClient() {
     return <PageSkeleton />;
   }
 
-  if (categoriesError || categories.length === 0) {
+  if (categoriesError || safeCategories.length === 0) {
     return (
       <div style={{ 
         textAlign: 'center', 

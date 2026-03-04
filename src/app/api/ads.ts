@@ -57,9 +57,9 @@ export const AdsAPI = {
         adsData = data.data;
       }
 
-      // Filter ads to only return those with isActive: true and isDisplayed: true
+      // Filter ads to only return those with isDisplayed: true (isActive might be undefined)
       const filteredAds = Array.isArray(adsData)
-        ? adsData.filter((ad: Ad) => ad.isActive === true && ad.isDisplayed === true)
+        ? adsData.filter((ad: Ad) => ad.isActive !== false && ad.isDisplayed === true)
         : [];
 
       // Sort by order if available

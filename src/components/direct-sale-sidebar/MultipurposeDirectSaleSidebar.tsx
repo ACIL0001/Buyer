@@ -91,7 +91,6 @@ const MultipurposeDirectSaleSidebar = () => {
     const [selectedSubCategory, setSelectedSubCategory] = useState("");
     const [selectedSaleType, setSelectedSaleType] = useState(""); 
     const [filteredDirectSales, setFilteredDirectSales] = useState<DirectSale[]>([]);
-    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
     const [filteredCategories, setFilteredCategories] = useState<any[]>([]);
     const [subCategories, setSubCategories] = useState<any[]>([]);
 
@@ -478,34 +477,15 @@ const MultipurposeDirectSaleSidebar = () => {
     // Sort by Price Ascending (Default sort kept consistent)
     result.sort((a, b) => a.price - b.price);
     
-    setCurrentPage(1);
-    // IMPORTANT: Always display ALL items (including sold-out ones)
-    // Sold-out items will be shown but visually deactivated (grayed out, non-clickable)
-    // DO NOT filter out sold-out items - they should remain visible but deactivated
-    // When filtering by status, prioritize matching items but still include all items
-    if (statusFilter === 'active') {
-      // Sort to show active items first, but include all items
-      result = [...result].sort((a, b) => {
-        const aIsActive = a.status === 'ACTIVE' || a.status === 'PAUSED';
-        const bIsActive = b.status === 'ACTIVE' || b.status === 'PAUSED';
-        if (aIsActive && !bIsActive) return -1;
-        if (!aIsActive && bIsActive) return 1;
-        return 0;
-      });
-    } else if (statusFilter === 'finished') {
-      // Sort to show finished items first, but include all items
-      result = [...result].sort((a, b) => {
-        const aIsFinished = a.status === 'SOLD_OUT' || a.status === 'SOLD';
-        const bIsFinished = b.status === 'SOLD_OUT' || b.status === 'SOLD';
-        if (aIsFinished && !bIsFinished) return -1;
-        if (!aIsFinished && bIsFinished) return 1;
-        return 0;
-      });
-    }
+    // Completely exclude sold-out items
+    result = result.filter(sale => {
+      const availableQuantity = sale.quantity === 0 ? 999 : sale.quantity - (sale.soldQuantity || 0);
+      return sale.status !== 'SOLD_OUT' && sale.status !== 'SOLD' && !(sale.quantity > 0 && availableQuantity <= 0);
+    });
 
     setFilteredDirectSales(result);
     setCurrentPage(1); // Reset to first page on any filter change
-  }, [directSales, selectedCategory, selectedSubCategory, searchTerm, selectedSaleType, categories, categoryTypeMap, statusFilter, auth.user]);
+  }, [directSales, selectedCategory, selectedSubCategory, searchTerm, selectedSaleType, categories, categoryTypeMap, auth.user]);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -863,100 +843,7 @@ const MultipurposeDirectSaleSidebar = () => {
           </div>
         </div>
 
-        {/* Status Filter Buttons - After Categories, Before Cards */}
-        <div className="row mb-4">
-          <div className="col-12">
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '12px',
-              flexWrap: 'wrap',
-              marginBottom: '30px',
-              marginTop: '20px',
-              position: 'relative',
-              zIndex: 100,
-            }}>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setStatusFilter('all');
-                }}
-                style={{
-                  padding: '10px 24px',
-                  borderRadius: '25px',
-                  border: '2px solid',
-                  borderColor: statusFilter === 'all' ? '#f7ef8a' : '#e2e8f0',
-                  background: statusFilter === 'all' ? 'linear-gradient(135deg, #f7ef8a, #8a7e1f)' : 'white',
-                  color: statusFilter === 'all' ? '#3d370e' : '#666',
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: statusFilter === 'all' ? '0 4px 12px rgba(247, 239, 138, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                  position: 'relative',
-                  zIndex: 100,
-                  pointerEvents: 'auto',
-                }}
-              >
-                {t('common.all') || 'Toutes'}
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setStatusFilter('active');
-                }}
-                style={{
-                  padding: '10px 24px',
-                  borderRadius: '25px',
-                  border: '2px solid',
-                  borderColor: statusFilter === 'active' ? '#10b981' : '#e2e8f0',
-                  background: statusFilter === 'active' ? 'linear-gradient(135deg, #10b981, #059669)' : 'white',
-                  color: statusFilter === 'active' ? 'white' : '#666',
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: statusFilter === 'active' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                  position: 'relative',
-                  zIndex: 100,
-                  pointerEvents: 'auto',
-                }}
-              >
-                {t('common.active') || 'En Cours'}
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setStatusFilter('finished');
-                }}
-                style={{
-                  padding: '10px 24px',
-                  borderRadius: '25px',
-                  border: '2px solid',
-                  borderColor: statusFilter === 'finished' ? '#ef4444' : '#e2e8f0',
-                  background: statusFilter === 'finished' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'white',
-                  color: statusFilter === 'finished' ? 'white' : '#666',
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: statusFilter === 'finished' ? '0 4px 12px rgba(239, 68, 68, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                  position: 'relative',
-                  zIndex: 100,
-                  pointerEvents: 'auto',
-                }}
-              >
-                {t('common.finished') || 'Terminées'}
-              </button>
-            </div>
-          </div>
-        </div>
+
 
         {/* Direct Sales Items Grid */}
         <div className="row">

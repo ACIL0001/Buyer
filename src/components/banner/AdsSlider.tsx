@@ -20,9 +20,9 @@ const AdsSlider: React.FC = () => {
     let isMounted = true;
     const controller = new AbortController();
 
-    const fetchAds = async () => {
+    const fetchAds = async (showLoading = false) => {
       try {
-        setLoading(true);
+        if (showLoading && isMounted) setLoading(true);
         const response = await AdsAPI.getAds(controller.signal);
         if (isMounted && response.success && response.data) {
           setAds(response.data);
@@ -32,13 +32,21 @@ const AdsSlider: React.FC = () => {
         if (error instanceof Error && error.name === 'AbortError') return;
         if (isMounted) console.error('Error fetching ads:', error);
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted && showLoading) setLoading(false);
       }
     };
 
-    fetchAds();
+    // First fetch with loading indicator
+    fetchAds(true);
+
+    // Set up polling interval to fetch ads continuously without page refresh
+    const intervalId = setInterval(() => {
+      fetchAds(false);
+    }, 15000);
+
     return () => {
       isMounted = false;
+      clearInterval(intervalId);
       controller.abort();
     };
   }, []);
@@ -116,8 +124,8 @@ const AdsSlider: React.FC = () => {
 
         .ads-swiper {
           width: 100%;
-          height: clamp(80px, 8vw, 120px);
-          min-height: clamp(80px, 8vw, 120px);
+          height: clamp(150px, 15vw, 200px);
+          min-height: clamp(150px, 15vw, 200px);
         }
 
         .ad-slide {
@@ -133,9 +141,9 @@ const AdsSlider: React.FC = () => {
         }
 
         .ad-image {
-          width: 15%;
+          width: 50%;
           max-width: 100%;
-          height: auto;
+          height: 100%;
           max-height: 100%;
           object-fit: contain;
           transition: transform 0.5s ease;
@@ -223,35 +231,35 @@ const AdsSlider: React.FC = () => {
         /* Mobile adjustments */
         @media (max-width: 768px) {
           .ads-slider-container {
-            height: clamp(150px, 20vw, 220px) !important;
-            min-height: clamp(150px, 20vw, 220px) !important;
+            height: clamp(200px, 30vw, 300px) !important;
+            min-height: clamp(200px, 30vw, 300px) !important;
           }
 
           .ads-swiper {
-            height: clamp(150px, 20vw, 220px) !important;
-            min-height: clamp(150px, 20vw, 220px) !important;
+            height: clamp(200px, 30vw, 300px) !important;
+            min-height: clamp(200px, 30vw, 300px) !important;
           }
 
           .ads-swiper :global(.swiper-wrapper) {
-            height: clamp(150px, 20vw, 220px) !important;
-            min-height: clamp(150px, 20vw, 220px) !important;
+            height: clamp(200px, 30vw, 300px) !important;
+            min-height: clamp(200px, 30vw, 300px) !important;
           }
 
           .ads-swiper :global(.swiper-slide) {
-            height: clamp(150px, 20vw, 220px) !important;
-            min-height: clamp(150px, 20vw, 220px) !important;
+            height: clamp(200px, 30vw, 300px) !important;
+            min-height: clamp(200px, 30vw, 300px) !important;
           }
 
           .ad-slide {
-            height: clamp(150px, 20vw, 220px) !important;
-            min-height: clamp(150px, 20vw, 220px) !important;
+            height: clamp(200px, 30vw, 300px) !important;
+            min-height: clamp(200px, 30vw, 300px) !important;
           }
 
           .ad-image {
-            width: 50% !important;
-            max-width: 80% !important;
-            height: auto !important;
-            max-height: 90% !important;
+            width: 80% !important;
+            max-width: 90% !important;
+            height: 100% !important;
+            max-height: 100% !important;
           }
           
           .ads-swiper :global(.swiper-button-next),
@@ -291,11 +299,11 @@ const AdsSlider: React.FC = () => {
           }}
           className="ads-swiper"
           style={isMobile ? {
-            height: 'clamp(150px, 20vw, 220px)',
-            minHeight: 'clamp(150px, 20vw, 220px)'
+            height: 'clamp(200px, 30vw, 300px)',
+            minHeight: 'clamp(200px, 30vw, 300px)'
           } : {
-            height: 'clamp(80px, 8vw, 120px)',
-            minHeight: 'clamp(80px, 8vw, 120px)'
+            height: 'clamp(150px, 15vw, 200px)',
+            minHeight: 'clamp(150px, 15vw, 200px)'
           }}
         >
           {ads.map((ad) => (

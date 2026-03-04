@@ -791,20 +791,12 @@ const MultipurposeTenderSidebar = () => {
             );
         }
 
-        // 5. Apply status filter
-        if (statusFilter === 'active') {
-            result = result.filter(tender => {
-                if (!tender.endingAt) return false;
-                const endTime = new Date(tender.endingAt);
-                return endTime > new Date();
-            });
-        } else if (statusFilter === 'finished') {
-            result = result.filter(tender => {
-                if (!tender.endingAt) return true;
-                const endTime = new Date(tender.endingAt);
-                return endTime <= new Date();
-            });
-        }
+        // 5. Unconditionally exclude finished tenders
+        result = result.filter(tender => {
+            if (!tender.endingAt) return false;
+            const endTime = new Date(tender.endingAt);
+            return endTime > new Date();
+        });
 
         // 6. Apply sorting
         if (sortOption === t('priceAsc')) {
@@ -1378,100 +1370,7 @@ const MultipurposeTenderSidebar = () => {
                     </div>
                 </div>
 
-                {/* Status Filter Buttons - After Categories, Before Cards */}
-                <div className="row mb-4">
-                    <div className="col-12">
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            gap: '12px',
-                            flexWrap: 'wrap',
-                            marginBottom: '30px',
-                            marginTop: '20px',
-                            position: 'relative',
-                            zIndex: 100,
-                        }}>
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setStatusFilter('all');
-                                }}
-                                style={{
-                                    padding: '10px 24px',
-                                    borderRadius: '25px',
-                                    border: '2px solid',
-                                    borderColor: statusFilter === 'all' ? '#27F5CC' : '#e2e8f0',
-                                    background: statusFilter === 'all' ? 'linear-gradient(135deg, #27F5CC, #00D4AA)' : 'white',
-                                    color: statusFilter === 'all' ? 'white' : '#666',
-                                    fontWeight: '600',
-                                    fontSize: '14px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    boxShadow: statusFilter === 'all' ? '0 4px 12px rgba(39, 245, 204, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                    position: 'relative',
-                                    zIndex: 100,
-                                    pointerEvents: 'auto',
-                                }}
-                            >
-                                {t('common.all') || 'Toutes'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setStatusFilter('active');
-                                }}
-                                style={{
-                                    padding: '10px 24px',
-                                    borderRadius: '25px',
-                                    border: '2px solid',
-                                    borderColor: statusFilter === 'active' ? '#10b981' : '#e2e8f0',
-                                    background: statusFilter === 'active' ? 'linear-gradient(135deg, #10b981, #059669)' : 'white',
-                                    color: statusFilter === 'active' ? 'white' : '#666',
-                                    fontWeight: '600',
-                                    fontSize: '14px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    boxShadow: statusFilter === 'active' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                    position: 'relative',
-                                    zIndex: 100,
-                                    pointerEvents: 'auto',
-                                }}
-                            >
-                                {t('common.active') || 'En Cours'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setStatusFilter('finished');
-                                }}
-                                style={{
-                                    padding: '10px 24px',
-                                    borderRadius: '25px',
-                                    border: '2px solid',
-                                    borderColor: statusFilter === 'finished' ? '#ef4444' : '#e2e8f0',
-                                    background: statusFilter === 'finished' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'white',
-                                    color: statusFilter === 'finished' ? 'white' : '#666',
-                                    fontWeight: '600',
-                                    fontSize: '14px',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    boxShadow: statusFilter === 'finished' ? '0 4px 12px rgba(239, 68, 68, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                    position: 'relative',
-                                    zIndex: 100,
-                                    pointerEvents: 'auto',
-                                }}
-                            >
-                                {t('common.finished') || 'Terminées'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+
 
                 {/* Tender Cards Section */}
                 <div className="row">

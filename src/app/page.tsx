@@ -700,11 +700,11 @@ export default function Home() {
         .hero-banner-section {
           position: relative;
           overflow: visible;
-          min-height: 700px;
+          min-height: 525px;
         }
 
         .hero-content {
-          padding-bottom: 150px;
+          padding-bottom: 112px;
         }
 
         .hero-background {
@@ -1255,9 +1255,9 @@ export default function Home() {
 
           .hero-banner-section {
             padding: clamp(12px, 3vw, 20px) clamp(12px, 3vw, 16px) !important;
-            paddingTop: clamp(12px, 3vw, 20px) !important;
-            paddingBottom: clamp(50px, 12vw, 110px) !important;
-            min-height: 520px !important;
+            padding-top: clamp(12px, 3vw, 20px) !important;
+            padding-bottom: clamp(38px, 9vw, 82px) !important;
+            min-height: 390px !important;
             overflow: visible !important;
           }
 
@@ -1331,9 +1331,9 @@ export default function Home() {
 
           .hero-banner-section {
             padding: clamp(16px, 3vw, 24px) clamp(16px, 3vw, 20px) !important;
-            paddingTop: clamp(16px, 3vw, 24px) !important;
-            paddingBottom: clamp(60px, 14vw, 120px) !important;
-            min-height: 560px !important;
+            padding-top: clamp(16px, 3vw, 24px) !important;
+            padding-bottom: clamp(45px, 10vw, 90px) !important;
+            min-height: 420px !important;
             overflow: visible !important;
           }
 
@@ -1374,9 +1374,9 @@ export default function Home() {
 
           .hero-banner-section {
             padding: clamp(20px, 3.5vw, 32px) clamp(20px, 3.5vw, 28px) !important;
-            paddingTop: clamp(20px, 3.5vw, 32px) !important;
-            paddingBottom: clamp(70px, 14vw, 130px) !important;
-            min-height: 600px !important;
+            padding-top: clamp(20px, 3.5vw, 32px) !important;
+            padding-bottom: clamp(52px, 10vw, 98px) !important;
+            min-height: 450px !important;
             overflow: visible !important;
           }
 
@@ -1478,9 +1478,9 @@ export default function Home() {
         @media (orientation: landscape) and (max-height: 500px) {
           .hero-banner-section {
             padding: clamp(12px, 2vw, 20px) clamp(16px, 3vw, 24px) !important;
-            paddingTop: clamp(12px, 2vw, 20px) !important;
-            paddingBottom: clamp(60px, 12vw, 120px) !important;
-            min-height: 500px !important;
+            padding-top: clamp(12px, 2vw, 20px) !important;
+            padding-bottom: clamp(45px, 9vw, 90px) !important;
+            min-height: 375px !important;
             overflow: visible !important;
           }
 
@@ -2061,11 +2061,11 @@ export default function Home() {
                       overflow: 'visible',
                       padding: '0 clamp(20px, 4vw, 40px)',
                       paddingTop: '0',
-                  paddingBottom: '0',
+                      paddingBottom: '0',
                       width: '100%',
                       maxWidth: '100vw',
                       background: 'white',
-                      minHeight: '520px',
+                      minHeight: '390px',
                     }}
                   >
                     {/* Ads Slider - Full Width Hero Banner */}

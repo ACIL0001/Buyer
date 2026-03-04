@@ -103,7 +103,8 @@
     "createDirectSale": "Créer Vente",
     "myOrders": "Commandes",
     "categories": "Catégories",
-    "howToBid": "Comment Enchérir",
+    "howToBid": "Comment ça marche",
+    "plans": "Nos Plans",
     "members": "Membres",
     "profile": "Profil",
     "settings": "Paramètres",
@@ -113,6 +114,14 @@
   },
   "settings": {
     "title": "Paramètres"
+  },
+  "plans": {
+    "subtitle": "Choisissez le plan parfait pour vos besoins professionnels et boostez vos ventes dès aujourd'hui.",
+    "noPlans": "Aucun plan disponible pour le moment.",
+    "popular": "Populaire",
+    "subscribe": "S'abonner",
+    "months": "mois",
+    "month": "mois"
   },
   "auth": {
     "login": "Connexion",
@@ -537,7 +546,8 @@
       "home": "Accueil",
       "auctions": "Enchères",
       "category": "Catégorie",
-      "howToBid": "Comment Enchérir",
+      "howToBid": "Comment ça marche",
+      "plans": "Nos Plans",
       "members": "Membres"
     },
     "categories": {

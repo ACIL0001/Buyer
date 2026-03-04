@@ -2,8 +2,7 @@
 import Link from "next/link";
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useTranslation } from 'react-i18next';
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Mousewheel, Keyboard, FreeMode, Autoplay } from "swiper/modules";
+
 import { CategoryAPI } from '@/app/api/category';
 import { AuctionsAPI } from '@/app/api/auctions';
 import { TendersAPI } from '@/app/api/tenders';
@@ -15,9 +14,7 @@ import CardSkeleton from '@/components/skeletons/CardSkeleton';
 import { normalizeImageUrl } from '@/utils/url';
 import { FaShoppingBag, FaHandshake } from 'react-icons/fa';
 import Fuse from 'fuse.js';
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
+
 
 type Home1BannerProps = object;
 
@@ -54,12 +51,9 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     return Array.isArray(data) ? data : [];
   }, [directSalesResponse]);
 
-  const [filterType, setFilterType] = useState<'ALL' | 'PRODUCT' | 'SERVICE'>('ALL');
-  const [isDragging, setIsDragging] = useState(false);
-  const [swiperInstance, setSwiperInstance] = useState<any>(null);
-  
-  // Search state
+
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchFilter, setSearchFilter] = useState<'all' | 'PRODUCT' | 'SERVICE'>('all');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [loadingSearch, setLoadingSearch] = useState(false);
@@ -80,16 +74,21 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
   }, []);
 
   // Search handler
-  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
+  const performSearch = async (query: string, filter: string) => {
     setSearchQuery(query);
+    setSearchFilter(filter as any);
     
     if (query.length > 0) {
       setLoadingSearch(true);
       setShowNotifyMe(false);
       try {
+        const filteredAllCategories = filter === 'all' ? allCategories : allCategories.filter((c: any) => c.type?.toUpperCase() === filter);
+        const filteredAllAuctions = filter === 'all' ? allAuctions : allAuctions.filter((a: any) => a.bidType?.toUpperCase() === filter);
+        const filteredAllTenders = filter === 'all' ? allTenders : allTenders.filter((t: any) => t.bidType?.toUpperCase() === filter);
+        const filteredAllDirectSales = filter === 'all' ? allDirectSales : allDirectSales.filter((d: any) => d.bidType?.toUpperCase() === filter);
+
         // 1. Fuzzy matching for categories
-        const categoryFuse = new Fuse(allCategories, {
+        const categoryFuse = new Fuse(filteredAllCategories, {
           keys: ['name'],
           threshold: 0.6,
           distance: 100,
@@ -97,19 +96,19 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           includeScore: true,
         });
 
-        console.log('🔍 Home1Banner Fuzzy search - Query:', query, 'Categories count:', allCategories.length);
+        console.log('🔍 Home1Banner Fuzzy search - Query:', query, 'Categories count:', filteredAllCategories.length);
 
         const categorySearchResults = categoryFuse.search(query);
         console.log('🎯 Home1Banner Category fuzzy search results:', categorySearchResults);
         
-        const filteredCategories = categorySearchResults.map(result => ({ 
+        const filteredCategoriesResults = categorySearchResults.map(result => ({ 
           ...(result.item as any), 
           type: 'category',
           score: result.score
         }));
         
         // 2. Fuzzy matching for auctions
-        const auctionFuse = new Fuse(allAuctions, {
+        const auctionFuse = new Fuse(filteredAllAuctions, {
           keys: ['title', 'name', 'description'],
           threshold: 0.5,
           distance: 100,
@@ -120,14 +119,14 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         const auctionSearchResults = auctionFuse.search(query);
         console.log('🎯 Home1Banner Auction fuzzy search results:', auctionSearchResults);
         
-        const filteredAuctions = auctionSearchResults.map(result => ({ 
+        const filteredAuctionsResults = auctionSearchResults.map(result => ({ 
           ...(result.item as any), 
           type: 'auction',
           score: result.score
         }));
         
         // 3. Fuzzy matching for tenders
-        const tenderFuse = new Fuse(allTenders, {
+        const tenderFuse = new Fuse(filteredAllTenders, {
           keys: ['title', 'name', 'description'],
           threshold: 0.5,
           distance: 100,
@@ -138,14 +137,14 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         const tenderSearchResults = tenderFuse.search(query);
         console.log('🎯 Home1Banner Tender fuzzy search results:', tenderSearchResults);
         
-        const filteredTenders = tenderSearchResults.map(result => ({ 
+        const filteredTendersResults = tenderSearchResults.map(result => ({ 
           ...(result.item as any), 
           type: 'tender',
           score: result.score
         }));
         
         // 4. Fuzzy matching for direct sales
-        const directSaleFuse = new Fuse(allDirectSales, {
+        const directSaleFuse = new Fuse(filteredAllDirectSales, {
           keys: ['title', 'name', 'description'],
           threshold: 0.5,
           distance: 100,
@@ -156,7 +155,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         const directSaleSearchResults = directSaleFuse.search(query);
         console.log('🎯 Home1Banner DirectSale fuzzy search results:', directSaleSearchResults);
         
-        const filteredDirectSales = directSaleSearchResults.map(result => ({ 
+        const filteredDirectSalesResults = directSaleSearchResults.map(result => ({ 
           ...(result.item as any), 
           type: 'directSale',
           score: result.score
@@ -164,10 +163,10 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
         
         // 5. Combine all local results
         const combinedResults = [
-          ...filteredCategories,
-          ...filteredAuctions,
-          ...filteredTenders,
-          ...filteredDirectSales
+          ...filteredCategoriesResults,
+          ...filteredAuctionsResults,
+          ...filteredTendersResults,
+          ...filteredDirectSalesResults
         ].sort((a, b) => (a.score || 0) - (b.score || 0));
         
         console.log('✨ Home1Banner All fuzzy search results (sorted by relevance):', combinedResults);
@@ -226,8 +225,15 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     } else {
       setSearchResults([]);
       setShowSearchResults(false);
-      setShowNotifyMe(false);
     }
+  };
+
+  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    await performSearch(e.target.value, searchFilter);
+  };
+
+  const handleFilterChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    await performSearch(searchQuery, e.target.value);
   };
 
   const navigateWithTop = useCallback((url: string) => {
@@ -357,66 +363,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     };
   }, [showSearchResults]);
 
-  // Filter categories based on selected type
-  const categories = useMemo(() => {
-    if (filterType === 'ALL') {
-      return allCategories;
-    }
-    return allCategories.filter(category => {
-      const categoryType = category.type?.toUpperCase();
-      return categoryType === filterType;
-    });
-  }, [allCategories, filterType]);
 
-  const categoryCount = categories?.length ?? 0;
-
-  const defaultSlidesPerView = useMemo(() => {
-    if (categoryCount === 0) {
-      return 1;
-    }
-    return Math.max(1, Math.min(categoryCount, 3));
-  }, [categoryCount]);
-
-  const swiperBreakpoints = useMemo(() => {
-    const mobileSlides = Math.max(1, Math.min(categoryCount || 1, 3));
-    const tabletSlides = Math.max(1, Math.min(categoryCount || 1, 4));
-    const desktopSlides = Math.max(1, Math.min(categoryCount || 1, 4));
-
-    return {
-      0: {
-        slidesPerView: mobileSlides,
-        spaceBetween: 8,
-      },
-      360: {
-        slidesPerView: mobileSlides,
-        spaceBetween: 10,
-      },
-      480: {
-        slidesPerView: mobileSlides,
-        spaceBetween: 12,
-      },
-      640: {
-        slidesPerView: tabletSlides,
-        spaceBetween: 16,
-      },
-      768: {
-        slidesPerView: tabletSlides,
-        spaceBetween: 18,
-      },
-      1024: {
-        slidesPerView: desktopSlides,
-        spaceBetween: 20,
-      },
-      1280: {
-        slidesPerView: desktopSlides,
-        spaceBetween: 22,
-      },
-      1440: {
-        slidesPerView: desktopSlides,
-        spaceBetween: 24,
-      },
-    };
-  }, [categoryCount]);
 
   const getCategoryImageUrl = (category: any): string => {
     const imageUrl = category.thumb?.url || 
@@ -433,18 +380,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     return normalizeImageUrl(imageUrl) || '/assets/images/cat.avif';
   };
 
-  const navigateToCategory = (category: any, event: React.MouseEvent) => {
-    // Prevent navigation if user was dragging the swiper
-    if (isDragging || (swiperInstance && swiperInstance.touching)) {
-      event.preventDefault();
-      event.stopPropagation();
-      return;
-    }
-    
-    const categoryId = category._id || category.id;
-    const categoryName = category.name;
-    window.location.href = `/category?category=${categoryId}&name=${encodeURIComponent(categoryName)}`;
-  };
+
 
   return (
     <>
@@ -1207,14 +1143,14 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           left: 0 !important;
         }
       `}} />
-      <div className="categories-section">
+      <div className="categories-section" style={{ position: 'relative', zIndex: 20 }}>
         {/* Search Bar - On top of categories */}
         <div 
           className="search-container"
           style={{
             position: 'relative',
             maxWidth: 'clamp(300px, 90vw, 600px)',
-            margin: 'clamp(2px, 0.5vw, 4px) auto clamp(12px, 2.5vw, 20px) auto',
+            margin: 'clamp(20px, 4vw, 40px) auto clamp(12px, 2.5vw, 20px) auto',
             width: '100%',
             padding: '0 clamp(12px, 3vw, 20px)',
             zIndex: 10,
@@ -1278,6 +1214,52 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                   }
                 }}
               />
+              
+              {/* Filter Dropdown */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                borderLeft: '1px solid rgba(0, 0, 0, 0.1)',
+                paddingLeft: 'clamp(4px, 1vw, 8px)',
+                height: '60%',
+              }}>
+                <select
+                  value={searchFilter}
+                  onChange={handleFilterChange}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    color: '#475569',
+                    fontSize: 'clamp(12px, 2.5vw, 14px)',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    padding: 'clamp(4px, 1.5vw, 8px) clamp(8px, 2vw, 12px)',
+                    appearance: 'none',
+                    WebkitAppearance: 'none',
+                    MozAppearance: 'none',
+                    paddingRight: '24px',
+                  }}
+                  className="search-filter-select"
+                >
+                  <option value="all">{t('common.all') || 'Tous'}</option>
+                  <option value="PRODUCT">{t('common.product') || 'Produit'}</option>
+                  <option value="SERVICE">{t('common.service') || 'Service'}</option>
+                </select>
+                <div style={{
+                  position: 'absolute',
+                  right: 'clamp(12px, 3vw, 16px)',
+                  pointerEvents: 'none',
+                  color: '#94a3b8',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
+              </div>
             </div>
           </form>
 
@@ -1527,113 +1509,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           )}
         </div>
 
-        <div className="section-header">
-          <button
-            className={`filter-button product ${filterType === 'PRODUCT' ? 'active' : ''}`}
-            onClick={() => setFilterType(filterType === 'PRODUCT' ? 'ALL' : 'PRODUCT')}
-          >
-            {t('common.product')}
-          </button>
-          <h2 className="section-title">{t('home.categories')}</h2>
-          <button
-            className={`filter-button service ${filterType === 'SERVICE' ? 'active' : ''}`}
-            onClick={() => setFilterType(filterType === 'SERVICE' ? 'ALL' : 'SERVICE')}
-          >
-            {t('common.service')}
-          </button>
-                </div>
-        {categoriesLoading ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: '16px',
-            padding: '20px'
-          }}>
-            {[...Array(4)].map((_, i) => (
-              <CardSkeleton key={i} />
-            ))}
-          </div>
-        ) : categories.length === 0 ? (
-          <div className="empty-state">{t('home.noCategoriesAvailable')}</div>
-        ) : (
-          <div className={`categories-carousel filter-${filterType.toLowerCase()}`}>
-            <Swiper
-              modules={[Navigation, Pagination, Mousewheel, Keyboard, FreeMode, Autoplay]}
-              navigation={true}
-              pagination={{
-                clickable: true,
-                dynamicBullets: true,
-              }}
-              autoplay={{
-                delay: 1500,
-                disableOnInteraction: false,
-                pauseOnMouseEnter: true,
-              }}
-              loop={categoryCount > defaultSlidesPerView}
-              speed={500}
-              mousewheel={{
-                forceToAxis: true,
-                sensitivity: 1,
-                releaseOnEdges: true,
-              }}
-              keyboard={{
-                enabled: true,
-                onlyInViewport: true,
-              }}
-              freeMode={{
-                enabled: true,
-                sticky: false,
-                momentumRatio: 0.5,
-                momentumVelocityRatio: 0.5,
-              }}
-              grabCursor={true}
-              spaceBetween={16}
-              slidesPerView={defaultSlidesPerView}
-              breakpoints={swiperBreakpoints}
-              onSwiper={setSwiperInstance}
-              onTouchStart={() => setIsDragging(false)}
-              onTouchMove={() => setIsDragging(true)}
-              onTouchEnd={() => {
-                setTimeout(() => setIsDragging(false), 50);
-              }}
-              onSliderMove={() => setIsDragging(true)}
-              onSlideChangeTransitionStart={() => setIsDragging(true)}
-              onSlideChangeTransitionEnd={() => {
-                setTimeout(() => setIsDragging(false), 100);
-              }}
-              className="categories-swiper"
-            >
-              {categories.map((category) => {
-                const categoryType = category.type?.toUpperCase() || 'PRODUCT';
-                const isProduct = categoryType === 'PRODUCT';
-                const isService = categoryType === 'SERVICE';
-                
-                return (
-                  <SwiperSlide key={(category as any)._id || (category as any).id}>
-                    <div className="category-card-wrapper">
-                      <div 
-                        className="category-card"
-                        onClick={(e) => navigateToCategory(category, e)}
-                      >
-                      <img
-                        src={getCategoryImageUrl(category)}
-                        alt={category.name}
-                        className="category-image"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/assets/images/cat.avif';
-                        }}
-                      />
-                      <div className="category-overlay"></div>
-                      </div>
-                      <div className="category-name">{category.name}</div>
-                    </div>
-                  </SwiperSlide>
-                );
-              })}
-            </Swiper>
-                    </div>
-        )}
+
       </div>
     </>
   );

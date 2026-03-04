@@ -103,13 +103,22 @@
     "createDirectSale": "Create Sale",
     "myOrders": "Orders",
     "categories": "Categories",
-    "howToBid": "How to Bid",
+    "howToBid": "How it works",
+    "plans": "Our Plans",
     "members": "Members",
     "profile": "Profile",
     "settings": "Settings",
     "notifications": "Notifications",
     "chat": "Chat",
     "logout": "Logout"
+  },
+  "plans": {
+    "subtitle": "Choose the perfect plan for your professional needs and boost your sales today.",
+    "noPlans": "No plans available at the moment.",
+    "popular": "Popular",
+    "subscribe": "Subscribe",
+    "months": "months",
+    "month": "month"
   },
   "auth": {
     "login": "Login",
@@ -470,7 +479,8 @@
       "home": "Home",
       "auctions": "Auctions",
       "category": "Category",
-      "howToBid": "How to Bid",
+      "howToBid": "How it works",
+      "plans": "Our Plans",
       "members": "Members"
     },
     "categories": {

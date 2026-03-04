@@ -8,6 +8,7 @@ export interface SubscriptionPlan {
   duration: number; // in months (stored as number, not Date)
   isActive: boolean;
   role: string; // PROFESSIONAL or RESELLER
+  benefits?: string[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -106,7 +107,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<SubscriptionPlan[]>;
   },
-  
+
   // Get plans by role
   getPlansByRole: async (role: string): Promise<ApiResponse<{ success: boolean; plans: SubscriptionPlan[] }>> => {
     const res = await requests.get(`subscription/plans/${role}?t=${Date.now()}`);
@@ -123,7 +124,7 @@ export const SubscriptionAPI = {
       message: data?.message,
     } as ApiResponse<{ success: boolean; plans: SubscriptionPlan[] }>;
   },
-  
+
   // Create a new subscription plan (Admin only)
   createPlan: async (plan: CreatePlanDto): Promise<ApiResponse<SubscriptionPlan>> => {
     const res = await requests.post('subscription/admin/plans', plan);
@@ -136,7 +137,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<SubscriptionPlan>;
   },
-  
+
   // Update an existing subscription plan (Admin only)
   updatePlan: async (planId: string, plan: Partial<CreatePlanDto>): Promise<ApiResponse<SubscriptionPlan>> => {
     const res = await requests.patch(`subscription/admin/plans/${planId}`, plan);
@@ -149,7 +150,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<SubscriptionPlan>;
   },
-  
+
   // Delete a subscription plan (Admin only)
   deletePlan: async (planId: string): Promise<ApiResponse<void>> => {
     const res = await requests.delete(`subscription/admin/plans/${planId}`);
@@ -162,7 +163,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<void>;
   },
-  
+
   // Initialize default plans (Admin only)
   initializePlans: async (): Promise<ApiResponse<any>> => {
     const res = await requests.post('subscription/admin/init-plans', {});
@@ -175,7 +176,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<any>;
   },
-  
+
   // Get subscription statistics (Admin only)
   getStats: async (): Promise<ApiResponse<any>> => {
     const res = await requests.get('subscription/admin/stats');
@@ -188,7 +189,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<any>;
   },
-  
+
   // Get all subscriptions (Admin only)
   getAllSubscriptions: async (): Promise<ApiResponse<any>> => {
     const res = await requests.get('subscription');
@@ -201,7 +202,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<any>;
   },
-  
+
   // Get my subscription
   getMySubscription: async (): Promise<ApiResponse<MySubscriptionResponse>> => {
     const res = await requests.get('subscription/my-subscription');
@@ -214,7 +215,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<MySubscriptionResponse>;
   },
-  
+
   // Create subscription with payment
   createSubscriptionWithPayment: async (data: CreateSubscriptionWithPaymentDto): Promise<ApiResponse<SubscriptionResponse>> => {
     const res = await requests.post('subscription/create-with-payment', data);
@@ -227,7 +228,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<SubscriptionResponse>;
   },
-  
+
   // Confirm payment for subscription
   confirmPayment: async (paymentId: string): Promise<ApiResponse<PaymentConfirmationResponse>> => {
     const res = await requests.post(`subscription/payment/${paymentId}/confirm`, {});
@@ -240,7 +241,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<PaymentConfirmationResponse>;
   },
-  
+
   // Get payment status
   getPaymentStatus: async (paymentId: string): Promise<ApiResponse<PaymentStatusResponse>> => {
     const res = await requests.get(`subscription/payment/${paymentId}/status`);
@@ -253,7 +254,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<PaymentStatusResponse>;
   },
-  
+
   // Get my payments
   getMyPayments: async (): Promise<ApiResponse<MyPaymentsResponse>> => {
     const res = await requests.get('subscription/my-payments');
@@ -266,7 +267,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<MyPaymentsResponse>;
   },
-  
+
   // Get all payments (Admin only)
   getAllPayments: async (page?: number, limit?: number): Promise<ApiResponse<any>> => {
     const res = await requests.get(`subscription/admin/payments?page=${page || 1}&limit=${limit || 10}`);
@@ -279,7 +280,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<any>;
   },
-  
+
   // Cleanup expired subscriptions and payments (Admin only)
   cleanupExpired: async (): Promise<ApiResponse<any>> => {
     const res = await requests.post('subscription/admin/cleanup-expired', {});
@@ -292,7 +293,7 @@ export const SubscriptionAPI = {
       message: (res as any)?.data?.message,
     } as ApiResponse<any>;
   },
-  
+
   // Handle SlickPay webhook (Public)
   handleSlickPayWebhook: async (payload: any): Promise<ApiResponse<{ success: boolean; error?: string }>> => {
     const res = await requests.post('subscription/webhook/slickpay', payload);
@@ -306,13 +307,13 @@ export const SubscriptionAPI = {
       message: data?.message,
     } as ApiResponse<{ success: boolean; error?: string }>;
   },
-  
+
   // Payment flow endpoints
-  
+
   // Show mock SATIM form (Development/Testing)
   getMockSatimForm: (mdOrder: string): string =>
     `subscription/payment/mock-satim-form/${mdOrder}`,
-  
+
   // Process mock SATIM payment (Development/Testing)
   processMockSatimPayment: (data: {
     mdOrder: string;
@@ -323,15 +324,15 @@ export const SubscriptionAPI = {
     cardName: string;
   }): Promise<any> =>
     requests.post('subscription/payment/mock-satim-process', data),
-  
+
   // Handle mock SATIM payment (Development/Testing)
   handleMockSatimPayment: (paymentMethod: string, mdOrder: string): string =>
     `subscription/payment/mock-satim/${paymentMethod}/${mdOrder}`,
-  
+
   // Handle SlickPay payment return
   handlePaymentReturn: (paymentId: string): string =>
     `subscription/payment/return?paymentId=${paymentId}`,
-  
+
   // Handle payment failure
   handlePaymentFailure: (paymentId: string): string =>
     `subscription/payment/fail?paymentId=${paymentId}`,

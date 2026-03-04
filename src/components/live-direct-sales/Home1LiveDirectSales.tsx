@@ -108,8 +108,6 @@ const Home1LiveDirectSales = () => {
   const queryClient = useQueryClient();
   const socketContext = useCreateSocket();
   const socket = socketContext?.socket;
-
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'finished'>('all');
   const [animatedCards, setAnimatedCards] = useState<number[]>([]);
   const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
 
@@ -134,26 +132,14 @@ const Home1LiveDirectSales = () => {
   const directSales = useMemo(() => {
     let filtered = [...allDirectSales];
     
-    if (statusFilter === 'active') {
-      filtered.sort((a, b) => {
-        const aIsActive = a.status === 'ACTIVE' || a.status === 'PAUSED';
-        const bIsActive = b.status === 'ACTIVE' || b.status === 'PAUSED';
-        if (aIsActive && !bIsActive) return -1;
-        if (!aIsActive && bIsActive) return 1;
-        return 0;
-      });
-    } else if (statusFilter === 'finished') {
-      filtered.sort((a, b) => {
-        const aIsFinished = a.status === 'SOLD_OUT' || a.status === 'SOLD';
-        const bIsFinished = b.status === 'SOLD_OUT' || b.status === 'SOLD';
-        if (aIsFinished && !bIsFinished) return -1;
-        if (!aIsFinished && bIsFinished) return 1;
-        return 0;
-      });
-    }
+    // Completely exclude sold-out items
+    filtered = filtered.filter(sale => {
+      const availableQuantity = sale.quantity === 0 ? 999 : sale.quantity - (sale.soldQuantity || 0);
+      return sale.status !== 'SOLD_OUT' && sale.status !== 'SOLD' && !(sale.quantity > 0 && availableQuantity <= 0);
+    });
 
     return filtered.slice(0, 8);
-  }, [allDirectSales, statusFilter]);
+  }, [allDirectSales]);
 
   // Intersection Observer for scroll animations
   useEffect(() => {
@@ -474,105 +460,7 @@ const Home1LiveDirectSales = () => {
               {t('liveDirectSales.description')}
             </p>
             
-            {/* Status Filter Buttons */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: 'clamp(8px, 1.5vw, 12px)',
-              flexWrap: 'wrap',
-              marginBottom: 'clamp(12px, 2vw, 16px)',
-            }}>
-              <button
-                onClick={() => setStatusFilter('all')}
-                style={{
-                  padding: 'clamp(6px, 1.2vw, 8px) clamp(16px, 3vw, 20px)',
-                  borderRadius: '25px',
-                  border: '1.5px solid',
-                  borderColor: statusFilter === 'all' ? '#f7ef8a' : '#e2e8f0',
-                  background: statusFilter === 'all' ? 'linear-gradient(135deg, #f7ef8a, #8a7e1f)' : 'white',
-                  color: statusFilter === 'all' ? '#3d370e' : '#666',
-                  fontWeight: '600',
-                  fontSize: 'clamp(11px, 1.8vw, 13px)',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: statusFilter === 'all' ? '0 4px 12px rgba(247, 239, 138, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                }}
-                onMouseEnter={(e) => {
-                  if (statusFilter !== 'all') {
-                    e.currentTarget.style.borderColor = '#f7ef8a';
-                    e.currentTarget.style.color = '#8a7e1f';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (statusFilter !== 'all') {
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                    e.currentTarget.style.color = '#666';
-                  }
-                }}
-              >
-                {t('common.all')}
-              </button>
-              <button
-                onClick={() => setStatusFilter('active')}
-                style={{
-                  padding: 'clamp(6px, 1.2vw, 8px) clamp(16px, 3vw, 20px)',
-                  borderRadius: '25px',
-                  border: '1.5px solid',
-                  borderColor: statusFilter === 'active' ? '#10b981' : '#e2e8f0',
-                  background: statusFilter === 'active' ? 'linear-gradient(135deg, #10b981, #059669)' : 'white',
-                  color: statusFilter === 'active' ? 'white' : '#666',
-                  fontWeight: '600',
-                  fontSize: 'clamp(11px, 1.8vw, 13px)',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: statusFilter === 'active' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                }}
-                onMouseEnter={(e) => {
-                  if (statusFilter !== 'active') {
-                    e.currentTarget.style.borderColor = '#10b981';
-                    e.currentTarget.style.color = '#10b981';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (statusFilter !== 'active') {
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                    e.currentTarget.style.color = '#666';
-                  }
-                }}
-              >
-                {t('common.active')}
-              </button>
-              <button
-                onClick={() => setStatusFilter('finished')}
-                style={{
-                  padding: 'clamp(6px, 1.2vw, 8px) clamp(16px, 3vw, 20px)',
-                  borderRadius: '25px',
-                  border: '1.5px solid',
-                  borderColor: statusFilter === 'finished' ? '#ef4444' : '#e2e8f0',
-                  background: statusFilter === 'finished' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'white',
-                  color: statusFilter === 'finished' ? 'white' : '#666',
-                  fontWeight: '600',
-                  fontSize: 'clamp(11px, 1.8vw, 13px)',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: statusFilter === 'finished' ? '0 4px 12px rgba(239, 68, 68, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                }}
-                onMouseEnter={(e) => {
-                  if (statusFilter !== 'finished') {
-                    e.currentTarget.style.borderColor = '#ef4444';
-                    e.currentTarget.style.color = '#ef4444';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (statusFilter !== 'finished') {
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                    e.currentTarget.style.color = '#666';
-                  }
-                }}
-              >
-                {t('common.finished')}
-              </button>
-            </div>
+
           </div>
 
           {/* Direct Sales Content */}

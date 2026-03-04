@@ -108,7 +108,8 @@
     "createDirectSale": "إنشاء بيع",
     "myOrders": "الطلبات",
     "categories": "الفئات",
-    "howToBid": "كيفية المزايدة",
+    "howToBid": "كيف تعمل",
+    "plans": "خططنا",
     "members": "الأعضاء",
     "profile": "الملف الشخصي",
     "settings": "الإعدادات",
@@ -127,6 +128,14 @@
   },
   "settings": {
     "title": "الإعدادات"
+  },
+  "plans": {
+    "subtitle": "اختر الخطة المثالية لاحتياجاتك المهنية وعزز مبيعاتك اليوم.",
+    "noPlans": "لا تتوفر خطط في الوقت الحالي.",
+    "popular": "شائع",
+    "subscribe": "اشترك",
+    "months": "أشهر",
+    "month": "شهر"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -424,7 +433,8 @@
       "home": "الرئيسية",
       "auctions": "المزادات",
       "category": "الفئة",
-      "howToBid": "كيفية المزايدة",
+      "howToBid": "كيف تعمل",
+      "plans": "خططنا",
       "members": "الأعضاء"
     },
     "categories": {

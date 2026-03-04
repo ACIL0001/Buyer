@@ -135,24 +135,15 @@ const Home1LiveTenders = () => {
 
   // Filter and limit tenders for display
   const liveTenders = useMemo(() => {
-    let filtered = allTenders;
-    
-    if (statusFilter === 'active') {
-      filtered = allTenders.filter((tender: Tender) => {
-        if (!tender.endingAt) return false;
-        const endTime = new Date(tender.endingAt);
-        return endTime > new Date();
-      });
-    } else if (statusFilter === 'finished') {
-      filtered = allTenders.filter((tender: Tender) => {
-        if (!tender.endingAt) return true;
-        const endTime = new Date(tender.endingAt);
-        return endTime <= new Date();
-      });
-    }
+    // Only show active tenders that have not finished
+    const filtered = allTenders.filter((tender: Tender) => {
+      if (!tender.endingAt) return false;
+      const endTime = new Date(tender.endingAt);
+      return endTime > new Date();
+    });
 
     return filtered.slice(0, 8);
-  }, [allTenders, statusFilter]);
+  }, [allTenders]);
 
   // Update timers
   useEffect(() => {
@@ -513,105 +504,6 @@ const Home1LiveTenders = () => {
               {t('liveTenders.description')}
             </p>
             
-            {/* Status Filter Buttons */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: 'clamp(8px, 1.5vw, 12px)',
-              flexWrap: 'wrap',
-              marginBottom: 'clamp(12px, 2vw, 16px)',
-            }}>
-              <button
-                onClick={() => setStatusFilter('all')}
-                style={{
-                  padding: 'clamp(6px, 1.2vw, 8px) clamp(16px, 3vw, 20px)',
-                  borderRadius: '25px',
-                  border: '1.5px solid',
-                  borderColor: statusFilter === 'all' ? '#27F5CC' : '#e2e8f0',
-                  background: statusFilter === 'all' ? 'linear-gradient(135deg, #27F5CC, #00D4AA)' : 'white',
-                  color: statusFilter === 'all' ? 'white' : '#666',
-                  fontWeight: '600',
-                  fontSize: 'clamp(11px, 1.8vw, 13px)',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: statusFilter === 'all' ? '0 4px 12px rgba(39, 245, 204, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                }}
-                onMouseEnter={(e) => {
-                  if (statusFilter !== 'all') {
-                    e.currentTarget.style.borderColor = '#27F5CC';
-                    e.currentTarget.style.color = '#27F5CC';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (statusFilter !== 'all') {
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                    e.currentTarget.style.color = '#666';
-                  }
-                }}
-              >
-                {t('common.all')}
-              </button>
-              <button
-                onClick={() => setStatusFilter('active')}
-                style={{
-                  padding: 'clamp(6px, 1.2vw, 8px) clamp(16px, 3vw, 20px)',
-                  borderRadius: '25px',
-                  border: '1.5px solid',
-                  borderColor: statusFilter === 'active' ? '#10b981' : '#e2e8f0',
-                  background: statusFilter === 'active' ? 'linear-gradient(135deg, #10b981, #059669)' : 'white',
-                  color: statusFilter === 'active' ? 'white' : '#666',
-                  fontWeight: '600',
-                  fontSize: 'clamp(11px, 1.8vw, 13px)',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: statusFilter === 'active' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                }}
-                onMouseEnter={(e) => {
-                  if (statusFilter !== 'active') {
-                    e.currentTarget.style.borderColor = '#10b981';
-                    e.currentTarget.style.color = '#10b981';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (statusFilter !== 'active') {
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                    e.currentTarget.style.color = '#666';
-                  }
-                }}
-              >
-                {t('common.active')}
-              </button>
-              <button
-                onClick={() => setStatusFilter('finished')}
-                style={{
-                  padding: 'clamp(6px, 1.2vw, 8px) clamp(16px, 3vw, 20px)',
-                  borderRadius: '25px',
-                  border: '1.5px solid',
-                  borderColor: statusFilter === 'finished' ? '#ef4444' : '#e2e8f0',
-                  background: statusFilter === 'finished' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'white',
-                  color: statusFilter === 'finished' ? 'white' : '#666',
-                  fontWeight: '600',
-                  fontSize: 'clamp(11px, 1.8vw, 13px)',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  boxShadow: statusFilter === 'finished' ? '0 4px 12px rgba(239, 68, 68, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                }}
-                onMouseEnter={(e) => {
-                  if (statusFilter !== 'finished') {
-                    e.currentTarget.style.borderColor = '#ef4444';
-                    e.currentTarget.style.color = '#ef4444';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (statusFilter !== 'finished') {
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                    e.currentTarget.style.color = '#666';
-                  }
-                }}
-              >
-                {t('common.finished')}
-              </button>
-            </div>
           </div>
 
           {/* Tenders Content - Always show on mobile, even with no data */}

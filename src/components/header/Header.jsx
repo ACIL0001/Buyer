@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { getSellerUrl, getFrontendUrl } from '@/config';
 import app from '@/config';
 import { normalizeImageUrl } from '@/utils/url';
+import CategoryMegaMenu from './CategoryMegaMenu';
 
 const initialState = {
   activeMenu: "",
@@ -188,12 +189,12 @@ export const Header = () => {
   // Navigation Items
   const navItems = [
     { name: t('navigation.home'), path: "/", matchPaths: ["/"] },
+    { name: t('navigation.categories'), path: "/category", matchPaths: ["/category"] },
     { name: t('navigation.auctions'), path: "/auction-sidebar", matchPaths: ["/auction-sidebar", "/auction-details"] },
     { name: t('navigation.tenders'), path: "/tenders", matchPaths: ["/tenders", "/tender-details"] },
     { name: t('navigation.directSales'), path: "/direct-sale", matchPaths: ["/direct-sale"] },
-    { name: t('navigation.categories'), path: "/category", matchPaths: ["/category"] },
     { name: t('navigation.howToBid'), path: "/how-to-bid", matchPaths: ["/how-to-bid"] },
-    { name: t('navigation.members'), path: "/users", matchPaths: ["/users"] },
+    { name: t('navigation.plans'), path: "/plans", matchPaths: ["/plans"] },
   ];
 
   // Helper function to check if a nav item is active
@@ -371,6 +372,7 @@ export const Header = () => {
             }}>
               <ul style={{
                 display: 'flex',
+                alignItems: 'center',
                 gap: '30px',
                 listStyle: 'none',
                 margin: 0,
@@ -380,31 +382,35 @@ export const Header = () => {
                   const isActive = isNavItemActive(item);
                   return (
                     <li key={index}>
-                      <Link 
-                        href={item.path} 
-                        style={{
-                          color: isActive ? '#0063b1' : '#333',
-                          fontWeight: isActive ? '600' : '500',
-                          textDecoration: 'none',
-                          fontSize: '16px',
-                          position: 'relative',
-                          padding: '8px 0',
-                          transition: 'all 0.3s ease'
-                        }}
-                      >
-                        {item.name}
-                        {isActive && (
-                          <span style={{
-                            position: 'absolute',
-                            bottom: '0',
-                            left: '0',
-                            width: '100%',
-                            height: '2px',
-                            background: '#0063b1',
-                            borderRadius: '2px'
-                          }}></span>
-                        )}
-                      </Link>
+                      {item.path === '/category' ? (
+                        <CategoryMegaMenu item={item} isActive={isActive} />
+                      ) : (
+                        <Link 
+                          href={item.path} 
+                          style={{
+                            color: isActive ? '#0063b1' : '#333',
+                            fontWeight: isActive ? '600' : '500',
+                            textDecoration: 'none',
+                            fontSize: '16px',
+                            position: 'relative',
+                            padding: '8px 0',
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
+                          {item.name}
+                          {isActive && (
+                            <span style={{
+                              position: 'absolute',
+                              bottom: '0',
+                              left: '0',
+                              width: '100%',
+                              height: '2px',
+                              background: '#0063b1',
+                              borderRadius: '2px'
+                            }}></span>
+                          )}
+                        </Link>
+                      )}
                     </li>
                   );
                 })}

@@ -54,6 +54,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFilter, setSearchFilter] = useState<'all' | 'PRODUCT' | 'SERVICE'>('all');
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [loadingSearch, setLoadingSearch] = useState(false);
@@ -61,7 +62,19 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
   const [notifyMeEmail, setNotifyMeEmail] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchResultsRef = useRef<HTMLDivElement>(null);
+  const filterDropdownRef = useRef<HTMLDivElement>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  // Close custom dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setIsFilterDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Check screen size for search placeholder
   useEffect(() => {
@@ -390,7 +403,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           padding: 0 clamp(12px, 3vw, 24px) 5px clamp(12px, 3vw, 24px);
           paddingTop: 0;
           margin: 0 auto 0 auto;
-          max-width: 1280px;
+          max-width: 100%;
           border-radius: clamp(12px, 3vw, 24px);
         }
 
@@ -1161,19 +1174,20 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
               position: 'relative',
               display: 'flex',
               alignItems: 'center',
-              background: 'rgba(0, 0, 0, 0.05)',
-              border: '1px solid rgba(0, 0, 0, 0.1)',
+              background: '#ffffff',
+              border: '1px solid transparent',
               borderRadius: 'clamp(30px, 8vw, 50px)',
               padding: 'clamp(2px, 1vw, 4px)',
-              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(0, 0, 0, 0.08)';
-              e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.2)';
+              e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.12)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)';
-              e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.1)';
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
+              e.currentTarget.style.transform = 'translateY(0)';
             }}>
               {/* Search Icon */}
               <div className="search-icon-wrapper" style={{
@@ -1215,17 +1229,22 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                 }}
               />
               
-              {/* Filter Dropdown */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                borderLeft: '1px solid rgba(0, 0, 0, 0.1)',
-                paddingLeft: 'clamp(4px, 1vw, 8px)',
-                height: '60%',
-              }}>
-                <select
-                  value={searchFilter}
-                  onChange={handleFilterChange}
+              {/* Custom Filter Dropdown */}
+              <div 
+                ref={filterDropdownRef}
+                style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderLeft: '1px solid rgba(0, 0, 0, 0.08)',
+                  paddingLeft: 'clamp(4px, 1vw, 8px)',
+                  height: '60%',
+                }}>
+                <div 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsFilterDropdownOpen(!isFilterDropdownOpen);
+                  }}
                   style={{
                     background: 'transparent',
                     border: 'none',
@@ -1235,30 +1254,98 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                     fontWeight: '600',
                     cursor: 'pointer',
                     padding: 'clamp(4px, 1.5vw, 8px) clamp(8px, 2vw, 12px)',
-                    appearance: 'none',
-                    WebkitAppearance: 'none',
-                    MozAppearance: 'none',
                     paddingRight: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
                   }}
                   className="search-filter-select"
                 >
-                  <option value="all">{t('common.all') || 'Tous'}</option>
-                  <option value="PRODUCT">{t('common.product') || 'Produit'}</option>
-                  <option value="SERVICE">{t('common.service') || 'Service'}</option>
-                </select>
-                <div style={{
-                  position: 'absolute',
-                  right: 'clamp(12px, 3vw, 16px)',
-                  pointerEvents: 'none',
-                  color: '#94a3b8',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {searchFilter === 'all' && (t('common.all') || 'Tous')}
+                    {searchFilter === 'PRODUCT' && (t('common.product') || 'Produit')}
+                    {searchFilter === 'SERVICE' && (t('common.service') || 'Service')}
+                  </span>
+                  <div style={{
+                    position: 'absolute',
+                    right: 'clamp(12px, 3vw, 16px)',
+                    pointerEvents: 'none',
+                    color: '#94a3b8',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transform: isFilterDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.3s ease',
+                  }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </div>
                 </div>
+
+                {isFilterDropdownOpen && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 10px)',
+                    right: 0,
+                    minWidth: '140px',
+                    width: 'auto',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(16px)',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.8)',
+                    overflow: 'hidden',
+                    zIndex: 1000,
+                    padding: '6px',
+                    animation: 'megaMenuFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                  }}>
+                    {[
+                      { value: 'all', label: t('common.all') || 'Tous' },
+                      { value: 'PRODUCT', label: t('common.product') || 'Produit' },
+                      { value: 'SERVICE', label: t('common.service') || 'Service' },
+                    ].map((option) => (
+                      <div
+                        key={option.value}
+                        onClick={() => {
+                          setSearchFilter(option.value as any);
+                          performSearch(searchQuery, option.value);
+                          setIsFilterDropdownOpen(false);
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          cursor: 'pointer',
+                          borderRadius: '8px',
+                          color: searchFilter === option.value ? 'var(--primary-color)' : '#475569',
+                          fontWeight: searchFilter === option.value ? '600' : '500',
+                          fontSize: '13px',
+                          background: searchFilter === option.value ? 'rgba(0, 99, 177, 0.08)' : 'transparent',
+                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (searchFilter !== option.value) {
+                            e.currentTarget.style.background = 'rgba(0, 0, 0, 0.03)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (searchFilter !== option.value) {
+                            e.currentTarget.style.background = 'transparent';
+                          }
+                        }}
+                      >
+                        <span>{option.label}</span>
+                        {searchFilter === option.value && (
+                          <svg style={{ marginLeft: 'auto', stroke: 'var(--primary-color)' }} width="14" height="14" viewBox="0 0 24 24" fill="none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </form>

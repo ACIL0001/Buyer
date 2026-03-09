@@ -1256,8 +1256,8 @@ export default function Home() {
           .hero-banner-section {
             padding: clamp(12px, 3vw, 20px) clamp(12px, 3vw, 16px) !important;
             padding-top: clamp(12px, 3vw, 20px) !important;
-            padding-bottom: clamp(38px, 9vw, 82px) !important;
-            min-height: 390px !important;
+            padding-bottom: clamp(10px, 2.5vw, 15px) !important;
+            min-height: auto !important;
             overflow: visible !important;
           }
 
@@ -1286,8 +1286,8 @@ export default function Home() {
           }
 
           .dropdown-container {
-            flex: 1 1 calc(33.333% - clamp(8px, 3vw, 12px)) !important;
-            max-width: calc(33.333% - clamp(8px, 3vw, 12px)) !important;
+            flex: 1 1 33.333% !important;
+            max-width: 33.333% !important;
             min-width: 0 !important;
           }
 
@@ -1332,8 +1332,8 @@ export default function Home() {
           .hero-banner-section {
             padding: clamp(16px, 3vw, 24px) clamp(16px, 3vw, 20px) !important;
             padding-top: clamp(16px, 3vw, 24px) !important;
-            padding-bottom: clamp(45px, 10vw, 90px) !important;
-            min-height: 420px !important;
+            padding-bottom: clamp(15px, 2.5vw, 20px) !important;
+            min-height: auto !important;
             overflow: visible !important;
           }
 
@@ -1349,8 +1349,8 @@ export default function Home() {
           }
 
           .dropdown-container {
-            flex: 1 1 calc(33.333% - clamp(10px, 3vw, 14px)) !important;
-            max-width: calc(33.333% - clamp(10px, 3vw, 14px)) !important;
+            flex: 1 1 33.333% !important;
+            max-width: 33.333% !important;
             min-width: 0 !important;
           }
 
@@ -1375,8 +1375,8 @@ export default function Home() {
           .hero-banner-section {
             padding: clamp(20px, 3.5vw, 32px) clamp(20px, 3.5vw, 28px) !important;
             padding-top: clamp(20px, 3.5vw, 32px) !important;
-            padding-bottom: clamp(52px, 10vw, 98px) !important;
-            min-height: 450px !important;
+            padding-bottom: clamp(20px, 2.5vw, 25px) !important;
+            min-height: auto !important;
             overflow: visible !important;
           }
 
@@ -1392,8 +1392,8 @@ export default function Home() {
           }
 
           .dropdown-container {
-            flex: 1 1 calc(33.333% - clamp(12px, 3vw, 16px)) !important;
-            max-width: calc(33.333% - clamp(12px, 3vw, 16px)) !important;
+            flex: 1 1 33.333% !important;
+            max-width: 33.333% !important;
             min-width: 0 !important;
           }
 
@@ -1429,7 +1429,8 @@ export default function Home() {
           }
 
           .dropdown-container {
-            max-width: clamp(240px, 45vw, 280px) !important;
+            flex: 1 1 33.333% !important;
+            max-width: 33.333% !important;
           }
 
           .search-result-description {
@@ -1645,8 +1646,8 @@ export default function Home() {
           display: inline-flex;
           flex-direction: column;
           align-items: center;
-          flex: 1;
-          max-width: clamp(220px, 42vw, 320px);
+          flex: 1 1 33.333%;
+          max-width: 100%;
         }
 
         .dropdown-menu {
@@ -2059,7 +2060,7 @@ export default function Home() {
                     style={{ 
                       position: 'relative',
                       overflow: 'visible',
-                      padding: '0 clamp(20px, 4vw, 40px)',
+                      padding: '0',
                       paddingTop: '0',
                       paddingBottom: '0',
                       width: '100%',
@@ -2070,10 +2071,10 @@ export default function Home() {
                   >
                     {/* Ads Slider - Full Width Hero Banner */}
                     <div style={{
-                      width: 'calc(100% + clamp(40px, 8vw, 80px))',
+                      width: '100%',
                       maxWidth: '100vw',
-                      marginLeft: 'clamp(-20px, -4vw, -40px)',
-                      marginRight: 'clamp(-20px, -4vw, -40px)',
+                      marginLeft: '0',
+                      marginRight: '0',
                       marginBottom: '0',
                       padding: '0',
                     }}>
@@ -2084,7 +2085,7 @@ export default function Home() {
                     <div className="hero-content" style={{
                       position: 'relative',
                       zIndex: 3,
-                      maxWidth: '1400px',
+                      maxWidth: '100%',
                       margin: '0 auto',
                       padding: '0',
                       paddingBottom: '0',
@@ -2092,6 +2093,7 @@ export default function Home() {
                       width: '100%',
                       overflowX: 'hidden',
                       overflowY: 'visible',
+                      background: 'white',
                     }}>
                       {/* Category Carousel Banner */}
                       <Home1Banner />
@@ -2103,8 +2105,8 @@ export default function Home() {
                           display: 'flex',
                           gap: 'clamp(12px, 3vw, 20px)',
                           marginTop: '0',
-                          marginBottom: 'clamp(12px, 3vw, 24px)',
-                          flexWrap: 'wrap',
+                          marginBottom: isMobile ? 'clamp(8px, 2vw, 12px)' : 'clamp(12px, 3vw, 24px)',
+                          flexWrap: 'nowrap',
                           justifyContent: 'center',
                           padding: '0 clamp(12px, 3vw, 20px)',
                           width: '100%',
@@ -2128,34 +2130,36 @@ export default function Home() {
                               alignItems: 'center',
                               justifyContent: auctionDropdownOpen ? 'flex-start' : 'center',
                               gap: 'clamp(8px, 2vw, 12px)',
-                              background: '#ffffff',
+                              background: 'linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%)',
                               color: 'var(--primary-auction-color)',
-                              padding: auctionDropdownOpen ? 'clamp(16px, 3vw, 20px) clamp(20px, 5vw, 28px)' : 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
-                              borderRadius: 'clamp(22px, 5vw, 30px)',
-                              border: '3px solid var(--primary-auction-color)',
-                              fontSize: 'clamp(15px, 3.8vw, 19px)',
+                              padding: auctionDropdownOpen ? 
+                                (isMobile ? 'clamp(14px, 3.5vw, 18px)' : 'clamp(20px, 4vw, 24px) clamp(24px, 6vw, 32px)') : 
+                                (isMobile ? 'clamp(16px, 4vw, 20px) clamp(12px, 3vw, 18px)' : 'clamp(28px, 6vw, 40px) clamp(32px, 8vw, 48px)'),
+                              borderRadius: isMobile ? 'clamp(20px, 5vw, 28px)' : 'clamp(28px, 6vw, 36px)',
+                              border: isMobile ? '1.5px solid color-mix(in srgb, var(--primary-auction-color) 20%, transparent)' : '2px solid color-mix(in srgb, var(--primary-auction-color) 15%, transparent)',
+                              fontSize: isMobile ? 'clamp(15px, 4vw, 18px)' : 'clamp(17px, 4.2vw, 21px)',
                               fontWeight: 800,
                               cursor: 'pointer',
-                              boxShadow: 'none',
-                              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                              boxShadow: isMobile ? '0 12px 28px -8px rgba(0, 0, 0, 0.1), 0 4px 12px -2px rgba(0, 0, 0, 0.05)' : '0 15px 35px -12px rgba(0, 99, 177, 0.15)',
+                              transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                               position: 'relative',
                               overflow: 'hidden',
                               textTransform: 'none',
-                              letterSpacing: '0.3px',
-                              minHeight: 'clamp(120px, 15vw, 160px)',
+                              letterSpacing: '0.4px',
+                              minHeight: isMobile ? 'clamp(95px, 14vw, 115px)' : 'clamp(140px, 18vw, 180px)',
                               width: '100%',
                             }}
                           >
                             <div style={{
-                              background: 'color-mix(in srgb, var(--primary-auction-color) 20%, transparent)',
-                              padding: 'clamp(12px, 2.8vw, 16px)',
-                              borderRadius: '55%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              boxShadow: 'none',
-                              transform: auctionDropdownOpen ? 'translateY(-10px)' : 'translateY(0)',
-                              transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                background: 'linear-gradient(135deg, color-mix(in srgb, var(--primary-auction-color) 8%, white) 0%, color-mix(in srgb, var(--primary-auction-color) 15%, white) 100%)',
+                                padding: isMobile ? 'clamp(8px, 2.2vw, 12px)' : 'clamp(16px, 3.5vw, 22px)',
+                                borderRadius: '45%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 8px 20px -6px color-mix(in srgb, var(--primary-auction-color) 40%, transparent)',
+                                transform: auctionDropdownOpen ? 'translateY(-10px) scale(0.9)' : 'translateY(0) scale(1)',
+                                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                             }}>
                               <FaGavel 
                                 style={{ 
@@ -2180,55 +2184,56 @@ export default function Home() {
                             </span>
                             <div style={{
                               display: auctionDropdownOpen ? 'flex' : 'none',
-                              gap: isMobile ? '6px' : 'clamp(8px, 2vw, 12px)',
+                              gap: isMobile ? '8px' : 'clamp(12px, 2.5vw, 16px)',
                               width: '100%',
+                              boxSizing: 'border-box',
                               justifyContent: 'center',
                               opacity: auctionDropdownOpen ? 1 : 0,
                               transition: 'opacity 0.3s ease 0.3s',
                               flexWrap: 'nowrap',
-                              marginLeft: isMobile ? 'clamp(8px, 2vw, 12px)' : '0',
-                              marginRight: isMobile ? 'clamp(8px, 2vw, 12px)' : '0',
+                              padding: isMobile ? '0 clamp(12px, 3vw, 16px)' : '0 clamp(20px, 4vw, 32px)',
                             }}>
                               <div 
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleAuctionViewAll();
                                 }}
-                            style={{
+                                style={{
                                   display: 'flex',
+                                  flex: 1,
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
-                                  background: 'var(--primary-auction-color)',
+                                  padding: isMobile ? '5px 0' : '7px 0',
+                                  background: 'linear-gradient(135deg, var(--primary-auction-color) 0%, color-mix(in srgb, var(--primary-auction-color) 85%, black) 100%)',
                                   color: 'white',
-                                  border: 'none',
-                                  borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
+                                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                                  borderRadius: isMobile ? '8px' : '10px',
                                   cursor: 'pointer',
-                                  fontSize: isMobile ? '11px' : 'clamp(11px, 2vw, 13px)',
-                                  fontWeight: 600,
-                                  transition: 'all 0.3s ease',
+                                  fontSize: isMobile ? '11px' : 'clamp(12px, 2vw, 13px)',
+                                  fontWeight: 700,
+                                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                                   gap: isMobile ? '4px' : '6px',
-                                  boxShadow: isMobile ? '0 2px 4px color-mix(in srgb, var(--primary-auction-color) 20%, transparent)' : 'none',
+                                  boxShadow: '0 4px 12px -2px color-mix(in srgb, var(--primary-auction-color) 40%, transparent)',
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.filter = 'brightness(0.85)';
-                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                    e.currentTarget.style.filter = 'brightness(1.1)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isMobile) {
                                     e.currentTarget.style.filter = 'brightness(1)';
-                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
                                   }
                                 }}
                               >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "16"} height={isMobile ? "12" : "16"}>
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                              </svg>
-                              {t('common.view')}
-                            </div>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "15"} height={isMobile ? "12" : "15"}>
+                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                  <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                {t('common.view')}
+                              </div>
                               <div 
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -2236,40 +2241,41 @@ export default function Home() {
                                 }}
                                 style={{
                                   display: 'flex',
+                                  flex: 1,
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
-                                  background: 'var(--primary-auction-color)',
+                                  padding: isMobile ? '5px 0' : '7px 0',
+                                  background: 'linear-gradient(135deg, var(--primary-auction-color) 0%, color-mix(in srgb, var(--primary-auction-color) 85%, black) 100%)',
                                   color: 'white',
-                                  border: 'none',
-                                  borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
+                                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                                  borderRadius: isMobile ? '8px' : '10px',
                                   cursor: 'pointer',
-                                  fontSize: isMobile ? '11px' : 'clamp(11px, 2vw, 13px)',
-                                  fontWeight: 600,
-                                  transition: 'all 0.3s ease',
+                                  fontSize: isMobile ? '11px' : 'clamp(12px, 2vw, 13px)',
+                                  fontWeight: 700,
+                                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                                   gap: isMobile ? '4px' : '6px',
-                                  boxShadow: isMobile ? '0 2px 4px color-mix(in srgb, var(--primary-auction-color) 20%, transparent)' : 'none',
+                                  boxShadow: '0 4px 12px -2px color-mix(in srgb, var(--primary-auction-color) 40%, transparent)',
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.filter = 'brightness(0.85)';
-                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                    e.currentTarget.style.filter = 'brightness(1.1)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isMobile) {
                                     e.currentTarget.style.filter = 'brightness(1)';
-                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
                                   }
                                 }}
                               >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "16"} height={isMobile ? "12" : "16"}>
-                                <line x1="12" y1="5" x2="12" y2="19"/>
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                              </svg>
-                              {t('common.create') || 'Créer'}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "15"} height={isMobile ? "12" : "15"}>
+                                  <line x1="12" y1="5" x2="12" y2="19"/>
+                                  <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                {t('common.create') || 'Créer'}
+                              </div>
                             </div>
-                          </div>
                           </button>
                         </div>
 
@@ -2288,34 +2294,36 @@ export default function Home() {
                               alignItems: 'center',
                               justifyContent: venteDirectDropdownOpen ? 'flex-start' : 'center',
                               gap: 'clamp(8px, 2vw, 12px)',
-                              background: '#ffffff',
+                              background: 'linear-gradient(145deg, #ffffff 0%, #fdf9f4 100%)',
                               color: 'var(--primary-ds-color)',
-                              padding: venteDirectDropdownOpen ? 'clamp(16px, 3vw, 20px) clamp(20px, 5vw, 28px)' : 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
-                              borderRadius: 'clamp(22px, 5vw, 30px)',
-                              border: '3px solid var(--primary-ds-color)',
-                              fontSize: 'clamp(15px, 3.8vw, 19px)',
+                              padding: venteDirectDropdownOpen ? 
+                                (isMobile ? 'clamp(14px, 3.5vw, 18px)' : 'clamp(20px, 4vw, 24px) clamp(24px, 6vw, 32px)') : 
+                                (isMobile ? 'clamp(16px, 4vw, 20px) clamp(12px, 3vw, 18px)' : 'clamp(28px, 6vw, 40px) clamp(32px, 8vw, 48px)'),
+                              borderRadius: isMobile ? 'clamp(20px, 5vw, 28px)' : 'clamp(28px, 6vw, 36px)',
+                              border: isMobile ? '1.5px solid color-mix(in srgb, var(--primary-ds-color) 20%, transparent)' : '2px solid color-mix(in srgb, var(--primary-ds-color) 15%, transparent)',
+                              fontSize: isMobile ? 'clamp(15px, 4vw, 18px)' : 'clamp(17px, 4.2vw, 21px)',
                               fontWeight: 800,
                               cursor: 'pointer',
-                              boxShadow: 'none',
-                              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                              boxShadow: isMobile ? '0 12px 28px -8px rgba(0, 0, 0, 0.1), 0 4px 12px -2px rgba(0, 0, 0, 0.05)' : '0 15px 35px -12px rgba(234, 88, 12, 0.15)',
+                              transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                               position: 'relative',
                               overflow: 'hidden',
                               textTransform: 'none',
-                              letterSpacing: '0.3px',
-                              minHeight: 'clamp(120px, 15vw, 160px)',
+                              letterSpacing: '0.4px',
+                              minHeight: isMobile ? 'clamp(95px, 14vw, 115px)' : 'clamp(140px, 18vw, 180px)',
                               width: '100%',
                             }}
                           >
                             <div style={{
-                              background: 'color-mix(in srgb, var(--primary-ds-color) 20%, transparent)',
-                              padding: 'clamp(12px, 2.8vw, 16px)',
-                              borderRadius: '55%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              boxShadow: 'none',
-                              transform: venteDirectDropdownOpen ? 'translateY(-10px)' : 'translateY(0)',
-                              transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                background: 'linear-gradient(135deg, color-mix(in srgb, var(--primary-ds-color) 8%, white) 0%, color-mix(in srgb, var(--primary-ds-color) 15%, white) 100%)',
+                                padding: isMobile ? 'clamp(8px, 2.2vw, 12px)' : 'clamp(16px, 3.5vw, 22px)',
+                                borderRadius: '45%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 8px 20px -6px color-mix(in srgb, var(--primary-ds-color) 40%, transparent)',
+                                transform: venteDirectDropdownOpen ? 'translateY(-10px) scale(0.9)' : 'translateY(0) scale(1)',
+                                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                             }}>
                               <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="var(--primary-ds-color)">
                                 <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
@@ -2337,55 +2345,56 @@ export default function Home() {
                             </span>
                             <div style={{
                               display: venteDirectDropdownOpen ? 'flex' : 'none',
-                              gap: isMobile ? '6px' : 'clamp(8px, 2vw, 12px)',
+                              gap: isMobile ? '8px' : 'clamp(12px, 2.5vw, 16px)',
                               width: '100%',
+                              boxSizing: 'border-box',
                               justifyContent: 'center',
                               opacity: venteDirectDropdownOpen ? 1 : 0,
                               transition: 'opacity 0.3s ease 0.3s',
                               flexWrap: 'nowrap',
-                              marginLeft: isMobile ? 'clamp(8px, 2vw, 12px)' : '0',
-                              marginRight: isMobile ? 'clamp(8px, 2vw, 12px)' : '0',
+                              padding: isMobile ? '0 clamp(12px, 3vw, 16px)' : '0 clamp(20px, 4vw, 32px)',
                             }}>
                               <div 
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleVenteDirectViewAll();
                                 }}
-                            style={{
+                                style={{
                                   display: 'flex',
+                                  flex: 1,
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
-                                  background: 'var(--primary-ds-color)',
+                                  padding: isMobile ? '5px 0' : '7px 0',
+                                  background: 'linear-gradient(135deg, var(--primary-ds-color) 0%, color-mix(in srgb, var(--primary-ds-color) 85%, black) 100%)',
                                   color: 'white',
-                                  border: 'none',
-                                  borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
+                                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                                  borderRadius: isMobile ? '8px' : '10px',
                                   cursor: 'pointer',
-                                  fontSize: isMobile ? '11px' : 'clamp(11px, 2vw, 13px)',
-                                  fontWeight: 600,
-                                  transition: 'all 0.3s ease',
+                                  fontSize: isMobile ? '11px' : 'clamp(12px, 2vw, 13px)',
+                                  fontWeight: 700,
+                                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                                   gap: isMobile ? '4px' : '6px',
-                                  boxShadow: isMobile ? '0 2px 4px color-mix(in srgb, var(--primary-ds-color) 20%, transparent)' : 'none',
+                                  boxShadow: '0 4px 12px -2px color-mix(in srgb, var(--primary-ds-color) 40%, transparent)',
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.filter = 'brightness(0.85)';
-                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                    e.currentTarget.style.filter = 'brightness(1.1)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isMobile) {
                                     e.currentTarget.style.filter = 'brightness(1)';
-                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
                                   }
                                 }}
                               >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "16"} height={isMobile ? "12" : "16"}>
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                              </svg>
-                              {t('common.view')}
-                            </div>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "15"} height={isMobile ? "12" : "15"}>
+                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                  <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                {t('common.view')}
+                              </div>
                               <div 
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -2393,40 +2402,41 @@ export default function Home() {
                                 }}
                                 style={{
                                   display: 'flex',
+                                  flex: 1,
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
-                                  background: 'var(--primary-ds-color)',
+                                  padding: isMobile ? '5px 0' : '7px 0',
+                                  background: 'linear-gradient(135deg, var(--primary-ds-color) 0%, color-mix(in srgb, var(--primary-ds-color) 85%, black) 100%)',
                                   color: 'white',
-                                  border: 'none',
-                                  borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
+                                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                                  borderRadius: isMobile ? '8px' : '10px',
                                   cursor: 'pointer',
-                                  fontSize: isMobile ? '11px' : 'clamp(11px, 2vw, 13px)',
-                                  fontWeight: 600,
-                                  transition: 'all 0.3s ease',
+                                  fontSize: isMobile ? '11px' : 'clamp(12px, 2vw, 13px)',
+                                  fontWeight: 700,
+                                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                                   gap: isMobile ? '4px' : '6px',
-                                  boxShadow: isMobile ? '0 2px 4px color-mix(in srgb, var(--primary-ds-color) 20%, transparent)' : 'none',
+                                  boxShadow: '0 4px 12px -2px color-mix(in srgb, var(--primary-ds-color) 40%, transparent)',
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.filter = 'brightness(0.85)';
-                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                    e.currentTarget.style.filter = 'brightness(1.1)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isMobile) {
                                     e.currentTarget.style.filter = 'brightness(1)';
-                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
                                   }
                                 }}
                               >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "16"} height={isMobile ? "12" : "16"}>
-                                <line x1="12" y1="5" x2="12" y2="19"/>
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                              </svg>
-                              {t('common.create') || 'Créer'}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "15"} height={isMobile ? "12" : "15"}>
+                                  <line x1="12" y1="5" x2="12" y2="19"/>
+                                  <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                {t('common.create') || 'Créer'}
+                              </div>
                             </div>
-                          </div>
                           </button>
                         </div>
 
@@ -2445,34 +2455,36 @@ export default function Home() {
                               alignItems: 'center',
                               justifyContent: tenderDropdownOpen ? 'flex-start' : 'center',
                               gap: 'clamp(8px, 2vw, 12px)',
-                              background: '#ffffff',
+                              background: 'linear-gradient(145deg, #ffffff 0%, #f0fafb 100%)',
                               color: 'var(--primary-tender-color)',
-                              padding: tenderDropdownOpen ? 'clamp(16px, 3vw, 20px) clamp(20px, 5vw, 28px)' : 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
-                              borderRadius: 'clamp(22px, 5vw, 30px)',
-                              border: '3px solid var(--primary-tender-color)',
-                              fontSize: 'clamp(15px, 3.8vw, 19px)',
+                              padding: tenderDropdownOpen ? 
+                                (isMobile ? 'clamp(14px, 3.5vw, 18px)' : 'clamp(20px, 4vw, 24px) clamp(24px, 6vw, 32px)') : 
+                                (isMobile ? 'clamp(16px, 4vw, 20px) clamp(12px, 3vw, 18px)' : 'clamp(28px, 6vw, 40px) clamp(32px, 8vw, 48px)'),
+                              borderRadius: isMobile ? 'clamp(20px, 5vw, 28px)' : 'clamp(28px, 6vw, 36px)',
+                              border: isMobile ? '1.5px solid color-mix(in srgb, var(--primary-tender-color) 20%, transparent)' : '2px solid color-mix(in srgb, var(--primary-tender-color) 15%, transparent)',
+                              fontSize: isMobile ? 'clamp(15px, 4vw, 18px)' : 'clamp(17px, 4.2vw, 21px)',
                               fontWeight: 800,
                               cursor: 'pointer',
-                              boxShadow: 'none',
-                              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                              boxShadow: isMobile ? '0 12px 28px -8px rgba(0, 0, 0, 0.1), 0 4px 12px -2px rgba(0, 0, 0, 0.05)' : '0 15px 35px -12px rgba(16, 185, 129, 0.15)',
+                              transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                               position: 'relative',
                               overflow: 'hidden',
                               textTransform: 'none',
-                              letterSpacing: '0.3px',
-                              minHeight: 'clamp(120px, 15vw, 160px)',
+                              letterSpacing: '0.4px',
+                              minHeight: isMobile ? 'clamp(95px, 14vw, 115px)' : 'clamp(140px, 18vw, 180px)',
                               width: '100%',
                             }}
                           >
                             <div style={{
-                              background: 'color-mix(in srgb, var(--primary-tender-color) 20%, transparent)',
-                              padding: 'clamp(12px, 2.8vw, 16px)',
-                              borderRadius: '55%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              boxShadow: 'none',
-                              transform: tenderDropdownOpen ? 'translateY(-10px)' : 'translateY(0)',
-                              transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                background: 'linear-gradient(135deg, color-mix(in srgb, var(--primary-tender-color) 8%, white) 0%, color-mix(in srgb, var(--primary-tender-color) 15%, white) 100%)',
+                                padding: isMobile ? 'clamp(8px, 2.2vw, 12px)' : 'clamp(16px, 3.5vw, 22px)',
+                                borderRadius: '45%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 8px 20px -6px color-mix(in srgb, var(--primary-tender-color) 40%, transparent)',
+                                transform: tenderDropdownOpen ? 'translateY(-10px) scale(0.9)' : 'translateY(0) scale(1)',
+                                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                             }}>
                               <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="var(--primary-tender-color)">
                                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
@@ -2494,55 +2506,56 @@ export default function Home() {
                             </span>
                             <div style={{
                               display: tenderDropdownOpen ? 'flex' : 'none',
-                              gap: isMobile ? '6px' : 'clamp(8px, 2vw, 12px)',
+                              gap: isMobile ? '8px' : 'clamp(12px, 2.5vw, 16px)',
                               width: '100%',
+                              boxSizing: 'border-box',
                               justifyContent: 'center',
                               opacity: tenderDropdownOpen ? 1 : 0,
                               transition: 'opacity 0.3s ease 0.3s',
                               flexWrap: 'nowrap',
-                              marginLeft: isMobile ? 'clamp(8px, 2vw, 12px)' : '0',
-                              marginRight: isMobile ? 'clamp(8px, 2vw, 12px)' : '0',
+                              padding: isMobile ? '0 clamp(12px, 3vw, 16px)' : '0 clamp(20px, 4vw, 32px)',
                             }}>
                               <div 
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleTenderViewAll();
                                 }}
-                            style={{
+                                style={{
                                   display: 'flex',
+                                  flex: 1,
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
-                                  background: 'var(--primary-tender-color)',
+                                  padding: isMobile ? '5px 0' : '7px 0',
+                                  background: 'linear-gradient(135deg, var(--primary-tender-color) 0%, color-mix(in srgb, var(--primary-tender-color) 85%, black) 100%)',
                                   color: 'white',
-                                  border: 'none',
-                                  borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
+                                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                                  borderRadius: isMobile ? '8px' : '10px',
                                   cursor: 'pointer',
-                                  fontSize: isMobile ? '11px' : 'clamp(11px, 2vw, 13px)',
-                                  fontWeight: 600,
-                                  transition: 'all 0.3s ease',
+                                  fontSize: isMobile ? '11px' : 'clamp(12px, 2vw, 13px)',
+                                  fontWeight: 700,
+                                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                                   gap: isMobile ? '4px' : '6px',
-                                  boxShadow: isMobile ? '0 2px 4px color-mix(in srgb, var(--primary-tender-color) 20%, transparent)' : 'none',
+                                  boxShadow: '0 4px 12px -2px color-mix(in srgb, var(--primary-tender-color) 40%, transparent)',
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.filter = 'brightness(0.85)';
-                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                    e.currentTarget.style.filter = 'brightness(1.1)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isMobile) {
                                     e.currentTarget.style.filter = 'brightness(1)';
-                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
                                   }
                                 }}
                               >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "16"} height={isMobile ? "12" : "16"}>
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                              </svg>
-                              {t('common.view')}
-                            </div>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "15"} height={isMobile ? "12" : "15"}>
+                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                  <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                {t('common.view')}
+                              </div>
                               <div 
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -2550,40 +2563,41 @@ export default function Home() {
                                 }}
                                 style={{
                                   display: 'flex',
+                                  flex: 1,
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
-                                  background: 'var(--primary-tender-color)',
+                                  padding: isMobile ? '5px 0' : '7px 0',
+                                  background: 'linear-gradient(135deg, var(--primary-tender-color) 0%, color-mix(in srgb, var(--primary-tender-color) 85%, black) 100%)',
                                   color: 'white',
-                                  border: 'none',
-                                  borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
+                                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                                  borderRadius: isMobile ? '8px' : '10px',
                                   cursor: 'pointer',
-                                  fontSize: isMobile ? '11px' : 'clamp(11px, 2vw, 13px)',
-                                  fontWeight: 600,
-                                  transition: 'all 0.3s ease',
+                                  fontSize: isMobile ? '11px' : 'clamp(12px, 2vw, 13px)',
+                                  fontWeight: 700,
+                                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                                   gap: isMobile ? '4px' : '6px',
-                                  boxShadow: isMobile ? '0 2px 4px color-mix(in srgb, var(--primary-tender-color) 20%, transparent)' : 'none',
+                                  boxShadow: '0 4px 12px -2px color-mix(in srgb, var(--primary-tender-color) 40%, transparent)',
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.filter = 'brightness(0.85)';
-                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                    e.currentTarget.style.filter = 'brightness(1.1)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isMobile) {
                                     e.currentTarget.style.filter = 'brightness(1)';
-                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
                                   }
                                 }}
                               >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "16"} height={isMobile ? "12" : "16"}>
-                                <line x1="12" y1="5" x2="12" y2="19"/>
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                              </svg>
-                              {t('common.create') || 'Créer'}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width={isMobile ? "12" : "15"} height={isMobile ? "12" : "15"}>
+                                  <line x1="12" y1="5" x2="12" y2="19"/>
+                                  <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                {t('common.create') || 'Créer'}
+                              </div>
                             </div>
-                          </div>
                           </button>
                         </div>
                       </div>

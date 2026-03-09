@@ -137,7 +137,7 @@ const AdsSlider: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #f5f5f5;
+          background: white;
         }
 
         .ad-image {

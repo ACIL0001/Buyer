@@ -22,7 +22,7 @@ interface Category {
   children?: Category[];
 }
 
-export default function CategoryMegaMenu({ item, isActive }: { item: any; isActive: boolean }) {
+export default function CategoryMegaMenu({ item, isActive, isMobile, setMenuOpen }: { item: any; isActive: boolean; isMobile?: boolean; setMenuOpen?: (val: boolean) => void }) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -50,21 +50,23 @@ export default function CategoryMegaMenu({ item, isActive }: { item: any; isActi
   });
 
   useEffect(() => {
-    if (isOpen && !activeCategoryId && categories.length > 0) {
+    if (isOpen && !activeCategoryId && categories.length > 0 && !isMobile) {
       const firstCat = categories[0];
       setActiveCategoryId(firstCat._id);
       if (firstCat.children && firstCat.children.length > 0) {
         setActiveSubCategoryId(null);
       }
     }
-  }, [isOpen, categories, activeCategoryId]);
+  }, [isOpen, categories, activeCategoryId, isMobile]);
 
   const handleMouseEnter = () => {
+    if (isMobile) return;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsOpen(true);
   };
 
   const handleMouseLeave = () => {
+    if (isMobile) return;
     timeoutRef.current = setTimeout(() => {
       setIsOpen(false);
     }, 200);
@@ -89,12 +91,19 @@ export default function CategoryMegaMenu({ item, isActive }: { item: any; isActi
 
   return (
     <div 
-      style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center' }}
+      style={{ 
+        position: 'relative', 
+        height: isMobile ? 'auto' : '100%', 
+        display: 'flex', 
+        flexDirection: isMobile ? 'column' : 'row',
+        alignItems: isMobile ? 'stretch' : 'center',
+        width: '100%'
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <Link 
-        href={item.path} 
+        href="#"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -102,13 +111,18 @@ export default function CategoryMegaMenu({ item, isActive }: { item: any; isActi
           color: isActive || isOpen ? '#0063b1' : '#334155',
           fontWeight: isActive || isOpen ? '600' : '500',
           textDecoration: 'none',
-          fontSize: '15px',
-          padding: '8px 16px',
-          borderRadius: '100px',
+          fontSize: isMobile ? '16px' : '15px',
+          padding: isMobile ? '16px 20px' : '8px 16px',
+          borderRadius: isMobile ? '0' : '100px',
           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          background: isOpen ? 'rgba(0, 99, 177, 0.08)' : 'transparent',
+          background: isOpen && !isMobile ? 'rgba(0, 99, 177, 0.08)' : 'transparent',
+          justifyContent: isMobile ? 'space-between' : 'flex-start',
+          width: '100%'
         }}
-        onClick={() => setIsOpen(false)}
+        onClick={(e) => {
+          e.preventDefault();
+          setIsOpen(!isOpen);
+        }}
       >
         {item.name}
         <svg 
@@ -143,24 +157,26 @@ export default function CategoryMegaMenu({ item, isActive }: { item: any; isActi
 
         return (
           <div style={{
-            position: 'absolute',
-            top: '100%',
-            left: i18n.language === 'ar' ? 'auto' : '-20px',
-            right: i18n.language === 'ar' ? '-20px' : 'auto',
-            width: containerWidth,
-            paddingTop: '16px', // Give some space to hover down
+            position: isMobile ? 'relative' : 'absolute',
+            top: isMobile ? '0' : '100%',
+            left: isMobile ? '0' : (i18n.language === 'ar' ? 'auto' : '-20px'),
+            right: isMobile ? '0' : (i18n.language === 'ar' ? '-20px' : 'auto'),
+            width: isMobile ? '100%' : containerWidth,
+            paddingTop: isMobile ? '0' : '16px',
             zIndex: 1000,
-            animation: 'megaMenuFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            animation: isMobile ? 'none' : 'megaMenuFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
             transition: 'width 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
           }}>
             <div style={{
               background: '#ffffff',
-              borderRadius: '20px',
-              boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1), 0 0 20px rgba(0,0,0,0.05)',
+              borderRadius: isMobile ? '0' : '20px',
+              boxShadow: isMobile ? 'none' : '0 20px 40px -10px rgba(0,0,0,0.1), 0 0 20px rgba(0,0,0,0.05)',
               display: 'flex',
+              flexDirection: isMobile ? 'column' : 'row',
               overflow: 'hidden',
-              border: '1px solid rgba(0, 99, 177, 0.1)',
-              minHeight: hasSubcategories ? '400px' : 'auto'
+              border: isMobile ? 'none' : '1px solid rgba(0, 99, 177, 0.1)',
+              minHeight: isMobile ? 'auto' : (hasSubcategories ? '400px' : 'auto'),
+              borderTop: isMobile ? '1px solid #f1f5f9' : 'none'
             }}>
             {isLoading ? (
               <div style={{ padding: '60px', width: '100%', textAlign: 'center', color: '#94a3b8', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', justifyContent: 'center' }}>
@@ -168,122 +184,225 @@ export default function CategoryMegaMenu({ item, isActive }: { item: any; isActi
                 <span style={{ fontSize: '15px', fontWeight: '500' }}>{t('common.loading', 'Chargement...')}</span>
               </div>
             ) : (
-              <div style={{ display: 'flex', width: '100%' }}>
+              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', width: '100%' }}>
                 {/* Left Side: Root Categories */}
                 <div className="mega-menu-scroll" style={{
-                  width: hasSubcategories ? '340px' : '100%',
+                  width: isMobile ? '100%' : (hasSubcategories ? '340px' : '100%'),
                   background: '#f8fafc',
-                  padding: '16px',
+                  padding: isMobile ? '8px 20px' : '16px',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '12px',
-                  maxHeight: '500px',
-                  overflowY: 'auto',
-                  borderRight: hasSubcategories ? '1px solid #e2e8f0' : 'none',
+                  maxHeight: isMobile ? 'none' : '500px',
+                  overflowY: isMobile ? 'visible' : 'auto',
+                  borderRight: !isMobile && hasSubcategories ? '1px solid #e2e8f0' : 'none',
                   transition: 'width 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}>
                   {categories.map((category) => {
                     const isCatActive = activeCategoryId === category._id;
                     const hasChildren = category.children && category.children.length > 0;
                     return (
-                      <div
-                        key={category._id}
-                        onMouseEnter={() => {
-                          if (activeCategoryId !== category._id) {
-                            setActiveCategoryId(category._id);
-                            setActiveSubCategoryId(null);
-                          }
-                        }}
-                        onClick={() => {
-                          setIsOpen(false);
-                          router.push(`/category?category=${category._id}&name=${encodeURIComponent(category.name)}`);
-                        }}
-                        style={{
-                          position: 'relative',
-                          height: '80px',
-                          borderRadius: '12px',
-                          overflow: 'hidden',
-                          cursor: 'pointer',
-                          border: isCatActive ? '2px solid #0063b1' : '2px solid transparent',
-                          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                          flexShrink: 0,
-                          transform: isCatActive && !hasSubcategories ? 'scale(1.02)' : 'scale(1)'
-                        }}
-                      >
-                        {/* Background Image */}
-                        <img 
-                          src={getImageUrl(category)} 
-                          alt={category.name}
+                      <div key={category._id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div
+                          onMouseEnter={() => {
+                            if (activeCategoryId !== category._id) {
+                              setActiveCategoryId(category._id);
+                              setActiveSubCategoryId(null);
+                            }
+                          }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (hasChildren) {
+                              if (activeCategoryId !== category._id) {
+                                setActiveCategoryId(category._id);
+                                setActiveSubCategoryId(null);
+                              } else if (isMobile) {
+                                // If already active on mobile, toggle it off
+                                setActiveCategoryId(null);
+                              }
+                            } else {
+                              if (setMenuOpen) setMenuOpen(false);
+                              setIsOpen(false);
+                              router.push(`/category?category=${category._id}&name=${encodeURIComponent(category.name)}`);
+                            }
+                          }}
                           style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
+                            position: 'relative',
+                            height: '80px',
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            cursor: 'pointer',
+                            border: isCatActive ? '2px solid #0063b1' : '2px solid transparent',
+                            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                            flexShrink: 0,
+                            transform: isCatActive && !hasSubcategories ? 'scale(1.02)' : 'scale(1)'
+                          }}
+                        >
+                          {/* Background Image */}
+                          <img 
+                            src={getImageUrl(category)} 
+                            alt={category.name}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              zIndex: 1
+                            }}
+                            onError={(e) => {
+                              e.currentTarget.src = "/assets/images/cat.avif";
+                            }}
+                          />
+                          {/* Overlay */}
+                          <div style={{
                             position: 'absolute',
                             top: 0,
                             left: 0,
-                            zIndex: 1
-                          }}
-                          onError={(e) => {
-                            e.currentTarget.src = "/assets/images/cat.avif";
-                          }}
-                        />
-                        {/* Overlay */}
-                        <div style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          background: isCatActive ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.6)',
-                          zIndex: 2,
-                          transition: 'background 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
-                        }}></div>
-                        {/* Content */}
-                        <div style={{
-                          position: 'relative',
-                          zIndex: 3,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          height: '100%',
-                          padding: '0 20px',
-                          color: isCatActive ? '#80c2ff' : '#fff', 
-                          fontWeight: '700',
-                          fontSize: '15px'
-                        }}>
-                          <span>{category.name}</span>
-                          {hasChildren && (
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.2s', transform: isCatActive ? (i18n.language === 'ar' ? 'translateX(-4px)' : 'translateX(4px)') : 'translateX(0)' }}>
-                              {i18n.language === 'ar' ? (
-                                 <path d="M15 18l-6-6 6-6"/>
-                              ) : (
-                                 <path d="M9 18l6-6-6-6"/>
-                              )}
-                            </svg>
-                          )}
+                            width: '100%',
+                            height: '100%',
+                            background: isCatActive ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.6)',
+                            zIndex: 2,
+                            transition: 'background 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                          }}></div>
+                          {/* Content */}
+                          <div style={{
+                            position: 'relative',
+                            zIndex: 3,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            height: '100%',
+                            padding: '0 20px',
+                            color: isCatActive ? '#80c2ff' : '#fff', 
+                            fontWeight: '700',
+                            fontSize: '15px'
+                          }}>
+                            <span>{category.name}</span>
+                            {hasChildren && (
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.2s', transform: (isMobile && isCatActive) ? 'rotate(90deg)' : (isCatActive ? (i18n.language === 'ar' ? 'translateX(-4px)' : 'translateX(4px)') : 'translateX(0)') }}>
+                                {i18n.language === 'ar' ? (
+                                   <path d="M15 18l-6-6 6-6"/>
+                                ) : (
+                                   <path d="M9 18l6-6-6-6"/>
+                                )}
+                              </svg>
+                            )}
+                          </div>
                         </div>
+
+                        {/* Mobile Subcategories (Inline Accordion) */}
+                        {isMobile && isCatActive && hasChildren && (
+                          <div style={{ 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            gap: '8px', 
+                            paddingLeft: '12px',
+                            animation: 'megaMenuFadeIn 0.2s ease-out forwards'
+                          }}>
+                            {category.children!.map((sub: Category) => {
+                              const isSubActive = activeSubCategoryId === sub._id;
+                              const hasSubChildren = sub.children && sub.children.length > 0;
+                              return (
+                                <div key={sub._id} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                  <div 
+                                    onClick={() => {
+                                      if (hasSubChildren) {
+                                        if (activeSubCategoryId !== sub._id) {
+                                          setActiveSubCategoryId(sub._id);
+                                        } else {
+                                          setActiveSubCategoryId(null);
+                                        }
+                                      } else {
+                                        if (setMenuOpen) setMenuOpen(false);
+                                        setIsOpen(false);
+                                        router.push(`/category?category=${sub._id}&name=${encodeURIComponent(sub.name)}`);
+                                      }
+                                    }}
+                                    style={{
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'center',
+                                      padding: '10px 14px',
+                                      borderRadius: '10px',
+                                      background: isSubActive ? '#eff6ff' : '#ffffff',
+                                      color: isSubActive ? '#0063b1' : '#475569',
+                                      fontWeight: isSubActive ? '600' : '500',
+                                      fontSize: '14px',
+                                      border: '1px solid #f1f5f9'
+                                    }}
+                                  >
+                                    <span>{sub.name}</span>
+                                    {hasSubChildren && (
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.2s', transform: isSubActive ? 'rotate(90deg)' : 'rotate(0)' }}>
+                                        <path d="M9 18l6-6-6-6"/>
+                                      </svg>
+                                    )}
+                                  </div>
+
+                                  {/* Mobile Sub-subcategories */}
+                                  {isSubActive && hasSubChildren && (
+                                    <div style={{
+                                      display: 'grid',
+                                      gridTemplateColumns: '1fr',
+                                      gap: '4px',
+                                      paddingLeft: '16px',
+                                      marginTop: '4px',
+                                      marginBottom: '8px'
+                                    }}>
+                                      {sub.children!.map((child: Category) => (
+                                        <div 
+                                          key={child._id}
+                                          onClick={() => {
+                                            if (setMenuOpen) setMenuOpen(false);
+                                            setIsOpen(false);
+                                            router.push(`/category?category=${child._id}&name=${encodeURIComponent(child.name)}`);
+                                          }}
+                                          style={{
+                                            padding: '8px 12px',
+                                            borderRadius: '8px',
+                                            background: '#f8fafc',
+                                            color: '#64748b',
+                                            fontSize: '13px',
+                                            fontWeight: '500',
+                                            border: '1px solid #f1f5f9'
+                                          }}
+                                        >
+                                          {child.name}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Middle and Right: Subcategories Area */}
-                {hasSubcategories && (
+                {/* Middle and Right: Subcategories Area (Desktop Only) */}
+                {!isMobile && hasSubcategories && (
                   <div style={{
                     flex: 1,
                     display: 'flex',
+                    flexDirection: isMobile ? 'column' : 'row',
                     background: '#ffffff',
-                    maxHeight: '500px',
-                    overflow: 'hidden'
+                    maxHeight: isMobile ? 'none' : '500px',
+                    overflow: isMobile ? 'visible' : 'hidden'
                   }}>
                   {activeCategory ? (
                     <>
                       {/* Subcategories Column */}
                       <div className="mega-menu-scroll" style={{
-                        width: showSubSubcategoriesPanel ? '300px' : '100%',
-                        padding: '30px 24px',
-                        overflowY: 'auto',
-                        borderRight: showSubSubcategoriesPanel ? '1px solid #f1f5f9' : 'none',
+                        width: isMobile ? '100%' : (showSubSubcategoriesPanel ? '300px' : '100%'),
+                        padding: isMobile ? '20px 24px' : '30px 24px',
+                        overflowY: isMobile ? 'visible' : 'auto',
+                        borderRight: !isMobile && showSubSubcategoriesPanel ? '1px solid #f1f5f9' : 'none',
+                        borderBottom: isMobile && showSubSubcategoriesPanel ? '1px solid #f1f5f9' : 'none',
                         display: 'flex',
                         flexDirection: 'column',
                         transition: 'width 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
@@ -309,9 +428,19 @@ export default function CategoryMegaMenu({ item, isActive }: { item: any; isActi
                                 <div 
                                   key={sub._id}
                                   onMouseEnter={() => setActiveSubCategoryId(sub._id)}
-                                  onClick={() => {
-                                    setIsOpen(false);
-                                    router.push(`/category?category=${sub._id}&name=${encodeURIComponent(sub.name)}`);
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    if (sub.children && sub.children.length > 0) {
+                                      if (activeSubCategoryId !== sub._id) {
+                                        setActiveSubCategoryId(sub._id);
+                                      } else if (isMobile) {
+                                        setActiveSubCategoryId(null);
+                                      }
+                                    } else {
+                                      if (setMenuOpen) setMenuOpen(false);
+                                      setIsOpen(false);
+                                      router.push(`/category?category=${sub._id}&name=${encodeURIComponent(sub.name)}`);
+                                    }
                                   }}
                                   style={{
                                     display: 'flex',
@@ -353,8 +482,8 @@ export default function CategoryMegaMenu({ item, isActive }: { item: any; isActi
                         return (
                           <div className="mega-menu-scroll" style={{
                             flex: 1,
-                            padding: '30px 24px',
-                            overflowY: 'auto',
+                            padding: isMobile ? '20px 24px' : '30px 24px',
+                            overflowY: isMobile ? 'visible' : 'auto',
                             background: '#fafbfc',
                             display: 'flex',
                             flexDirection: 'column'
@@ -377,6 +506,7 @@ export default function CategoryMegaMenu({ item, isActive }: { item: any; isActi
                                   key={child._id}
                                   className="mega-menu-child-card"
                                   onClick={() => {
+                                    if (setMenuOpen) setMenuOpen(false);
                                     setIsOpen(false);
                                     router.push(`/category?category=${child._id}&name=${encodeURIComponent(child.name)}`);
                                   }}

@@ -476,8 +476,8 @@ const Home1LiveTenders = () => {
         }
       `}</style>
 
-      <div className="modern-tenders-section" style={{ padding: '10px 0 0 0', background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)' }}>
-        <div className="container-responsive">
+      <div className="modern-tenders-section" style={{ padding: '10px 0 0 0', background: 'white' }}>
+        <div className="container-responsive" style={{ background: 'white' }}>
           {/* Section Header */}
           <div className="section-header" style={{
             textAlign: 'center',
@@ -516,6 +516,7 @@ const Home1LiveTenders = () => {
                 style={{
                   padding: 'clamp(10px, 2vw, 16px) 0 0',
                   overflow: 'visible',
+                  background: 'white',
                 }}
               >
                 {liveTenders.map((tender, idx) => {
@@ -1087,6 +1088,7 @@ const Home1LiveTenders = () => {
               opacity: 0,
               transform: 'translateY(30px)',
               animation: 'fadeInUp 0.8s ease-out 0.4s forwards',
+              background: 'white',
             }}>
             <Link
               href="/tenders"

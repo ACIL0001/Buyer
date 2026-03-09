@@ -960,26 +960,36 @@ export const Header = () => {
                   const isActive = isNavItemActive(item);
                   return (
                     <li key={index} style={{ marginBottom: '8px' }}>
-                      <Link
-                        href={item.path}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: isMobile ? '16px 20px' : '15px',
+                      {item.path === '/category' ? (
+                        <div style={{
                           background: isActive ? '#f8f9fa' : 'transparent',
                           borderRadius: '12px',
-                          color: isActive ? '#0063b1' : '#333',
-                          fontWeight: isActive ? '600' : '500',
-                          fontSize: isMobile ? '16px' : '16px',
-                          textDecoration: 'none',
-                          transition: 'all 0.3s ease',
                           borderLeft: isActive ? '4px solid #0063b1' : '4px solid transparent',
-                          minHeight: '44px' // Better touch target
-                        }}
-                        onClick={() => setMenuOpen(false)}
-                      >
-                        {item.name}
-                      </Link>
+                        }}>
+                          <CategoryMegaMenu item={item} isActive={isActive} isMobile={true} setMenuOpen={setMenuOpen} />
+                        </div>
+                      ) : (
+                        <Link
+                          href={item.path}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: isMobile ? '16px 20px' : '15px',
+                            background: isActive ? '#f8f9fa' : 'transparent',
+                            borderRadius: '12px',
+                            color: isActive ? '#0063b1' : '#333',
+                            fontWeight: isActive ? '600' : '500',
+                            fontSize: isMobile ? '16px' : '16px',
+                            textDecoration: 'none',
+                            transition: 'all 0.3s ease',
+                            borderLeft: isActive ? '4px solid #0063b1' : '4px solid transparent',
+                            minHeight: '44px' // Better touch target
+                          }}
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          {item.name}
+                        </Link>
+                      )}
                     </li>
                   );
                 })}

@@ -3582,8 +3582,7 @@ const MultipurposeDetails2 = () => {
                                             position: "absolute",
                                             top: "15px",
                                             left: "15px",
-                                            background:
-                                              "linear-gradient(90deg, #27F5CC, #20d4a8)",
+                                            background: "var(--primary-tender-color)",
                                             color: "white",
                                             padding: "6px 12px",
                                             borderRadius: "20px",
@@ -3798,7 +3797,7 @@ const MultipurposeDetails2 = () => {
                                             background: hasTenderEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                                             borderRadius: '8px',
                                             padding: '4px 8px',
-                                            borderLeft: hasTenderEnded ? '3px solid #d0d0d0' : '3px solid #27F5CC',
+                                            borderLeft: hasTenderEnded ? '3px solid #d0d0d0' : '3px solid var(--primary-tender-color)',
                                           }}>
                                             <p style={{
                                               fontSize: "10px",
@@ -3822,7 +3821,7 @@ const MultipurposeDetails2 = () => {
                                             background: hasTenderEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                                             borderRadius: '8px',
                                             padding: '4px 8px',
-                                            borderLeft: hasTenderEnded ? '3px solid #d0d0d0' : '3px solid #27F5CC',
+                                            borderLeft: hasTenderEnded ? '3px solid #d0d0d0' : '3px solid var(--primary-tender-color)',
                                           }}>
                                             <p style={{
                                               fontSize: "10px",
@@ -3861,7 +3860,7 @@ const MultipurposeDetails2 = () => {
                                         padding: "4px 8px",
                                         marginBottom: "8px",
                                         border: hasTenderEnded ? "1px solid #e0e0e0" : "1px solid #e9ecef",
-                                        borderLeft: hasTenderEnded ? '3px solid #d0d0d0' : '3px solid #27F5CC',
+                                        borderLeft: hasTenderEnded ? '3px solid #d0d0d0' : '3px solid var(--primary-tender-color)',
                                       }}>
                                         <p style={{
                                           fontSize: "10px",

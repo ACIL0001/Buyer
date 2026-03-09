@@ -7,7 +7,10 @@ import { useCreateSocket } from '@/contexts/socket';
 import useAuth from '@/hooks/useAuth';
 import { DashboardKeyframes, StatusBadge, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
 
-const ACCENT = '#0063b1';
+const ACCENT = 'var(--primary-auction-color)';
+const ACCENT_80 = 'color-mix(in srgb, var(--primary-auction-color) 80%, transparent)'; // cc in hex
+const ACCENT_25 = 'color-mix(in srgb, var(--primary-auction-color) 25%, transparent)'; // 40 in hex
+const ACCENT_10 = 'color-mix(in srgb, var(--primary-auction-color) 10%, transparent)'; // 18 in hex
 
 enum BID_STATUS { OPEN = 'OPEN', CLOSED = 'CLOSED', ON_AUCTION = 'ACCEPTED', ARCHIVED = 'ARCHIVED' }
 enum AUCTION_TYPE { CLASSIC = 'CLASSIC', EXPRESS = 'EXPRESS', AUTO_SUB_BID = 'AUTO_SUB_BID' }
@@ -60,7 +63,7 @@ export default function AuctionDetailPage() {
     staleTime: 60000,
   });
 
-  if (loading) return <DetailPageSkeleton accentColor="#0063b1" />;
+  if (loading) return <DetailPageSkeleton accentColor="var(--primary-auction-color)" />;
 
   if (!auction) return (
     <div style={{ textAlign: 'center', padding: '60px 24px' }}>
@@ -92,7 +95,7 @@ export default function AuctionDetailPage() {
       )}
 
       {/* Hero Header */}
-      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT}40`, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT_80})`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT_25}`, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08), transparent 60%)', pointerEvents: 'none' }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
           <button onClick={() => router.push('/dashboard/auctions')} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, marginBottom: 14 }}>← Retour aux enchères</button>
@@ -114,7 +117,7 @@ export default function AuctionDetailPage() {
           { label: 'Offres estimées', value: (auction as any).offersCount || (auction as any).offers?.length || 'N/A', color: ACCENT, icon: '👥' },
         ].map(t => (
           <div key={t.label} style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', borderLeft: `4px solid ${t.color}`, display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: `${t.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{t.icon}</div>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: t.color.startsWith('var(') ? ACCENT_10 : `${t.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{t.icon}</div>
             <div>
               <div style={{ fontSize: '1.4rem', fontWeight: 800, color: t.color, lineHeight: 1 }}>{t.value}</div>
               <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 4 }}>{t.label}</div>

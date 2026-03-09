@@ -93,13 +93,13 @@ export default function DirectSalesPage() {
   const sold = saleList.filter(s => s.status === SALE_STATUS.SOLD);
 
   const stats = [
-    { label: 'Total', value: saleList.length, color: '#0063b1', icon: '🛍️' },
+    { label: 'Total', value: saleList.length, color: 'var(--primary-ds-color)', icon: '🛍️' },
     { label: 'Actifs', value: active.length, color: '#10b981', icon: '✅' },
     { label: 'Rupture de stock', value: outOfStock.length, color: '#ef4444', icon: '⚠️' },
     { label: 'Vendus', value: sold.length, color: '#0284c7', icon: '💰' },
   ];
 
-  if (isLoading) return <ListPageSkeleton accentColor="#d97706" />;
+  if (isLoading) return <ListPageSkeleton accentColor="var(--primary-ds-color)" />;
 
   return (
     <>
@@ -108,7 +108,7 @@ export default function DirectSalesPage() {
         title={t('dashboard.list.myDirectSales', 'Mes Ventes Directes')}
         subtitle={`${saleList.length} vente${saleList.length !== 1 ? 's' : ''} au total`}
         icon="🛍️"
-        accentColor="#d97706"
+        accentColor="var(--primary-ds-color)"
         stats={stats}
         headerActions={
           <HeaderAddBtn label={t('dashboard.list.newSale', 'Nouvelle vente')} href="/dashboard/direct-sales/create/" />
@@ -133,7 +133,7 @@ export default function DirectSalesPage() {
             <div style={{ fontSize: '52px', marginBottom: '16px' }}>🛍️</div>
             <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569', margin: '0 0 8px' }}>Aucune vente directe</p>
             <p style={{ color: '#94a3b8', margin: '0 0 24px' }}>Créez votre première vente directe</p>
-            <a href="/dashboard/direct-sales/create/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 22px', background: '#0063b1', color: '#fff', borderRadius: '10px', fontWeight: 700, textDecoration: 'none' }}>
+            <a href="/dashboard/direct-sales/create/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 22px', background: 'var(--primary-ds-color)', color: '#fff', borderRadius: '10px', fontWeight: 700, textDecoration: 'none' }}>
               ＋ Nouvelle vente
             </a>
           </div>
@@ -159,7 +159,7 @@ export default function DirectSalesPage() {
                       <span style={{ padding: '3px 9px', borderRadius: '12px', background: '#f1f5f9', color: '#475569', fontSize: '0.76rem', fontWeight: 600 }}>{catName || 'N/A'}</span>
                     </td>
                     <td style={tableStyles.td}>
-                      <span style={{ fontWeight: 700, color: '#0063b1' }}>{price?.toFixed(2)} DA</span>
+                      <span style={{ fontWeight: 700, color: 'var(--primary-ds-color)' }}>{price?.toFixed(2)} DA</span>
                     </td>
                     <td style={tableStyles.td}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

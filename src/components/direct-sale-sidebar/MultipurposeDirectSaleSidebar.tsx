@@ -256,7 +256,7 @@ const MultipurposeDirectSaleSidebar = () => {
           // Dynamic accent color based on Sale Type
           const accentGradient = selectedSaleType === SALE_TYPE.SERVICE 
             ? 'linear-gradient(135deg, #10b981, #059669)' // Green for Service
-            : 'linear-gradient(135deg, #d4af37, #f7ef8a)'; // Golden gradient for Product (Vente Directe)
+            : 'var(--primary-ds-color)'; // Golden gradient for Product (Vente Directe)
             
           const accentColor = selectedSaleType === SALE_TYPE.SERVICE ? '#10b981' : '#d4af37';
           const accentShadow = selectedSaleType === SALE_TYPE.SERVICE 
@@ -1117,11 +1117,11 @@ const MultipurposeDirectSaleSidebar = () => {
                                 )}
 
                               <div style={{
-                                background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                                background: 'linear-gradient(135deg, color-mix(in srgb, var(--primary-ds-color) 5%, white), color-mix(in srgb, var(--primary-ds-color) 12%, white))',
                                 borderRadius: '6px',
                                 padding: '4px 6px',
-                                border: '1px solid #e9ecef',
-                                borderLeft: '3px solid #d4af37',
+                                border: '1px solid color-mix(in srgb, var(--primary-ds-color) 12%, white)',
+                                borderLeft: '3px solid var(--primary-ds-color)',
                               }}>
                                 <p style={{
                                   fontSize: '9px',
@@ -1159,12 +1159,12 @@ const MultipurposeDirectSaleSidebar = () => {
                             {/* Price Info */}
                             {directSale.price && !isNaN(directSale.price) && directSale.price > 0 && (
                             <div style={{
-                              background: isSoldOut ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                              background: isSoldOut ? '#f0f0f0' : 'linear-gradient(135deg, color-mix(in srgb, var(--primary-ds-color) 5%, white), color-mix(in srgb, var(--primary-ds-color) 12%, white))',
                               borderRadius: '8px',
                               padding: '4px 8px',
                               marginBottom: '8px',
-                              border: isSoldOut ? '1px solid #e0e0e0' : '1px solid #e9ecef',
-                              borderLeft: isSoldOut ? '3px solid #ccc' : '3px solid #d4af37',
+                              border: isSoldOut ? '1px solid #e0e0e0' : '1px solid color-mix(in srgb, var(--primary-ds-color) 12%, white)',
+                              borderLeft: isSoldOut ? '3px solid #ccc' : '3px solid var(--primary-ds-color)',
                             }}>
                               <p style={{
                                 fontSize: '10px',
@@ -1176,7 +1176,7 @@ const MultipurposeDirectSaleSidebar = () => {
                               </p>
                                 <p style={{
                                 fontSize: '12px',
-                                color: isSoldOut ? '#888' : '#d4af37',
+                                color: isSoldOut ? '#888' : 'var(--primary-ds-color)',
                                   margin: 0,
                                 fontWeight: '600',
                               }}>
@@ -1289,27 +1289,27 @@ const MultipurposeDirectSaleSidebar = () => {
                                 gap: '8px',
                                 width: '100%',
                                 padding: '12px 20px',
-                                background: isSoldOut ? '#cccccc' : 'linear-gradient(135deg, #d4af37, #f7ef8a)', // Golden gradient
-                                color: isSoldOut ? '#888' : '#8B7500', // Dark gold text
+                                background: isSoldOut ? '#cccccc' : 'var(--primary-ds-color)', // Golden gradient
+                                color: isSoldOut ? '#888' : 'color-mix(in srgb, var(--primary-ds-color) 30%, black)', // Dark gold text
                                 textDecoration: 'none',
                                 borderRadius: '25px',
                                 fontWeight: '600',
                                 fontSize: '14px',
                                 transition: 'all 0.3s ease',
-                                boxShadow: isSoldOut ? 'none' : '0 4px 12px rgba(212, 175, 55, 0.3)', // Golden shadow
+                                boxShadow: isSoldOut ? 'none' : '0 4px 12px color-mix(in srgb, var(--primary-ds-color) 30%, transparent)', // Golden shadow
                               }}
                               onMouseEnter={(e) => {
                                 if (!isSoldOut) {
-                                  e.currentTarget.style.background = 'linear-gradient(135deg, #f7ef8a, #d4af37)';
+                                  e.currentTarget.style.background = 'var(--primary-ds-color)';
                                   e.currentTarget.style.transform = 'translateY(-2px)';
-                                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(212, 175, 55, 0.4)';
+                                  e.currentTarget.style.boxShadow = '0 8px 20px color-mix(in srgb, var(--primary-ds-color) 40%, transparent)';
                                 }
                               }}
                               onMouseLeave={(e) => {
                                 if (!isSoldOut) {
-                                  e.currentTarget.style.background = 'linear-gradient(135deg, #d4af37, #f7ef8a)';
+                                  e.currentTarget.style.background = 'var(--primary-ds-color)';
                                   e.currentTarget.style.transform = 'translateY(0)';
-                                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(212, 175, 55, 0.3)';
+                                  e.currentTarget.style.boxShadow = '0 4px 12px color-mix(in srgb, var(--primary-ds-color) 30%, transparent)';
                                 }
                               }}
                               onClick={(event) => {
@@ -1337,9 +1337,9 @@ const MultipurposeDirectSaleSidebar = () => {
                   <div className="col-12 text-center py-5">
                     <div style={{
                       padding: '60px 20px',
-                      background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                      background: 'linear-gradient(135deg, color-mix(in srgb, var(--primary-ds-color) 5%, white), color-mix(in srgb, var(--primary-ds-color) 12%, white))',
                       borderRadius: '20px',
-                      border: '2px dashed rgba(212, 175, 55, 0.2)', // Golden dashed border
+                      border: '2px dashed color-mix(in srgb, var(--primary-ds-color) 20%, transparent)', // Golden dashed border
                     }}>
                       <div style={{
                         fontSize: '48px',
@@ -1413,11 +1413,11 @@ const MultipurposeDirectSaleSidebar = () => {
                         width: '45px',
                         height: '45px',
                         borderRadius: '50%',
-                        background: currentPage === page ? 'linear-gradient(135deg, #d4af37, #f7ef8a)' : '#f5f5f5', // Golden gradient for active
-                        color: currentPage === page ? '#8B7500' : '#333', // Dark gold text for active
+                        background: currentPage === page ? 'var(--primary-ds-color)' : '#f5f5f5', // Golden gradient for active
+                        color: currentPage === page ? 'color-mix(in srgb, var(--primary-ds-color) 30%, black)' : '#333', // Dark gold text for active
                         fontWeight: currentPage === page ? '700' : '600',
                         textDecoration: 'none',
-                        boxShadow: currentPage === page ? '0 4px 15px rgba(212, 175, 55, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                        boxShadow: currentPage === page ? '0 4px 15px color-mix(in srgb, var(--primary-ds-color) 30%, transparent)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
                         transition: 'all 0.3s ease',
                       }}>{page.toString().padStart(2, '0')}</a>
                     </li>

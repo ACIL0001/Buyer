@@ -550,7 +550,7 @@ const Home1LiveAuction = () => {
             <h2 style={{
               fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)',
               fontWeight: '800',
-              color: '#0063b1',
+              color: 'var(--primary-auction-color)',
               marginBottom: 'clamp(8px, 1.5vw, 12px)',
             }}>
               {t('liveAuction.title')}
@@ -616,7 +616,7 @@ const Home1LiveAuction = () => {
                           position: 'relative',
                           height: 'clamp(120px, 20vw, 160px)',
                           overflow: 'hidden',
-                          background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
+                          background: 'var(--primary-auction-color)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -730,7 +730,7 @@ const Home1LiveAuction = () => {
                             <div style={{
                               background: isEnded
                                 ? 'rgba(0,0,0,0.55)'
-                                : (isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'linear-gradient(45deg, #0063b1, #00a3e0)'),
+                                : (isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'linear-gradient(45deg, var(--primary-auction-color), var(--primary-auction-color))'),
                               color: 'white',
                               padding: '6px 10px',
                               borderRadius: '20px',
@@ -798,7 +798,7 @@ const Home1LiveAuction = () => {
                               borderRadius: '8px',
                               padding: '4px 8px',
                               border: '1px solid #e9ecef',
-                              borderLeft: '3px solid #0063b1',
+                              borderLeft: '3px solid var(--primary-auction-color)',
                               position: 'relative',
                               overflow: 'hidden',
                             }}>
@@ -840,7 +840,7 @@ const Home1LiveAuction = () => {
                               borderRadius: '8px',
                               padding: '4px 8px',
                               border: '1px solid #e9ecef',
-                              borderLeft: '3px solid #0063b1',
+                              borderLeft: '3px solid var(--primary-auction-color)',
                               position: 'relative',
                               overflow: 'hidden',
                             }}>
@@ -882,13 +882,13 @@ const Home1LiveAuction = () => {
                                 width: '6px',
                                 height: '6px',
                                 borderRadius: '50%',
-                                background: '#0063b1',
+                                background: 'var(--primary-auction-color)',
                                 animation: 'pulse 2s infinite',
                               }}></div>
                               <span style={{
                                 fontSize: '11px',
                                 fontWeight: '600',
-                                color: '#0063b1',
+                                color: 'var(--primary-auction-color)',
                               }}>
                                 {((auction as any).participantsCount || 0)} {t('liveAuction.participants')}
                               </span>
@@ -933,17 +933,17 @@ const Home1LiveAuction = () => {
                                 }}
                                 style={{
                                   fontSize: '14px',
-                                  color: '#0063b1',
+                                  color: 'var(--primary-auction-color)',
                                   fontWeight: '600',
                                   textDecoration: 'none',
                                   transition: 'color 0.3s ease',
                                 }}
                                 onMouseEnter={(e) => {
-                                  e.currentTarget.style.color = '#00a3e0';
+                                  e.currentTarget.style.color = '#333';
                                   e.currentTarget.style.textDecoration = 'underline';
                                 }}
                                 onMouseLeave={(e) => {
-                                  e.currentTarget.style.color = '#0063b1';
+                                  e.currentTarget.style.color = 'var(--primary-auction-color)';
                                   e.currentTarget.style.textDecoration = 'none';
                                 }}
                               >
@@ -975,7 +975,7 @@ const Home1LiveAuction = () => {
                               gap: 'clamp(6px, 1.5vw, 8px)',
                               width: '100%',
                               padding: 'clamp(10px, 2vw, 12px) clamp(16px, 3vw, 20px)',
-                              background: isEnded ? '#c7c7c7' : 'linear-gradient(90deg, #0063b1, #00a3e0)',
+                              background: isEnded ? '#c7c7c7' : 'var(--primary-auction-color)',
                               color: 'white',
                               textDecoration: 'none',
                               borderRadius: '25px',
@@ -987,14 +987,14 @@ const Home1LiveAuction = () => {
                             }}
                             onMouseEnter={(e) => {
                               if (!isEnded) {
-                              e.currentTarget.style.background = 'linear-gradient(90deg, #00a3e0, #0063b1)';
+                              e.currentTarget.style.background = 'var(--primary-auction-color)';
                               e.currentTarget.style.transform = 'translateY(-2px)';
                               e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 99, 177, 0.4)';
                               }
                             }}
                             onMouseLeave={(e) => {
                               if (!isEnded) {
-                              e.currentTarget.style.background = 'linear-gradient(90deg, #0063b1, #00a3e0)';
+                              e.currentTarget.style.background = 'var(--primary-auction-color)';
                               e.currentTarget.style.transform = 'translateY(0)';
                               e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 99, 177, 0.3)';
                               }
@@ -1041,7 +1041,7 @@ const Home1LiveAuction = () => {
                     marginLeft: '-25px',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(90deg, #0063b1, #00a3e0)';
+                    e.currentTarget.style.background = 'var(--primary-auction-color)';
                     e.currentTarget.style.color = 'white';
                     e.currentTarget.style.transform = 'scale(1.1)';
                   }}
@@ -1074,7 +1074,7 @@ const Home1LiveAuction = () => {
                     marginRight: '-25px',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(90deg, #0063b1, #00a3e0)';
+                    e.currentTarget.style.background = 'var(--primary-auction-color)';
                     e.currentTarget.style.color = 'white';
                     e.currentTarget.style.transform = 'scale(1.1)';
                   }}
@@ -1156,7 +1156,7 @@ const Home1LiveAuction = () => {
                 alignItems: 'center',
                 gap: 'clamp(8px, 1.5vw, 10px)',
                 padding: 'clamp(12px, 2.5vw, 14px) clamp(24px, 4vw, 28px)',
-                background: 'linear-gradient(90deg, #0063b1, #00a3e0)',
+                background: 'var(--primary-auction-color)',
                 color: 'white',
                 textDecoration: 'none',
                 borderRadius: '50px',
@@ -1166,12 +1166,12 @@ const Home1LiveAuction = () => {
                 transition: 'all 0.3s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(90deg, #00a3e0, #0063b1)';
+                e.currentTarget.style.background = 'var(--primary-auction-color)';
                 e.currentTarget.style.transform = 'translateY(-3px)';
                 e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 99, 177, 0.4)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(90deg, #0063b1, #00a3e0)';
+                e.currentTarget.style.background = 'var(--primary-auction-color)';
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 99, 177, 0.3)';
               }}

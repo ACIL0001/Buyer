@@ -37,6 +37,7 @@ import {
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAuth from '@/hooks/useAuth';
+import { useSettingsStore } from '@/contexts/settingsStore';
 
 // Shared Wizard Components
 import WizardWrapper from '@/components/shared/wizard/WizardWrapper';
@@ -76,11 +77,22 @@ export default function CreateTenderPage() {
     const router = useRouter();
     const { auth, isLogged } = useAuth();
     const { t } = useTranslation();
+    const { tenderColor } = useSettingsStore();
 
     const pageTheme = React.useMemo(() => createTheme(theme, {
         palette: {
-            primary: { main: '#059669' }, // Green
-            secondary: { main: '#10b981' }, // Lighter green
+            primary: { 
+                main: tenderColor || '#059669',
+                light: tenderColor || '#059669',
+                dark: tenderColor || '#059669',
+                contrastText: '#fff'
+            },
+            secondary: { 
+                main: tenderColor || '#059669',
+                light: tenderColor || '#059669',
+                dark: tenderColor || '#059669',
+                contrastText: '#fff'
+            },
         },
         components: {
             MuiOutlinedInput: {
@@ -117,7 +129,7 @@ export default function CreateTenderPage() {
                                 transform: 'translateX(16px)',
                                 color: '#fff',
                                 '& + .MuiSwitch-track': {
-                                    backgroundColor: '#059669',
+                                    backgroundColor: tenderColor || '#059669',
                                     opacity: 1,
                                     border: 0,
                                 },
@@ -138,7 +150,7 @@ export default function CreateTenderPage() {
                 }
             }
         }
-    }), [theme]);
+    }), [theme, tenderColor]);
     
     // State
     const [activeStep, setActiveStep] = useState(0);

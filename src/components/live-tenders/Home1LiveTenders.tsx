@@ -489,7 +489,7 @@ const Home1LiveTenders = () => {
             <h2 style={{
               fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)',
               fontWeight: '800',
-              color: '#27F5CC',
+              color: 'var(--primary-tender-color)',
               marginBottom: 'clamp(8px, 1.5vw, 12px)',
             }}>
               {t('liveTenders.title')}
@@ -561,7 +561,7 @@ const Home1LiveTenders = () => {
                           position: 'relative',
                           height: 'clamp(120px, 20vw, 160px)',
                           overflow: 'hidden',
-                          background: 'linear-gradient(135deg, #27F5CC, #00D4AA)',
+                          background: 'var(--primary-tender-color)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -675,7 +675,7 @@ const Home1LiveTenders = () => {
                             <div style={{
                               background: isEnded
                                 ? 'rgba(0,0,0,0.65)'
-                                : (isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'linear-gradient(45deg, #27F5CC, #00D4AA)'),
+                                : (isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'linear-gradient(45deg, var(--primary-tender-color), var(--primary-tender-color))'),
                               color: 'white',
                               padding: '6px 10px',
                               borderRadius: '20px',
@@ -743,7 +743,7 @@ const Home1LiveTenders = () => {
                               borderRadius: '8px',
                               padding: '4px 8px',
                               border: '1px solid #e9ecef',
-                              borderLeft: '3px solid #27F5CC',
+                              borderLeft: '3px solid var(--primary-tender-color)',
                               position: 'relative',
                               overflow: 'hidden',
                             }}>
@@ -780,7 +780,7 @@ const Home1LiveTenders = () => {
                                 borderRadius: '8px',
                                 padding: '4px 8px',
                                 border: '1px solid #e9ecef',
-                                borderLeft: '3px solid #27F5CC',
+                                borderLeft: '3px solid var(--primary-tender-color)',
                                 position: 'relative',
                                 overflow: 'hidden',
                               }}>
@@ -822,13 +822,13 @@ const Home1LiveTenders = () => {
                                 width: '6px',
                                 height: '6px',
                                 borderRadius: '50%',
-                                background: '#27F5CC',
+                                background: 'var(--primary-tender-color)',
                                 animation: 'pulse 2s infinite',
                               }}></div>
                               <span style={{
                                 fontSize: '11px',
                                 fontWeight: '600',
-                                color: '#27F5CC',
+                                color: 'var(--primary-tender-color)',
                               }}>
                                 {((tender as any).participantsCount || 0)} {t('liveTenders.participants')}
                               </span>
@@ -915,7 +915,7 @@ const Home1LiveTenders = () => {
                               gap: 'clamp(6px, 1.5vw, 8px)',
                               width: '100%',
                               padding: 'clamp(10px, 2vw, 12px) clamp(16px, 3vw, 20px)',
-                              background: isEnded ? '#c7c7c7' : 'linear-gradient(90deg, #27F5CC, #00D4AA)',
+                              background: isEnded ? '#c7c7c7' : 'var(--primary-tender-color)',
                               color: 'white',
                               textDecoration: 'none',
                               borderRadius: '25px',
@@ -927,14 +927,14 @@ const Home1LiveTenders = () => {
                             }}
                             onMouseEnter={(e) => {
                               if (!isEnded) {
-                                e.currentTarget.style.background = 'linear-gradient(90deg, #00D4AA, #27F5CC)';
+                                e.currentTarget.style.background = 'var(--primary-tender-color)';
                                 e.currentTarget.style.transform = 'translateY(-2px)';
                                 e.currentTarget.style.boxShadow = '0 8px 20px rgba(39, 245, 204, 0.4)';
                               }
                             }}
                             onMouseLeave={(e) => {
                               if (!isEnded) {
-                                e.currentTarget.style.background = 'linear-gradient(90deg, #27F5CC, #00D4AA)';
+                                e.currentTarget.style.background = 'var(--primary-tender-color)';
                                 e.currentTarget.style.transform = 'translateY(0)';
                                 e.currentTarget.style.boxShadow = '0 4px 12px rgba(39, 245, 204, 0.3)';
                               }
@@ -1100,7 +1100,7 @@ const Home1LiveTenders = () => {
                 alignItems: 'center',
                 gap: 'clamp(8px, 1.5vw, 10px)',
                 padding: 'clamp(12px, 2.5vw, 14px) clamp(24px, 4vw, 28px)',
-                background: 'linear-gradient(90deg, #27F5CC, #00D4AA)',
+                background: 'var(--primary-tender-color)',
                 color: 'white',
                 textDecoration: 'none',
                 borderRadius: '50px',
@@ -1110,12 +1110,12 @@ const Home1LiveTenders = () => {
                 transition: 'all 0.3s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(90deg, #00D4AA, #27F5CC)';
+                e.currentTarget.style.background = 'var(--primary-tender-color)';
                 e.currentTarget.style.transform = 'translateY(-3px)';
                 e.currentTarget.style.boxShadow = '0 12px 30px rgba(39, 245, 204, 0.4)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(90deg, #27F5CC, #00D4AA)';
+                e.currentTarget.style.background = 'var(--primary-tender-color)';
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(39, 245, 204, 0.3)';
               }}

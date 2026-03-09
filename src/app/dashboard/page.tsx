@@ -32,14 +32,14 @@ import { ListPageSkeleton, DashboardKeyframes } from '@/components/dashboard/das
 // ----------- Design Constants & Mock Data -----------
 
 const COLORS = {
-    submission: { bg: '#F1F8E9', main: '#558B2F', light: '#DCEDC8' }, // Light Green
-    auction: { bg: '#E3F2FD', main: '#1565C0', light: '#BBDEFB' },    // Light Blue
-    direct: { bg: '#FFF3E0', main: '#EF6C00', light: '#FFE0B2' },     // Light Orange
+    submission: { bg: 'color-mix(in srgb, var(--primary-tender-color) 10%, transparent)', main: 'var(--primary-tender-color)', light: 'color-mix(in srgb, var(--primary-tender-color) 20%, transparent)' },
+    auction: { bg: 'color-mix(in srgb, var(--primary-auction-color) 10%, transparent)', main: 'var(--primary-auction-color)', light: 'color-mix(in srgb, var(--primary-auction-color) 20%, transparent)' },
+    direct: { bg: 'color-mix(in srgb, var(--primary-ds-color) 10%, transparent)', main: 'var(--primary-ds-color)', light: 'color-mix(in srgb, var(--primary-ds-color) 20%, transparent)' },
     
     // New Colors
-    offer: { bg: '#E3F2FD', main: '#2196F3', light: '#BBDEFB' },        // Blue
+    offer: { bg: 'color-mix(in srgb, var(--primary-auction-color) 10%, transparent)', main: 'var(--primary-auction-color)', light: 'color-mix(in srgb, var(--primary-auction-color) 20%, transparent)' },
     pending: { bg: '#FFFDE7', main: '#FBC02D', light: '#FFF9C4' },      // Yellow
-    response: { bg: '#F1F8E9', main: '#4CAF50', light: '#DCEDC8' },     // Green
+    response: { bg: 'color-mix(in srgb, var(--primary-tender-color) 10%, transparent)', main: 'var(--primary-tender-color)', light: 'color-mix(in srgb, var(--primary-tender-color) 20%, transparent)' },
     waiting: { bg: '#FDFBF7', main: '#FFECB3', light: '#FFE0B2' },      // Beige/Pale
     finance_green: { bg: '#E8F5E9', main: '#43A047', light: '#C8E6C9' },// Money Green
     finance_blue: { bg: '#E3F2FD', main: '#1976D2', light: '#BBDEFB' }, // Chart Blue
@@ -399,7 +399,7 @@ export default function DashboardPage() {
     if (isLoading && isLogged) return (
         <Container maxWidth="xl" sx={{ py: 4 }}>
             <DashboardKeyframes />
-            <ListPageSkeleton accentColor="#1976D2" />
+            <ListPageSkeleton accentColor="var(--primary-auction-color)" />
         </Container>
     );
 

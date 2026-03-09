@@ -46,7 +46,7 @@ interface PillChipProps {
   color?: string;
 }
 
-export function PillChip({ label, active, onClick, count, color = '#0063b1' }: PillChipProps) {
+export function PillChip({ label, active, onClick, count, color = 'var(--primary-auction-color)' }: PillChipProps) {
   return (
     <button
       onClick={onClick}
@@ -96,11 +96,11 @@ interface ActionBtnProps {
 }
 
 const variantStyles: Record<string, React.CSSProperties> = {
-  primary: { background: '#0063b1', color: '#fff', border: '1.5px solid #0063b1' },
-  outlined: { background: 'transparent', color: '#0063b1', border: '1.5px solid #0063b1' },
+  primary: { background: 'var(--primary-auction-color)', color: '#fff', border: '1.5px solid var(--primary-auction-color)' },
+  outlined: { background: 'transparent', color: 'var(--primary-auction-color)', border: '1.5px solid var(--primary-auction-color)' },
   danger: { background: 'transparent', color: '#ef4444', border: '1.5px solid #ef4444' },
   success: { background: '#10b981', color: '#fff', border: '1.5px solid #10b981' },
-  ghost: { background: 'rgba(0,99,177,0.06)', color: '#0063b1', border: '1.5px solid transparent' },
+  ghost: { background: 'rgba(0,99,177,0.06)', color: 'var(--primary-auction-color)', border: '1.5px solid transparent' },
 };
 
 export function ActionBtn({ label, icon, onClick, href, variant = 'outlined', disabled = false, size = 'sm' }: ActionBtnProps) {
@@ -203,7 +203,7 @@ export function PillTabs({ tabs, value, onChange }: PillTabsProps) {
               borderRadius: '8px',
               border: 'none',
               background: isActive ? '#ffffff' : 'transparent',
-              color: isActive ? '#0063b1' : '#64748b',
+              color: isActive ? 'var(--primary-auction-color)' : '#64748b',
               fontWeight: isActive ? 700 : 500,
               fontSize: '0.875rem',
               cursor: 'pointer',
@@ -214,7 +214,7 @@ export function PillTabs({ tabs, value, onChange }: PillTabsProps) {
             {tab.label}
             {tab.count !== undefined && (
               <span style={{
-                background: isActive ? '#0063b1' : '#e2e8f0',
+                background: isActive ? 'var(--primary-auction-color)' : '#e2e8f0',
                 color: isActive ? '#fff' : '#475569',
                 borderRadius: '10px',
                 padding: '1px 7px',
@@ -300,7 +300,7 @@ export const tableStyles = {
     cursor: 'pointer',
   } as React.CSSProperties,
 
-  avatar: (color = '#0063b1') => ({
+  avatar: (color = 'var(--primary-auction-color)') => ({
     width: '36px',
     height: '36px',
     borderRadius: '50%',
@@ -335,7 +335,7 @@ export const tableStyles = {
     height: '32px',
     borderRadius: '8px',
     border: active ? 'none' : '1.5px solid #e2e8f0',
-    background: active ? '#0063b1' : '#ffffff',
+    background: active ? 'var(--primary-auction-color)' : '#ffffff',
     color: active ? '#ffffff' : '#475569',
     fontWeight: active ? 700 : 500,
     fontSize: '0.8rem',
@@ -385,7 +385,7 @@ export function ConfirmDialog({
           }}>{cancelLabel}</button>
           <button onClick={onConfirm} style={{
             padding: '9px 18px', borderRadius: '8px', border: 'none',
-            background: danger ? '#ef4444' : '#0063b1', color: '#fff',
+            background: danger ? '#ef4444' : 'var(--primary-auction-color)', color: '#fff',
             fontWeight: 700, cursor: 'pointer', fontSize: '0.875rem',
           }}>{confirmLabel}</button>
         </div>
@@ -408,7 +408,7 @@ export function DashboardKeyframes() {
         to   { opacity: 1; transform: translateY(0); }
       }
       .db-row:hover { background: #f8fafc !important; }
-      .db-row:hover td:first-child { border-left: 3px solid #0063b1; }
+      .db-row:hover td:first-child { border-left: 3px solid var(--primary-auction-color); }
     `}</style>
   );
 }
@@ -476,7 +476,7 @@ export const ShimmerBox = ({ style }: { style?: React.CSSProperties }) => (
   }} />
 );
 
-export function ListPageSkeleton({ accentColor = '#0063b1' }: { accentColor?: string }) {
+export function ListPageSkeleton({ accentColor = 'var(--primary-auction-color)' }: { accentColor?: string }) {
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
       <DashboardKeyframes />
@@ -521,7 +521,7 @@ export function ListPageSkeleton({ accentColor = '#0063b1' }: { accentColor?: st
   );
 }
 
-export function DetailPageSkeleton({ accentColor = '#0063b1' }: { accentColor?: string }) {
+export function DetailPageSkeleton({ accentColor = 'var(--primary-auction-color)' }: { accentColor?: string }) {
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
       <DashboardKeyframes />

@@ -14,8 +14,9 @@ import ButtonSwitchApp from "../ButtonSwitchApp/ButtonSwitchApp";
 import { useTranslation } from 'react-i18next';
 import { getSellerUrl, getFrontendUrl } from '@/config';
 import app from '@/config';
-import { normalizeImageUrl } from '@/utils/url';
 import CategoryMegaMenu from './CategoryMegaMenu';
+import { useSettingsStore } from "@/contexts/settingsStore";
+import { normalizeImageUrl } from '@/utils/url';
 
 const initialState = {
   activeMenu: "",
@@ -61,6 +62,7 @@ export const Header = () => {
   
   // Add windowWidth state
   const [windowWidth, setWindowWidth] = useState(1024);
+  const { logoUrl } = useSettingsStore();
   
   // Enhanced responsive state
   const isMobile = windowWidth <= 768;
@@ -343,7 +345,7 @@ export const Header = () => {
                 justifyContent: 'center'
               }}>
                 <img
-                  src="/assets/img/logo.png"
+                  src={logoUrl || "/assets/img/logo.png"}
                   alt="MazadClick"
                   className="header-logo"
                   style={{ 

@@ -107,7 +107,7 @@ const AuctionWonModal: React.FC<AuctionWonModalProps> = ({
               {/* Top Banner Gradient */}
               <div style={{
                 height: '120px',
-                background: 'linear-gradient(135deg, #0063b1 0%, #004a87 100%)',
+                background: 'var(--primary-auction-color)',
                 width: '100%',
                 position: 'absolute',
                 top: 0,
@@ -213,7 +213,7 @@ const AuctionWonModal: React.FC<AuctionWonModalProps> = ({
                      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', padding: '0 10px' }}>
                         <div>
                           <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>Prix Final (Offre)</p>
-                          <p style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#0063b1' }}>{price?.toLocaleString()} DA</p>
+                          <p style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'var(--primary-auction-color)' }}>{price?.toLocaleString()} DA</p>
                         </div>
                         <div style={{ textAlign: 'center' }}>
                             <p style={{ margin: 0, fontSize: '12px', color: '#6b7280' }}>Quantité</p>
@@ -243,7 +243,7 @@ const AuctionWonModal: React.FC<AuctionWonModalProps> = ({
                       onClick={handleChatClick}
                       style={{
                         padding: '18px',
-                        background: 'linear-gradient(135deg, #0063b1, #004a87)',
+                        background: 'var(--primary-auction-color)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '20px',

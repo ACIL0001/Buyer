@@ -31,7 +31,7 @@ const AuctionSidebarPage = () => {
         }
         
         :root {
-          --primary-color: #0063b1;
+          --primary-color: var(--primary-auction-color);
           --secondary-color: #FFA500;
           --text-color: #333;
           --bg-color: #fff;
@@ -96,7 +96,7 @@ const AuctionSidebarPage = () => {
         }
         
         .text-gradient {
-          background: #0063b1;
+          background: var(--primary-auction-color);
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
@@ -121,7 +121,7 @@ const AuctionSidebarPage = () => {
         }
         
         .btn-primary {
-          background: #0063b1;
+          background: var(--primary-auction-color);
           color: white;
         }
         
@@ -168,8 +168,8 @@ const AuctionSidebarPage = () => {
         
         .search-box input:focus {
           outline: none;
-          border-color: #0063b1;
-          box-shadow: 0 0 0 3px rgba(0, 99, 177, 0.2);
+          border-color: var(--primary-auction-color);
+          box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-auction-color) 20%, transparent);
         }
         
         .checkbox-container label:hover {
@@ -183,7 +183,7 @@ const AuctionSidebarPage = () => {
         
         .categories-filter button:hover {
           transform: translateY(-2px);
-          box-shadow: 0 3px 6px rgba(0, 99, 177, 0.2);
+          box-shadow: 0 3px 6px color-mix(in srgb, var(--primary-auction-color) 20%, transparent);
         }
         
         /* Spinner animation */

@@ -7,7 +7,10 @@ import { useCreateSocket } from '@/contexts/socket';
 import useAuth from '@/hooks/useAuth';
 import { DashboardKeyframes, StatusBadge, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
 
-const ACCENT = '#d97706';
+const ACCENT = 'var(--primary-ds-color)';
+const ACCENT_80 = 'color-mix(in srgb, var(--primary-ds-color) 80%, transparent)'; // cc in hex
+const ACCENT_25 = 'color-mix(in srgb, var(--primary-ds-color) 25%, transparent)'; // 40 in hex
+const ACCENT_10 = 'color-mix(in srgb, var(--primary-ds-color) 10%, transparent)'; // 18 in hex
 
 function saleStatusCfg(s: string) {
   const m: Record<string, any> = {
@@ -58,7 +61,7 @@ export default function DirectSaleDetailPage() {
     staleTime: 60000,
   });
 
-  if (loading) return <DetailPageSkeleton accentColor="#d97706" />;
+  if (loading) return <DetailPageSkeleton accentColor="var(--primary-ds-color)" />;
 
   if (!sale) return (
     <div style={{ textAlign: 'center', padding: '60px 24px' }}>
@@ -78,7 +81,7 @@ export default function DirectSaleDetailPage() {
       <DashboardKeyframes />
 
       {/* Hero */}
-      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT}40`, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT_80})`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT_25}`, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08), transparent 60%)', pointerEvents: 'none' }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
           <button onClick={() => router.push('/dashboard/direct-sales')} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, marginBottom: 14 }}>← Retour aux ventes</button>
@@ -100,7 +103,7 @@ export default function DirectSaleDetailPage() {
           { label: 'Vendus', value: sale.soldQuantity || 0, color: '#0284c7', icon: '✅' },
         ].map(t => (
           <div key={t.label} style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', borderLeft: `4px solid ${t.color}`, display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: `${t.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{t.icon}</div>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: t.color.startsWith('var(') ? ACCENT_10 : `${t.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{t.icon}</div>
             <div>
               <div style={{ fontSize: typeof t.value === 'number' ? '1.6rem' : '1rem', fontWeight: 800, color: t.color, lineHeight: 1 }}>{t.value}</div>
               <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 4 }}>{t.label}</div>

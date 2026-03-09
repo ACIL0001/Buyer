@@ -298,7 +298,7 @@ const Home1LiveDirectSales = () => {
               border: '1px solid rgba(247, 239, 138, 0.3)',
               borderRadius: '12px',
               padding: '20px',
-              color: '#8a7e1f',
+              color: 'var(--primary-ds-color)',
               maxWidth: '600px',
               margin: '0 auto',
             }}>
@@ -441,18 +441,14 @@ const Home1LiveDirectSales = () => {
             <h2 style={{
               fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)',
               fontWeight: '800',
-              color: '#8a7e1f',
+              color: 'var(--primary-ds-color)',
               marginBottom: 'clamp(8px, 1.5vw, 12px)',
-              background: 'linear-gradient(135deg, #8a7e1f, #f7ef8a)',
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
             }}>
               {t('liveDirectSales.title')}
             </h2>
             <p style={{
               fontSize: 'clamp(0.85rem, 1.8vw, 1rem)',
-              color: '#8a7e1f',
+              color: 'var(--primary-ds-color)',
               maxWidth: '600px',
               margin: '0 auto clamp(12px, 2vw, 16px)',
               lineHeight: '1.5',
@@ -509,7 +505,7 @@ const Home1LiveDirectSales = () => {
                           position: 'relative',
                           height: 'clamp(120px, 20vw, 160px)',
                           overflow: 'hidden',
-                          background: 'linear-gradient(135deg, #f7ef8a, #8a7e1f)',
+                          background: 'var(--primary-ds-color)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -548,7 +544,7 @@ const Home1LiveDirectSales = () => {
                               top: '10px',
                               left: '10px',
                               background: 'rgba(255, 255, 255, 0.9)',
-                              color: '#8a7e1f',
+                              color: 'var(--primary-ds-color)',
                               padding: '6px 12px',
                               borderRadius: '15px',
                               fontSize: '12px',
@@ -640,7 +636,7 @@ const Home1LiveDirectSales = () => {
                               borderRadius: '8px',
                               padding: '4px 8px',
                               border: '1px solid #fef9c3',
-                              borderLeft: '3px solid #f7ef8a',
+                              borderLeft: '3px solid var(--primary-ds-color)',
                               position: 'relative',
                               overflow: 'hidden',
                             }}>
@@ -675,7 +671,7 @@ const Home1LiveDirectSales = () => {
                               borderRadius: '8px',
                               padding: '4px 8px',
                               border: '1px solid #fef9c3',
-                              borderLeft: '3px solid #f7ef8a',
+                              borderLeft: '3px solid var(--primary-ds-color)',
                               position: 'relative',
                               overflow: 'hidden',
                             }}>
@@ -707,11 +703,11 @@ const Home1LiveDirectSales = () => {
                             padding: '4px 8px',
                             marginBottom: '8px',
                             border: '1px solid #fef9c3',
-                            borderLeft: '3px solid #f7ef8a',
+                            borderLeft: '3px solid var(--primary-ds-color)',
                           }}>
                             <p style={{
                               fontSize: '10px',
-                              color: '#8a7e1f',
+                              color: 'var(--primary-ds-color)',
                               margin: '0 0 2px 0',
                               fontWeight: '600',
                             }}>
@@ -719,7 +715,7 @@ const Home1LiveDirectSales = () => {
                             </p>
                             <p style={{
                               fontSize: '12px',
-                              color: '#8a7e1f',
+                              color: 'var(--primary-ds-color)',
                               margin: 0,
                               fontWeight: '600',
                             }}>
@@ -766,7 +762,7 @@ const Home1LiveDirectSales = () => {
                                 />
                                 <span style={{
                                   fontSize: '14px',
-                                  color: isSoldOut ? '#888' : '#8a7e1f',
+                                  color: isSoldOut ? '#888' : 'var(--primary-ds-color)',
                                   fontWeight: '600',
                                   transition: 'color 0.3s ease',
                                 }}
@@ -778,7 +774,7 @@ const Home1LiveDirectSales = () => {
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isSoldOut) {
-                                    e.currentTarget.style.color = '#8a7e1f';
+                                    e.currentTarget.style.color = 'var(--primary-ds-color)';
                                     e.currentTarget.style.textDecoration = 'none';
                                   }
                                 }}
@@ -809,7 +805,7 @@ const Home1LiveDirectSales = () => {
                                 />
                                 <span style={{
                                   fontSize: '14px',
-                                  color: '#8a7e1f',
+                                  color: 'var(--primary-ds-color)',
                                   fontWeight: '500',
                                 }}>
                                   {displayName}
@@ -833,7 +829,7 @@ const Home1LiveDirectSales = () => {
                               gap: 'clamp(6px, 1.5vw, 8px)',
                               width: '100%',
                               padding: 'clamp(10px, 2vw, 12px) clamp(16px, 3vw, 20px)',
-                              background: isSoldOut ? '#c7c7c7' : 'linear-gradient(90deg, #f7ef8a, #8a7e1f)',
+                              background: isSoldOut ? '#c7c7c7' : 'var(--primary-ds-color)',
                               color: 'white',
                               textDecoration: 'none',
                               borderRadius: '25px',
@@ -845,14 +841,14 @@ const Home1LiveDirectSales = () => {
                             }}
                             onMouseEnter={(e) => {
                               if (!isSoldOut) {
-                                e.currentTarget.style.background = 'linear-gradient(90deg, #8a7e1f, #f7ef8a)';
+                                e.currentTarget.style.background = 'var(--primary-ds-color)';
                                 e.currentTarget.style.transform = 'translateY(-2px)';
                                 e.currentTarget.style.boxShadow = '0 8px 20px rgba(247, 239, 138, 0.4)';
                               }
                             }}
                             onMouseLeave={(e) => {
                               if (!isSoldOut) {
-                                e.currentTarget.style.background = 'linear-gradient(90deg, #f7ef8a, #8a7e1f)';
+                                e.currentTarget.style.background = 'var(--primary-ds-color)';
                                 e.currentTarget.style.transform = 'translateY(0)';
                                 e.currentTarget.style.boxShadow = '0 4px 12px rgba(247, 239, 138, 0.3)';
                               }
@@ -899,13 +895,13 @@ const Home1LiveDirectSales = () => {
                     marginLeft: '-25px',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(90deg, #f7ef8a, #8a7e1f)';
+                    e.currentTarget.style.background = 'var(--primary-ds-color)';
                     e.currentTarget.style.color = 'white';
                     e.currentTarget.style.transform = 'scale(1.1)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = 'white';
-                    e.currentTarget.style.color = '#8a7e1f';
+                    e.currentTarget.style.color = 'var(--primary-ds-color)';
                     e.currentTarget.style.transform = 'scale(1)';
                   }}
                 >
@@ -932,13 +928,13 @@ const Home1LiveDirectSales = () => {
                     marginRight: '-25px',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'linear-gradient(90deg, #f7ef8a, #8a7e1f)';
+                    e.currentTarget.style.background = 'var(--primary-ds-color)';
                     e.currentTarget.style.color = 'white';
                     e.currentTarget.style.transform = 'scale(1.1)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = 'white';
-                    e.currentTarget.style.color = '#8a7e1f';
+                    e.currentTarget.style.color = 'var(--primary-ds-color)';
                     e.currentTarget.style.transform = 'scale(1)';
                   }}
                 >
@@ -980,14 +976,14 @@ const Home1LiveDirectSales = () => {
               <h3 style={{
                 fontSize: '24px',
                 fontWeight: '600',
-                color: '#8a7e1f',
+                color: 'var(--primary-ds-color)',
                 marginBottom: '12px',
               }}>
                 {t('liveDirectSales.noActiveSales')}
               </h3>
               <p style={{
                 fontSize: '16px',
-                color: '#8a7e1f',
+                color: 'var(--primary-ds-color)',
                 marginBottom: '30px',
               }}>
                 {t('liveDirectSales.comeBackLater')}
@@ -1017,7 +1013,7 @@ const Home1LiveDirectSales = () => {
                 alignItems: 'center',
                 gap: 'clamp(8px, 1.5vw, 10px)',
                 padding: 'clamp(12px, 2.5vw, 14px) clamp(24px, 4vw, 28px)',
-                background: 'linear-gradient(90deg, #f7ef8a, #8a7e1f)',
+                background: 'var(--primary-ds-color)',
                 color: 'white',
                 textDecoration: 'none',
                 borderRadius: '50px',
@@ -1027,12 +1023,12 @@ const Home1LiveDirectSales = () => {
                 transition: 'all 0.3s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(90deg, #8a7e1f, #f7ef8a)';
+                e.currentTarget.style.background = 'var(--primary-ds-color)';
                 e.currentTarget.style.transform = 'translateY(-3px)';
                 e.currentTarget.style.boxShadow = '0 12px 30px rgba(247, 239, 138, 0.4)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(90deg, #f7ef8a, #8a7e1f)';
+                e.currentTarget.style.background = 'var(--primary-ds-color)';
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(247, 239, 138, 0.3)';
               }}

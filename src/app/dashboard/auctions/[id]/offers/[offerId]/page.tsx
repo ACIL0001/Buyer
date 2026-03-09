@@ -11,7 +11,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCreateSocket } from '@/contexts/socket';
 import { DashboardKeyframes, StatusBadge, tableStyles, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
 
-const ACCENT = '#0063b1';
+const ACCENT = 'var(--primary-auction-color)';
 
 function fmtDate(d: any) {
   if (!d) return 'N/A';
@@ -59,7 +59,7 @@ export default function AuctionOfferDetailPage() {
     staleTime: 60000,
   });
 
-  if (loading) return <DetailPageSkeleton accentColor="#0063b1" />;
+  if (loading) return <DetailPageSkeleton accentColor="var(--primary-auction-color)" />;
 
   const auction = data?.auction;
   const offer = data?.offer;

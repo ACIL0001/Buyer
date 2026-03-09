@@ -52,6 +52,10 @@
   --primary-color6-opc: 60, 80, 55;
   --primary-color7: #63AB45;
   --primary-color7-opc: 99, 171, 69;
+
+  --primary-tender-color: #27F5CC;
+  --primary-auction-color: #2453D4;
+  --primary-ds-color: #D8762D;
 }
 
 @media (prefers-color-scheme: dark) {

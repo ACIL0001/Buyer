@@ -120,13 +120,13 @@ export default function TenderBidsPage() {
   const declined = current.filter(b => b.status === TenderBidStatus.DECLINED).length;
 
   const stats = [
-    { label: 'Total', value: current.length, color: '#0063b1', icon: '📋' },
+    { label: 'Total', value: current.length, color: 'var(--primary-tender-color)', icon: '📋' },
     { label: 'En attente', value: pending, color: '#f59e0b', icon: '⏳' },
     { label: 'Acceptées', value: accepted, color: '#10b981', icon: '✅' },
     { label: 'Déclinées', value: declined, color: '#ef4444', icon: '❌' },
   ];
 
-  if (isQueryLoading && !bids.length) return <ListPageSkeleton accentColor="#059669" />;
+  if (isQueryLoading && !bids.length) return <ListPageSkeleton accentColor="var(--primary-tender-color)" />;
 
   return (
     <>
@@ -135,7 +135,7 @@ export default function TenderBidsPage() {
         title={filterTab === 'received' ? 'Offres Reçues sur Appels d\'Offres' : 'Mes Soumissions'}
         subtitle="Gestion des offres de soumission"
         icon="📑"
-        accentColor="#059669"
+        accentColor="var(--primary-tender-color)"
         stats={stats}
         headerActions={
           <HeaderAddBtn label="Nouvel appel d'offres" href="/dashboard/tenders/create" />
@@ -162,7 +162,7 @@ export default function TenderBidsPage() {
               label={val === 'all' ? 'Tous' : val === 'MIEUX_DISANT' ? '✨ Mieux Disant' : '💰 Moins Disant'}
               active={evalFilter === val}
               onClick={() => { setEvalFilter(val); setPage(0); }}
-              color={val === 'MIEUX_DISANT' ? '#0284c7' : val === 'MOINS_DISANT' ? '#10b981' : '#0063b1'}
+              color={val === 'MIEUX_DISANT' ? '#0284c7' : val === 'MOINS_DISANT' ? '#10b981' : 'var(--primary-tender-color)'}
             />
           ))}
         </div>
@@ -211,7 +211,7 @@ export default function TenderBidsPage() {
                     <td style={tableStyles.td}>
                       {(bidder as any)?._id ? (
                         <Link href={`/profile/${(bidder as any)._id}`} onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
-                          <div style={tableStyles.avatar('#0063b1')}>{displayName.charAt(0).toUpperCase()}</div>
+                          <div style={tableStyles.avatar('var(--primary-tender-color)')}>{displayName.charAt(0).toUpperCase()}</div>
                           <div>
                             <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>{displayName}</div>
                             {bidder?.email && <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{bidder.email}</div>}

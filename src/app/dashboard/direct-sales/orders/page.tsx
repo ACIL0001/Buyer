@@ -125,13 +125,13 @@ export default function OrdersPage() {
   const totalRevenue = orders.reduce((sum, o) => sum + (o.status !== 'CANCELLED' ? o.totalPrice : 0), 0);
 
   const stats = [
-    { label: 'Total commandes', value: current.length, color: '#0063b1', icon: '📦' },
+    { label: 'Total commandes', value: current.length, color: 'var(--primary-ds-color)', icon: '📦' },
     { label: 'En attente', value: pending, color: '#f59e0b', icon: '⏳' },
     { label: 'Confirmées', value: confirmed, color: '#10b981', icon: '✅' },
     { label: 'Annulées', value: cancelled, color: '#ef4444', icon: '❌' },
   ];
 
-  if (isQueryLoading && (!orders.length && !purchases.length)) return <ListPageSkeleton accentColor="#d97706" />;
+  if (isQueryLoading && (!orders.length && !purchases.length)) return <ListPageSkeleton accentColor="var(--primary-ds-color)" />;
 
   return (
     <>
@@ -140,7 +140,7 @@ export default function OrdersPage() {
         title={t('dashboard.orders.title', 'Gestion des commandes')}
         subtitle={t('dashboard.orders.subtitle', 'Suivez toutes vos commandes')}
         icon="📦"
-        accentColor="#d97706"
+        accentColor="var(--primary-ds-color)"
         stats={stats}
         headerActions={
           <button onClick={() => refetch()} disabled={isLoading} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'rgba(255,255,255,0.2)', color: '#fff', borderRadius: '10px', fontWeight: 700, fontSize: '0.85rem', border: '1.5px solid rgba(255,255,255,0.35)', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1 }}>
@@ -201,7 +201,7 @@ export default function OrdersPage() {
                     <td style={tableStyles.td}>
                       {profileId ? (
                         <Link href={`/profile/${profileId}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
-                          <div style={tableStyles.avatar(isPurchase ? '#0063b1' : '#7c3aed')}>{initials}</div>
+                          <div style={tableStyles.avatar(isPurchase ? 'var(--primary-ds-color)' : '#7c3aed')}>{initials}</div>
                           <div>
                             <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1e293b' }}>{displayName}</div>
                             {counterparty?.phone && <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{counterparty.phone}</div>}
@@ -219,7 +219,7 @@ export default function OrdersPage() {
                     </td>
                     <td style={tableStyles.td}>{order.unitPrice?.toLocaleString(i18n.language)} DA</td>
                     <td style={tableStyles.td}>
-                      <span style={{ fontWeight: 700, color: '#0063b1', fontSize: '0.95rem' }}>{order.totalPrice?.toLocaleString(i18n.language)} DA</span>
+                      <span style={{ fontWeight: 700, color: 'var(--primary-ds-color)', fontSize: '0.95rem' }}>{order.totalPrice?.toLocaleString(i18n.language)} DA</span>
                     </td>
                     <td style={tableStyles.td}><StatusBadge config={statusConfig(order.status)} /></td>
                     <td style={{ ...tableStyles.td, color: '#64748b', fontSize: '0.82rem' }}>{formatDate(order.createdAt)}</td>

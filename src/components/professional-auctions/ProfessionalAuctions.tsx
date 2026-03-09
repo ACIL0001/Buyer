@@ -625,7 +625,7 @@ const ProfessionalAuctions: React.FC = () => {
           position: absolute;
           top: 10px;
           right: 10px;
-          background: linear-gradient(45deg, #0063b1, #00a3e0);
+          background: var(--primary-auction-color);
           color: white;
           padding: 8px 12px;
           border-radius: 20px;
@@ -662,7 +662,7 @@ const ProfessionalAuctions: React.FC = () => {
               fontWeight: '800',
               color: '#222',
               marginBottom: '16px',
-              background: 'linear-gradient(90deg, #0063b1, #00a3e0)',
+              background: 'var(--primary-auction-color)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -753,7 +753,7 @@ const ProfessionalAuctions: React.FC = () => {
                             position: 'absolute',
                             top: '10px',
                             right: '10px',
-                            background: isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'linear-gradient(45deg, #0063b1, #00a3e0)',
+                            background: isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'var(--primary-auction-color)',
                             color: 'white',
                             padding: '8px 12px',
                             borderRadius: '20px',
@@ -947,13 +947,13 @@ const ProfessionalAuctions: React.FC = () => {
                                   width: '8px',
                                   height: '8px',
                                   borderRadius: '50%',
-                                  background: '#0063b1',
+                                  background: 'var(--primary-auction-color)',
                                   animation: 'pulse 2s infinite',
                                 }}></div>
                                 <span style={{
                                   fontSize: '14px',
                                   fontWeight: '600',
-                                  color: '#0063b1',
+                                  color: 'var(--primary-auction-color)',
                                 }}>
                                   {auction.participantsCount || 0} participant{(auction.participantsCount || 0) !== 1 ? 's' : ''}
                                 </span>
@@ -1021,7 +1021,7 @@ const ProfessionalAuctions: React.FC = () => {
                               gap: '8px',
                               width: '100%',
                               padding: '12px 20px',
-                              background: 'linear-gradient(90deg, #0063b1, #00a3e0)',
+                              background: 'var(--primary-auction-color)',
                               color: 'white',
                               textDecoration: 'none',
                               borderRadius: '25px',
@@ -1031,12 +1031,12 @@ const ProfessionalAuctions: React.FC = () => {
                               boxShadow: '0 4px 12px rgba(0, 99, 177, 0.3)',
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.background = 'linear-gradient(90deg, #00a3e0, #0063b1)';
+                              e.currentTarget.style.background = 'var(--primary-auction-color)';
                               e.currentTarget.style.transform = 'translateY(-2px)';
                               e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 99, 177, 0.4)';
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.background = 'linear-gradient(90deg, #0063b1, #00a3e0)';
+                              e.currentTarget.style.background = 'var(--primary-auction-color)';
                               e.currentTarget.style.transform = 'translateY(0)';
                               e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 99, 177, 0.3)';
                             }}
@@ -1075,8 +1075,8 @@ const ProfessionalAuctions: React.FC = () => {
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#0063b1';
-                  e.currentTarget.style.borderColor = '#0063b1';
+                  e.currentTarget.style.background = 'var(--primary-auction-color)';
+                  e.currentTarget.style.borderColor = 'var(--primary-auction-color)';
                   e.currentTarget.style.color = 'white';
                 }}
                 onMouseLeave={(e) => {
@@ -1111,8 +1111,8 @@ const ProfessionalAuctions: React.FC = () => {
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#0063b1';
-                  e.currentTarget.style.borderColor = '#0063b1';
+                  e.currentTarget.style.background = 'var(--primary-auction-color)';
+                  e.currentTarget.style.borderColor = 'var(--primary-auction-color)';
                   e.currentTarget.style.color = 'white';
                 }}
                 onMouseLeave={(e) => {
@@ -1193,7 +1193,7 @@ const ProfessionalAuctions: React.FC = () => {
             <Link href="/auction-sidebar">
               <button
                 style={{
-                  background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
+                  background: 'var(--primary-auction-color)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '50px',

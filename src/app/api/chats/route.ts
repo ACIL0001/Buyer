@@ -4,27 +4,33 @@ import app from '@/config';
 const API_BASE_URL = app.baseURL;
 
 // Helper function to check if backend is accessible
-async function checkBackendHealth() {
+async function checkBackendHealth(authHeader?: string | null) {
   try {
     console.log('🔍 Checking backend health at:', `${API_BASE_URL}chat/admin-chats`);
-    
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'x-access-key': app.apiKey || process.env.NEXT_PUBLIC_KEY_API_BYUER || '',
+    };
+
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+
     // Try to access a simple endpoint that should exist
     const response = await fetch(`${API_BASE_URL}chat/admin-chats`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-access-key': app.apiKey || process.env.NEXT_PUBLIC_KEY_API_BYUER || '',
-      },
+      headers,
     });
-    
+
     console.log('📡 Health check response status:', response.status);
-    
+
     // Even if it returns 401 (unauthorized), it means the server is running
     if (response.status === 404) {
       console.log('❌ Backend endpoint not found (404)');
       return false;
     }
-    
+
     console.log('✅ Backend is accessible');
     return true;
   } catch (error) {
@@ -42,16 +48,7 @@ async function checkBackendHealth() {
 export async function GET(req: NextRequest) {
   try {
     console.log('🔍 GET /api/chats called');
-    
-    // Check if backend is accessible
-    const isBackendHealthy = await checkBackendHealth();
-    if (!isBackendHealthy) {
-      console.log('❌ Backend server is not accessible');
-      return NextResponse.json({ 
-        error: 'Backend server is not accessible. Please ensure the server is running on port 3000.' 
-      }, { status: 503 });
-    }
-    
+
     // Get the authorization header
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
@@ -59,8 +56,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Authorization header required' }, { status: 401 });
     }
 
+    // Check if backend is accessible
+    const isBackendHealthy = await checkBackendHealth(authHeader);
+    if (!isBackendHealthy) {
+      console.log('❌ Backend server is not accessible');
+      return NextResponse.json({
+        error: 'Backend server is not accessible. Please ensure the server is running on port 3000.'
+      }, { status: 503 });
+    }
+
     console.log('🔄 Forwarding to backend:', `${API_BASE_URL}chat/admin-chats`);
-    
+
     // Forward the request to the backend admin-chats endpoint
     const response = await fetch(`${API_BASE_URL}chat/admin-chats`, {
       method: 'GET',
@@ -73,12 +79,12 @@ export async function GET(req: NextRequest) {
     });
 
     console.log('📡 Backend response status:', response.status);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       console.log('❌ Backend error:', errorText);
       return NextResponse.json(
-        { error: 'Failed to fetch admin chats', details: errorText }, 
+        { error: 'Failed to fetch admin chats', details: errorText },
         { status: response.status }
       );
     }
@@ -91,7 +97,7 @@ export async function GET(req: NextRequest) {
     const errObj = (error && typeof error === 'object') ? (error as any) : {};
     const details = 'message' in errObj ? String(errObj.message) : 'Unknown error';
     return NextResponse.json(
-      { error: 'Internal server error', details }, 
+      { error: 'Internal server error', details },
       { status: 500 }
     );
   }
@@ -100,21 +106,21 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     console.log('📞 POST /api/chats called');
-    
-    // Check if backend is accessible
-    const isBackendHealthy = await checkBackendHealth();
-    if (!isBackendHealthy) {
-      console.log('❌ Backend server is not accessible');
-      return NextResponse.json({ 
-        error: 'Backend server is not accessible. Please ensure the server is running on port 3000.' 
-      }, { status: 503 });
-    }
-    
+
     // Get the authorization header
     const authHeader = req.headers.get('authorization');
     if (!authHeader) {
       console.log('❌ No authorization header');
       return NextResponse.json({ error: 'Authorization header required' }, { status: 401 });
+    }
+
+    // Check if backend is accessible
+    const isBackendHealthy = await checkBackendHealth(authHeader);
+    if (!isBackendHealthy) {
+      console.log('❌ Backend server is not accessible');
+      return NextResponse.json({
+        error: 'Backend server is not accessible. Please ensure the server is running on port 3000.'
+      }, { status: 503 });
     }
 
     // Get the request body
@@ -135,12 +141,12 @@ export async function POST(req: NextRequest) {
     });
 
     console.log('📡 Backend response status:', response.status);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       console.log('❌ Backend error:', errorText);
       return NextResponse.json(
-        { error: 'Failed to fetch chats', details: errorText }, 
+        { error: 'Failed to fetch chats', details: errorText },
         { status: response.status }
       );
     }
@@ -153,7 +159,7 @@ export async function POST(req: NextRequest) {
     const errObj = (error && typeof error === 'object') ? (error as any) : {};
     const details = 'message' in errObj ? String(errObj.message) : 'Unknown error';
     return NextResponse.json(
-      { error: 'Internal server error', details }, 
+      { error: 'Internal server error', details },
       { status: 500 }
     );
   }

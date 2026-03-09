@@ -19,6 +19,8 @@ import {
 } from '@mui/material';
 import NextLink from 'next/link';
 import { LoadingButton } from '@mui/lab';
+import { motion } from 'framer-motion';
+import { useSettingsStore } from "@/contexts/settingsStore";
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
@@ -27,6 +29,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import LockResetIcon from '@mui/icons-material/LockReset';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useTranslation } from 'react-i18next';
 
 const RootStyle = styled('div')(({ theme }) => ({
   minHeight: '100vh',
@@ -197,6 +200,8 @@ const BackButton = styled(Button)(({ theme }) => ({
 
 export default function ForgotPassword() {
   const router = useRouter();
+  const { t } = useTranslation();
+  const { logoUrl } = useSettingsStore();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [method, setMethod] = useState<'email' | 'phone'>('email');
@@ -262,7 +267,7 @@ export default function ForgotPassword() {
           <div>
             <LogoBox>
               <NextLink href="/" passHref>
-                <img src="/assets/img/logo.png" alt="MazadClick" />
+                <img src={logoUrl || "/assets/img/logo.png"} alt="MazadClick" />
               </NextLink>
             </LogoBox>
 

@@ -88,13 +88,13 @@ export default function TendersPage() {
   const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
   const stats = [
-    { label: 'Total', value: tenders.length, color: '#0063b1', icon: '📋' },
+    { label: 'Total', value: tenders.length, color: 'var(--primary-tender-color)', icon: '📋' },
     { label: 'Ouverts', value: tenders.filter((t: Tender) => t.status === TENDER_STATUS.OPEN).length, color: '#0284c7', icon: '🟢' },
     { label: 'Attribués', value: tenders.filter((t: Tender) => t.status === TENDER_STATUS.AWARDED).length, color: '#10b981', icon: '✅' },
     { label: 'Clôturés', value: tenders.filter((t: Tender) => t.status === TENDER_STATUS.CLOSED || t.status === TENDER_STATUS.CANCELLED).length, color: '#f59e0b', icon: '🔒' },
   ];
 
-  if (isLoading) return <ListPageSkeleton accentColor="#059669" />;
+  if (isLoading) return <ListPageSkeleton accentColor="var(--primary-tender-color)" />;
 
   return (
     <>
@@ -103,7 +103,7 @@ export default function TendersPage() {
         title={t('dashboard.list.myTenders', 'Mes Appels d\'Offres')}
         subtitle={`${tenders.length} appel${tenders.length !== 1 ? 's' : ''} d'offres`}
         icon="📄"
-        accentColor="#059669"
+        accentColor="var(--primary-tender-color)"
         stats={stats}
         headerActions={
           <HeaderAddBtn label={t('dashboard.list.newTender', 'Nouvel appel d\'offres')} href="/dashboard/tenders/create/" />
@@ -132,7 +132,7 @@ export default function TendersPage() {
             <div style={{ fontSize: '52px', marginBottom: '16px' }}>📄</div>
             <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569', margin: '0 0 8px' }}>Aucun appel d'offres</p>
             <p style={{ color: '#94a3b8', margin: '0 0 24px' }}>Créez votre premier appel d'offres</p>
-            <a href="/dashboard/tenders/create/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 22px', background: '#0063b1', color: '#fff', borderRadius: '10px', fontWeight: 700, textDecoration: 'none' }}>
+            <a href="/dashboard/tenders/create/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 22px', background: 'var(--primary-tender-color)', color: '#fff', borderRadius: '10px', fontWeight: 700, textDecoration: 'none' }}>
               ＋ Nouvel appel d'offres
             </a>
           </div>
@@ -161,7 +161,7 @@ export default function TendersPage() {
                     <td style={tableStyles.td}>{evalChip(row.evaluationType)}</td>
                     <td style={tableStyles.td}>
                       {displayBudget > 0
-                        ? <span style={{ fontWeight: 700, color: '#0063b1' }}>{displayBudget.toLocaleString('fr-FR')} DA</span>
+                        ? <span style={{ fontWeight: 700, color: 'var(--primary-tender-color)' }}>{displayBudget.toLocaleString('fr-FR')} DA</span>
                         : <span style={{ color: '#94a3b8' }}>N/A</span>}
                     </td>
                     <td style={{ ...tableStyles.td, color: '#64748b', fontSize: '0.82rem' }}>{displayDate ? formatDate(displayDate) : 'N/A'}</td>

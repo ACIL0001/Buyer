@@ -84,8 +84,8 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
         background: 'white',
         borderRadius: 'clamp(12px, 2.5vw, 16px)',
         overflow: 'hidden',
-        boxShadow: '0 8px 25px rgba(247, 239, 138, 0.08)',
-        border: '1px solid rgba(247, 239, 138, 0.1)',
+        boxShadow: '0 8px 25px color-mix(in srgb, var(--primary-ds-color) 8%, transparent)',
+        border: '1px solid color-mix(in srgb, var(--primary-ds-color) 10%, transparent)',
         width: '100%',
         position: 'relative',
         minHeight: 'clamp(320px, 45vw, 360px)',
@@ -102,7 +102,7 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
         }
         .direct-sale-card-hover:hover {
           transform: translateY(-8px) scale(1.02);
-          box-shadow: 0 20px 40px rgba(247, 239, 138, 0.15);
+          box-shadow: 0 20px 40px color-mix(in srgb, var(--primary-ds-color) 15%, transparent);
         }
       `}</style>
       
@@ -111,7 +111,7 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
         position: 'relative',
         height: 'clamp(120px, 20vw, 160px)',
         overflow: 'hidden',
-        background: 'linear-gradient(135deg, #f7ef8a, #8a7e1f)',
+        background: 'var(--primary-ds-color)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -142,7 +142,7 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
               top: '10px',
               left: '10px',
               background: 'rgba(255, 255, 255, 0.9)',
-              color: '#8a7e1f',
+              color: 'var(--primary-ds-color)',
               padding: '6px 12px',
               borderRadius: '15px',
               fontSize: '12px',
@@ -178,8 +178,8 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
               top: '10px',
               left: '50%',
               transform: 'translateX(-50%)',
-              background: 'rgba(247, 239, 138, 0.9)',
-              color: '#3d370e',
+              background: 'color-mix(in srgb, var(--primary-ds-color) 90%, white)',
+              color: 'color-mix(in srgb, var(--primary-ds-color) 30%, black)',
               padding: '6px 12px',
               borderRadius: '15px',
               fontSize: '12px',
@@ -215,7 +215,7 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
         <h3 style={{
           fontSize: 'clamp(14px, 2.2vw, 16px)',
           fontWeight: '600',
-          color: '#3d370e',
+          color: 'color-mix(in srgb, var(--primary-ds-color) 30%, black)',
           marginBottom: 'clamp(8px, 1.5vw, 10px)',
           lineHeight: '1.3',
           overflow: 'hidden',
@@ -236,11 +236,11 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
           marginBottom: '8px',
         }}>
           <div style={{
-            background: 'linear-gradient(135deg, #fefce8, #fef9c3)',
+            background: 'linear-gradient(135deg, color-mix(in srgb, var(--primary-ds-color) 5%, white), color-mix(in srgb, var(--primary-ds-color) 12%, white))',
             borderRadius: '8px',
             padding: '4px 8px',
-            border: '1px solid #fef9c3',
-            borderLeft: '3px solid #f7ef8a',
+            border: '1px solid color-mix(in srgb, var(--primary-ds-color) 12%, white)',
+            borderLeft: '3px solid var(--primary-ds-color)',
             position: 'relative',
             overflow: 'hidden',
             display: 'flex',
@@ -249,7 +249,7 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
           }}>
             <p style={{
               fontSize: '10px',
-              color: '#8a7e1f',
+              color: 'var(--primary-ds-color)',
               margin: '0 0 2px 0',
               fontWeight: '600',
             }}>
@@ -274,11 +274,11 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
           </div>
 
           <div style={{
-            background: 'linear-gradient(135deg, #fefce8, #fef9c3)',
+            background: 'linear-gradient(135deg, color-mix(in srgb, var(--primary-ds-color) 5%, white), color-mix(in srgb, var(--primary-ds-color) 12%, white))',
             borderRadius: '8px',
             padding: '4px 8px',
-            border: '1px solid #fef9c3',
-            borderLeft: '3px solid #f7ef8a',
+            border: '1px solid color-mix(in srgb, var(--primary-ds-color) 12%, white)',
+            borderLeft: '3px solid var(--primary-ds-color)',
             position: 'relative',
             overflow: 'hidden',
             display: 'flex',
@@ -287,7 +287,7 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
           }}>
             <p style={{
               fontSize: '10px',
-              color: '#8a7e1f',
+              color: 'var(--primary-ds-color)',
               margin: '0 0 2px 0',
               fontWeight: '600',
             }}>
@@ -311,16 +311,16 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
 
         {/* Price Info */}
         <div style={{
-          background: 'linear-gradient(135deg, #fefce8, #fef9c3)',
+          background: 'linear-gradient(135deg, color-mix(in srgb, var(--primary-ds-color) 5%, white), color-mix(in srgb, var(--primary-ds-color) 12%, white))',
           borderRadius: '8px',
           padding: '4px 8px',
           marginBottom: '8px',
-          border: '1px solid #fef9c3',
-          borderLeft: '3px solid #f7ef8a',
+          border: '1px solid color-mix(in srgb, var(--primary-ds-color) 12%, white)',
+          borderLeft: '3px solid var(--primary-ds-color)',
         }}>
           <p style={{
             fontSize: '10px',
-            color: '#8a7e1f',
+            color: 'var(--primary-ds-color)',
             margin: '0 0 2px 0',
             fontWeight: '600',
           }}>
@@ -328,7 +328,7 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
           </p>
           <p style={{
             fontSize: '12px',
-            color: '#8a7e1f',
+            color: 'var(--primary-ds-color)',
             margin: 0,
             fontWeight: '600',
           }}>
@@ -376,16 +376,16 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
               />
               <span style={{
                 fontSize: '12px',
-                color: '#8a7e1f',
+                color: 'var(--primary-ds-color)',
                 fontWeight: '600',
                 transition: 'all 0.3s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#3d370e';
+                e.currentTarget.style.color = 'color-mix(in srgb, var(--primary-ds-color) 30%, black)';
                 e.currentTarget.style.textDecoration = 'underline';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#8a7e1f';
+                e.currentTarget.style.color = 'var(--primary-ds-color)';
                 e.currentTarget.style.textDecoration = 'none';
               }}
               >
@@ -410,7 +410,7 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
               />
               <span style={{
                 fontSize: '12px',
-                color: '#8a7e1f',
+                color: 'var(--primary-ds-color)',
                 fontWeight: '500',
               }}>
                 {displayName}
@@ -434,28 +434,28 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
             gap: 'clamp(6px, 1.5vw, 8px)',
             width: '100%',
             padding: 'clamp(10px, 2vw, 12px) clamp(16px, 3vw, 20px)',
-            background: isSoldOut ? '#c7c7c7' : 'linear-gradient(90deg, #f7ef8a, #8a7e1f)',
+            background: isSoldOut ? '#c7c7c7' : 'var(--primary-ds-color)',
             color: 'white',
             textDecoration: 'none',
             borderRadius: '25px',
             fontWeight: '600',
             fontSize: 'clamp(12px, 2vw, 14px)',
             transition: 'all 0.3s ease',
-            boxShadow: isSoldOut ? 'none' : '0 4px 12px rgba(247, 239, 138, 0.3)',
+            boxShadow: isSoldOut ? 'none' : '0 4px 12px color-mix(in srgb, var(--primary-ds-color) 30%, transparent)',
             pointerEvents: isSoldOut ? 'none' : 'auto'
           }}
           onMouseEnter={(e) => {
             if (!isSoldOut) {
-              e.currentTarget.style.background = 'linear-gradient(90deg, #8a7e1f, #f7ef8a)';
+              e.currentTarget.style.background = 'var(--primary-ds-color)';
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(247, 239, 138, 0.4)';
+              e.currentTarget.style.boxShadow = '0 8px 20px color-mix(in srgb, var(--primary-ds-color) 40%, transparent)';
             }
           }}
           onMouseLeave={(e) => {
             if (!isSoldOut) {
-              e.currentTarget.style.background = 'linear-gradient(90deg, #f7ef8a, #8a7e1f)';
+              e.currentTarget.style.background = 'var(--primary-ds-color)';
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(247, 239, 138, 0.3)';
+              e.currentTarget.style.boxShadow = '0 4px 12px color-mix(in srgb, var(--primary-ds-color) 30%, transparent)';
             }
           }}
         >
@@ -486,8 +486,8 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
                 width: '100%',
                 padding: 'clamp(8px, 1.5vw, 10px) clamp(12px, 2.5vw, 16px)',
                 background: 'transparent',
-                color: '#8a7e1f',
-                border: '1.5px solid #d4af37',
+                color: 'var(--primary-ds-color)',
+                border: '1.5px solid var(--primary-ds-color)',
                 borderRadius: '25px',
                 fontWeight: '600',
                 fontSize: 'clamp(12px, 2vw, 13px)',
@@ -496,7 +496,7 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
                 marginTop: '8px',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.08)';
+                e.currentTarget.style.background = 'color-mix(in srgb, var(--primary-ds-color) 8%, transparent)';
                 e.currentTarget.style.transform = 'translateY(-1px)';
               }}
               onMouseLeave={(e) => {

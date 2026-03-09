@@ -47,7 +47,7 @@ class ErrorBoundary extends React.Component {
             <button 
               onClick={() => window.location.reload()}
               style={{
-                background: '#0063b1',
+                background: 'var(--primary-auction-color)',
                 color: 'white',
                 border: 'none',
                 padding: '12px 24px',
@@ -100,7 +100,7 @@ export default function AuctionDetailsClient({ params }) {
           <button 
             onClick={() => window.location.reload()}
             style={{
-              background: '#0063b1',
+              background: 'var(--primary-auction-color)',
               color: 'white',
               border: 'none',
               padding: '12px 24px',
@@ -214,7 +214,7 @@ export default function AuctionDetailsClient({ params }) {
         }
         
         .text-gradient {
-          background: #0063b1;
+          background: var(--primary-auction-color);
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;

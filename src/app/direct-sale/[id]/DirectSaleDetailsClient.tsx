@@ -898,7 +898,7 @@ function DirectSaleDetailContent() {
                                 background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                                 borderRadius: '8px',
                                 padding: '4px 8px',
-                                borderLeft: '3px solid #f7ef8a',
+                                borderLeft: '3px solid var(--primary-ds-color)',
                               }}>
                                 <p style={{
                                   fontSize: "10px",
@@ -922,7 +922,7 @@ function DirectSaleDetailContent() {
                               background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                               borderRadius: '8px',
                               padding: '4px 8px',
-                              borderLeft: '3px solid #f7ef8a',
+                              borderLeft: '3px solid var(--primary-ds-color)',
                             }}>
                               <p style={{
                                 fontSize: "10px",
@@ -954,7 +954,7 @@ function DirectSaleDetailContent() {
                             padding: "4px 8px",
                             marginBottom: "12px",
                             border: "1px solid #e9ecef",
-                            borderLeft: '3px solid #f7ef8a',
+                            borderLeft: '3px solid var(--primary-ds-color)',
                           }}>
                             <p style={{
                               fontSize: "10px",

@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import React from 'react'
 import { useTranslation } from 'react-i18next';
+import { useSettingsStore } from "@/contexts/settingsStore";
 
 const Footer = () => {
   const { t } = useTranslation();
+  const { logoUrl } = useSettingsStore();
   
   // Navigation items from header
   const navItems = [
@@ -141,7 +143,7 @@ const Footer = () => {
             }}
             >
               <img 
-                src="/assets/img/logo.png" 
+                src={logoUrl || "/assets/img/logo.png"} 
                 alt="MazadClick" 
                 style={{ 
                   height: '80px', 

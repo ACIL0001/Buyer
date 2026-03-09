@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import NextLink from 'next/link';
 import LoginForm from '../../../sections/auth/login/LoginForm';
 import useAuth from '../../../hooks/useAuth';
+import { useSettingsStore } from "@/contexts/settingsStore";
 import useResponsive from '../../../hooks/useResponsive';
 
 // ----------------------------------------------------------------------
@@ -78,6 +79,7 @@ const GlassContainer = styled(Box)(({ theme }) => ({
 
 export default function Login() {
   const { t } = useTranslation();
+  const { logoUrl } = useSettingsStore();
   const { isLogged, user } = useAuth();
   const router = useRouter();
   const { width } = useResponsive();
@@ -134,16 +136,9 @@ export default function Login() {
         }}
       >
         <NextLink href="/" passHref>
-          <img
-            src="/assets/img/logo.png"
-            alt="MazadClick"
-            style={{
-              height: 'auto',
-              maxHeight: '70px',
-              maxWidth: '180px',
-            }}
-            className="w-auto h-12 sm:h-16 md:h-[70px] max-w-[130px] sm:max-w-[160px] md:max-w-[180px]"
-          />
+          <div className="login-logo text-center mb-4">
+            <img src={logoUrl || "/assets/img/logo.png"} alt="MazadClick" style={{ maxWidth: '200px', height: 'auto', marginBottom: '20px' }} />
+          </div>
         </NextLink>
       </Box>
 

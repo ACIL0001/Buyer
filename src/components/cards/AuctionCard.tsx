@@ -169,8 +169,8 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
         onMouseEnter={(e) => {
             if (!hasAuctionEnded) { // Only apply hover effects if not ended
                 e.currentTarget.style.transform = 'translateY(-10px)';
-                e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 99, 177, 0.15)';
-                e.currentTarget.style.borderColor = 'rgba(0, 99, 177, 0.2)';
+                e.currentTarget.style.boxShadow = '0 20px 40px color-mix(in srgb, var(--primary-auction-color) 15%, transparent)';
+                e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--primary-auction-color) 20%, transparent)';
             }
         }}
         onMouseLeave={(e) => {
@@ -342,7 +342,7 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                         borderRadius: '6px',
                         padding: '4px 6px',
                         border: '1px solid #e9ecef',
-                        borderLeft: '3px solid #0063b1',
+                        borderLeft: '3px solid var(--primary-auction-color)',
                     }}>
                         <p style={{
                             fontSize: '9px',
@@ -373,7 +373,7 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                     borderRadius: '6px',
                     padding: '4px 6px',
                     border: '1px solid #e9ecef',
-                    borderLeft: '3px solid #0063b1',
+                    borderLeft: '3px solid var(--primary-auction-color)',
                 }}>
                     <p style={{
                         fontSize: '9px',
@@ -417,7 +417,7 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                 padding: '4px 8px',
                 marginBottom: '8px',
                 border: hasAuctionEnded ? '1px solid #e0e0e0' : '1px solid #e9ecef',
-                borderLeft: hasAuctionEnded ? '3px solid #ccc' : '3px solid #0063b1',
+                borderLeft: hasAuctionEnded ? '3px solid #ccc' : '3px solid var(--primary-auction-color)',
             }}>
                 <p style={{
                     fontSize: '10px',
@@ -429,7 +429,7 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                 </p>
                         <p style={{
                     fontSize: '12px',
-                        color: hasAuctionEnded ? '#888' : '#0063b1',
+                        color: hasAuctionEnded ? '#888' : 'var(--primary-auction-color)',
                     margin: 0,
                     fontWeight: '600',
                         }}>
@@ -456,13 +456,13 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                         width: '6px',
                         height: '6px',
                         borderRadius: '50%',
-                        background: hasAuctionEnded ? '#ccc' : '#0063b1',
+                        background: hasAuctionEnded ? '#ccc' : 'var(--primary-auction-color)',
                         animation: hasAuctionEnded ? 'none' : 'pulse 2s infinite',
                     }}></div>
                     <span style={{
                         fontSize: '11px',
                         fontWeight: '600',
-                        color: hasAuctionEnded ? '#888' : '#0063b1',
+                        color: hasAuctionEnded ? '#888' : 'var(--primary-auction-color)',
                     }}>
                         {t('auction.biddersWithCount', { count: auction.biddersCount || 0 })}
                     </span>
@@ -527,19 +527,19 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                         />
                         <span style={{
                             fontSize: '14px',
-                            color: hasAuctionEnded ? '#888' : '#0063b1',
+                            color: hasAuctionEnded ? '#888' : 'var(--primary-auction-color)',
                             fontWeight: '600',
                             transition: 'color 0.3s ease',
                         }}
                         onMouseEnter={(e) => {
                             if (!hasAuctionEnded) {
-                                e.currentTarget.style.color = '#00a3e0';
+                                e.currentTarget.style.color = '#333';
                                 e.currentTarget.style.textDecoration = 'underline';
                             }
                         }}
                         onMouseLeave={(e) => {
                             if (!hasAuctionEnded) {
-                                e.currentTarget.style.color = '#0063b1';
+                                e.currentTarget.style.color = 'var(--primary-auction-color)';
                                 e.currentTarget.style.textDecoration = 'none';
                             }
                         }}
@@ -587,27 +587,27 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                     gap: '8px',
                     width: '100%',
                     padding: '12px 20px',
-                    background: hasAuctionEnded ? '#cccccc' : 'linear-gradient(135deg, #0063b1, #00a3e0)', // Blue gradient
+                    background: hasAuctionEnded ? '#cccccc' : 'var(--primary-auction-color)', // Blue color
                     color: 'white',
                     textDecoration: 'none',
                     borderRadius: '25px',
                     fontWeight: '600',
                     fontSize: '14px',
                     transition: 'all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)',
-                    boxShadow: hasAuctionEnded ? 'none' : '0 4px 15px rgba(0, 99, 177, 0.3)',
+                    boxShadow: hasAuctionEnded ? 'none' : '0 4px 15px color-mix(in srgb, var(--primary-auction-color) 30%, transparent)',
                     marginTop: 'auto', // Push to bottom
                     cursor: hasAuctionEnded ? 'not-allowed' : 'pointer',
                 }}
                 onMouseEnter={(e) => {
                     if (!hasAuctionEnded) {
                         e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 99, 177, 0.4)';
+                        e.currentTarget.style.boxShadow = '0 8px 20px color-mix(in srgb, var(--primary-auction-color) 40%, transparent)';
                     }
                 }}
                 onMouseLeave={(e) => {
                     if (!hasAuctionEnded) {
                         e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 99, 177, 0.3)';
+                        e.currentTarget.style.boxShadow = '0 4px 15px color-mix(in srgb, var(--primary-auction-color) 30%, transparent)';
                     }
                 }}
                 onClick={(e) => {
@@ -645,8 +645,8 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                             width: '100%',
                             padding: '10px 16px',
                             background: 'transparent',
-                            color: '#0063b1',
-                            border: '1.5px solid #0063b1',
+                            color: 'var(--primary-auction-color)',
+                            border: '1.5px solid var(--primary-auction-color)',
                             borderRadius: '25px',
                             fontWeight: '600',
                             fontSize: '13px',
@@ -655,7 +655,7 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                             marginTop: '8px',
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(0, 99, 177, 0.06)';
+                            e.currentTarget.style.background = 'color-mix(in srgb, var(--primary-auction-color) 8%, transparent)';
                             e.currentTarget.style.transform = 'translateY(-1px)';
                         }}
                         onMouseLeave={(e) => {

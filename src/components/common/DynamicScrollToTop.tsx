@@ -78,19 +78,19 @@ export default function DynamicScrollToTop({ colorSchema = 'gradient' }: Props) 
   // Default gradients and shadows mapping
   const schemeStyles = {
     blue: {
-      background: '#0063b1',
-      shadow: 'rgba(0, 99, 177, 0.4)',
-      hover: '#005496',
+      background: 'var(--primary-auction-color, #0063b1)',
+      shadow: 'color-mix(in srgb, var(--primary-auction-color, #0063b1) 40%, transparent)',
+      hover: 'color-mix(in srgb, var(--primary-auction-color, #0063b1) 80%, black)',
     },
     green: {
-      background: '#059669',
-      shadow: 'rgba(5, 150, 105, 0.4)',
-      hover: '#047857',
+      background: 'var(--primary-tender-color, #059669)',
+      shadow: 'color-mix(in srgb, var(--primary-tender-color, #059669) 40%, transparent)',
+      hover: 'color-mix(in srgb, var(--primary-tender-color, #059669) 80%, black)',
     },
     yellow: {
-      background: '#eab308', 
-      shadow: 'rgba(234, 179, 8, 0.4)',
-      hover: '#ca8a04',
+      background: 'var(--primary-ds-color, #eab308)', 
+      shadow: 'color-mix(in srgb, var(--primary-ds-color, #eab308) 40%, transparent)',
+      hover: 'color-mix(in srgb, var(--primary-ds-color, #eab308) 80%, black)',
     },
     gradient: {
       background: 'linear-gradient(135deg, #0063b1 0%, #0ea5e9 100%)',

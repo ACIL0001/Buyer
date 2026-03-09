@@ -1443,8 +1443,8 @@ const MultipurposeTenderSidebar = () => {
                                                     onMouseEnter={(e) => {
                                                         if (!hasTenderEnded) {
                                                             e.currentTarget.style.transform = 'translateY(-10px)';
-                                                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(39, 245, 204, 0.15)';
-                                                            e.currentTarget.style.borderColor = 'rgba(39, 245, 204, 0.2)';
+                                                            e.currentTarget.style.boxShadow = '0 20px 40px color-mix(in srgb, var(--primary-tender-color) 15%, transparent)';
+                                                            e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--primary-tender-color) 20%, transparent)';
                                                         }
                                                     }}
                                                     onMouseLeave={(e) => {
@@ -1654,7 +1654,7 @@ const MultipurposeTenderSidebar = () => {
                                                                     borderRadius: '6px',
                                                                     padding: '4px 6px',
                                                                     border: '1px solid #e9ecef',
-                                                                    borderLeft: '3px solid #27F5CC',
+                                                                    borderLeft: '3px solid var(--primary-tender-color)',
                                                                 }}>
                                                                     <p style={{
                                                                         fontSize: '9px', // Reduced for mobile
@@ -1685,7 +1685,7 @@ const MultipurposeTenderSidebar = () => {
                                                                 borderRadius: '6px',
                                                                 padding: '4px 6px',
                                                                 border: '1px solid #e9ecef',
-                                                                borderLeft: '3px solid #27F5CC',
+                                                                borderLeft: '3px solid var(--primary-tender-color)',
                                                             }}>
                                                                 <p style={{
                                                                     fontSize: '9px',
@@ -1725,7 +1725,7 @@ const MultipurposeTenderSidebar = () => {
                                                             padding: '4px 8px',
                                                             marginBottom: '8px',
                                                             border: hasTenderEnded ? '1px solid #e0e0e0' : '1px solid #e9ecef',
-                                                            borderLeft: hasTenderEnded ? '3px solid #ccc' : '3px solid #27F5CC',
+                                                            borderLeft: hasTenderEnded ? '3px solid #ccc' : '3px solid var(--primary-tender-color)',
                                                         }}>
                                                             <p style={{
                                                                 fontSize: '10px',
@@ -1737,7 +1737,7 @@ const MultipurposeTenderSidebar = () => {
                                                             </p>
                                                             <p style={{
                                                                 fontSize: '12px',
-                                                                color: hasTenderEnded ? '#888' : '#27F5CC',
+                                                                color: hasTenderEnded ? '#888' : 'var(--primary-tender-color)',
                                                                 margin: 0,
                                                                 fontWeight: '600',
                                                             }}>
@@ -1764,13 +1764,13 @@ const MultipurposeTenderSidebar = () => {
                                                                     width: '6px',
                                                                     height: '6px',
                                                                     borderRadius: '50%',
-                                                                    background: hasTenderEnded ? '#ccc' : '#27F5CC',
+                                                                    background: hasTenderEnded ? '#ccc' : 'var(--primary-tender-color)',
                                                                     animation: hasTenderEnded ? 'none' : 'pulse 2s infinite',
                                                                 }}></div>
                                                                 <span style={{
                                                                     fontSize: '11px',
                                                                     fontWeight: '600',
-                                                                    color: hasTenderEnded ? '#888' : '#27F5CC',
+                                                                    color: hasTenderEnded ? '#888' : 'var(--primary-tender-color)',
                                                                 }}>
                                                                     {tender.participantsCount || 0} {t('tenders.participants')}
                                                                 </span>
@@ -1883,27 +1883,27 @@ const MultipurposeTenderSidebar = () => {
                                                                 gap: '8px',
                                                                 width: '100%',
                                                                 padding: '12px 20px',
-                                                                background: hasTenderEnded ? '#cccccc' : 'linear-gradient(90deg, #27F5CC, #00D4AA)',
+                                                                background: hasTenderEnded ? '#cccccc' : 'var(--primary-tender-color)',
                                                                 color: hasTenderEnded ? '#888' : 'white',
                                                                 textDecoration: 'none',
                                                                 borderRadius: '25px',
                                                                 fontWeight: '600',
                                                                 fontSize: '14px',
                                                                 transition: 'all 0.3s ease',
-                                                                boxShadow: hasTenderEnded ? 'none' : '0 4px 12px rgba(39, 245, 204, 0.3)',
+                                                                boxShadow: hasTenderEnded ? 'none' : '0 4px 12px color-mix(in srgb, var(--primary-tender-color) 30%, transparent)',
                                                             }}
                                                             onMouseEnter={(e) => {
                                                                 if (!hasTenderEnded) {
-                                                                    e.currentTarget.style.background = 'linear-gradient(90deg, #00D4AA, #27F5CC)';
+                                                                    e.currentTarget.style.background = 'var(--primary-tender-color)';
                                                                     e.currentTarget.style.transform = 'translateY(-2px)';
-                                                                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(39, 245, 204, 0.4)';
+                                                                    e.currentTarget.style.boxShadow = '0 8px 20px color-mix(in srgb, var(--primary-tender-color) 40%, transparent)';
                                                                 }
                                                             }}
                                                             onMouseLeave={(e) => {
                                                                 if (!hasTenderEnded) {
-                                                                    e.currentTarget.style.background = 'linear-gradient(90deg, #27F5CC, #00D4AA)';
+                                                                    e.currentTarget.style.background = 'var(--primary-tender-color)';
                                                                     e.currentTarget.style.transform = 'translateY(0)';
-                                                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(39, 245, 204, 0.3)';
+                                                                    e.currentTarget.style.boxShadow = '0 4px 12px color-mix(in srgb, var(--primary-tender-color) 30%, transparent)';
                                                                 }
                                                             }}
                                                             onClick={(event) => {

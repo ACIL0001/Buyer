@@ -1,4 +1,6 @@
 import { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useSettingsStore } from "@/contexts/settingsStore";
 import { usePathname, useRouter } from 'next/navigation';
 import { Box, Drawer, Typography, Avatar, useMediaQuery, useTheme, alpha, Chip } from '@mui/material';
 import SimpleBar from 'simplebar-react';
@@ -46,6 +48,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
   const pathname = usePathname();
   const router = useRouter();
   const theme = useTheme();
+  const { logoUrl } = useSettingsStore();
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const { auth } = useAuth();
   const user = auth?.user;
@@ -64,7 +67,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
         {/* Logo - Click to go to home page */}
          <Box 
             component="img" 
-            src="/assets/img/logo.png" 
+            src={logoUrl || "/assets/img/logo.png"} 
             sx={{ 
               width: 140, 
               height: 'auto', 

@@ -14,7 +14,7 @@ interface DashboardPageShellProps {
   title: string;
   subtitle?: string;
   icon?: string;
-  /** Hex color for the header gradient. Defaults to #0063b1 (blue). */
+  /** Color for the header gradient. Defaults to var(--primary-auction-color). */
   accentColor?: string;
   headerActions?: ReactNode;
   stats?: StatCard[];
@@ -36,9 +36,13 @@ const styles = {
     gap: '16px',
     marginBottom: '24px',
     padding: '24px 28px',
-    background: `linear-gradient(135deg, ${color}, ${color}cc)`,
+    background: color.startsWith('var(') 
+      ? `linear-gradient(135deg, ${color}, color-mix(in srgb, ${color} 80%, transparent))`
+      : `linear-gradient(135deg, ${color}, ${color}cc)`,
     borderRadius: '16px',
-    boxShadow: `0 8px 32px ${color}40`,
+    boxShadow: color.startsWith('var(')
+      ? `0 8px 32px color-mix(in srgb, ${color} 25%, transparent)`
+      : `0 8px 32px ${color}40`,
     position: 'relative' as const,
     overflow: 'hidden',
   } as React.CSSProperties),
@@ -120,7 +124,7 @@ const styles = {
     width: '40px',
     height: '40px',
     borderRadius: '10px',
-    background: `${color}18`,
+    background: color.startsWith('var(') ? `color-mix(in srgb, ${color} 10%, transparent)` : `${color}18`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -154,14 +158,14 @@ const styles = {
   } as React.CSSProperties,
 };
 
-const DEFAULT_COLORS = ['#0063b1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+const DEFAULT_COLORS = ['var(--primary-auction-color)', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function DashboardPageShell({
   title,
   subtitle,
   icon,
-  accentColor = '#0063b1',
+  accentColor = 'var(--primary-auction-color)',
   headerActions,
   stats,
   children,

@@ -1,5 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
+import app from '@/config';
+import { useSettingsStore } from "@/contexts/settingsStore";
 import { useResponsive } from '@/hooks/useResponsive';
 
 interface MobileOptimizerProps {
@@ -10,6 +12,7 @@ export const MobileOptimizer: React.FC<MobileOptimizerProps> = ({ children }) =>
   const { width, height, isMobile, isTablet, isIPhone, isSamsung } = useResponsive();
   const [isClient, setIsClient] = useState(false);
   const [isLowPerformance, setIsLowPerformance] = useState(false);
+  const { logoUrl } = useSettingsStore();
 
   useEffect(() => {
     // Detect low-performance devices (simplified)
@@ -80,11 +83,11 @@ export const MobileOptimizer: React.FC<MobileOptimizerProps> = ({ children }) =>
 
     // Preload critical images for mobile
     if (isMobile) {
-      const imagesToPreload = [
-        '/assets/images/logo.png',
-        '/assets/images/avatar.jpg'
+      const baseImages = [
+        logoUrl || '/assets/images/logo.png',
+        '/assets/fonts/bootstrap-icons.woff2'
       ];
-      imagesToPreload.forEach(src => {
+      baseImages.forEach(src => {
         const img = new Image();
         img.src = src;
       });

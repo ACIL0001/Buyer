@@ -32,6 +32,7 @@ import {
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAuth from '@/hooks/useAuth';
+import { useSettingsStore } from '@/contexts/settingsStore';
 
 // Shared Wizard Components
 import WizardWrapper from '@/components/shared/wizard/WizardWrapper';
@@ -61,11 +62,22 @@ export default function CreateDirectSalePage() {
     const router = useRouter();
     const { auth, isLogged } = useAuth();
     const { t } = useTranslation();
+    const { directSaleColor } = useSettingsStore();
 
     const pageTheme = React.useMemo(() => createTheme(theme, {
         palette: {
-            primary: { main: '#d97706' }, // Orange/Yellow
-            secondary: { main: '#f59e0b' }, // Amber
+            primary: { 
+                main: directSaleColor || '#d97706',
+                light: directSaleColor || '#d97706',
+                dark: directSaleColor || '#d97706',
+                contrastText: '#fff'
+            },
+            secondary: { 
+                main: directSaleColor || '#d97706',
+                light: directSaleColor || '#d97706',
+                dark: directSaleColor || '#d97706',
+                contrastText: '#fff'
+            },
         },
         components: {
             MuiOutlinedInput: {
@@ -102,7 +114,7 @@ export default function CreateDirectSalePage() {
                                 transform: 'translateX(16px)',
                                 color: '#fff',
                                 '& + .MuiSwitch-track': {
-                                    backgroundColor: '#d97706',
+                                    backgroundColor: directSaleColor || '#d97706',
                                     opacity: 1,
                                     border: 0,
                                 },
@@ -123,7 +135,7 @@ export default function CreateDirectSalePage() {
                 }
             }
         }
-    }), [theme]);
+    }), [theme, directSaleColor]);
 
     const [activeStep, setActiveStep] = useState(0);
     const [mediaFiles, setMediaFiles] = useState<File[]>([]);

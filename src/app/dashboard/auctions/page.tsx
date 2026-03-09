@@ -119,13 +119,13 @@ export default function AuctionsPage() {
   const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
   const stats = [
-    { label: 'Total', value: auctions.length, color: '#0063b1', icon: '📋' },
+    { label: 'Total', value: auctions.length, color: 'var(--primary-auction-color)', icon: '📋' },
     { label: 'Actives', value: active.length, color: '#10b981', icon: '✅' },
     { label: 'Terminées', value: finished.length, color: '#f59e0b', icon: '⏳' },
     { label: 'Archivées', value: auctions.filter(a => a.status === BID_STATUS.ARCHIVED).length, color: '#64748b', icon: '🗄️' },
   ];
 
-  if (isLoading) return <ListPageSkeleton accentColor="#0063b1" />;
+  if (isLoading) return <ListPageSkeleton accentColor="var(--primary-auction-color)" />;
 
   return (
     <>
@@ -163,7 +163,7 @@ export default function AuctionsPage() {
             <div style={{ fontSize: '52px', marginBottom: '16px' }}>🏷️</div>
             <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569', margin: '0 0 8px' }}>Aucune enchère trouvée</p>
             <p style={{ color: '#94a3b8', margin: '0 0 24px' }}>Créez votre première enchère pour commencer</p>
-            <a href="/dashboard/auctions/create/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 22px', background: '#0063b1', color: '#fff', borderRadius: '10px', fontWeight: 700, textDecoration: 'none', fontSize: '0.9rem' }}>
+            <a href="/dashboard/auctions/create/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 22px', background: 'var(--primary-auction-color)', color: '#fff', borderRadius: '10px', fontWeight: 700, textDecoration: 'none', fontSize: '0.9rem' }}>
               ＋ Nouvelle enchère
             </a>
           </div>

@@ -236,7 +236,7 @@ const MultipurposeAuctionSidebar = () => {
                                 height: '80px',
                                 borderRadius: '50%',
                                 background: isSelected 
-                                    ? 'linear-gradient(135deg, #0063b1, #00a3e0)' 
+                                    ? 'var(--primary-auction-color)' 
                                     : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -458,7 +458,7 @@ const MultipurposeAuctionSidebar = () => {
                         {/* Subcategory Count Badge */}
                         {hasSubcategories && (
                             <span style={{
-                                background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
+                                background: 'var(--primary-auction-color)',
                                 color: 'white',
                                 fontSize: '11px',
                                 fontWeight: '600',
@@ -1142,8 +1142,8 @@ const MultipurposeAuctionSidebar = () => {
                                                     onMouseEnter={(e) => {
                                                         if (!hasAuctionEnded) { // Only apply hover effects if not ended
                                                             e.currentTarget.style.transform = 'translateY(-10px)';
-                                                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 99, 177, 0.15)';
-                                                            e.currentTarget.style.borderColor = 'rgba(0, 99, 177, 0.2)';
+                                                            e.currentTarget.style.boxShadow = '0 20px 40px color-mix(in srgb, var(--primary-auction-color) 15%, transparent)';
+                                                            e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--primary-auction-color) 20%, transparent)';
                                                         }
                                                     }}
                                                     onMouseLeave={(e) => {
@@ -1358,7 +1358,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                     borderRadius: '6px',
                                                                     padding: '4px 6px',
                                                                     border: '1px solid #e9ecef',
-                                                                    borderLeft: '3px solid #0063b1',
+                                                                    borderLeft: '3px solid var(--primary-auction-color)',
                                                                 }}>
                                                                     <p style={{
                                                                         fontSize: '9px',
@@ -1389,7 +1389,7 @@ const MultipurposeAuctionSidebar = () => {
                                                                 borderRadius: '6px',
                                                                 padding: '4px 6px',
                                                                 border: '1px solid #e9ecef',
-                                                                borderLeft: '3px solid #0063b1',
+                                                                borderLeft: '3px solid var(--primary-auction-color)',
                                                             }}>
                                                                 <p style={{
                                                                     fontSize: '9px',
@@ -1436,7 +1436,7 @@ const MultipurposeAuctionSidebar = () => {
                                                             padding: '4px 8px',
                                                             marginBottom: '8px',
                                                             border: hasAuctionEnded ? '1px solid #e0e0e0' : '1px solid #e9ecef',
-                                                            borderLeft: hasAuctionEnded ? '3px solid #ccc' : '3px solid #0063b1',
+                                                            borderLeft: hasAuctionEnded ? '3px solid #ccc' : '3px solid var(--primary-auction-color)',
                                                         }}>
                                                             <p style={{
                                                                 fontSize: '10px',
@@ -1448,7 +1448,7 @@ const MultipurposeAuctionSidebar = () => {
                                                             </p>
                                                                     <p style={{
                                                                 fontSize: '12px',
-                                                                    color: hasAuctionEnded ? '#888' : '#0063b1',
+                                                                    color: hasAuctionEnded ? '#888' : 'var(--primary-auction-color)',
                                                                 margin: 0,
                                                                 fontWeight: '600',
                                                                     }}>
@@ -1475,13 +1475,13 @@ const MultipurposeAuctionSidebar = () => {
                                                                     width: '6px',
                                                                     height: '6px',
                                                                     borderRadius: '50%',
-                                                                    background: hasAuctionEnded ? '#ccc' : '#0063b1',
+                                                                    background: hasAuctionEnded ? '#ccc' : 'var(--primary-auction-color)',
                                                                     animation: hasAuctionEnded ? 'none' : 'pulse 2s infinite',
                                                                 }}></div>
                                                                 <span style={{
                                                                     fontSize: '11px',
                                                                     fontWeight: '600',
-                                                                    color: hasAuctionEnded ? '#888' : '#0063b1',
+                                                                    color: hasAuctionEnded ? '#888' : 'var(--primary-auction-color)',
                                                                 }}>
                                                                     {t('auction.biddersWithCount', { count: auction.biddersCount || 0 })}
                                                                 </span>
@@ -1541,19 +1541,19 @@ const MultipurposeAuctionSidebar = () => {
                                                               />
                                                               <span style={{
                                                                 fontSize: '14px',
-                                                                color: hasAuctionEnded ? '#888' : '#0063b1',
+                                                                color: hasAuctionEnded ? '#888' : 'var(--primary-auction-color)',
                                                                 fontWeight: '600',
                                                                 transition: 'color 0.3s ease',
                                                               }}
                                                               onMouseEnter={(e) => {
                                                                 if (!hasAuctionEnded) {
-                                                                  e.currentTarget.style.color = '#00a3e0';
+                                                                  e.currentTarget.style.color = 'color-mix(in srgb, var(--primary-auction-color) 80%, white)';
                                                                   e.currentTarget.style.textDecoration = 'underline';
                                                                 }
                                                               }}
                                                               onMouseLeave={(e) => {
                                                                 if (!hasAuctionEnded) {
-                                                                  e.currentTarget.style.color = '#0063b1';
+                                                                  e.currentTarget.style.color = 'var(--primary-auction-color)';
                                                                   e.currentTarget.style.textDecoration = 'none';
                                                                 }
                                                               }}
@@ -1603,27 +1603,27 @@ const MultipurposeAuctionSidebar = () => {
                                                                 gap: '8px',
                                                                 width: '100%',
                                                                 padding: '12px 20px',
-                                                                background: hasAuctionEnded ? '#cccccc' : 'linear-gradient(90deg, #0063b1, #00a3e0)',
+                                                                background: hasAuctionEnded ? '#cccccc' : 'var(--primary-auction-color)',
                                                                 color: hasAuctionEnded ? '#888' : 'white',
                                                                 textDecoration: 'none',
                                                                 borderRadius: '25px',
                                                                 fontWeight: '600',
                                                                 fontSize: '14px',
                                                                 transition: 'all 0.3s ease',
-                                                                boxShadow: hasAuctionEnded ? 'none' : '0 4px 12px rgba(0, 99, 177, 0.3)',
+                                                                boxShadow: hasAuctionEnded ? 'none' : '0 4px 12px color-mix(in srgb, var(--primary-auction-color) 30%, transparent)',
                                                             }}
                                                             onMouseEnter={(e) => {
                                                                 if (!hasAuctionEnded) {
-                                                                    e.currentTarget.style.background = 'linear-gradient(90deg, #00a3e0, #0063b1)';
+                                                                    e.currentTarget.style.background = 'var(--primary-auction-color)';
                                                                     e.currentTarget.style.transform = 'translateY(-2px)';
-                                                                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 99, 177, 0.4)';
+                                                                    e.currentTarget.style.boxShadow = '0 8px 20px color-mix(in srgb, var(--primary-auction-color) 40%, transparent)';
                                                                 }
                                                             }}
                                                             onMouseLeave={(e) => {
                                                                 if (!hasAuctionEnded) {
-                                                                    e.currentTarget.style.background = 'linear-gradient(90deg, #0063b1, #00a3e0)';
+                                                                    e.currentTarget.style.background = 'var(--primary-auction-color)';
                                                                     e.currentTarget.style.transform = 'translateY(0)';
-                                                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 99, 177, 0.3)';
+                                                                    e.currentTarget.style.boxShadow = '0 4px 12px color-mix(in srgb, var(--primary-auction-color) 30%, transparent)';
                                                                 }
                                                             }}
                                                             onClick={(event) => {
@@ -1727,7 +1727,7 @@ const MultipurposeAuctionSidebar = () => {
                                                 width: '45px',
                                                 height: '45px',
                                                 borderRadius: '50%',
-                                                background: currentPage === page ? 'linear-gradient(135deg, #0063b1, #00a3e0)' : '#f5f5f5',
+                                                background: currentPage === page ? 'var(--primary-auction-color)' : '#f5f5f5',
                                                 color: currentPage === page ? 'white' : '#333',
                                                 fontWeight: currentPage === page ? '700' : '600',
                                                 textDecoration: 'none',

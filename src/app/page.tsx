@@ -2129,10 +2129,10 @@ export default function Home() {
                               justifyContent: auctionDropdownOpen ? 'flex-start' : 'center',
                               gap: 'clamp(8px, 2vw, 12px)',
                               background: '#ffffff',
-                              color: '#004c8c',
+                              color: 'var(--primary-auction-color)',
                               padding: auctionDropdownOpen ? 'clamp(16px, 3vw, 20px) clamp(20px, 5vw, 28px)' : 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
                               borderRadius: 'clamp(22px, 5vw, 30px)',
-                              border: '3px solid #0063b1',
+                              border: '3px solid var(--primary-auction-color)',
                               fontSize: 'clamp(15px, 3.8vw, 19px)',
                               fontWeight: 800,
                               cursor: 'pointer',
@@ -2147,7 +2147,7 @@ export default function Home() {
                             }}
                           >
                             <div style={{
-                              background: 'rgba(0, 99, 177, 0.2)',
+                              background: 'color-mix(in srgb, var(--primary-auction-color) 20%, transparent)',
                               padding: 'clamp(12px, 2.8vw, 16px)',
                               borderRadius: '55%',
                               display: 'flex',
@@ -2160,13 +2160,13 @@ export default function Home() {
                               <FaGavel 
                                 style={{ 
                                   fontSize: 'clamp(32px, 5.6vw, 42px)',
-                                  color: '#004c8c'
+                                  color: 'var(--primary-auction-color)'
                                 }} 
                               />
                             </div>
                             <span style={{
                               display: auctionDropdownOpen ? 'block' : 'none',
-                              color: '#004c8c',
+                              color: 'var(--primary-auction-color)',
                               fontSize: 'clamp(13px, 2.5vw, 16px)',
                               fontWeight: 800,
                               textAlign: 'center',
@@ -2199,7 +2199,7 @@ export default function Home() {
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
-                                  background: '#0063b1',
+                                  background: 'var(--primary-auction-color)',
                                   color: 'white',
                                   border: 'none',
                                   borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
@@ -2208,17 +2208,17 @@ export default function Home() {
                                   fontWeight: 600,
                                   transition: 'all 0.3s ease',
                                   gap: isMobile ? '4px' : '6px',
-                                  boxShadow: isMobile ? '0 2px 4px rgba(0, 99, 177, 0.2)' : 'none',
+                                  boxShadow: isMobile ? '0 2px 4px color-mix(in srgb, var(--primary-auction-color) 20%, transparent)' : 'none',
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.background = '#005299';
+                                    e.currentTarget.style.filter = 'brightness(0.85)';
                                     e.currentTarget.style.transform = 'scale(1.05)';
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.background = '#0063b1';
+                                    e.currentTarget.style.filter = 'brightness(1)';
                                     e.currentTarget.style.transform = 'scale(1)';
                                   }
                                 }}
@@ -2239,7 +2239,7 @@ export default function Home() {
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
-                                  background: '#0063b1',
+                                  background: 'var(--primary-auction-color)',
                                   color: 'white',
                                   border: 'none',
                                   borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
@@ -2248,17 +2248,17 @@ export default function Home() {
                                   fontWeight: 600,
                                   transition: 'all 0.3s ease',
                                   gap: isMobile ? '4px' : '6px',
-                                  boxShadow: isMobile ? '0 2px 4px rgba(0, 99, 177, 0.2)' : 'none',
+                                  boxShadow: isMobile ? '0 2px 4px color-mix(in srgb, var(--primary-auction-color) 20%, transparent)' : 'none',
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.background = '#005299';
+                                    e.currentTarget.style.filter = 'brightness(0.85)';
                                     e.currentTarget.style.transform = 'scale(1.05)';
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.background = '#0063b1';
+                                    e.currentTarget.style.filter = 'brightness(1)';
                                     e.currentTarget.style.transform = 'scale(1)';
                                   }
                                 }}
@@ -2289,10 +2289,10 @@ export default function Home() {
                               justifyContent: venteDirectDropdownOpen ? 'flex-start' : 'center',
                               gap: 'clamp(8px, 2vw, 12px)',
                               background: '#ffffff',
-                              color: '#d97706',
+                              color: 'var(--primary-ds-color)',
                               padding: venteDirectDropdownOpen ? 'clamp(16px, 3vw, 20px) clamp(20px, 5vw, 28px)' : 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
                               borderRadius: 'clamp(22px, 5vw, 30px)',
-                              border: '3px solid #f59e0b',
+                              border: '3px solid var(--primary-ds-color)',
                               fontSize: 'clamp(15px, 3.8vw, 19px)',
                               fontWeight: 800,
                               cursor: 'pointer',
@@ -2307,7 +2307,7 @@ export default function Home() {
                             }}
                           >
                             <div style={{
-                              background: 'rgba(245, 158, 11, 0.12)',
+                              background: 'color-mix(in srgb, var(--primary-ds-color) 20%, transparent)',
                               padding: 'clamp(12px, 2.8vw, 16px)',
                               borderRadius: '55%',
                               display: 'flex',
@@ -2317,13 +2317,13 @@ export default function Home() {
                               transform: venteDirectDropdownOpen ? 'translateY(-10px)' : 'translateY(0)',
                               transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                             }}>
-                              <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="#d97706">
+                              <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="var(--primary-ds-color)">
                                 <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
                               </svg>
                             </div>
                             <span style={{
                               display: venteDirectDropdownOpen ? 'block' : 'none',
-                              color: '#d97706',
+                              color: 'var(--primary-ds-color)',
                               fontSize: 'clamp(13px, 2.5vw, 16px)',
                               fontWeight: 800,
                               textAlign: 'center',
@@ -2356,7 +2356,7 @@ export default function Home() {
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
-                                  background: '#f59e0b',
+                                  background: 'var(--primary-ds-color)',
                                   color: 'white',
                                   border: 'none',
                                   borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
@@ -2365,17 +2365,17 @@ export default function Home() {
                                   fontWeight: 600,
                                   transition: 'all 0.3s ease',
                                   gap: isMobile ? '4px' : '6px',
-                                  boxShadow: isMobile ? '0 2px 4px rgba(245, 158, 11, 0.2)' : 'none',
+                                  boxShadow: isMobile ? '0 2px 4px color-mix(in srgb, var(--primary-ds-color) 20%, transparent)' : 'none',
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.background = '#d97706';
+                                    e.currentTarget.style.filter = 'brightness(0.85)';
                                     e.currentTarget.style.transform = 'scale(1.05)';
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.background = '#f59e0b';
+                                    e.currentTarget.style.filter = 'brightness(1)';
                                     e.currentTarget.style.transform = 'scale(1)';
                                   }
                                 }}
@@ -2396,7 +2396,7 @@ export default function Home() {
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
-                                  background: '#f59e0b',
+                                  background: 'var(--primary-ds-color)',
                                   color: 'white',
                                   border: 'none',
                                   borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
@@ -2405,17 +2405,17 @@ export default function Home() {
                                   fontWeight: 600,
                                   transition: 'all 0.3s ease',
                                   gap: isMobile ? '4px' : '6px',
-                                  boxShadow: isMobile ? '0 2px 4px rgba(245, 158, 11, 0.2)' : 'none',
+                                  boxShadow: isMobile ? '0 2px 4px color-mix(in srgb, var(--primary-ds-color) 20%, transparent)' : 'none',
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.background = '#d97706';
+                                    e.currentTarget.style.filter = 'brightness(0.85)';
                                     e.currentTarget.style.transform = 'scale(1.05)';
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.background = '#f59e0b';
+                                    e.currentTarget.style.filter = 'brightness(1)';
                                     e.currentTarget.style.transform = 'scale(1)';
                                   }
                                 }}
@@ -2446,10 +2446,10 @@ export default function Home() {
                               justifyContent: tenderDropdownOpen ? 'flex-start' : 'center',
                               gap: 'clamp(8px, 2vw, 12px)',
                               background: '#ffffff',
-                              color: '#047857',
+                              color: 'var(--primary-tender-color)',
                               padding: tenderDropdownOpen ? 'clamp(16px, 3vw, 20px) clamp(20px, 5vw, 28px)' : 'clamp(22px, 5vw, 36px) clamp(26px, 7vw, 40px)',
                               borderRadius: 'clamp(22px, 5vw, 30px)',
-                              border: '3px solid #10b981',
+                              border: '3px solid var(--primary-tender-color)',
                               fontSize: 'clamp(15px, 3.8vw, 19px)',
                               fontWeight: 800,
                               cursor: 'pointer',
@@ -2464,7 +2464,7 @@ export default function Home() {
                             }}
                           >
                             <div style={{
-                              background: 'rgba(16, 185, 129, 0.12)',
+                              background: 'color-mix(in srgb, var(--primary-tender-color) 20%, transparent)',
                               padding: 'clamp(12px, 2.8vw, 16px)',
                               borderRadius: '55%',
                               display: 'flex',
@@ -2474,13 +2474,13 @@ export default function Home() {
                               transform: tenderDropdownOpen ? 'translateY(-10px)' : 'translateY(0)',
                               transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                             }}>
-                              <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="#047857">
+                              <svg width="clamp(32px, 5.6vw, 40px)" height="clamp(32px, 5.6vw, 40px)" viewBox="0 0 24 24" fill="var(--primary-tender-color)">
                                 <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
                               </svg>
                             </div>
                             <span style={{
                               display: tenderDropdownOpen ? 'block' : 'none',
-                              color: '#047857',
+                              color: 'var(--primary-tender-color)',
                               fontSize: 'clamp(13px, 2.5vw, 16px)',
                               fontWeight: 800,
                               textAlign: 'center',
@@ -2513,7 +2513,7 @@ export default function Home() {
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
-                                  background: '#10b981',
+                                  background: 'var(--primary-tender-color)',
                                   color: 'white',
                                   border: 'none',
                                   borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
@@ -2522,17 +2522,17 @@ export default function Home() {
                                   fontWeight: 600,
                                   transition: 'all 0.3s ease',
                                   gap: isMobile ? '4px' : '6px',
-                                  boxShadow: isMobile ? '0 2px 4px rgba(16, 185, 129, 0.2)' : 'none',
+                                  boxShadow: isMobile ? '0 2px 4px color-mix(in srgb, var(--primary-tender-color) 20%, transparent)' : 'none',
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.background = '#059669';
+                                    e.currentTarget.style.filter = 'brightness(0.85)';
                                     e.currentTarget.style.transform = 'scale(1.05)';
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.background = '#10b981';
+                                    e.currentTarget.style.filter = 'brightness(1)';
                                     e.currentTarget.style.transform = 'scale(1)';
                                   }
                                 }}
@@ -2553,7 +2553,7 @@ export default function Home() {
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   padding: isMobile ? '1px 5px' : 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 20px)',
-                                  background: '#10b981',
+                                  background: 'var(--primary-tender-color)',
                                   color: 'white',
                                   border: 'none',
                                   borderRadius: isMobile ? '10px' : 'clamp(12px, 3vw, 16px)',
@@ -2562,17 +2562,17 @@ export default function Home() {
                                   fontWeight: 600,
                                   transition: 'all 0.3s ease',
                                   gap: isMobile ? '4px' : '6px',
-                                  boxShadow: isMobile ? '0 2px 4px rgba(16, 185, 129, 0.2)' : 'none',
+                                  boxShadow: isMobile ? '0 2px 4px color-mix(in srgb, var(--primary-tender-color) 20%, transparent)' : 'none',
                                 }}
                                 onMouseEnter={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.background = '#059669';
+                                    e.currentTarget.style.filter = 'brightness(0.85)';
                                     e.currentTarget.style.transform = 'scale(1.05)';
                                   }
                                 }}
                                 onMouseLeave={(e) => {
                                   if (!isMobile) {
-                                    e.currentTarget.style.background = '#10b981';
+                                    e.currentTarget.style.filter = 'brightness(1)';
                                     e.currentTarget.style.transform = 'scale(1)';
                                   }
                                 }}

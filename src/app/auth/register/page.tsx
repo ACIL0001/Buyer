@@ -3,7 +3,9 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Typography, styled, Box, Link, alpha } from '@mui/material';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
+import { useSettingsStore } from "@/contexts/settingsStore";
 import NextLink from 'next/link';
 import RegisterForm from '../../../sections/auth/register/RegisterForm';
 import useAuth from '../../../hooks/useAuth';
@@ -83,6 +85,7 @@ const GlassContainer = styled(Box)(({ theme }) => ({
 
 export default function Register() {
   const { t } = useTranslation();
+  const { logoUrl } = useSettingsStore();
   const { isLogged } = useAuth();
   const router = useRouter();
   const { width } = useResponsive();
@@ -104,16 +107,9 @@ export default function Register() {
         }}
       >
         <NextLink href="/" passHref>
-          <img
-            src="/assets/img/logo.png"
-            alt="MazadClick"
-            style={{
-              height: 'auto',
-              maxHeight: '60px',
-              maxWidth: '150px',
-            }}
-            className="w-auto h-10 sm:h-12 md:h-[60px] max-w-[110px] sm:max-w-[140px] md:max-w-[150px]"
-          />
+          <div className="login-logo text-center mb-4">
+            <img src={logoUrl || "/assets/img/logo.png"} alt="MazadClick" style={{ maxWidth: '200px', height: 'auto', marginBottom: '20px' }} />
+          </div>
         </NextLink>
       </Box>
 

@@ -36,6 +36,7 @@ import {
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAuth from '@/hooks/useAuth';
+import { useSettingsStore } from '@/contexts/settingsStore';
 
 // Shared Wizard Components
 import WizardWrapper from '@/components/shared/wizard/WizardWrapper';
@@ -70,11 +71,22 @@ export default function CreateAuctionPage() {
     const router = useRouter();
     const { auth, isLogged } = useAuth();
     const { t } = useTranslation();
+    const { auctionColor } = useSettingsStore();
 
     const pageTheme = React.useMemo(() => createTheme(theme, {
         palette: {
-            primary: { main: '#0284c7' }, // Blue
-            secondary: { main: '#0ea5e9' }, // Light blue
+            primary: { 
+                main: auctionColor || '#0284c7',
+                light: auctionColor || '#0284c7',
+                dark: auctionColor || '#0284c7',
+                contrastText: '#fff'
+            },
+            secondary: { 
+                main: auctionColor || '#0284c7',
+                light: auctionColor || '#0284c7',
+                dark: auctionColor || '#0284c7',
+                contrastText: '#fff'
+            },
         },
         components: {
             MuiOutlinedInput: {
@@ -111,7 +123,7 @@ export default function CreateAuctionPage() {
                                 transform: 'translateX(16px)',
                                 color: '#fff',
                                 '& + .MuiSwitch-track': {
-                                    backgroundColor: '#0284c7',
+                                    backgroundColor: auctionColor || '#0284c7',
                                     opacity: 1,
                                     border: 0,
                                 },
@@ -132,7 +144,7 @@ export default function CreateAuctionPage() {
                 }
             }
         }
-    }), [theme]);
+    }), [theme, auctionColor]);
     
     // State
     const [activeStep, setActiveStep] = useState(0);

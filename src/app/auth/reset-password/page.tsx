@@ -21,7 +21,10 @@ import {
 import NextLink from 'next/link';
 import { LoadingButton } from '@mui/lab';
 import Iconify from '../../../components/Iconify';
+import { motion } from 'framer-motion';
 import { useFormik } from 'formik';
+import { useSettingsStore } from "@/contexts/settingsStore";
+import { useTranslation } from 'react-i18next';
 import * as Yup from 'yup';
 import axios from 'axios';
 import app from '../../../config';
@@ -44,7 +47,7 @@ const RootStyle = styled('div')(({ theme }) => ({
 }));
 
 const GlassContainer = styled(Paper)(({ theme }) => ({
-  background: `linear-gradient(135deg, 
+  background: `linear-gradient(135deg,
     ${alpha(theme.palette.background.paper, 0.95)} 0%,
     ${alpha(theme.palette.background.paper, 0.9)} 100%
   )`,
@@ -212,13 +215,14 @@ const MethodChip = styled(Chip)(({ theme }) => ({
 }));
 
 function ResetPasswordContent() {
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const method = (searchParams.get('method') as 'email' | 'phone') || 'email';
   const initialEmail = searchParams.get('email') || '';
   const initialPhone = searchParams.get('phone') || '';
   const identifier = method === 'email' ? initialEmail : initialPhone;
-  
+
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -234,10 +238,10 @@ function ResetPasswordContent() {
   const handleResendCode = async () => {
     try {
       setError(null);
-      const payload = method === 'email' 
+      const payload = method === 'email'
         ? { email: identifier }
         : { phone: identifier };
-      
+
       await axios.post(`${app.baseURL}auth/forgot-password`, payload);
       setSuccess('Code renvoyé avec succès !');
       setResendCountdown(60);
@@ -258,7 +262,7 @@ function ResetPasswordContent() {
     },
     enableReinitialize: true,
     validationSchema: Yup.object({
-      email: method === 'email' 
+      email: method === 'email'
         ? Yup.string().email('Email invalide').required('Email requis')
         : Yup.string(),
       phone: method === 'phone'
@@ -287,7 +291,7 @@ function ResetPasswordContent() {
             newPassword: values.newPassword
           });
         }
-        
+
         setSuccess('Mot de passe réinitialisé avec succès !');
         setTimeout(() => {
             router.push('/auth/login');
@@ -309,7 +313,10 @@ function ResetPasswordContent() {
           <div>
             <LogoBox>
               <NextLink href="/" passHref>
-                <img src="/assets/img/logo.png" alt="MazadClick" />
+                <img src={(() => {
+                    const { logoUrl } = useSettingsStore.getState();
+                    return logoUrl || "/assets/img/logo.png";
+                })()} alt="MazadClick" />
               </NextLink>
             </LogoBox>
 

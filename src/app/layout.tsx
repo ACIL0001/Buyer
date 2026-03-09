@@ -33,6 +33,7 @@ import MobileOptimizer from "@/components/common/MobileOptimizer";
 import { usePathname } from "next/navigation";
 import Head from "./head";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import ThemeInjector from "@/components/common/ThemeInjector";
 
 // Import notification service
 import { notificationManager } from "@/services/notifications";
@@ -163,6 +164,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                         <WinnerAnnouncement />
                         
                         {/* Notification Handler Component */}
+                        <ThemeInjector />
                         <NotificationHandler />
                         
                         <ScrollManager />

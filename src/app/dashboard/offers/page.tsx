@@ -131,13 +131,13 @@ export default function OffersPage() {
   const declined = current.filter(o => o.status === 'DECLINED').length;
 
   const stats = [
-    { label: 'Total', value: current.length, color: '#0063b1', icon: '📋' },
+    { label: 'Total', value: current.length, color: 'var(--primary-auction-color)', icon: '📋' },
     { label: 'En attente', value: pending, color: '#f59e0b', icon: '⏳' },
     { label: 'Acceptées', value: accepted, color: '#10b981', icon: '✅' },
     { label: 'Déclinées', value: declined, color: '#ef4444', icon: '❌' },
   ];
 
-  if (isQueryLoading && !offers.length) return <ListPageSkeleton accentColor="#0063b1" />;
+  if (isQueryLoading && !offers.length) return <ListPageSkeleton accentColor="var(--primary-auction-color)" />;
 
   return (
     <>
@@ -212,7 +212,7 @@ export default function OffersPage() {
                   <tr key={_id} className="db-row" style={tableStyles.trHover}>
                     <td style={tableStyles.td}>
                       <Link href={`/profile/${user?._id}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
-                        <div style={tableStyles.avatar('#0063b1')}>{initials}</div>
+                        <div style={tableStyles.avatar('var(--primary-auction-color)')}>{initials}</div>
                         <div>
                           <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>{displayName}</div>
                           {user?.email && <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{user.email}</div>}

@@ -123,7 +123,7 @@ const TenderCard = ({ tender }: TenderCardProps) => {
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
-        e.currentTarget.style.boxShadow = '0 20px 40px rgba(0, 99, 177, 0.15)';
+        e.currentTarget.style.boxShadow = '0 20px 40px color-mix(in srgb, var(--primary-tender-color) 15%, transparent)';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = 'translateY(0) scale(1)';
@@ -145,7 +145,7 @@ const TenderCard = ({ tender }: TenderCardProps) => {
         position: 'relative',
         height: 'clamp(120px, 20vw, 160px)',
         overflow: 'hidden',
-        background: 'linear-gradient(135deg, #27F5CC, #00D4AA)',
+        background: 'var(--primary-tender-color)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -218,7 +218,7 @@ const TenderCard = ({ tender }: TenderCardProps) => {
           <div style={{
             background: isEnded
               ? 'rgba(0,0,0,0.65)'
-              : (isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'linear-gradient(45deg, #27F5CC, #00D4AA)'),
+              : (isUrgent ? 'linear-gradient(45deg, #ff4444, #ff6666)' : 'var(--primary-tender-color)'),
             color: isEnded ? '#ffffff' : '#000000',
             padding: '6px 10px',
             borderRadius: '20px',
@@ -291,7 +291,7 @@ const TenderCard = ({ tender }: TenderCardProps) => {
             borderRadius: '8px',
             padding: '4px 8px',
             border: '1px solid #e9ecef',
-            borderLeft: '3px solid #27F5CC',
+            borderLeft: '3px solid var(--primary-tender-color)',
             position: 'relative',
             overflow: 'hidden',
             display: 'flex',
@@ -331,7 +331,7 @@ const TenderCard = ({ tender }: TenderCardProps) => {
             borderRadius: '8px',
             padding: '4px 8px',
             border: '1px solid #e9ecef',
-            borderLeft: '3px solid #27F5CC',
+            borderLeft: '3px solid var(--primary-tender-color)',
             position: 'relative',
             overflow: 'hidden',
             display: 'flex',
@@ -379,13 +379,13 @@ const TenderCard = ({ tender }: TenderCardProps) => {
               width: '6px',
               height: '6px',
               borderRadius: '50%',
-              background: '#27F5CC',
+              background: 'var(--primary-tender-color)',
               animation: 'pulse 2s infinite',
             }}></div>
             <span style={{
               fontSize: '11px',
               fontWeight: '600',
-              color: '#27F5CC',
+              color: 'var(--primary-tender-color)',
             }}>
               {((tender as any).participantsCount || 0)} {t('liveTenders.participants')}
             </span>
@@ -496,28 +496,28 @@ const TenderCard = ({ tender }: TenderCardProps) => {
             gap: 'clamp(6px, 1.5vw, 8px)',
             width: '100%',
             padding: 'clamp(10px, 2vw, 12px) clamp(16px, 3vw, 20px)',
-            background: isEnded ? '#c7c7c7' : 'linear-gradient(90deg, #27F5CC, #00D4AA)',
+            background: isEnded ? '#c7c7c7' : 'var(--primary-tender-color)',
             color: 'white',
             textDecoration: 'none',
             borderRadius: '25px',
             fontWeight: '600',
             fontSize: 'clamp(12px, 2vw, 14px)',
             transition: 'all 0.3s ease',
-            boxShadow: isEnded ? 'none' : '0 4px 12px rgba(39, 245, 204, 0.3)',
+            boxShadow: isEnded ? 'none' : '0 4px 12px color-mix(in srgb, var(--primary-tender-color) 30%, transparent)',
             pointerEvents: isEnded ? 'none' : 'auto'
           }}
           onMouseEnter={(e) => {
             if (!isEnded) {
-              e.currentTarget.style.background = 'linear-gradient(90deg, #00D4AA, #27F5CC)';
+              e.currentTarget.style.background = 'var(--primary-tender-color)';
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(39, 245, 204, 0.4)';
+              e.currentTarget.style.boxShadow = '0 8px 20px color-mix(in srgb, var(--primary-tender-color) 40%, transparent)';
             }
           }}
           onMouseLeave={(e) => {
             if (!isEnded) {
-              e.currentTarget.style.background = 'linear-gradient(90deg, #27F5CC, #00D4AA)';
+              e.currentTarget.style.background = 'var(--primary-tender-color)';
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(39, 245, 204, 0.3)';
+              e.currentTarget.style.boxShadow = '0 4px 12px color-mix(in srgb, var(--primary-tender-color) 30%, transparent)';
             }
           }}
         >
@@ -548,8 +548,8 @@ const TenderCard = ({ tender }: TenderCardProps) => {
                 width: '100%',
                 padding: 'clamp(8px, 1.5vw, 10px) clamp(12px, 2.5vw, 16px)',
                 background: 'transparent',
-                color: '#27F5CC',
-                border: '1.5px solid #27F5CC',
+                color: 'var(--primary-tender-color)',
+                border: '1.5px solid var(--primary-tender-color)',
                 borderRadius: '25px',
                 fontWeight: '600',
                 fontSize: 'clamp(12px, 2vw, 13px)',
@@ -558,7 +558,7 @@ const TenderCard = ({ tender }: TenderCardProps) => {
                 marginTop: '8px',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(39, 245, 204, 0.08)';
+                e.currentTarget.style.background = 'color-mix(in srgb, var(--primary-tender-color) 8%, transparent)';
                 e.currentTarget.style.transform = 'translateY(-1px)';
               }}
               onMouseLeave={(e) => {

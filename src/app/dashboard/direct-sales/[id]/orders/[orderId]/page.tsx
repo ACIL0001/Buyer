@@ -11,7 +11,14 @@ import { useCreateSocket } from '@/contexts/socket';
 import { normalizeImageUrl } from '@/utils/url';
 import { DashboardKeyframes, StatusBadge, tableStyles, ConfirmDialog, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
 
-const ACCENT = '#d97706';
+const ACCENT = 'var(--primary-ds-color)';
+const ACCENT_80 = 'color-mix(in srgb, var(--primary-ds-color) 80%, transparent)'; // cc in hex
+const ACCENT_25 = 'color-mix(in srgb, var(--primary-ds-color) 25%, transparent)'; // 40 in hex
+const ACCENT_12 = 'color-mix(in srgb, var(--primary-ds-color) 12%, transparent)'; // 20 in hex
+const ACCENT_10 = 'color-mix(in srgb, var(--primary-ds-color) 10%, transparent)'; // 18 in hex
+const ACCENT_05 = 'color-mix(in srgb, var(--primary-ds-color) 5%, transparent)'; // 08 in hex
+const ACCENT_03 = 'color-mix(in srgb, var(--primary-ds-color) 3%, transparent)'; // 06 in hex
+const ACCENT_18 = 'color-mix(in srgb, var(--primary-ds-color) 18%, transparent)'; // 30 in hex
 
 function orderStatusCfg(s: string) {
   const m: Record<string, any> = {
@@ -78,7 +85,7 @@ export default function DirectSaleOrderDetailPage() {
     finally { setProcessing(false); setConfirmDialog(false); }
   };
 
-  if (loading) return <DetailPageSkeleton accentColor="#d97706" />;
+  if (loading) return <DetailPageSkeleton accentColor="var(--primary-ds-color)" />;
 
   const sale = data?.sale;
   const order = data?.order;
@@ -105,7 +112,7 @@ export default function DirectSaleOrderDetailPage() {
       <DashboardKeyframes />
 
       {/* Hero */}
-      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT}40`, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT_80})`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT_25}`, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08), transparent 60%)', pointerEvents: 'none' }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
           <button onClick={() => router.push('/dashboard/direct-sales/orders')} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, marginBottom: 14 }}>← Retour aux commandes</button>
@@ -122,7 +129,7 @@ export default function DirectSaleOrderDetailPage() {
       {/* Summary tiles */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 20 }}>
         <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', borderLeft: `4px solid ${ACCENT}`, display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 12, background: `${ACCENT}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>📦</div>
+          <div style={{ width: 48, height: 48, borderRadius: 12, background: ACCENT_10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>📦</div>
           <div>
             <div style={{ fontSize: '2rem', fontWeight: 800, color: ACCENT, lineHeight: 1 }}>{order.quantity}</div>
             <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 4 }}>Quantité commandée</div>
@@ -174,7 +181,7 @@ export default function DirectSaleOrderDetailPage() {
             <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>👤 {isOwner ? 'Acheteur' : 'Vendeur'}</h3>
             {counterparty && cpId ? (
               <Link href={`/profile/${cpId}`} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
-                <div style={{ width: 56, height: 56, borderRadius: '50%', background: `${ACCENT}20`, color: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', border: `2px solid ${ACCENT}30`, flexShrink: 0 }}>{cpName.charAt(0).toUpperCase()}</div>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: ACCENT_12, color: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', border: `2px solid ${ACCENT_18}`, flexShrink: 0 }}>{cpName.charAt(0).toUpperCase()}</div>
                 <div>
                   <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '1rem' }}>{cpName}</div>
                   {(counterparty as any).email && <div style={{ color: '#64748b', fontSize: '0.82rem', marginTop: 2 }}>{(counterparty as any).email}</div>}
@@ -187,7 +194,7 @@ export default function DirectSaleOrderDetailPage() {
           </div>
 
           {/* Product info */}
-          <div style={{ ...card, background: `linear-gradient(135deg, ${ACCENT}08, #fff)` }}>
+          <div style={{ ...card, background: `linear-gradient(135deg, ${ACCENT_05}, #fff)` }}>
             <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>🛍️ Produit</h3>
             <div style={{ marginBottom: 10 }}>
               <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Nom du produit</div>
@@ -217,11 +224,11 @@ export default function DirectSaleOrderDetailPage() {
               const buyer = o.buyer;
               const bName = buyer?.companyName || `${buyer?.firstName || ''} ${buyer?.lastName || ''}`.trim() || 'N/A';
               return (
-                <tr key={o._id || i} className="db-row" style={{ ...tableStyles.trHover, background: isCurrent ? `${ACCENT}06` : undefined }}>
+                <tr key={o._id || i} className="db-row" style={{ ...tableStyles.trHover, background: isCurrent ? ACCENT_03 : undefined }}>
                   <td style={tableStyles.td}>
                     {buyer?._id ? (
                       <Link href={`/profile/${buyer._id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
-                        <div style={{ width: 34, height: 34, borderRadius: '50%', background: isCurrent ? `${ACCENT}20` : '#f1f5f9', color: isCurrent ? ACCENT : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.82rem', flexShrink: 0 }}>{bName.charAt(0).toUpperCase()}</div>
+                        <div style={{ width: 34, height: 34, borderRadius: '50%', background: isCurrent ? ACCENT_12 : '#f1f5f9', color: isCurrent ? ACCENT : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.82rem', flexShrink: 0 }}>{bName.charAt(0).toUpperCase()}</div>
                         <span style={{ fontWeight: isCurrent ? 700 : 500, color: '#1e293b' }}>
                           {bName}
                           {isCurrent && <span style={{ marginLeft: 8, padding: '1px 7px', borderRadius: 8, background: ACCENT, color: '#fff', fontSize: '0.68rem', fontWeight: 700 }}>Cette commande</span>}

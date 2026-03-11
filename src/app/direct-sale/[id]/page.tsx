@@ -2,7 +2,7 @@ import DirectSaleDetailsClient from "./DirectSaleDetailsClient";
 import app from "@/config";
 import { normalizeImageUrl } from "@/utils/url";
 
-// Force Next.js to always fetch fresh data for social media bots
+// Force Next.js to not cache this page so social media bots always get fresh data
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
@@ -14,7 +14,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   if (!id) return fallbackMetadata;
 
   try {
-    // FIX 1: Use singular 'direct-sale' to match your NestJS controller
+    // Note: Make sure this matches your NestJS backend route exactly (direct-sale or direct-sales)
     const res = await fetch(`${app.baseURL}direct-sale/${id}`, {
       headers: { 
         'x-access-key': app.apiKey || '',
@@ -23,37 +23,35 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       next: { revalidate: 0 }
     });
     
-    if (!res.ok) {
-       return fallbackMetadata;
-    }
+    if (!res.ok) return fallbackMetadata;
 
     const json = await res.json();
     const directSale = json.data || json; 
 
-    // Extract core data
+    // Extract Data
     const title = directSale.title || "Vente Directe";
     const rawDescription = directSale.description || "Découvrez ce produit sur MazadClick";
     const price = directSale.price || 0;
-    
-    // Calculate accurate stock 
-    const totalQuantity = directSale.quantity || 0;
-    const soldQuantity = directSale.soldQuantity || 0;
-    const availableStock = totalQuantity === 0 ? "Illimitée" : (totalQuantity - soldQuantity);
+    const quantity = directSale.quantity === 0 ? "Illimitée" : (directSale.quantity || 0);
 
-    // FIX 2: Build the custom description (Price & Quantity FIRST)
-    const cleanDesc = rawDescription.substring(0, 90) + (rawDescription.length > 90 ? '...' : '');
-    const enhancedDescription = `💰 Prix: ${price} DA | 📦 Quantité: ${availableStock} | 📝 ${cleanDesc}`;
+    // Build the Social Media Description
+    const shortDesc = rawDescription.length > 80 ? rawDescription.substring(0, 80) + '...' : rawDescription;
+    const enhancedDescription = `💰 Prix: ${price} DA | 📦 Qté: ${quantity} | ${shortDesc}`;
 
-    // FIX 3: Force Absolute URL for Facebook (This unlocks the description!)
+    // FOOLPROOF IMAGE FIX FOR FACEBOOK
     let imageUrl = "/assets/images/logo-dark.png";
     if (directSale.thumbs && directSale.thumbs.length > 0) {
         imageUrl = directSale.thumbs[0].url || directSale.thumbs[0];
     }
     
     let fullImageUrl = normalizeImageUrl(imageUrl);
+    
+    // If the URL doesn't start with http, Facebook will ignore it. Force the domain!
     if (fullImageUrl && !fullImageUrl.startsWith('http')) {
         const domain = app.route || 'https://mazadclick.vercel.app'; 
-        fullImageUrl = fullImageUrl.startsWith('/') ? `${domain}${fullImageUrl}` : `${domain}/${fullImageUrl}`;
+        fullImageUrl = fullImageUrl.startsWith('/') 
+            ? `${domain}${fullImageUrl}` 
+            : `${domain}/${fullImageUrl}`;
     }
 
     return {
@@ -61,7 +59,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       description: enhancedDescription,
       openGraph: {
         title: title,
-        description: enhancedDescription, 
+        description: enhancedDescription,
         url: `https://mazadclick.vercel.app/direct-sale/${id}`,
         images: fullImageUrl ? [
           {

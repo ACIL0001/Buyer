@@ -6,61 +6,82 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   const params = await props.params;
   const id = params.id;
   
-  if (!id) {
-    return { title: "Direct Sale Details - MazadClick" };
-  }
+  // 1. Fallback metadata in case the fetch fails
+  const fallbackMetadata = {
+    title: "Vente Directe - MazadClick",
+    description: "Découvrez cette vente directe sur MazadClick. Trouvez les meilleures offres et produits.",
+    openGraph: {
+      title: "Vente Directe - MazadClick",
+      description: "Découvrez cette vente directe sur MazadClick.",
+      url: `https://mazadclick.vercel.app/direct-sale/${id}`,
+      siteName: 'MazadClick',
+      type: 'website',
+      locale: 'fr_DZ',
+    }
+  };
+
+  if (!id) return fallbackMetadata;
 
   try {
-    const res = await fetch(`${app.baseURL}direct-sales/${id}`, {
+    // FIX 1: Ensure we hit the correct singular endpoint matching the backend controller
+    const res = await fetch(`${app.baseURL}direct-sale/${id}`, {
       headers: { 
-        'x-access-key': app.apiKey,
+        'x-access-key': app.apiKey || '',
         'Content-Type': 'application/json'
       },
-      next: { revalidate: 0 }
+      next: { revalidate: 0 } // Bypass cache to guarantee fresh metadata for sharing
     });
     
     if (!res.ok) {
-       return { title: "Direct Sale Details - MazadClick" };
+       console.error(`Failed to fetch metadata. Status: ${res.status}`);
+       return fallbackMetadata;
     }
 
     const json = await res.json();
     const directSale = json.data || json; 
 
-    // Title and description
-    const title = directSale.title || directSale.name || "Direct Sale Details";
-    const description = directSale.description || "View this product on MazadClick";
+    // Extract core data based on your NestJS schema
+    const title = directSale.title || "Vente Directe";
+    const description = directSale.description || "Découvrez ce produit sur MazadClick";
+    const price = directSale.price || 0;
+    const currency = 'DZD'; // Default to Algerian Dinar
+    
+    // Calculate accurate stock availability
+    const totalQuantity = directSale.quantity || 0;
+    const soldQuantity = directSale.soldQuantity || 0;
+    const availableStock = totalQuantity === 0 ? 999 : (totalQuantity - soldQuantity);
+    const availability = availableStock > 0 ? 'in stock' : 'out of stock';
 
-    // Image logic
+    // Map relationships securely
+    const category = directSale.productCategory?.name || '';
+    const location = [directSale.wilaya, directSale.place].filter(Boolean).join(', ') || '';
+    const seller = directSale.owner?.entreprise || directSale.owner?.companyName || directSale.owner?.firstName || 'MazadClick Vendeur';
+    const condition = 'new'; // Update if your schema tracks new vs used
+    
+    // Create a punchy, informative description for social media previews
+    const shortDesc = description.substring(0, 120) + (description.length > 120 ? '...' : '');
+    const enhancedDescription = `${shortDesc} | Prix: ${price} ${currency} ${availableStock > 0 && totalQuantity !== 0 ? `| ${availableStock} en stock` : ''} ${category ? `| Catégorie: ${category}` : ''}`;
+
+    // FIX 2: Resolve absolute URLs for Facebook/WhatsApp crawlers
     let imageUrl = "/assets/images/logo-dark.png";
     if (directSale.thumbs && directSale.thumbs.length > 0) {
-        imageUrl = directSale.thumbs[0].url;
+        imageUrl = directSale.thumbs[0].url || directSale.thumbs[0];
     }
     
-    // Normalize image URL
-    const fullImageUrl = normalizeImageUrl(imageUrl);
-
-    // Extract additional metadata
-    const price = directSale.price || 0;
-    const currency = directSale.currency || 'DZD';
-    const stock = directSale.stock || directSale.quantity || 0;
-    const category = directSale.category?.name || directSale.categoryName || '';
-    const location = directSale.location || '';
-    const seller = directSale.seller?.name || directSale.sellerName || '';
-    const condition = directSale.condition || 'new';
-    
-    // Determine availability
-    const availability = stock > 0 ? 'in stock' : 'out of stock';
-    
-    // Create structured description
-    const enhancedDescription = `${description}${price ? ` | Prix: ${price} ${currency}` : ''}${stock ? ` | ${stock} en stock` : ''}${category ? ` | Catégorie: ${category}` : ''}`;
+    let fullImageUrl = normalizeImageUrl(imageUrl);
+    // Force absolute URL if it's relative
+    if (fullImageUrl && fullImageUrl.startsWith('/')) {
+        const domain = app.route || 'https://mazadclick.vercel.app'; 
+        fullImageUrl = `${domain}${fullImageUrl}`;
+    }
 
     return {
-      title: `${title} - Vente Directe MazadClick`,
+      title: `${title} - MazadClick`,
       description: enhancedDescription,
       openGraph: {
         title: title,
         description: enhancedDescription,
-        url: `https://mazadclick.com/direct-sale/${id}`,
+        url: `https://mazadclick.vercel.app/direct-sale/${id}`,
         images: fullImageUrl ? [
           {
             url: fullImageUrl,
@@ -72,7 +93,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
         siteName: 'MazadClick',
         type: 'website',
         locale: 'fr_DZ',
-        // Product-specific Open Graph tags
+        // Advanced Facebook Product Tags
         ...(price && {
           'product:price:amount': price.toString(),
           'product:price:currency': currency,
@@ -83,9 +104,6 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
         ...(category && {
           'product:category': category,
         }),
-        ...(condition && {
-          'product:condition': condition,
-        }),
       },
       twitter: {
         card: 'summary_large_image',
@@ -93,18 +111,21 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
         title: title,
         description: enhancedDescription,
         images: fullImageUrl ? [fullImageUrl] : [],
-        creator: seller ? `@${seller}` : undefined,
+        creator: `@${seller.replace(/\s+/g, '')}`, // Removes spaces for Twitter handle fallback
       },
-      // Additional metadata for better SEO
+      // SEO Keywords
       keywords: [
         'vente directe',
         'direct sale',
         'MazadClick',
+        'Algérie',
         category,
         title,
+        location
       ].filter(Boolean).join(', '),
-      authors: [{ name: seller || 'MazadClick' }],
-      // JSON-LD structured data
+      authors: [{ name: seller }],
+      
+      // Advanced JSON-LD Structured Data for Google Rich Snippets
       other: {
         'structuredData': JSON.stringify({
           '@context': 'https://schema.org',
@@ -116,8 +137,8 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
             '@type': 'Offer',
             price: price,
             priceCurrency: currency,
-            availability: stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-            url: `https://mazadclick.com/direct-sale/${id}`,
+            availability: availableStock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            url: `https://mazadclick.vercel.app/direct-sale/${id}`,
             itemCondition: condition === 'new' ? 'https://schema.org/NewCondition' : 'https://schema.org/UsedCondition',
           },
           brand: {
@@ -125,7 +146,12 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
             name: 'MazadClick',
           },
           category: category,
-          ...(location && { location: location }),
+          ...(location && { 
+            locationCreated: {
+              '@type': 'Place',
+              name: location
+            } 
+          }),
           ...(seller && { 
             seller: {
               '@type': 'Organization',
@@ -137,7 +163,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     };
   } catch (error) {
     console.error("Direct Sale metadata error:", error);
-    return { title: "Direct Sale Details - MazadClick" };
+    return fallbackMetadata;
   }
 }
 

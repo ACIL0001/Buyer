@@ -1214,11 +1214,6 @@ const MultipurposeDetails1 = () => {
             </div>
 
             <div className="main-image-area">
-              <div className="badge-overlay-v2">
-                <span className="badge-item-v2">
-                  <i className="fa fa-eye"></i> {auctionData?.views || 0}
-                </span>
-              </div>
               <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 5 }}>
                 <ShareButton
                   type="auction"

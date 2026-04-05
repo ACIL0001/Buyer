@@ -149,7 +149,7 @@ const Home1LiveDirectSales = () => {
                         <img 
                           src={getDirectSaleImageUrl(sale)} 
                           alt={sale.title} 
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
                           onError={(e) => (e.currentTarget.src = DEFAULT_DIRECT_SALE_IMAGE)} 
                         />
                       </div>

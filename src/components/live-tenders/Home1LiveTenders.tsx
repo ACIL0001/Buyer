@@ -179,7 +179,7 @@ const Home1LiveTenders = () => {
                         <img 
                           src={getTenderImageUrl(tender)} 
                           alt={tender.title} 
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
                           onError={(e) => (e.currentTarget.src = DEFAULT_TENDER_IMAGE)} 
                         />
                       </div>

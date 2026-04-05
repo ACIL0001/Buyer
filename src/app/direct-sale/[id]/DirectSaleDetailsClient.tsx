@@ -241,11 +241,6 @@ function DirectSaleDetailContent() {
           </div>
 
           <div className="main-image-area">
-            <div className="badge-overlay-v2">
-              <span className="badge-item-v2">
-                <i className="fa fa-eye"></i> {directSale.views || 0}
-              </span>
-            </div>
             <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 5 }}>
               <ShareButton 
                 type="directSale" 
@@ -486,7 +481,7 @@ function DirectSaleDetailContent() {
         .main-image-area img { 
           width: 100%;
           height: 100%;
-          object-fit: cover; 
+          object-fit: fill; 
         }
         .product-title { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 600; line-height: 24px; letter-spacing: 0.03em; color: #1e293b; margin: 10px 0; }
         .tender-budget-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }

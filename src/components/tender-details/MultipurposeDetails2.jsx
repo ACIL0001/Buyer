@@ -344,11 +344,6 @@ const MultipurposeDetails2 = () => {
             </div>
 
             <div className="main-image-area">
-              <div className="badge-overlay-v2">
-                <span className="badge-item-v2">
-                  <i className="fa fa-eye"></i> {tenderData?.views || 0}
-                </span>
-              </div>
               <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 5 }}>
                 <ShareButton type="tender" id={tenderId} title={safeTitle} description={safeDescription} imageUrl={safeAttachments[0]?.url || DEFAULT_TENDER_IMAGE} />
               </div>
@@ -694,7 +689,7 @@ const MultipurposeDetails2 = () => {
         .main-image-area img { 
           width: 100%;
           height: 100%;
-          object-fit: cover; 
+          object-fit: fill; 
         }
         .product-title { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 600; line-height: 1.2; color: #1e293b; margin: 10px 0; }
         .countdown-info {

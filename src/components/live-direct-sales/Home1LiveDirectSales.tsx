@@ -16,6 +16,7 @@ import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
 import { useRouter } from "next/navigation";
 import { useCreateSocket } from '@/contexts/socket';
+import ShareButton from "@/components/common/ShareButton";
 
 const DEFAULT_DIRECT_SALE_IMAGE = "/assets/images/logo-white.png";
 
@@ -135,7 +136,16 @@ const Home1LiveDirectSales = () => {
                       }}
                       onClick={() => router.push(`/direct-sale/${sale.id}`)}
                     >
-                      <div style={{ width: '295px', height: '295px', borderRadius: '24px', overflow: 'hidden', flexShrink: 0 }}>
+                      <div style={{ width: '295px', height: '295px', borderRadius: '24px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                        <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
+                          <ShareButton 
+                            type="directSale" 
+                            id={sale.id} 
+                            title={sale.title} 
+                            description={sale.description} 
+                            imageUrl={getDirectSaleImageUrl(sale)} 
+                          />
+                        </div>
                         <img 
                           src={getDirectSaleImageUrl(sale)} 
                           alt={sale.title} 

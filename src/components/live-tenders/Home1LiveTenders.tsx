@@ -16,6 +16,7 @@ import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
 import { useRouter } from "next/navigation";
 import { useCreateSocket } from '@/contexts/socket';
+import ShareButton from "@/components/common/ShareButton";
 
 const DEFAULT_TENDER_IMAGE = "/assets/images/logo-white.png";
 
@@ -165,7 +166,16 @@ const Home1LiveTenders = () => {
                       }}
                       onClick={() => router.push(`/tender-details/${tender.id}`)}
                     >
-                      <div style={{ width: '295px', height: '295px', borderRadius: '24px', overflow: 'hidden', flexShrink: 0 }}>
+                      <div style={{ width: '295px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                        <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
+                          <ShareButton 
+                            type="tender" 
+                            id={tender.id} 
+                            title={tender.title} 
+                            description={tender.description} 
+                            imageUrl={getTenderImageUrl(tender)} 
+                          />
+                        </div>
                         <img 
                           src={getTenderImageUrl(tender)} 
                           alt={tender.title} 

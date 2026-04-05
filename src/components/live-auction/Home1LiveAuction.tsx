@@ -16,6 +16,7 @@ import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
 import { useRouter } from "next/navigation";
 import { useCreateSocket } from '@/contexts/socket';
+import ShareButton from "@/components/common/ShareButton";
 
 const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
 
@@ -166,7 +167,16 @@ const Home1LiveAuction = () => {
                       }}
                       onClick={() => router.push(`/auction-details/${auction.id}`)}
                     >
-                      <div style={{ width: '295px', height: '295px', borderRadius: '24px', overflow: 'hidden', flexShrink: 0 }}>
+                      <div style={{ width: '295px', height: '295px', borderRadius: '24px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                        <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
+                          <ShareButton 
+                            type="auction" 
+                            id={auction.id} 
+                            title={auction.title} 
+                            description={auction.description} 
+                            imageUrl={getAuctionImageUrl(auction)} 
+                          />
+                        </div>
                         <img 
                           src={getAuctionImageUrl(auction)} 
                           alt={auction.title} 

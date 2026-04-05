@@ -443,13 +443,51 @@ function DirectSaleDetailContent() {
 
       <style jsx>{`
         .redesign-v2-container { max-width: 1440px; margin: 0 auto; padding: 120px 20px 100px; }
-        .product-hero-section { display: grid; grid-template-columns: 96px 632px 400px; gap: 19px; margin-bottom: 50px; justify-content: center; }
-        .thumbnails-vertical { display: flex; flex-direction: column; gap: 15px; max-height: 600px; }
-        .thumb-item { width: 96px; height: 78px; border-radius: 2.25px; overflow: hidden; border: 2px solid transparent; cursor: pointer; background: #fff; }
+        .product-hero-section { 
+          display: grid; 
+          grid-template-columns: 96px 632px 400px; 
+          gap: 19px; 
+          margin-bottom: 50px; 
+          justify-content: center; 
+          align-items: start;
+        }
+        .thumbnails-vertical { 
+          display: flex; 
+          flex-direction: column; 
+          gap: 15px; 
+          max-height: 600px; 
+          width: 95.766px;
+        }
+        .thumb-item { 
+          width: 95.766px; 
+          height: 77.74px; 
+          border-radius: 2.25px; 
+          overflow: hidden; 
+          border: 1px solid transparent; 
+          cursor: pointer; 
+          background: #fff; 
+          transition: all 0.2s ease;
+        }
         .thumb-item.active { border-color: #0063B1; }
         .thumb-item img, .thumb-item video { width: 100%; height: 100%; object-fit: cover; }
-        .main-image-area { background: #f8fafc; border-radius: 4px; display: flex; align-items: center; justify-content: center; position: relative; width: 632px; height: 600px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .main-image-area img { max-height: 100%; max-width: 100%; object-fit: contain; }
+        .main-image-area { 
+          background: #f8fafc; 
+          border-radius: 4px; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          position: relative; 
+          width: 632px; 
+          height: 600px; 
+          overflow: hidden; 
+          border: 1px solid #e2e8f0; 
+          box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+        }
+        .main-image-area img { 
+          width: 100%;
+          height: 100%;
+          object-fit: cover; 
+        }
         .product-title { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 600; line-height: 24px; letter-spacing: 0.03em; color: #1e293b; margin: 10px 0; }
         .tender-budget-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
         .budget-item { background: #f1f5f9; padding: 15px; border-radius: 16px; }

@@ -406,38 +406,105 @@ const MultipurposeDetails2 = () => {
                 </div>
               </div>
 
-              <div className="budget-display-redesign my-3">
-                <span className="budget-label">BUDGET ESTIMÉ :</span>
-                <span className="budget-amount">{formatPrice(safeMaxBudget)} DA</span>
-              </div>
+              {safeMaxBudget > 0 && (
+                <div className="budget-display-redesign my-3">
+                  <span className="budget-label">BUDGET ESTIMÉ :</span>
+                  <span className="budget-amount">{formatPrice(safeMaxBudget)} DA</span>
+                </div>
+              )}
 
-              <div className="divider"></div>
+              <div className="divider" style={{ opacity: 0.5, margin: '20px 0' }}></div>
               
-              <div className="bid-input-section">
-                {isOwner && <div className="alert alert-warning py-2 mb-3" style={{fontSize: '13px'}}>C'est votre propre appel d'offres.</div>}
+              <div className="bid-input-section" style={{ background: 'rgba(0, 40, 150, 0.02)', padding: '25px', borderRadius: '24px', border: '1px solid rgba(0, 40, 150, 0.05)' }}>
+                {isOwner && <div className="alert alert-warning py-2 mb-3" style={{fontSize: '13px', borderRadius: '12px'}}>C'est votre propre appel d'offres.</div>}
                 
                 {tenderData?.evaluationType === 'MIEUX_DISANT' ? (
                   <div className="mieux-disant-input-area">
-                    <label style={{ fontSize: '14px', fontWeight: '700', color: '#002896', marginBottom: '8px', display: 'block' }}>Votre proposition technique et commerciale :</label>
-                    <textarea className="proposal-textarea" ref={proposalTextareaRef} placeholder="Décrivez votre proposition, votre expertise et vos délais (min. 10 chars)..."></textarea>
-                    <div className="file-input-wrapper mt-2">
-                      <label className="file-label-custom">
-                        <input type="file" ref={proposalFileInputRef} onChange={(e) => setProposalFile(e.target.files[0])} accept=".pdf,.doc,.docx" />
-                        <span>{proposalFile ? proposalFile.name : "Joindre un devis ou dossier (PDF, DOCX)"}</span>
+                    <label style={{ fontSize: '15px', fontWeight: '800', color: '#002896', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <i className="fa fa-edit" style={{ fontSize: '18px' }}></i> Votre proposition :
+                    </label>
+                    <textarea 
+                      className="proposal-textarea" 
+                      ref={proposalTextareaRef} 
+                      placeholder="Décrivez votre offre, votre expertise et vos délais de réalisation..."
+                      style={{
+                        width: '100%',
+                        minHeight: '140px',
+                        padding: '16px',
+                        borderRadius: '16px',
+                        border: '2px solid #e2e8f0',
+                        fontSize: '14px',
+                        lineHeight: '1.6',
+                        resize: 'vertical',
+                        transition: 'all 0.3s ease',
+                        outline: 'none',
+                        background: '#ffffff',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.02)'
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = '#002896';
+                        e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 40, 150, 0.08)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = '#e2e8f0';
+                        e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.02)';
+                      }}
+                    ></textarea>
+                    
+                    <div className="file-upload-modern mt-3" style={{ position: 'relative' }}>
+                      <label style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        padding: '20px', 
+                        border: '2px dashed #002896', 
+                        borderRadius: '16px', 
+                        background: proposalFile ? 'rgba(0, 40, 150, 0.05)' : 'white', 
+                        cursor: 'pointer', 
+                        transition: 'all 0.3s ease' 
+                      }}>
+                        <input 
+                          type="file" 
+                          ref={proposalFileInputRef} 
+                          onChange={(e) => setProposalFile(e.target.files[0])} 
+                          accept=".pdf,.doc,.docx" 
+                          style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+                        />
+                        <i className={`fa ${proposalFile ? 'fa-file-pdf' : 'fa-cloud-upload'}`} style={{ fontSize: '24px', color: '#002896', marginBottom: '8px' }}></i>
+                        <span style={{ fontSize: '13px', fontWeight: '700', color: '#002896', textAlign: 'center' }}>
+                          {proposalFile ? proposalFile.name : "Joindre votre dossier technique (PDF, DOCX)"}
+                        </span>
+                        {!proposalFile && <span style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>Taille max : 10Mo</span>}
                       </label>
                     </div>
                   </div>
                 ) : (
                   <div className="moins-disant-input-area">
-                    <label style={{ fontSize: '14px', fontWeight: '700', color: '#002896', marginBottom: '8px', display: 'block' }}>Votre offre financière (DA) :</label>
+                    <label style={{ fontSize: '15px', fontWeight: '800', color: '#002896', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <i className="fa fa-coins" style={{ fontSize: '18px' }}></i> Votre offre financière (DA) :
+                    </label>
                     <div className="quantity-stepper">
                       <HandleQuantity initialValue={currentLowestBidPrice - 100} startingPrice={currentLowestBidPrice} maxValue={currentLowestBidPrice - 1} />
                     </div>
                   </div>
                 )}
                 
-                <button className="enchirir-btn mt-3" onClick={handleBidClick} disabled={isOwner || safeStatus !== 'OPEN'}>
-                  {tenderData?.evaluationType === 'MIEUX_DISANT' ? 'Soumettre ma proposition' : 'Envoyer mon offre'}
+                <button 
+                  className="enchirir-btn mt-4" 
+                  onClick={handleBidClick} 
+                  disabled={isOwner || safeStatus !== 'OPEN'}
+                  style={{
+                    width: '100%',
+                    height: '56px',
+                    borderRadius: '16px',
+                    fontSize: '16px',
+                    fontWeight: '800',
+                    letterSpacing: '0.5px',
+                    boxShadow: '0 10px 25px rgba(0, 40, 150, 0.2)'
+                  }}
+                >
+                  {tenderData?.evaluationType === 'MIEUX_DISANT' ? 'SOUMETTRE MA PROPOSITION' : 'ENVOYER MON OFFRE'}
                 </button>
               </div>
             </div>
@@ -580,16 +647,65 @@ const MultipurposeDetails2 = () => {
       )}
 
       <style jsx>{`
-        .redesign-v2-container { max-width: 1440px; margin: 0 auto; padding: 40px 20px 100px; }
-        .product-hero-section { display: grid; grid-template-columns: 96px 632px 400px; gap: 19px; margin-bottom: 50px; justify-content: center; }
-        .thumbnails-vertical { display: flex; flex-direction: column; gap: 15px; max-height: 600px; }
-        .thumb-item { width: 96px; height: 78px; border-radius: 2.25px; overflow: hidden; border: 2px solid transparent; cursor: pointer; }
-        .thumb-item.active { border-color: #0063B1; }
-        .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
-        .main-image-area { background: #f8fafc; border-radius: 4px; display: flex; align-items: center; justify-content: center; position: relative; width: 632px; height: 600px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .main-image-area img { max-height: 100%; max-width: 100%; object-fit: contain; }
-        .product-title { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 600; line-height: 24px; letter-spacing: 0.03em; color: #1e293b; margin-bottom: 20px; }
-        .countdown-info { font-family: 'Roboto', sans-serif; font-size: 16px; color: #9F3247; font-weight: 400; line-height: 100%; margin: 15px 0; display: inline-block; }
+        .redesign-v2-container { max-width: 1440px; margin: 0 auto; padding: 120px 20px 100px; }
+        .product-hero-section { 
+          display: grid; 
+          grid-template-columns: 96px 632px 400px; 
+          gap: 19px; 
+          margin-bottom: 50px; 
+          justify-content: center; 
+          align-items: start;
+        }
+        .thumbnails-vertical { 
+          display: flex; 
+          flex-direction: column; 
+          gap: 15px; 
+          max-height: 600px; 
+          width: 95.766px;
+        }
+        .thumb-item { 
+          width: 95.766px; 
+          height: 77.74px; 
+          border-radius: 2.25px; 
+          overflow: hidden; 
+          border: 1px solid transparent; 
+          cursor: pointer; 
+          background: #fff; 
+          transition: all 0.2s ease;
+        }
+        .thumb-item.active { 
+          border-color: #002896; 
+          box-shadow: 0 4px 8px rgba(0, 40, 150, 0.1);
+        }
+        .thumb-item img, .thumb-item video { width: 100%; height: 100%; object-fit: cover; }
+        .main-image-area { 
+          background: #f8fafc; 
+          border-radius: 4px; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          position: relative; 
+          width: 632px; 
+          height: 600px; 
+          overflow: hidden; 
+          border: 1px solid #e2e8f0; 
+          box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+        }
+        .main-image-area img { 
+          width: 100%;
+          height: 100%;
+          object-fit: cover; 
+        }
+        .product-title { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 600; line-height: 1.2; color: #1e293b; margin: 10px 0; }
+        .countdown-info {
+          font-family: 'Roboto', sans-serif;
+          font-size: 16px; 
+          color: #9F3247;
+          font-weight: 400; 
+          line-height: 100%;
+          margin-bottom: 15px;
+          display: inline-block;
+        }
         .tender-budget-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
         .budget-item { background: #f1f5f9; padding: 15px; border-radius: 16px; }
         .budget-item.highlight { background: #ecfdf5; border: 1px solid #10b981; }

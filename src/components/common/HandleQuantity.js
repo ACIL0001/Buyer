@@ -42,7 +42,7 @@ const parseFormattedPrice = (formattedPrice) => {
   return isNaN(parsed) ? 0 : parsed;
 };
 
-function HandleQuantity({ initialValue = 1, startingPrice = 0, placeholder = "" }) {
+function HandleQuantity({ initialValue = 1, startingPrice = 0, placeholder = "", maxValue = Infinity, minValue = 0 }) {
   // Parse the initial value - it might be a formatted string or a number
   const parseInitialValue = (value) => {
     if (typeof value === 'string') {
@@ -55,22 +55,7 @@ function HandleQuantity({ initialValue = 1, startingPrice = 0, placeholder = "" 
 
   // Dynamic increment/decrement based on starting price
   const getIncrementValue = () => {
-    const startPrice = Number(startingPrice) || 0;
-    let increment;
-    
-    if (startPrice > 500000) {
-      // If starting price > 500,000 DA, use 0.5% (half of 1%) of starting price
-      increment = Math.floor(startPrice * 0.005);
-    } else if (startPrice > 0) {
-      // If starting price ≤ 500,000 DA, use 1% of starting price
-      increment = Math.floor(startPrice * 0.01);
-    } else {
-      // If no starting price, use default increment
-      increment = 100;
-    }
-    
-    // Ensure minimum increment of 1 to make buttons functional
-    return Math.max(1, increment);
+    return 100;
   };
 
   // Initialize state with the parsed numeric value
@@ -101,6 +86,8 @@ function HandleQuantity({ initialValue = 1, startingPrice = 0, placeholder = "" 
       initialValue: initialValue,
       initialNumericValue: initialNumericValue,
       startingPrice: startingPrice,
+      maxValue: maxValue,
+      minValue: minValue,
       incrementValue: getIncrementValue()
     });
   }, []);
@@ -108,25 +95,31 @@ function HandleQuantity({ initialValue = 1, startingPrice = 0, placeholder = "" 
   const increment1 = () => {
     // Add dynamic increment based on starting price
     const incrementAmount = getIncrementValue();
+    const newValue = Math.min(maxValue, state1.quantity + incrementAmount);
+    
+    if (newValue === state1.quantity) return; // Already at max
+
     console.log('🔼 Increment clicked:', {
       currentValue: state1.quantity,
       incrementAmount: incrementAmount,
-      newValue: state1.quantity + incrementAmount
+      newValue: newValue
     });
-    dispatch1({ type: "INCREMENT", payload: incrementAmount });
+    dispatch1({ type: "SET", payload: newValue });
   };
 
   const decrement1 = () => {
-    // Subtract dynamic increment from current value, but don't go below 0
+    // Subtract dynamic increment from current value, but don't go below minValue
     const incrementAmount = getIncrementValue();
-    const newValue = Math.max(0, state1.quantity - incrementAmount);
+    const newValue = Math.max(minValue, state1.quantity - incrementAmount);
+    
+    if (newValue === state1.quantity) return; // Already at min
+
     console.log('🔽 Decrement clicked:', {
       currentValue: state1.quantity,
       incrementAmount: incrementAmount,
-      newValue: newValue,
-      canDecrement: state1.quantity > 0
+      newValue: newValue
     });
-    dispatch1({ type: "DECREMENT", payload: incrementAmount });
+    dispatch1({ type: "SET", payload: newValue });
   };
 
   const handleInputChange1 = (e) => {
@@ -175,60 +168,47 @@ function HandleQuantity({ initialValue = 1, startingPrice = 0, placeholder = "" 
   };
 
   return (
-    <div className="quantity-counter">
-      <a
-        className="quantity__minus"
-        style={{ cursor: "pointer", position: "relative" }}
-        onClick={(e) => {
-          e.preventDefault();
-          console.log('🔽 Minus button clicked!');
-          decrement1();
-        }}
-        aria-label="Decrease quantity"
-        title={`Diminuer de ${formatPrice(getIncrementValue())}`}
-      >
-        <svg 
-          width="14" 
-          height="2" 
-          viewBox="0 0 14 2" 
-          fill="none" 
-          xmlns="http://www.w3.org/2000/svg"
+    <div className="quantity-counter-v2">
+      <div className="input-with-currency">
+        <input
+          name="quantity"
+          type="text"
+          inputMode="decimal"
+          value={displayValue}
+          onChange={handleInputChange1}
+          onBlur={handleInputBlur}
+          onKeyDown={handleInputKeyDown}
+          className="quantity__input_v2"
+          placeholder={placeholder || formatPrice(initialNumericValue)}
+        />
+        <span className="currency-suffix">DA</span>
+      </div>
+      <div className="stepper-arrows">
+        <button
+          className="stepper-arrow up"
+          onClick={(e) => {
+            e.preventDefault();
+            increment1();
+          }}
+          aria-label="Increase"
         >
-          <rect width="14" height="2" rx="1" fill="white"/>
-        </svg>
-      </a>
-      <input
-        name="quantity"
-        type="text"
-        inputMode="decimal"
-        value={displayValue}
-        onChange={handleInputChange1}
-        onBlur={handleInputBlur}
-        onKeyDown={handleInputKeyDown}
-        className="quantity__input"
-        placeholder={placeholder || formatPrice(initialNumericValue)}
-      />
-      <a
-        className="quantity__plus"
-        style={{ cursor: "pointer", position: "relative" }}
-        onClick={(e) => {
-          e.preventDefault();
-          console.log('🔼 Plus button clicked!');
-          increment1();
-        }}
-        aria-label="Increase quantity"
-        title={`Augmenter de ${formatPrice(getIncrementValue())}`}
-      >
-        <svg 
-          width="14" 
-          height="14" 
-          viewBox="0 0 14 14" 
-          fill="none" 
-          xmlns="http://www.w3.org/2000/svg"
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 5L5 1L9 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        <button
+          className="stepper-arrow down"
+          onClick={(e) => {
+            e.preventDefault();
+            decrement1();
+          }}
+          aria-label="Decrease"
         >
-          <path d="M7 0C7.55228 0 8 0.447715 8 1V6H13C13.5523 6 14 6.44772 14 7C14 7.55228 13.5523 8 13 8H8V13C8 13.5523 7.55228 14 7 14C6.44772 14 6 13.5523 6 13V8H1C0.447715 8 0 7.55228 0 7C0 6.44772 0.447715 6 1 6H6V1C6 0.447715 6.44772 0 7 0Z" fill="white"/>
-        </svg>
-      </a>
+          <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,2243 +1,380 @@
 "use client"
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import SelectComponent from '@/components/common/SelectComponent'
-import { useCountdownTimer } from '@/customHooks/useCountdownTimer'
+import React, { useState, useMemo } from 'react'
 import { TendersAPI } from '@/app/api/tenders'
 import { CategoryAPI } from '@/app/api/category'
-import { SubCategoryAPI } from '@/app/api/subcategory'
-import app from '@/config'; // Import the app config
-import { useTranslation } from 'react-i18next';
-import Header from '@/components/header/Header';
-import Footer from '@/components/footer/Footer';
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Navigation, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import useAuth from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
 import PageSkeleton from '@/components/skeletons/PageSkeleton';
-import ShareButton from '@/components/common/ShareButton';
-import DynamicScrollToTop from '@/components/common/DynamicScrollToTop';
-import { useCreateSocket } from '@/contexts/socket';
+import Header from '@/components/header/Header';
+import Footer from '@/components/footer/FooterWithErrorBoundary';
 
-
-// Define BID_TYPE enum to match server definition
-const BID_TYPE = {
-  PRODUCT: 'PRODUCT',
-  SERVICE: 'SERVICE'
-};
-
-// Default image constants
 const DEFAULT_TENDER_IMAGE = "/assets/images/logo-white.png";
-const DEFAULT_PROFILE_IMAGE = "/assets/images/avatar.jpg";
-// Use server baseURL for default category image with multiple fallback options
-// Use server baseURL for default category image with multiple fallback options
-const getDefaultCategoryImage = () => {
-    return normalizeImageUrl('/static/default-category.png');
+
+const WILAYAS = [
+    "Adrar", "Chlef", "Laghouat", "Oum El Bouaghi", "Batna", "Béjaïa", "Biskra", "Béchar",
+    "Blida", "Bouira", "Tamanrasset", "Tébessa", "Tlemcen", "Tiaret", "Tizi Ouzou",
+    "Alger", "Djelfa", "Jijel", "Sétif", "Saïda", "Skikda", "Sidi Bel Abbès", "Annaba",
+    "Guelma", "Constantine", "Médéa", "Mostaganem", "M'Sila", "Mascara", "Ouargla",
+    "Oran", "El Bayadh", "Illizi", "Bordj Bou Arreridj", "Boumerdès", "El Tarf",
+    "Tindouf", "Tissemsilt", "El Oued", "Khenchela", "Souk Ahras", "Tipaza", "Mila",
+    "Aïn Defla", "Naâma", "Aïn Témouchent", "Ghardaïa", "Relizane", "Timimoun",
+    "Bordj Badji Mokhtar", "Ouled Djellal", "Béni Abbès", "In Salah", "In Guezzam",
+    "Touggourt", "Djanet", "El M'Ghair", "El Meniaa"
+];
+
+const getTenderImageUrl = (tender) => {
+  if (tender.attachments && tender.attachments.length > 0 && tender.attachments[0].url) return normalizeImageUrl(tender.attachments[0].url);
+  return DEFAULT_TENDER_IMAGE;
 };
 
-// Timer interface
-const calculateTimeRemaining = (endDate) => {
-  const total = Date.parse(endDate) - Date.now();
-  const hasEnded = total <= 0;
+const TendersPage = () => {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const { auth } = useAuth();
+  
+  // States for Filtering
+  const [searchQuery, setSearchQuery] = useState('');
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedWilaya, setSelectedWilaya] = useState('');
+  const [tenderType, setTenderType] = useState('ALL'); // 'ALL', 'PRODUCT', 'SERVICE'
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortOrder, setSortOrder] = useState('NEWEST'); // 'NEWEST', 'OLDEST', 'PRICE_ASC', 'PRICE_DESC'
 
-  if (hasEnded) {
-    return {
-      days: "00",
-      hours: "00",
-      minutes: "00",
-      seconds: "00",
-      hasEnded: true
-    };
-  }
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories', 'all'],
+    queryFn: () => CategoryAPI.getCategories(),
+  });
+  const categories = useMemo(() => {
+    if (categoriesData?.success && categoriesData.data) return categoriesData.data;
+    if (Array.isArray(categoriesData)) return categoriesData;
+    return [];
+  }, [categoriesData]);
 
-  const seconds = Math.floor((total / 1000) % 60);
-  const minutes = Math.floor((total / 1000 / 60) % 60);
-  const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
-  const days = Math.floor(total / (1000 * 60 * 60 * 24));
+  const { data: allTendersResponse, isLoading } = useQuery({
+    queryKey: ['tenders', 'active'],
+    queryFn: () => TendersAPI.getActiveTenders(),
+  });
 
-  return {
-    days: days.toString().padStart(2, '0'),
-    hours: hours.toString().padStart(2, '0'),
-    minutes: minutes.toString().padStart(2, '0'),
-    seconds: seconds.toString().padStart(2, '0'),
-    hasEnded: false
-  };
-};
-
-// Custom hook to manage multiple countdown timers
-const useTenderTimers = (tenders) => {
-    const [timers, setTimers] = useState({});
-
-    useEffect(() => {
-        if (!tenders || tenders.length === 0) return;
-
-        // Initialize timers for each tender
-        const newTimers = {};
-        tenders.forEach(tender => {
-            if (tender._id) {
-                newTimers[tender._id] = useCountdownTimer(tender.endingAt || "2024-10-23 12:00:00");
-            }
-        });
-
-        setTimers(newTimers);
-    }, [tenders]);
-
-    return timers;
-};
-
-const MultipurposeTenderSidebar = () => {
-    const { t } = useTranslation();
-    const router = useRouter();
-    const { isLogged, auth } = useAuth();
-    const queryClient = useQueryClient();
-    const socketContext = useCreateSocket();
-    const socket = socketContext?.socket;
-
-    // Real-time: invalidate tenders query when a new tender is created
-    useEffect(() => {
-        if (!socket) return;
-        const handler = (data) => {
-            if (data?.type === 'tender') {
-                queryClient.invalidateQueries({ queryKey: ['tenders'] });
-            }
-        };
-        socket.on('newListingCreated', handler);
-        return () => { socket.off('newListingCreated', handler); };
-    }, [socket, queryClient]);
-
-    // Default countdown timer for the page (fallback)
-    const defaultTimer = useCountdownTimer("2024-08-23 11:42:00");
-
-    const [activeColumn, setActiveColumn] = useState(3);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [expandedCategories, setExpandedCategories] = useState({});
-    const [searchTerm, setSearchTerm] = useState("");
-    const [selectedCategory, setSelectedCategory] = useState("");
-    const [selectedSubCategory, setSelectedSubCategory] = useState("");
-    const [selectedBidType, setSelectedBidType] = useState(""); // "" for all, "PRODUCT", or "SERVICE"
-    const [tenderTimers, setTenderTimers] = useState({});
-    const [filteredTenders, setFilteredTenders] = useState([]);
-    const [sortOption, setSortOption] = useState(t('defaultSort'));
-    const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'active', 'finished'
-    const [filteredCategories, setFilteredCategories] = useState([]);
-    const [subCategories, setSubCategories] = useState([]);
-    const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
-    const [hoveredCategory, setHoveredCategory] = useState(null);
-    const [hoveredSubCategory, setHoveredSubCategory] = useState(null);
-
-
-    // Categories Query
-    const { data: categoryResponse, isLoading: isCategoriesLoading } = useQuery({
-        queryKey: ['categoryTree'],
-        queryFn: () => CategoryAPI.getCategoryTree(),
-    });
-
-    // Process category data
-    const categories = useMemo(() => {
-        if (!categoryResponse) return [];
-        if (categoryResponse.success && Array.isArray(categoryResponse.data)) return categoryResponse.data;
-        if (Array.isArray(categoryResponse)) return categoryResponse;
-        if (categoryResponse.data && Array.isArray(categoryResponse.data)) return categoryResponse.data;
-        return [];
-    }, [categoryResponse]);
-
-    // Tenders Query
-    const { data: rawTenders, isLoading: isTendersLoading, error: tenderQueryError } = useQuery({
-        queryKey: ['tenders', auth.user?._id],
-        queryFn: () => TendersAPI.getActiveTenders(),
-    });
-
-    // Process tenders data
-    const tenders = useMemo(() => {
-        if (!rawTenders) return [];
-        
-        let tendersData = [];
-        if (rawTenders.success && Array.isArray(rawTenders.data)) {
-            tendersData = rawTenders.data;
-        } else if (Array.isArray(rawTenders)) {
-            tendersData = rawTenders;
-        } else if (rawTenders.data && Array.isArray(rawTenders.data)) {
-            tendersData = rawTenders.data;
-        }
-
-        // Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
-        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
-        const visibleTenders = tendersData.filter(tender => {
-            if (tender.verifiedOnly === true && !isUserVerified) {
-                return false;
-            }
-            return true;
-        });
-        
-        return visibleTenders;
-    }, [rawTenders, auth.user]);
-
-    // Error handling
-    const error = tenderQueryError ? "Failed to load tenders" : null;
-    const loading = isTendersLoading;
-    const categoriesLoading = isCategoriesLoading;
-
+  const allTenders = useMemo(() => {
+    const data = allTendersResponse?.data || allTendersResponse || [];
+    let transformed = (Array.isArray(data) ? data : []).map(tender => ({ ...tender, id: tender.id || tender._id }));
+    const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
     
-    // Pagination constants
-    const ITEMS_PER_PAGE = 9;
-    const totalPages = Math.ceil(filteredTenders.length / ITEMS_PER_PAGE);
-    const paginatedTenders = filteredTenders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-    const [timers, setTimers] = useState({});
-    const [animatedCards, setAnimatedCards] = useState([]);
+    // Auth verification filter
+    transformed = transformed.filter(tender => tender.verifiedOnly === true ? isUserVerified : true);
 
-    // Helper function to find all descendant category IDs
-    const getAllDescendantCategoryIds = (categoryId, categoriesTree) => {
-        const descendants = [];
-        
-        const findDescendants = (categories) => {
-            categories.forEach(category => {
-                if (category._id === categoryId || category.id === categoryId) {
-                    // Found the target category, collect all its descendants
-                    const collectAllChildren = (cat) => {
-                        if (cat.children && cat.children.length > 0) {
-                            cat.children.forEach(child => {
-                                descendants.push(child._id || child.id);
-                                collectAllChildren(child);
-                            });
-                        }
-                    };
-                    collectAllChildren(category);
-                } else if (category.children && category.children.length > 0) {
-                    // Continue searching in children
-                    findDescendants(category.children);
-                }
-            });
-        };
-        
-        findDescendants(categoriesTree);
-        return descendants;
-    };
-
-    // Helper function to check if a tender belongs to a category or its descendants
-    const doesTenderBelongToCategory = (tender, selectedCategoryId, categoriesTree) => {
-        if (!tender.category || !selectedCategoryId) return false;
-        
-        const tenderCategoryId = tender.category._id || tender.category;
-        
-        // Direct match
-        if (tenderCategoryId === selectedCategoryId) return true;
-        
-        // Check if tender category is a descendant of selected category
-        const allDescendants = getAllDescendantCategoryIds(selectedCategoryId, categoriesTree);
-        return allDescendants.includes(tenderCategoryId);
-    };
-
-    // Helper function to check if category has children
-    const hasChildren = (category) => {
-        return category.children && category.children.length > 0;
-    };
-
-    // Toggle category expansion
-    const toggleCategory = (categoryId) => {
-        setExpandedCategories(prev => ({
-            ...prev,
-            [categoryId]: !prev[categoryId]
-        }));
-    };
-
-    // Get category image URL
-    const getCategoryImageUrl = (category) => {
-        const imageUrl = category.thumb?.url || 
-                         category.thumb?.fullUrl || 
-                         category.image || 
-                         category.thumbnail || 
-                         category.photo || 
-                         '';
-        
-        if (!imageUrl) {
-            // Return data URI placeholder directly if no image URL
-            return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
-        }
-
-        return normalizeImageUrl(imageUrl);
-    };
-
-    // Render categories in circular format
-    const renderCircularCategories = (categories) => {
-        if (!categories || categories.length === 0) return null;
-
-        return (
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                gap: '20px',
-                padding: '20px 0',
-            }}>
-                {categories.map((category) => {
-                    const categoryId = category._id || category.id;
-                    const isSelected = selectedCategory === categoryId;
-
-                    return (
-                        <div
-                            key={categoryId}
-                            onClick={() => handleCategoryChange(categoryId)}
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                                transform: isSelected ? 'scale(1.1)' : 'scale(1)',
-                            }}
-                            onMouseEnter={(e) => {
-                                if (!isSelected) {
-                                    e.currentTarget.style.transform = 'scale(1.05)';
-                                }
-                            }}
-                            onMouseLeave={(e) => {
-                                if (!isSelected) {
-                                    e.currentTarget.style.transform = 'scale(1)';
-                                }
-                            }}
-                        >
-                            {/* Circular Icon */}
-                            <div style={{
-                                width: '80px',
-                                height: '80px',
-                                borderRadius: '50%',
-                                background: isSelected 
-                                    ? 'linear-gradient(135deg, #0063b1, #00a3e0)' 
-                                    : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                marginBottom: '12px',
-                                boxShadow: isSelected 
-                                    ? '0 8px 20px rgba(0, 99, 177, 0.3)' 
-                                    : '0 4px 12px rgba(0, 0, 0, 0.1)',
-                                border: isSelected ? '3px solid #0063b1' : '2px solid #e2e8f0',
-                                overflow: 'hidden',
-                                position: 'relative',
-                            }}>
-                                <img
-                                    src={getCategoryImageUrl(category)}
-                                    alt={category.name}
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'contain',
-                                    }}
-                                    onError={(e) => {
-                                        const target = e.currentTarget;
-                                        // Immediately use data URI placeholder to avoid multiple failed requests
-                                        const placeholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
-                                        if (target.src !== placeholder) {
-                                            target.onerror = null; // Prevent infinite loop
-                                            target.src = placeholder;
-                                        }
-                                    }}
-                                />
-                            </div>
-                            {/* Category Name */}
-                            <span style={{
-                                fontSize: '12px',
-                                fontWeight: isSelected ? '700' : '500',
-                                color: isSelected ? '#0063b1' : '#333',
-                                textAlign: 'center',
-                                maxWidth: '100px',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                            }}>
-                                {category.name}
-                            </span>
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    };
-
-    // Render hierarchical category tree (kept for backward compatibility if needed)
-    const renderCategoryHierarchy = (categories, level = 0) => {
-        return categories.map((category) => {
-            const categoryId = category._id || category.id;
-            const hasSubcategories = hasChildren(category);
-            const isExpanded = expandedCategories[categoryId];
-            const isSelected = selectedCategory === categoryId;
-
-            return (
-                <div key={categoryId} style={{ marginBottom: '8px' }}>
-                    {/* Category Item */}
-                    <div
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '12px 16px',
-                            marginLeft: `${level * 20}px`,
-                            background: level === 0 
-                                ? 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)' 
-                                : 'rgba(255, 255, 255, 0.8)',
-                            borderRadius: '12px',
-                            borderWidth: level === 0 ? '2px' : '1px',
-                            borderStyle: 'solid',
-                            borderColor: level === 0 ? '#e2e8f0' : '#f1f5f9',
-                            transition: 'all 0.3s ease',
-                            cursor: hasSubcategories ? 'pointer' : 'default',
-                            position: 'relative',
-                            ...(isSelected && {
-                                borderColor: '#0063b1',
-                                background: 'rgba(0, 99, 177, 0.05)',
-                                boxShadow: '0 4px 12px rgba(0, 99, 177, 0.15)',
-                            }),
-                        }}
-                        onClick={() => {
-                            // Row click only handles expansion for categories with subcategories
-                            if (hasSubcategories) {
-                                toggleCategory(categoryId);
-                            }
-                            // For leaf categories, user should click name/image for selection
-                        }}
-                        onMouseEnter={() => setHoveredCategory(categoryId)}
-                        onMouseLeave={() => setHoveredCategory(null)}
-                    >
-                        {/* Level Indicator */}
-                        {level > 0 && (
-                            <div style={{
-                                position: 'absolute',
-                                left: '-10px',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                width: '20px',
-                                height: '1px',
-                                background: '#cbd5e1',
-                            }} />
-                        )}
-                        
-                        {/* Expand/Collapse Icon */}
-                        {hasSubcategories && (
-                            <div style={{
-                                width: '24px',
-                                height: '24px',
-                                borderRadius: '50%',
-                                background: isExpanded ? '#0063b1' : '#f1f5f9',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                marginRight: '12px',
-                                transition: 'all 0.3s ease',
-                                transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                            }}>
-                                <svg 
-                                    width="12" 
-                                    height="12" 
-                                    viewBox="0 0 24 24" 
-                                    fill={isExpanded ? 'white' : '#64748b'}
-                                >
-                                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                                </svg>
-                            </div>
-                        )}
-
-                        {/* Category Image - Clickable for filter selection */}
-                        <img
-                            src={(() => {
-                              if (category.thumb && category.thumb.url) {
-                                return normalizeImageUrl(category.thumb.url);
-                              }
-                              return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
-                            })()}
-                            alt={category.name}
-                            style={{
-                                width: level === 0 ? '40px' : '32px',
-                                height: level === 0 ? '40px' : '32px',
-                                borderRadius: '8px',
-                                objectFit: 'contain',
-                                marginRight: '12px',
-                                border: '2px solid white',
-                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                            }}
-                            onError={(e) => {
-                                const target = e.target;
-                                // Immediately use data URI placeholder to avoid multiple failed requests
-                                const placeholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='14' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECategory%3C/text%3E%3C/svg%3E";
-                                if (target.src !== placeholder) {
-                                    target.onerror = null; // Prevent infinite loop
-                                    target.src = placeholder;
-                                }
-                            }}
-                            crossOrigin="use-credentials"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleCategoryChange(categoryId);
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'scale(1.1)';
-                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 99, 177, 0.3)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'scale(1)';
-                                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-                            }}
-                        />
-
-                        {/* Category Info */}
-                        <div style={{ flex: 1 }}>
-                            <h4 
-                                style={{
-                                    fontSize: level === 0 ? '16px' : '14px',
-                                    fontWeight: level === 0 ? '700' : '600',
-                                    color: isSelected ? '#0063b1' : '#1e293b',
-                                    margin: '0 0 2px 0',
-                                    lineHeight: '1.3',
-                                    cursor: 'pointer',
-                                    padding: '4px 8px',
-                                    borderRadius: '6px',
-                                    transition: 'all 0.3s ease',
-                                    display: 'inline-block',
-                                }}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCategoryChange(categoryId);
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0, 99, 177, 0.1), rgba(0, 163, 224, 0.1))';
-                                    e.currentTarget.style.color = '#0063b1';
-                                    e.currentTarget.style.transform = 'translateX(4px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'transparent';
-                                    e.currentTarget.style.color = isSelected ? '#0063b1' : '#1e293b';
-                                    e.currentTarget.style.transform = 'translateX(0)';
-                                }}
-                            >
-                                {category.name}
-                            </h4>
-                            <p style={{
-                                fontSize: '12px',
-                                color: '#64748b',
-                                margin: 0,
-                            }}>
-                                {hasSubcategories 
-                                    ? `${category.children.length} ${t('tenders.subcategories')} • ${t('tenders.clickRowToExpand')}` 
-                                    : t('tenders.clickNameToFilter')
-                                }
-                            </p>
-                        </div>
-
-                        {/* Subcategory Count Badge */}
-                        {hasSubcategories && (
-                            <span style={{
-                                background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
-                                color: 'white',
-                                fontSize: '11px',
-                                fontWeight: '600',
-                                padding: '2px 8px',
-                                borderRadius: '10px',
-                                marginLeft: '8px',
-                            }}>
-                                {category.children.length}
-                            </span>
-                        )}
-
-                        {/* Selection Indicator */}
-                        {isSelected && (
-                            <div style={{
-                                width: '20px',
-                                height: '20px',
-                                borderRadius: '50%',
-                                background: '#0063b1',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                marginLeft: '8px',
-                            }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
-                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                                </svg>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Recursive Subcategories */}
-                    {hasSubcategories && isExpanded && (
-                        <div style={{
-                            marginTop: '8px',
-                            paddingLeft: '16px',
-                            borderLeft: level < 2 ? '2px solid #f1f5f9' : 'none',
-                            marginLeft: `${level * 20 + 8}px`,
-                        }}>
-                            {renderCategoryHierarchy(category.children, level + 1)}
-                        </div>
-                    )}
-                </div>
-            );
-        });
-    };
-
-    // Update timers
-    useEffect(() => {
-        if (filteredTenders.length === 0) return;
-
-        const updateTimers = () => {
-            const newTimers = {};
-            filteredTenders.forEach(tender => {
-                if (tender._id && tender.endingAt) {
-                    newTimers[tender._id] = calculateTimeRemaining(tender.endingAt);
-                }
-            });
-            setTimers(newTimers);
-        };
-
-        // Initial update
-        updateTimers();
-
-        // Update every second
-        const interval = setInterval(updateTimers, 1000);
-
-        return () => clearInterval(interval);
-    }, [filteredTenders]);
-
-    // Intersection Observer for scroll animations
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        const index = parseInt(entry.target.getAttribute('data-index') || '0');
-                        setAnimatedCards(prev => [...prev, index]);
-                    }
-                });
-            },
-            { threshold: 0.3, rootMargin: '0px 0px -50px 0px' }
-        );
-
-        const tenderCards = document.querySelectorAll('.tender-card-animate');
-        tenderCards.forEach((card, index) => {
-            card.setAttribute('data-index', index.toString());
-            observer.observe(card);
-        });
-
-        return () => observer.disconnect();
-    }, [filteredTenders]);
-
-    // Parse URL parameters on component mount
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const urlParams = new URLSearchParams(window.location.search);
-            const categoryParam = urlParams.get('category');
-            const subCategoryParam = urlParams.get('subcategory');
-            const bidTypeParam = urlParams.get('bidType');
-            const searchParam = urlParams.get('search');
-
-            if (categoryParam) setSelectedCategory(categoryParam);
-            if (subCategoryParam) setSelectedSubCategory(subCategoryParam);
-            if (bidTypeParam) setSelectedBidType(bidTypeParam);
-            if (searchParam) setSearchTerm(searchParam);
-        }
-    }, []);
-
-    // Timer initialization based on tenders
-    useEffect(() => {
-        if (!tenders || tenders.length === 0) return;
-
-        // Initialize countdown timers for each tender
-        const timers = {};
-        tenders.forEach(tender => {
-            if (tender._id) {
-                const endTime = tender.endingAt || "2024-10-23 12:00:00";
-                const currentTime = new Date();
-                const timeDifference = new Date(endTime) - currentTime;
-
-                if (timeDifference > 0) {
-                    timers[tender._id] = calculateTimeRemaining(endTime);
-                } else {
-                    timers[tender._id] = { days: "00", hours: "00", minutes: "00", seconds: "00", hasEnded: true }; // Mark as ended
-                }
-            }
-        });
-        setTenderTimers(timers);
-
-        // Update timers every second
-        const interval = setInterval(() => {
-            const updatedTimers = {};
-            tenders.forEach(tender => {
-                if (tender._id) {
-                    const endTime = tender.endingAt || "2024-10-23 12:00:00";
-                    updatedTimers[tender._id] = calculateTimeRemaining(endTime);
-                }
-            });
-            setTenderTimers(updatedTimers);
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, [tenders]);
-
-
-
-
-    // Update filtered categories when selectedBidType or searchTerm changes
-    useEffect(() => {
-        if (categories && categories.length > 0) {
-            let filtered = [...categories];
-            
-            // 1. Filter by bidType (Produit/Service)
-            if (selectedBidType) {
-                filtered = filtered.filter(category => {
-                    const categoryType = category.type?.toUpperCase();
-                    return categoryType === selectedBidType;
-                });
-            }
-            
-            // 2. Filter by searchTerm (search in category names)
-            if (searchTerm.trim() !== "") {
-                const searchLower = searchTerm.toLowerCase().trim();
-                filtered = filtered.filter(category => {
-                    const categoryName = category.name?.toLowerCase() || '';
-                    return categoryName.includes(searchLower);
-                });
-            }
-            
-            setFilteredCategories(filtered);
-        }
-    }, [selectedBidType, categories, searchTerm]);
-
-    // Fetch subcategories when a category is selected
-    useEffect(() => {
-        const fetchSubCategories = async () => {
-            if (!selectedCategory) {
-                setSubCategories([]);
-                return;
-            }
-
-            try {
-                setSubCategoriesLoading(true);
-                const data = await SubCategoryAPI.getSubCategories(selectedCategory);
-                if (data && Array.isArray(data)) {
-                    setSubCategories(data);
-                }
-                setSubCategoriesLoading(false);
-            } catch (err) {
-                console.error("Error fetching subcategories:", err);
-                setSubCategoriesLoading(false);
-            }
-        };
-
-        fetchSubCategories();
-    }, [selectedCategory]);
-
-    // useEffect to handle filtering and sorting
-    useEffect(() => {
-        console.log("Filtering useEffect triggered with:", {
-            tendersLength: tenders?.length,
-            selectedCategory,
-            selectedSubCategory,
-            selectedBidType,
-            searchTerm,
-            sortOption
-        });
-        
-        if (!tenders || tenders.length === 0) return;
-
-        let result = [...tenders];
-
-        // Do NOT filter out tenders that have already ended.
-        // Instead, their 'hasEnded' flag will be used for styling and click prevention.
-
-        // 0. Filter by verifiedOnly: if verifiedOnly is true, only show to verified users
-        const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
-        result = result.filter(tender => {
-          // If tender is verifiedOnly and user is not verified, hide it
-          if (tender.verifiedOnly === true && !isUserVerified) {
-            return false;
-          }
-          return true;
-        });
-
-        // 1. Apply bidType filter if selected
-        if (selectedBidType) {
-            result = result.filter(tender =>
-                tender.tenderType && tender.tenderType === selectedBidType
-            );
-        }
-
-        // 2. Apply category filter if selected (with hierarchical support)
-        if (selectedCategory) {
-            console.log("Applying category filter for:", selectedCategory);
-            const beforeFilter = result.length;
-            result = result.filter(tender =>
-                doesTenderBelongToCategory(tender, selectedCategory, categories)
-            );
-            console.log(`Category filter: ${beforeFilter} -> ${result.length} tenders`);
-        } else {
-            console.log("No category filter applied (selectedCategory is empty)");
-        }
-
-        // 3. Apply subcategory filter if selected
-        if (selectedSubCategory) {
-            result = result.filter(tender =>
-                tender.subCategory && tender.subCategory._id === selectedSubCategory
-            );
-        }
-
-        // 4. Apply search term filter
-        if (searchTerm.trim() !== "") {
-            const searchLower = searchTerm.toLowerCase().trim();
-            result = result.filter(tender =>
-                (tender.title && tender.title.toLowerCase().includes(searchLower)) ||
-                (tender.description && tender.description.toLowerCase().includes(searchLower))
-            );
-        }
-
-        // 5. Unconditionally exclude finished tenders
-        result = result.filter(tender => {
-            if (!tender.endingAt) return false;
-            const endTime = new Date(tender.endingAt);
-            return endTime > new Date();
-        });
-
-        // 6. Apply sorting
-        if (sortOption === t('priceAsc')) {
-            result.sort((a, b) =>
-                (a.maxBudget || 0) - (b.maxBudget || 0)
-            );
-        } else if (sortOption === t('priceDesc')) {
-            result.sort((a, b) =>
-                (b.maxBudget || 0) - (a.maxBudget || 0)
-            );
-        }
-
-        console.log(`Final filtered result: ${result.length} tenders`);
-        setFilteredTenders(result);
-        // Reset to page 1 when filters change
-        setCurrentPage(1);
-    }, [tenders, selectedCategory, selectedSubCategory, selectedBidType, searchTerm, sortOption, statusFilter, auth.user]); // Removed tenderTimers from dependency array as it's not filtering, only styling
-
-    // Reset currentPage if it exceeds totalPages after filtering
-    useEffect(() => {
-        if (totalPages > 0 && currentPage > totalPages) {
-            setCurrentPage(1);
-        }
-    }, [totalPages, currentPage]);
-
-    // Debug useEffect to monitor selectedCategory changes
-    useEffect(() => {
-        console.log("selectedCategory changed to:", selectedCategory);
-        console.log("selectedSubCategory changed to:", selectedSubCategory);
-    }, [selectedCategory, selectedSubCategory]);
-
-    // Function to calculate time remaining
-    function calculateTimeRemaining(endTime) {
-        const currentTime = new Date();
-        const timeDifference = new Date(endTime) - currentTime;
-
-        if (timeDifference <= 0) {
-            return {
-                days: "00",
-                hours: "00",
-                minutes: "00",
-                seconds: "00",
-                hasEnded: true, // Add a flag to indicate if the auction has ended
-            };
-        }
-
-        const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor(
-            (timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-        );
-        const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-
-        return {
-            days: days.toString().padStart(2, "0"),
-            hours: hours.toString().padStart(2, "0"),
-            minutes: minutes.toString().padStart(2, "0"),
-            seconds: seconds.toString().padStart(2, "0"),
-            hasEnded: false,
-        };
+    // Filter by Tender Type (Corrected logic)
+    if (tenderType !== 'ALL') {
+      transformed = transformed.filter(t => {
+        const type = t.tenderType || t.type || t.saleType;
+        return type?.toUpperCase() === tenderType;
+      });
     }
 
-    // Handle search input change
-    const handleSearchChange = (e) => {
-        setSearchTerm(e.target.value);
-    };
-
-    // Handle category selection
-    const handleCategoryChange = (categoryId) => {
-        const newCategoryId = categoryId === selectedCategory ? "" : categoryId;
-        setSelectedCategory(newCategoryId);
-        // Clear subcategory when category changes
-        setSelectedSubCategory("");
-    };
-
-    // Handle clear category filter
-    const handleClearCategoryFilter = () => {
-        console.log("Clearing category filter...");
-        console.log("Before clear - selectedCategory:", selectedCategory);
-        console.log("Before clear - selectedSubCategory:", selectedSubCategory);
-        
-        // Clear URL parameters first
-        if (typeof window !== 'undefined') {
-            const url = new URL(window.location);
-            url.searchParams.delete('category');
-            url.searchParams.delete('subcategory');
-            window.history.replaceState({}, '', url);
-        }
-        
-        // Clear states using functional updates to ensure they're applied
-        setSelectedCategory("");
-        setSelectedSubCategory("");
-        setExpandedCategories({});
-        
-        // Force immediate filtering update by directly updating filteredTenders
-        if (tenders && tenders.length > 0) {
-            let result = [...tenders];
-            
-            // Apply only non-category filters
-            if (selectedBidType) {
-                result = result.filter(tender =>
-                    tender.tenderType && tender.tenderType === selectedBidType
-                );
-            }
-            
-            if (searchTerm.trim() !== "") {
-                const searchLower = searchTerm.toLowerCase().trim();
-                result = result.filter(tender =>
-                    (tender.title && tender.title.toLowerCase().includes(searchLower)) ||
-                    (tender.description && tender.description.toLowerCase().includes(searchLower))
-                );
-            }
-            
-            // Apply sorting
-            if (sortOption) {
-                result.sort((a, b) => {
-                    switch (sortOption) {
-                        case 'newest':
-                            return new Date(b.createdAt) - new Date(a.createdAt);
-                        case 'oldest':
-                            return new Date(a.createdAt) - new Date(b.createdAt);
-                        case 'ending_soon':
-                            return new Date(a.endingAt) - new Date(b.endingAt);
-                        case 'ending_later':
-                            return new Date(b.endingAt) - new Date(a.endingAt);
-                        default:
-                            return 0;
-                    }
-                });
-            }
-            
-            console.log(`Direct filtering result: ${result.length} tenders`);
-            setFilteredTenders(result);
-        }
-        
-        console.log("Clear function completed");
-    };
-
-    // Handle subcategory selection
-    const handleSubCategoryChange = (subCategoryId) => {
-        setSelectedSubCategory(subCategoryId === selectedSubCategory ? "" : subCategoryId);
-    };
-
-    // Handle bidType selection
-    const handleBidTypeChange = (bidType) => {
-        const newBidType = bidType === selectedBidType ? "" : bidType;
-        setSelectedBidType(newBidType);
-        // Clear category and subcategory when bid type changes
-        setSelectedCategory("");
-        setSelectedSubCategory("");
-    };
-
-    const handleSortChange = (option) => {
-        setSortOption(option);
-    };
-
-    const sortOptions = [
-        t('defaultSort'),
-        t('priceAsc'),
-        t('priceDesc'),
-    ];
-
-    const handleColumnClick = (columnNumber) => {
-        setActiveColumn(columnNumber);
-    };
-
-    // Handle tender card click
-    const navigateWithTop = useCallback((url) => {
-        router.push(url, { scroll: false });
-        requestAnimationFrame(() => {
-            window.scrollTo({ top: 0, behavior: "auto" });
-            document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
-        });
-    }, [router]);
-
-    const handleTenderCardClick = (tenderId) => {
-        navigateWithTop(`/tender-details/${tenderId}`);
-    };
-
-    // Swiper settings
-    const swiperSettings = useMemo(() => ({
-        slidesPerView: "auto",
-        speed: 1200,
-        spaceBetween: 25,
-        autoplay: {
-            delay: 4000,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-        },
-        navigation: {
-            nextEl: ".tender-slider-next",
-            prevEl: ".tender-slider-prev",
-        },
-        pagination: {
-            el: ".swiper-pagination",
-            clickable: true,
-        },
-        breakpoints: {
-            280: {
-                slidesPerView: 1,
-                spaceBetween: 15,
-            },
-            576: {
-                slidesPerView: 2,
-                spaceBetween: 20,
-            },
-            768: {
-                slidesPerView: 2,
-                spaceBetween: 20,
-            },
-            992: {
-                slidesPerView: 3,
-                spaceBetween: 25,
-            },
-            1200: {
-                slidesPerView: 4,
-                spaceBetween: 25,
-            },
-            1400: {
-                slidesPerView: 4,
-                spaceBetween: 30,
-            },
-        },
-    }), []);
-
-    if (isCategoriesLoading && isTendersLoading && tenders.length === 0) {
-        return <PageSkeleton />;
+    // Filter by Price (Modified for Min/Max fields)
+    if (priceRange.min !== '') {
+      transformed = transformed.filter(t => (t.budget || 0) >= parseFloat(priceRange.min));
+    }
+    if (priceRange.max !== '') {
+      transformed = transformed.filter(t => (t.budget || 0) <= parseFloat(priceRange.max));
     }
 
-    return (
+    // Filter by Categories
+    if (selectedCategories.length > 0) {
+      transformed = transformed.filter(t => selectedCategories.includes(t.categoryId || t.category?._id));
+    }
 
-        <>
-            <Header />
-            <div className="tender-grid-section mb-110" style={{ paddingTop: 'clamp(70px, 8vw, 100px)' }}>
-            <style jsx>{`
-                .tender-grid-section {
-                  padding-top: clamp(70px, 8vw, 100px) !important;
-                }
-                @media (max-width: 768px) {
-                  .tender-grid-section {
-                    padding-top: 80px !important;
-                  }
-                }
-                @media (max-width: 576px) {
-                  .tender-grid-section {
-                    padding-top: 70px !important;
-                  }
-                }
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-                @keyframes pulse {
-                    0%, 100% { transform: scale(1); }
-                    50% { transform: scale(1.05); }
-                }
-                @keyframes slideIn {
-                    from { opacity: 0; transform: translateY(30px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                @keyframes fadeInUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(30px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                @keyframes scaleIn {
-                    from {
-                        opacity: 0;
-                        transform: scale(0.8);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: scale(1);
-                    }
-                }
-                .hero-section {
-                    animation: slideIn 0.8s ease-out;
-                }
-                .filter-card {
-                    animation: slideIn 0.8s ease-out 0.2s both;
-                }
-                .tender-card {
-                    animation: slideIn 0.8s ease-out 0.4s both;
-                }
-                .tender-card-animate {
-                    opacity: 0;
-                    transform: translateY(30px) scale(0.95);
-                    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-                }
-                .tender-card-animate.animated {
-                    opacity: 1;
-                    transform: translateY(0) scale(1);
-                }
-                .tender-card-hover {
-                    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-                }
-                .tender-card-hover:hover {
-                    transform: translateY(-8px) scale(1.02);
-                    box-shadow: 0 20px 40px rgba(40, 167, 69, 0.15);
-                }
-                .timer-digit {
-                    animation: pulse 1s infinite;
-                }
-                .timer-digit.urgent {
-                    animation: pulse 0.5s infinite;
-                    color: white;
-                }
-            `}</style>
-            <div className="container">
-                {/* Enhanced Filter Section */}
-                <div className="filter-card">
-                    <div className="row mb-40">
-                        <div className="col-12">
-                            <div className="enhanced-filter-wrapper" style={{
-                                borderRadius: '25px',
-                                boxShadow: '0 15px 40px rgba(0, 0, 0, 0.08)',
-                                padding: 'clamp(20px, 4vw, 40px)',
-                                background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-                                marginBottom: '40px',
-                                border: '1px solid rgba(0, 99, 177, 0.08)',
-                                position: 'relative',
-                                overflow: 'hidden'
-                            }}>
-                                {/* Subtle background pattern */}
-                                <div style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    background: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%230063b1' fill-opacity='0.02'%3E%3Cpath d='M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z'/%3E%3C/g%3E%3C/svg%3E")`,
-                                    opacity: 0.5,
-                                }}></div>
+    // Filter by Wilaya
+    if (selectedWilaya) {
+      transformed = transformed.filter(t => t.wilaya === selectedWilaya);
+    }
 
-                                {/* Search Bar - At Top */}
-                                <div className="row mb-4">
-                                    <div className="col-12">
-                                        <div style={{
-                                            maxWidth: '600px',
-                                            margin: '0 auto 30px',
-                                            position: 'relative',
-                                        }}>
-                                            <input
-                                                type="text"
-                                                placeholder={t('tenders.searchPlaceholder') || 'Rechercher une soumission...'}
-                                                value={searchTerm}
-                                                onChange={handleSearchChange}
-                                                style={{
-                                                    width: '100%',
-                                                    padding: '16px 20px',
-                                                    paddingRight: '50px',
-                                                    fontSize: '16px',
-                                                    border: '2px solid #e2e8f0',
-                                                    borderRadius: '16px',
-                                                    background: 'white',
-                                                    outline: 'none',
-                                                    transition: 'all 0.3s ease',
-                                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-                                                }}
-                                            />
-                                            <div style={{
-                                                position: 'absolute',
-                                                right: '16px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                color: '#64748b',
-                                            }}>
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                    <circle cx="11" cy="11" r="8"/>
-                                                    <path d="M21 21l-4.35-4.35"/>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+    // Filter by Search Query
+    if (searchQuery) {
+      transformed = transformed.filter(t => t.title?.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
 
-                                {/* Produit/Service Buttons with Categories Text - Like Home1Banner */}
-                                <div className="row mb-4">
-                                    <div className="col-12">
-                                        <div style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: 'clamp(4px, 2vw, 16px)',
-                                            flexWrap: 'nowrap',
-                                            marginBottom: '30px',
-                                        }}>
-                                            <button
-                                                type="button"
-                                                className={`filter-button product ${selectedBidType === BID_TYPE.PRODUCT ? 'active' : ''}`}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    handleBidTypeChange(BID_TYPE.PRODUCT);
-                                                }}
-                                                style={{
-                                                    padding: 'clamp(8px, 1.5vw, 12px) clamp(12px, 2vw, 28px)',
-                                                    borderRadius: '35px',
-                                                    fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
-                                                    fontWeight: '700',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                    border: '3px solid transparent',
-                                                    background: 'linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%)',
-                                                    color: 'white',
-                                                    boxShadow: selectedBidType === BID_TYPE.PRODUCT
-                                                        ? '0 6px 24px rgba(0, 99, 177, 0.35)'
-                                                        : '0 4px 16px rgba(0, 99, 177, 0.25)',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.6px',
-                                                    minWidth: 'auto',
-                                                    position: 'relative',
-                                                    zIndex: 10,
-                                                    opacity: selectedBidType === BID_TYPE.PRODUCT ? 1 : 0.8,
-                                                }}
-                                            >
-                                                {t('common.product')}
-                                            </button>
-                                            
-                                            <h2 style={{
-                                                fontSize: 'clamp(1rem, 2.5vw, 2.2rem)',
-                                                fontWeight: '900',
-                                                background: 'linear-gradient(135deg, #1e293b 0%, #475569 30%, #64748b 50%, #475569 70%, #1e293b 100%)',
-                                                backgroundSize: '300% auto',
-                                                WebkitBackgroundClip: 'text',
-                                                backgroundClip: 'text',
-                                                WebkitTextFillColor: 'transparent',
-                                                textAlign: 'center',
-                                                margin: 0,
-                                                letterSpacing: '-0.5px',
-                                                padding: '0 clamp(8px, 1.5vw, 40px)',
-                                            }}>
-                                                {t('home.categories')}
-                                            </h2>
-                                            
-                                            <button
-                                                type="button"
-                                                className={`filter-button service ${selectedBidType === BID_TYPE.SERVICE ? 'active' : ''}`}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    handleBidTypeChange(BID_TYPE.SERVICE);
-                                                }}
-                                                style={{
-                                                    padding: 'clamp(8px, 1.5vw, 12px) clamp(12px, 2vw, 28px)',
-                                                    borderRadius: '35px',
-                                                    fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
-                                                    fontWeight: '700',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                    border: '3px solid transparent',
-                                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
-                                                    color: 'white',
-                                                    boxShadow: selectedBidType === BID_TYPE.SERVICE
-                                                        ? '0 6px 24px rgba(16, 185, 129, 0.35)'
-                                                        : '0 4px 16px rgba(16, 185, 129, 0.25)',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.6px',
-                                                    minWidth: 'auto',
-                                                    position: 'relative',
-                                                    zIndex: 10,
-                                                    opacity: selectedBidType === BID_TYPE.SERVICE ? 1 : 0.8,
-                                                }}
-                                            >
-                                                {t('common.service')}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+    // Sorting
+    if (sortOrder === 'PRICE_ASC') {
+      transformed.sort((a, b) => (a.budget || 0) - (b.budget || 0));
+    } else if (sortOrder === 'PRICE_DESC') {
+      transformed.sort((a, b) => (b.budget || 0) - (a.budget || 0));
+    } else if (sortOrder === 'OLDEST') {
+      transformed.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+    } else if (sortOrder === 'NEWEST') {
+      transformed.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    }
 
-                                {/* Categories Filter - Circular Format */}
-                                <div className="row mb-4">
-                                    <div className="col-12">
-                                        <div className="circular-categories-filter" style={{
-                                            background: 'rgba(248, 249, 250, 0.8)',
-                                            borderRadius: '15px',
-                                            padding: '25px',
-                                            border: '1px solid rgba(0, 99, 177, 0.1)',
-                                        }}>
-                                            {categoriesLoading ? (
-                                                <div style={{
-                                                    padding: '40px 20px',
-                                                    fontSize: '16px',
-                                                    color: '#666',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    gap: '10px'
-                                                }}>
-                                                    <div className="spinner" style={{
-                                                        width: '20px',
-                                                        height: '20px',
-                                                        border: '2px solid rgba(0, 99, 177, 0.1)',
-                                                        borderRadius: '50%',
-                                                        borderTop: '2px solid #0063b1',
-                                                        animation: 'spin 1s linear infinite'
-                                                    }}></div>
-                                                    {t('tenders.loadingCategories')}
-                                                </div>
-                                            ) : filteredCategories && filteredCategories.length > 0 ? (
-                                                renderCircularCategories(filteredCategories)
-                                            ) : (
-                                                <div style={{
-                                                    padding: '40px 20px',
-                                                    fontSize: '16px',
-                                                    color: '#666',
-                                                    textAlign: 'center'
-                                                }}>
-                                                    {t('tenders.noCategoryAvailable')}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+    return transformed;
+  }, [allTendersResponse, auth.user, tenderType, priceRange, selectedCategories, selectedWilaya, searchQuery, sortOrder]);
 
-                                {/* Clear Category Filter Button */}
-                                {selectedCategory && (
-                                    <div className="row mb-4">
-                                        <div className="col-12 d-flex justify-content-center">
-                                            <button
-                                                type="button"
-                                                disabled={false}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    handleClearCategoryFilter();
-                                                }}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '8px',
-                                                    padding: '12px 24px',
-                                                    background: 'rgba(239, 68, 68, 0.1)',
-                                                    border: '1px solid #ef4444',
-                                                    borderRadius: '12px',
-                                                    color: '#ef4444',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.3s ease',
-                                                    fontSize: '14px',
-                                                    position: 'relative',
-                                                    zIndex: 10,
-                                                    pointerEvents: 'auto',
-                                                    userSelect: 'none',
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    e.currentTarget.style.background = '#ef4444';
-                                                    e.currentTarget.style.color = 'white';
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
-                                                    e.currentTarget.style.color = '#ef4444';
-                                                }}
-                                            >
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                                                </svg>
-                                                {t('tenders.clearCategoryFilter')}
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
+  const itemsPerPage = 9;
+  const totalPages = Math.max(1, Math.ceil(allTenders.length / itemsPerPage));
+  const currentData = allTenders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  const toggleCategory = (id) => {
+    setSelectedCategories(prev => 
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    );
+    setCurrentPage(1);
+  };
 
+  if (isLoading) return <PageSkeleton />;
 
-
-                {/* Tender Cards Section */}
-                <div className="row">
-                    <div className="col-12">
-                        <div
-                            className={`list-grid-product-wrap column-${activeColumn === 2 ? "2" : activeColumn === 3 ? "3" : "3"}-wrapper`}
-                        >
-                            <div className="row g-4 mb-60">
-                                {loading ? (
-                                    <div className="col-12 text-center py-5">
-                                        <div className="spinner" style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            margin: '0 auto',
-                                            border: '4px solid rgba(0, 99, 177, 0.1)',
-                                            borderRadius: '50%',
-                                            borderTop: '4px solid #0063b1',
-                                            animation: 'spin 1s linear infinite'
-                                        }}></div>
-                                        <p style={{ marginTop: '15px', color: '#666' }}>{t('tenders.loading')}</p>
-                                    </div>
-                                ) : error ? (
-                                    <div className="col-12 text-center py-5">
-                                        <p style={{ color: '#ff5555' }}>{error}</p>
-                                    </div>
-                                ) : paginatedTenders && paginatedTenders.length > 0 ? (
-                                    paginatedTenders.map((tender, index) => {
-                                        const timer = timers[tender._id] || { days: "00", hours: "00", minutes: "00", seconds: "00", hasEnded: false };
-                                        const hasTenderEnded = timer.hasEnded || false;
-                                        const isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30 && parseInt(timer.days) === 0;
-
-                                        // Determine the display name for the tender owner
-                                        let displayName;
-                                        if (tender.hidden) {
-                                            displayName = t('common.anonymous') || 'Anonyme';
-                                        } else {
-                                            // Prioritize company name over personal name
-                                            const companyName = tender.owner?.entreprise || tender.owner?.companyName;
-                                            const ownerName = tender.owner?.firstName && tender.owner?.lastName
-                                                ? `${tender.owner.firstName} ${tender.owner.lastName}`.trim()
-                                                : tender.owner?.name;
-                                            displayName = companyName || ownerName || t('common.buyer');
-                                        }
-
-                                        return (
-                                            <div
-                                                key={tender._id}
-                                                className={`col-lg-${activeColumn === 2 ? '6' : '4'} col-md-6 col-6 item`}
-                                            >
-                                                <div
-                                                    className="modern-tender-card tender-card"
-                                                    style={{
-                                                        background: hasTenderEnded ? '#f0f0f0' : 'white',
-                                                        borderRadius: '20px',
-                                                        overflow: 'hidden',
-                                                        boxShadow: hasTenderEnded ? 'none' : '0 8px 25px rgba(0, 0, 0, 0.08)',
-                                                        height: '100%',
-                                                        maxWidth: '350px',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        position: 'relative',
-                                                        transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
-                                                        border: hasTenderEnded ? '1px solid #d0d0d0' : '1px solid rgba(0, 0, 0, 0.05)',
-                                                        cursor: hasTenderEnded ? 'not-allowed' : 'pointer',
-                                                        opacity: hasTenderEnded ? 0.6 : 1,
-                                                        pointerEvents: hasTenderEnded ? 'none' : 'auto',
-                                                        margin: '0 auto',
-                                                    }}
-                                                    onClick={() => !hasTenderEnded && handleTenderCardClick(tender._id)}
-                                                    onMouseEnter={(e) => {
-                                                        if (!hasTenderEnded) {
-                                                            e.currentTarget.style.transform = 'translateY(-10px)';
-                                                            e.currentTarget.style.boxShadow = '0 20px 40px color-mix(in srgb, var(--primary-tender-color) 15%, transparent)';
-                                                            e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--primary-tender-color) 20%, transparent)';
-                                                        }
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        if (!hasTenderEnded) {
-                                                            e.currentTarget.style.transform = 'translateY(0)';
-                                                            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.08)';
-                                                            e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.05)';
-                                                        }
-                                                    }}
-                                                >
-                                                    {/* Tender Image */}
-                                                    <div
-                                                        className="tender-image"
-                                                        style={{
-                                                            height: 'clamp(140px, 30vw, 240px)',
-                                                            position: 'relative',
-                                                            overflow: 'hidden',
-                                                        }}
-                                                    >
-                                                        <Link
-                                                            href={hasTenderEnded ? "#" : `/tender-details/${tender._id}`}
-                                                            scroll={false}
-                                                            style={{ display: 'block', height: '100%', cursor: hasTenderEnded ? 'not-allowed' : 'pointer' }}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                if (hasTenderEnded) {
-                                                                    e.preventDefault();
-                                                                    return;
-                                                                }
-                                                                e.preventDefault();
-                                                                navigateWithTop(`/tender-details/${tender._id}`);
-                                                            }}
-                                                        >
-                                                            <img
-                                                                src={(() => {
-                                                                    let imageUrl = null;
-                                                                    
-                                                                    // Try different image sources in priority order
-                                                                    if (tender.attachments && tender.attachments.length > 0 && tender.attachments[0].url) {
-                                                                        imageUrl = tender.attachments[0].url;
-                                                                    } else if (tender.attachments && tender.attachments.length > 0 && tender.attachments[0].path) {
-                                                                        imageUrl = tender.attachments[0].path;
-                                                                    } else if (tender.thumbs && tender.thumbs.length > 0 && tender.thumbs[0].url) {
-                                                                        imageUrl = tender.thumbs[0].url;
-                                                                    } else if (tender.images && tender.images.length > 0 && tender.images[0].url) {
-                                                                        imageUrl = tender.images[0].url;
-                                                                    } else if (tender.image) {
-                                                                        imageUrl = tender.image;
-                                                                    }
-                                                                    
-                                                                    if (imageUrl) {
-                                                                        return normalizeImageUrl(imageUrl);
-                                                                    }
-                                                                    
-                                                                    return DEFAULT_TENDER_IMAGE;
-                                                                })()}
-                                                                alt={tender.title || "Tender Item"}
-                                                                style={{
-                                                                    width: '100%',
-                                                                    height: '100%',
-                                                                    objectFit: 'contain',
-                                                                    transition: 'transform 0.5s ease',
-                                                                    filter: hasTenderEnded ? 'grayscale(100%)' : 'none',
-                                                                }}
-                                                                onError={(e) => {
-                                                                    e.currentTarget.onerror = null;
-                                                                    e.currentTarget.src = DEFAULT_TENDER_IMAGE;
-                                                                }}
-                                                                crossOrigin="use-credentials"
-                                                            />
-                                                        </Link>
-
-                                                        {/* Tender Type Badge */}
-                                                        <div
-                                                            style={{
-                                                                position: 'absolute',
-                                                                top: '8px',
-                                                                left: '8px',
-                                                                background: 'rgba(255, 255, 255, 0.95)',
-                                                                backdropFilter: 'blur(10px)',
-                                                                color: '#333',
-                                                                padding: '4px 8px',
-                                                                borderRadius: '12px',
-                                                                fontSize: '10px',
-                                                                fontWeight: '700',
-                                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                                zIndex: 2,
-                                                                border: '1px solid rgba(255, 255, 255, 0.2)',
-                                                            }}
-                                                        >
-                                                            {tender.tenderType === 'PRODUCT' ? t('common.product') : t('common.service')}
-                                                        </div>
-
-                                                        {/* Countdown Timer */}
-                                                        <div
-                                                            className="countdown-overlay"
-                                                            style={{
-                                                                    position: 'absolute',
-                                                                    bottom: '8px',
-                                                                    left: '50%',
-                                                                    transform: 'translateX(-50%)',
-                                                                    background: 'rgba(255, 255, 255, 0.95)',
-                                                                    backdropFilter: 'blur(4px)',
-                                                                    padding: '4px 8px',
-                                                                    borderRadius: '12px',
-                                                                    color: isUrgent ? '#d32f2f' : '#000000', // Black by default
-                                                                    boxShadow: isUrgent ? '0 0 10px rgba(211, 47, 47, 0.5)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                                    border: '1px solid rgba(0, 0, 0, 0.05)',
-                                                                    zIndex: 2,
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    gap: '4px',
-                                                                    fontSize: '10px',
-                                                                    fontWeight: '700',
-                                                                    animation: isUrgent ? 'pulse 1s infinite' : 'none',
-                                                            }}
-                                                            >
-                                                                {hasTenderEnded ? (
-                                                                    <span>{t('common.finished') || 'Terminée'}</span>
-                                                                ) : (
-                                                                    <>
-                                                                        <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.days || "00"}j</span>:
-                                                                        <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.hours || "00"}h</span>:
-                                                                        <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.minutes || "00"}m</span>:
-                                                                        <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.seconds || "00"}s</span>
-                                                                    </>
-                                                                )}
-                                                            </div>
-
-                                                        {/* Share Button - Bottom Right */}
-                                                        <div style={{
-                                                            position: 'absolute',
-                                                            bottom: '8px',
-                                                            right: '8px',
-                                                            zIndex: 5
-                                                        }}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        >
-                                                            <ShareButton 
-                                                                type="tender" 
-                                                                id={tender._id} 
-                                                                title={tender.title} 
-                                                                description={tender.description}
-                                                                imageUrl={(() => {
-                                                                    let imageUrl = null;
-                                                                    if (tender.attachments && tender.attachments.length > 0 && tender.attachments[0].url) imageUrl = tender.attachments[0].url;
-                                                                    else if (tender.attachments && tender.attachments.length > 0 && tender.attachments[0].path) imageUrl = tender.attachments[0].path;
-                                                                    else if (tender.thumbs && tender.thumbs.length > 0 && tender.thumbs[0].url) imageUrl = tender.thumbs[0].url;
-                                                                    else if (tender.images && tender.images.length > 0 && tender.images[0].url) imageUrl = tender.images[0].url;
-                                                                    else if (tender.image) imageUrl = tender.image;
-                                                                    return imageUrl ? normalizeImageUrl(imageUrl) : DEFAULT_TENDER_IMAGE;
-                                                                })()}
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Tender Content */}
-                                                    <div style={{
-                                                        padding: 'clamp(10px, 2vw, 25px)',
-                                                        flexGrow: 1,
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                    }}>
-                                                        {/* Title */}
-                                                        <h3 style={{
-                                                            fontSize: 'clamp(13px, 3vw, 18px)',
-                                                            fontWeight: '600',
-                                                            color: hasTenderEnded ? '#666' : '#333',
-                                                            marginBottom: '8px',
-                                                            lineHeight: '1.3',
-                                                            display: '-webkit-box',
-                                                            WebkitLineClamp: '2',
-                                                            WebkitBoxOrient: 'vertical',
-                                                            overflow: 'hidden',
-                                                            textOverflow: 'ellipsis',
-                                                            whiteSpace: 'normal',
-                                                            height: '2.6em', // Enforce 2 lines visually
-                                                        }}>
-                                                            <Link
-                                                                href={hasTenderEnded ? "#" : `/tender-details/${tender._id}`}
-                                                                scroll={false}
-                                                                style={{ color: 'inherit', textDecoration: 'none', cursor: hasTenderEnded ? 'not-allowed' : 'pointer' }}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    if (hasTenderEnded) {
-                                                                        e.preventDefault();
-                                                                        return;
-                                                                    }
-                                                                    e.preventDefault();
-                                                                    navigateWithTop(`/tender-details/${tender._id}`);
-                                                                }}
-                                                            >
-                                                                {tender.title || 'Tender Title'}
-                                                            </Link>
-                                                        </h3>
-
-                                                        {/* Quantity and Location Info */}
-                                                        <div style={{
-                                                            display: 'grid',
-                                                            gridTemplateColumns: tender?.tenderType === 'SERVICE' ? '1fr' : '1fr 1fr',
-                                                            gap: '4px',
-                                                            marginBottom: '6px',
-                                                        }}>
-                                                            {tender?.tenderType !== 'SERVICE' && (
-                                                                <div style={{
-                                                                    background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                                                    borderRadius: '6px',
-                                                                    padding: '4px 6px',
-                                                                    border: '1px solid #e9ecef',
-                                                                    borderLeft: '3px solid var(--primary-tender-color)',
-                                                                }}>
-                                                                    <p style={{
-                                                                        fontSize: '9px', // Reduced for mobile
-                                                                        color: hasTenderEnded ? '#888' : '#666',
-                                                                        margin: '0 0 2px 0',
-                                                                        fontWeight: '600',
-                                                                        whiteSpace: 'nowrap',
-                                                                        overflow: 'hidden',
-                                                                        textOverflow: 'ellipsis',
-                                                                    }}>
-                                                                        📦 {t('common.quantity')}
-                                                                    </p>
-                                                                    <p style={{
-                                                                        fontSize: '11px', // Reduced
-                                                                        color: hasTenderEnded ? '#888' : '#333',
-                                                                        margin: 0,
-                                                                        fontWeight: '500',
-                                                                        overflow: 'hidden',
-                                                                        textOverflow: 'ellipsis',
-                                                                    }}>
-                                                                        {tender.quantity || t('common.notSpecified')}
-                                                                    </p>
-                                                                </div>
-                                                            )}
-
-                                                            <div style={{
-                                                                background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                                                borderRadius: '6px',
-                                                                padding: '4px 6px',
-                                                                border: '1px solid #e9ecef',
-                                                                borderLeft: '3px solid var(--primary-tender-color)',
-                                                            }}>
-                                                                <p style={{
-                                                                    fontSize: '9px',
-                                                                    color: hasTenderEnded ? '#888' : '#666',
-                                                                    margin: '0 0 2px 0',
-                                                                    fontWeight: '600',
-                                                                    whiteSpace: 'nowrap',
-                                                                    overflow: 'hidden',
-                                                                    textOverflow: 'ellipsis',
-                                                                }}>
-                                                                    📍 {t('common.location')}
-                                                                </p>
-                                                                <p style={{
-                                                                    fontSize: '11px',
-                                                                    color: hasTenderEnded ? '#888' : '#333',
-                                                                    margin: 0,
-                                                                    fontWeight: '500',
-                                                                    overflow: 'hidden',
-                                                                    textOverflow: 'ellipsis',
-                                                                    whiteSpace: 'nowrap',
-                                                                }}>
-                                                                    {(() => {
-                                                                      const address = tender.address || '';
-                                                                      const location = tender.location || '';
-                                                                      const wilaya = tender.wilaya || '';
-                                                                      const parts = [address, location, wilaya].filter(Boolean);
-                                                                      return parts.length > 0 ? parts.join(', ') : t('common.notSpecified');
-                                                                    })()}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Budget Info */}
-                                                        <div style={{
-                                                            background: hasTenderEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                                            borderRadius: '8px',
-                                                            padding: '4px 8px',
-                                                            marginBottom: '8px',
-                                                            border: hasTenderEnded ? '1px solid #e0e0e0' : '1px solid #e9ecef',
-                                                            borderLeft: hasTenderEnded ? '3px solid #ccc' : '3px solid var(--primary-tender-color)',
-                                                        }}>
-                                                            <p style={{
-                                                                fontSize: '10px',
-                                                                color: hasTenderEnded ? '#888' : '#666',
-                                                                margin: '0 0 2px 0',
-                                                                fontWeight: '600',
-                                                            }}>
-                                                                💰 {t('tenders.budget')}
-                                                            </p>
-                                                            <p style={{
-                                                                fontSize: '12px',
-                                                                color: hasTenderEnded ? '#888' : 'var(--primary-tender-color)',
-                                                                margin: 0,
-                                                                fontWeight: '600',
-                                                            }}>
-                                                                {Number(tender.maxBudget || tender.budget || 0).toLocaleString()} DA
-                                                            </p>
-                                                        </div>
-
-                                                        {/* Participants Count */}
-                                                        <div style={{
-                                                            background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                                            borderRadius: '8px',
-                                                            padding: '6px 8px',
-                                                            marginBottom: '8px',
-                                                            border: '1px solid #e9ecef',
-                                                        }}>
-                                                            <div style={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                flexWrap: 'wrap',
-                                                                gap: '4px',
-                                                            }}>
-                                                                <div style={{
-                                                                    width: '6px',
-                                                                    height: '6px',
-                                                                    borderRadius: '50%',
-                                                                    background: hasTenderEnded ? '#ccc' : 'var(--primary-tender-color)',
-                                                                    animation: hasTenderEnded ? 'none' : 'pulse 2s infinite',
-                                                                }}></div>
-                                                                <span style={{
-                                                                    fontSize: '11px',
-                                                                    fontWeight: '600',
-                                                                    color: hasTenderEnded ? '#888' : 'var(--primary-tender-color)',
-                                                                }}>
-                                                                    {tender.participantsCount || 0} {t('tenders.participants')}
-                                                                </span>
-                                                                <span style={{
-                                                                    fontSize: '10px',
-                                                                    color: hasTenderEnded ? '#888' : '#666',
-                                                                }}>
-                                                                    {t('tenders.haveSubmitted')}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-
-
-                                                        {/* Owner Info */}
-                                                        <div style={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: '10px',
-                                                            marginBottom: '16px',
-                                                        }}>
-                                                            {tender.owner && !tender.hidden ? (
-                                                              <Link
-                                                                href={`/profile/${tender.owner._id}`}
-                                                                scroll={false}
-                                                                onClick={(e) => {
-                                                                  e.stopPropagation();
-                                                                  e.preventDefault();
-                                                                  navigateWithTop(`/profile/${tender.owner?._id}`);
-                                                                }}
-                                                                style={{
-                                                                  display: 'flex',
-                                                                  alignItems: 'center',
-                                                                  gap: '10px',
-                                                                  textDecoration: 'none',
-                                                                }}
-                                                              >
-                                                                <img
-                                                                    src={tender.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE)}
-                                                                    alt={displayName}
-                                                                    style={{
-                                                                        width: '32px',
-                                                                        height: '32px',
-                                                                        borderRadius: '50%',
-                                                                        objectFit: 'contain',
-                                                                        filter: hasTenderEnded ? 'grayscale(100%)' : 'none',
-                                                                    }}
-                                                                    onError={(e) => {
-                                                                        const target = e.target;
-                                                                        target.src = DEFAULT_PROFILE_IMAGE;
-                                                                    }}
-                                                                />
-                                                                <span style={{
-                                                                    fontSize: '14px',
-                                                                    color: hasTenderEnded ? '#888' : '#0063b1',
-                                                                    fontWeight: '600',
-                                                                    transition: 'color 0.3s ease',
-                                                                }}
-                                                                onMouseEnter={(e) => {
-                                                                  if (!hasTenderEnded) {
-                                                                    e.currentTarget.style.color = '#00a3e0';
-                                                                    e.currentTarget.style.textDecoration = 'underline';
-                                                                  }
-                                                                }}
-                                                                onMouseLeave={(e) => {
-                                                                  if (!hasTenderEnded) {
-                                                                    e.currentTarget.style.color = '#0063b1';
-                                                                    e.currentTarget.style.textDecoration = 'none';
-                                                                  }
-                                                                }}
-                                                                >
-                                                                    {displayName}
-                                                                </span>
-                                                              </Link>
-                                                            ) : (
-                                                              <>
-                                                                <img
-                                                                    src={tender.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE)}
-                                                                    alt={displayName}
-                                                                    style={{
-                                                                        width: '32px',
-                                                                        height: '32px',
-                                                                        borderRadius: '50%',
-                                                                        objectFit: 'contain',
-                                                                        filter: hasTenderEnded ? 'grayscale(100%)' : 'none',
-                                                                    }}
-                                                                    onError={(e) => {
-                                                                        const target = e.target;
-                                                                        target.src = DEFAULT_PROFILE_IMAGE;
-                                                                    }}
-                                                                />
-                                                                <span style={{
-                                                                    fontSize: '14px',
-                                                                    color: hasTenderEnded ? '#888' : '#666',
-                                                                    fontWeight: '500',
-                                                                }}>
-                                                                    {displayName}
-                                                                </span>
-                                                              </>
-                                                            )}
-                                                        </div>
-
-                                                        {/* View Tender Button */}
-                                                        <Link
-                                                            href={hasTenderEnded ? "#" : `/tender-details/${tender._id}`}
-                                                            scroll={false}
-                                                            style={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                gap: '8px',
-                                                                width: '100%',
-                                                                padding: '12px 20px',
-                                                                background: hasTenderEnded ? '#cccccc' : 'var(--primary-tender-color)',
-                                                                color: hasTenderEnded ? '#888' : 'white',
-                                                                textDecoration: 'none',
-                                                                borderRadius: '25px',
-                                                                fontWeight: '600',
-                                                                fontSize: '14px',
-                                                                transition: 'all 0.3s ease',
-                                                                boxShadow: hasTenderEnded ? 'none' : '0 4px 12px color-mix(in srgb, var(--primary-tender-color) 30%, transparent)',
-                                                            }}
-                                                            onMouseEnter={(e) => {
-                                                                if (!hasTenderEnded) {
-                                                                    e.currentTarget.style.background = 'var(--primary-tender-color)';
-                                                                    e.currentTarget.style.transform = 'translateY(-2px)';
-                                                                    e.currentTarget.style.boxShadow = '0 8px 20px color-mix(in srgb, var(--primary-tender-color) 40%, transparent)';
-                                                                }
-                                                            }}
-                                                            onMouseLeave={(e) => {
-                                                                if (!hasTenderEnded) {
-                                                                    e.currentTarget.style.background = 'var(--primary-tender-color)';
-                                                                    e.currentTarget.style.transform = 'translateY(0)';
-                                                                    e.currentTarget.style.boxShadow = '0 4px 12px color-mix(in srgb, var(--primary-tender-color) 30%, transparent)';
-                                                                }
-                                                            }}
-                                                            onClick={(event) => {
-                                                                if (hasTenderEnded) {
-                                                                    event.preventDefault();
-                                                                    event.stopPropagation();
-                                                                    return;
-                                                                }
-                                                                event.preventDefault();
-                                                                event.stopPropagation();
-                                                                navigateWithTop(`/tender-details/${tender._id}`);
-                                                            }}
-                                                        >
-                                                            {hasTenderEnded ? t('common.finished') : t('tenders.viewDetails')}
-                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                                                <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
-                                                            </svg>
-                                                        </Link>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                            <div className="text-center py-5">
-                                        <div style={{
-                                            padding: '60px 20px',
-                                            background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                            borderRadius: '20px',
-                                            border: '2px dashed rgba(0, 99, 177, 0.2)',
-                                        }}>
-                                            <div style={{
-                                                fontSize: '48px',
-                                                marginBottom: '20px',
-                                                opacity: 0.5,
-                                            }}>
-                                                🔍
-                                            </div>
-                                            <h3 style={{
-                                                fontSize: '24px',
-                                                fontWeight: '600',
-                                                color: '#666',
-                                                marginBottom: '10px',
-                                            }}>
-                                                {t('tenders.noTendersFound')}
-                                            </h3>
-                                            <p style={{
-                                                fontSize: '16px',
-                                                color: '#999',
-                                                margin: 0,
-                                            }}>
-                                                {t('tenders.modifyFiltersOrSearch')}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Pagination */}
-                {filteredTenders && filteredTenders.length > 0 && totalPages > 1 && (
-                    <div className="row">
-                        <div className="col-lg-12 d-flex justify-content-center">
-                            <div className="inner-pagination-area" style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
-                                <ul className="paginations" style={{
-                                    display: 'flex',
-                                    gap: '12px',
-                                    padding: 0,
-                                    margin: 0,
-                                    listStyle: 'none',
-                                    flexWrap: 'wrap',
-                                    alignItems: 'center'
-                                }}>
-                                    {/* Previous Button */}
-                                    <li className="page-item paginations-button" style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        <a 
-                                            href="#" 
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                if (currentPage > 1) {
-                                                    setCurrentPage(currentPage - 1);
-                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                }
-                                            }}
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                width: '45px',
-                                                height: '45px',
-                                                borderRadius: '50%',
-                                                background: currentPage > 1 ? '#f5f5f5' : '#e0e0e0',
-                                                color: currentPage > 1 ? '#333' : '#999',
-                                                fontWeight: '600',
-                                                textDecoration: 'none',
-                                                transition: 'all 0.3s ease',
-                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                cursor: currentPage > 1 ? 'pointer' : 'not-allowed',
-                                                opacity: currentPage > 1 ? 1 : 0.5,
-                                                transform: 'rotate(180deg)'
-                                            }}
-                                        >
-                                            <svg width={16} height={13} viewBox="0 0 16 13" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M15.557 10.1026L1.34284 1.89603M15.557 10.1026C12.9386 8.59083 10.8853 3.68154 12.7282 0.489511M15.557 10.1026C12.9386 8.59083 7.66029 9.2674 5.81744 12.4593" strokeWidth="0.96" strokeLinecap="round" stroke={currentPage > 1 ? '#333' : '#999'} />
-                                            </svg>
-                                        </a>
-                                    </li>
-
-                                    {/* Page Numbers */}
-                                    {(() => {
-                                        const pages = [];
-                                        const maxVisiblePages = 7;
-                                        let startPage = 1;
-                                        let endPage = totalPages;
-
-                                        // Calculate which pages to show
-                                        if (totalPages > maxVisiblePages) {
-                                            if (currentPage <= 4) {
-                                                // Show first pages
-                                                startPage = 1;
-                                                endPage = maxVisiblePages;
-                                            } else if (currentPage >= totalPages - 3) {
-                                                // Show last pages
-                                                startPage = totalPages - maxVisiblePages + 1;
-                                                endPage = totalPages;
-                                            } else {
-                                                // Show pages around current
-                                                startPage = currentPage - 3;
-                                                endPage = currentPage + 3;
-                                            }
-                                        }
-
-                                        // Add first page and ellipsis if needed
-                                        if (startPage > 1) {
-                                            pages.push(
-                                                <li key={1} className="page-item" style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}>
-                                                    <a 
-                                                        href="#" 
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            setCurrentPage(1);
-                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                        }}
-                                                        style={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            width: '45px',
-                                                            height: '45px',
-                                                            borderRadius: '50%',
-                                                            background: '#f5f5f5',
-                                                            color: '#333',
-                                                            fontWeight: '600',
-                                                            textDecoration: 'none',
-                                                            transition: 'all 0.3s ease',
-                                                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                    >
-                                                        1
-                                                    </a>
-                                                </li>
-                                            );
-                                            if (startPage > 2) {
-                                                pages.push(
-                                                    <li key="ellipsis-start" style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        padding: '0 8px',
-                                                        color: '#666'
-                                                    }}>
-                                                        ...
-                                                    </li>
-                                                );
-                                            }
-                                        }
-
-                                        // Add visible page numbers
-                                        for (let i = startPage; i <= endPage; i++) {
-                                            pages.push(
-                                                <li 
-                                                    key={i} 
-                                                    className={`page-item ${currentPage === i ? 'active' : ''}`}
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center'
-                                                    }}
-                                                >
-                                                    <a 
-                                                        href="#" 
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            setCurrentPage(i);
-                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                        }}
-                                                        style={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            width: '45px',
-                                                            height: '45px',
-                                                            borderRadius: '50%',
-                                                            background: currentPage === i 
-                                                                ? 'linear-gradient(135deg, #0063b1, #00a3e0)' 
-                                                                : '#f5f5f5',
-                                                            color: currentPage === i ? 'white' : '#333',
-                                                            fontWeight: currentPage === i ? '700' : '600',
-                                                            textDecoration: 'none',
-                                                            transition: 'all 0.3s ease',
-                                                            boxShadow: currentPage === i 
-                                                                ? '0 4px 15px rgba(0, 99, 177, 0.3)' 
-                                                                : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                    >
-                                                        {i}
-                                                    </a>
-                                                </li>
-                                            );
-                                        }
-
-                                        // Add last page and ellipsis if needed
-                                        if (endPage < totalPages) {
-                                            if (endPage < totalPages - 1) {
-                                                pages.push(
-                                                    <li key="ellipsis-end" style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        padding: '0 8px',
-                                                        color: '#666'
-                                                    }}>
-                                                        ...
-                                                    </li>
-                                                );
-                                            }
-                                            pages.push(
-                                                <li key={totalPages} className="page-item" style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}>
-                                                    <a 
-                                                        href="#" 
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            setCurrentPage(totalPages);
-                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                        }}
-                                                        style={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            width: '45px',
-                                                            height: '45px',
-                                                            borderRadius: '50%',
-                                                            background: '#f5f5f5',
-                                                            color: '#333',
-                                                            fontWeight: '600',
-                                                            textDecoration: 'none',
-                                                            transition: 'all 0.3s ease',
-                                                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                    >
-                                                        {totalPages}
-                                                    </a>
-                                                </li>
-                                            );
-                                        }
-
-                                        return pages;
-                                    })()}
-
-                                    {/* Next Button */}
-                                    <li className="page-item paginations-button" style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        <a 
-                                            href="#" 
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                if (currentPage < totalPages) {
-                                                    setCurrentPage(currentPage + 1);
-                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                }
-                                            }}
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                width: '45px',
-                                                height: '45px',
-                                                borderRadius: '50%',
-                                                background: currentPage < totalPages ? '#f5f5f5' : '#e0e0e0',
-                                                color: currentPage < totalPages ? '#333' : '#999',
-                                                fontWeight: '600',
-                                                textDecoration: 'none',
-                                                transition: 'all 0.3s ease',
-                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                                cursor: currentPage < totalPages ? 'pointer' : 'not-allowed',
-                                                opacity: currentPage < totalPages ? 1 : 0.5
-                                            }}
-                                        >
-                                            <svg width={16} height={13} viewBox="0 0 16 13" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M15.557 10.1026L1.34284 1.89603M15.557 10.1026C12.9386 8.59083 10.8853 3.68154 12.7282 0.489511M15.557 10.1026C12.9386 8.59083 7.66029 9.2674 5.81744 12.4593" strokeWidth="0.96" strokeLinecap="round" stroke={currentPage < totalPages ? '#333' : '#999'} />
-                                            </svg>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
+  return (
+    <>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@700&display=swap" rel="stylesheet" />
+      <Header />
+      <div style={{ background: '#ffffff', minHeight: '100vh', padding: '140px 0 80px 0', fontFamily: '"DM Sans", sans-serif' }}>
+        
+        {/* Header Section */}
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', marginBottom: '40px', position: 'relative' }}>
+          <h1 style={{ 
+            fontFamily: '"DM Sans", sans-serif', 
+            fontWeight: '700', 
+            fontSize: '45px', 
+            lineHeight: '46px', 
+            textAlign: 'center', 
+            color: '#EFCB6E', 
+            margin: '80px auto 0 auto', 
+            letterSpacing: '0px'
+          }}>
+            Soumissions (Appels d’offres / Projets)
+          </h1>
         </div>
-        <Footer />
-        <DynamicScrollToTop colorSchema="green" />
-        </>
-    )
-}
 
-export default MultipurposeTenderSidebar;
+        {/* Global Product/Service Switch & Search */}
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 40px', display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '20px' }}>
+          <div /> {/* Left Spacer */}
+          <div style={{ position: 'relative', width: '350px' }}>
+             <input type="text" placeholder="Rechercher..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: '100%', padding: '12px 20px', borderRadius: '50px', border: '1px solid #f1f5f9', background: '#f8f9fb', outline: 'none', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'flex-end' }}>
+             <span style={{ fontSize: '14px', color: '#666', fontWeight: '800' }}>Trier par:</span>
+             <select 
+               value={sortOrder} 
+               onChange={(e) => setSortOrder(e.target.value)}
+               style={{ padding: '10px 15px', borderRadius: '12px', border: 'none', background: '#f8f9fb', outline: 'none', fontSize: '13px', color: '#002bc5', fontWeight: '800', cursor: 'pointer', minWidth: '150px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+             >
+               <option value="NEWEST">Nouveau</option>
+               <option value="OLDEST">Ancien</option>
+               <option value="PRICE_ASC">Prix croissant</option>
+               <option value="PRICE_DESC">Prix décroissant</option>
+             </select>
+          </div>
+        </div>
+
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', display: 'flex', gap: '60px' }}>
+          
+          {/* Sidebar Filter - Restyled with Glassmorphism and 3D Grey */}
+          <aside style={{ width: '231px', flexShrink: 0 }}>
+            <div style={{ 
+              width: '231px',
+              background: 'linear-gradient(127.45deg, rgba(230, 230, 230, 0.7) 2.15%, rgba(195, 201, 215, 0.14) 63.05%)', 
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              borderRadius: '24px', 
+              padding: '24px', 
+              boxShadow: '0px 20px 40px 0px #0000001A, 0px 4px 4px 0px #00000040', 
+              position: 'sticky', 
+              top: '140px',
+              border: '1px solid',
+              borderImageSource: 'linear-gradient(127.23deg, rgba(255, 255, 255, 0.42) 2.46%, rgba(255, 255, 255, 0.24) 97.36%)',
+              opacity: 1
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                <span style={{ fontSize: '16px', color: '#002bc5', fontWeight: '700' }}>Filtrer</span>
+                <span onClick={() => {setSelectedCategories([]); setPriceRange({min:'', max:''}); setSearchQuery(''); setTenderType('ALL'); setSelectedWilaya(''); setSortOrder('NEWEST');}} style={{fontSize: '11px', color:'#002bc5', cursor:'pointer', fontWeight:'700'}}>Réinitialiser</span>
+              </div>
+
+              {/* Type Filter in Sidebar */}
+              <div style={{ marginBottom: '30px' }}>
+                <h4 style={{ fontSize: '14px', color: '#002bc5', fontWeight: '800', marginBottom: '15px' }}>Type</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {['ALL', 'PRODUCT', 'SERVICE'].map(type => (
+                    <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#666', cursor: 'pointer' }}>
+                      <input type="radio" name="tenderTypeSidebar" checked={tenderType === type} onChange={() => { setTenderType(type); setCurrentPage(1); }} style={{ accentColor: '#002bc5' }} />
+                      {type === 'ALL' ? 'Tout' : type === 'PRODUCT' ? 'Produit' : 'Service'}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price Filter - Min/Max Fields */}
+              <div style={{ marginBottom: '30px' }}>
+                <h4 style={{ fontSize: '14px', color: '#002bc5', fontWeight: '700', marginBottom: '15px' }}>Prix (DA)</h4>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <input 
+                    type="number" 
+                    placeholder="Min" 
+                    value={priceRange.min} 
+                    onChange={(e) => setPriceRange(prev => ({...prev, min: e.target.value}))} 
+                    style={{ width: '100%', padding: '10px', borderRadius: '12px', border: 'none', background: 'rgba(255,255,255,0.6)', fontSize: '12px', outline: 'none', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}
+                  />
+                  <span style={{color:'#666'}}>-</span>
+                  <input 
+                    type="number" 
+                    placeholder="Max" 
+                    value={priceRange.max} 
+                    onChange={(e) => setPriceRange(prev => ({...prev, max: e.target.value}))} 
+                    style={{ width: '100%', padding: '10px', borderRadius: '12px', border: 'none', background: 'rgba(255,255,255,0.6)', fontSize: '12px', outline: 'none', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}
+                  />
+                </div>
+              </div>
+
+              {/* Wilaya Filter */}
+              <div style={{ marginBottom: '30px' }}>
+                <h4 style={{ fontSize: '14px', color: '#002bc5', fontWeight: '700', marginBottom: '15px' }}>Wilaya</h4>
+                <select 
+                  value={selectedWilaya} 
+                  onChange={(e) => setSelectedWilaya(e.target.value)}
+                  style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'rgba(255,255,255,0.6)', color: '#666', fontSize: '13px', outline: 'none', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer' }}
+                >
+                  <option value="">Toutes les wilayas</option>
+                  {WILAYAS.map(w => (
+                    <option key={w} value={w}>{w}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Categories Filter */}
+              <div>
+                <h4 style={{ fontSize: '14px', color: '#002bc5', fontWeight: '700', marginBottom: '15px' }}>Catégories</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '200px', overflowY: 'auto', paddingRight: '5px' }}>
+                  {categories.map((cat) => (
+                    <label key={cat._id} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#666', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={selectedCategories.includes(cat._id)} onChange={() => toggleCategory(cat._id)} style={{ accentColor: '#002bc5' }} />
+                      {cat.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Grid Content */}
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px', rowGap: '60px', justifyItems: 'center' }}>
+              {currentData.length > 0 ? currentData.map((tender, i) => {
+                const companyName = tender.hidden ? 'Anonyme' : (tender.owner?.entreprise || tender.owner?.firstName || 'Nom Annonceur');
+                const type = (tender.tenderType || tender.type)?.toUpperCase();
+                const isProd = type === 'PRODUCT';
+
+                return (
+                  <div key={tender.id || i} style={{ cursor: 'pointer', width: '295px', margin: '0 auto', transition: 'transform 0.3s' }} onClick={() => tender.id && router.push(`/tender-details/${tender.id}`)} onMouseOver={e => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}>
+                    <div style={{ 
+                      borderRadius: '20px', 
+                      overflow: 'hidden', 
+                      width: '295px',
+                      height: '295px', 
+                      marginBottom: '20px',
+                      boxShadow: '0px 10px 30px 0px #EFCB6E', 
+                      background: '#eee',
+                      transition: 'all 0.3s',
+                      opacity: 1
+                    }}
+                    >
+                      <img src={getTenderImageUrl(tender)} alt={tender.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => e.currentTarget.src = DEFAULT_TENDER_IMAGE} />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 5px' }}>
+                      <h3 style={{ fontSize: '18px', color: '#002bc5', fontWeight: '700', margin: 0 }}>{tender.title || 'Titre'}</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '15px', color: '#002bc5', fontWeight: '700' }}>{isProd ? 'Produit' : 'Service'}</span>
+                        <span style={{ fontSize: '10px', color: '#666', fontWeight: '700' }}>{companyName}</span>
+                      </div>
+                      {tender.wilaya && <div style={{ fontSize: '11px', color: '#999', fontWeight: '600' }}>📍 {tender.wilaya}</div>}
+                    </div>
+                  </div>
+                );
+              }) : (
+                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '100px', color: '#666', fontWeight:'800' }}>Désolé, aucune offre ne correspond à vos critères.</div>
+              )}
+            </div>
+
+            {/* Pagination Implementation - Enhanced Green Style */}
+            {totalPages > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '100px', gap: '20px', flexWrap: 'wrap' }}>
+                <button 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  style={{ 
+                    padding: '12px 30px', 
+                    borderRadius: '50px', 
+                    background: currentPage === 1 ? '#f1f5f9' : '#61d997', 
+                    border: 'none', 
+                    color: currentPage === 1 ? '#94a3b8' : 'white', 
+                    fontWeight: '800', 
+                    fontSize: '14px', 
+                    cursor: currentPage === 1 ? 'default' : 'pointer',
+                    boxShadow: '0 4px 10px rgba(97, 217, 151, 0.2)',
+                    transition: '0.3s'
+                  }}>
+                  Précédent
+                </button>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  {Array.from({length: totalPages}, (_, i) => i + 1).map(num => {
+                    // Show 1, totalPages, and 주변 pages
+                    if (num === 1 || num === totalPages || (num >= currentPage - 1 && num <= currentPage + 1)) {
+                      return (
+                        <div 
+                          key={num}
+                          onClick={() => setCurrentPage(num)}
+                          style={{ 
+                            width: '42px', 
+                            height: '42px', 
+                            borderRadius: '12px', 
+                            background: currentPage === num ? '#61d997' : '#fff', 
+                            border: currentPage === num ? 'none' : '1px solid #e2e8f0', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            color: currentPage === num ? '#fff' : '#64748b', 
+                            fontWeight: '800', 
+                            cursor:'pointer', 
+                            boxShadow: currentPage === num ? '0 4px 12px rgba(97, 217, 151, 0.3)' : 'none',
+                            transition: '0.3s'
+                          }}>
+                          {num}
+                        </div>
+                      );
+                    } else if (num === 2 && currentPage > 3) {
+                      return <span key="dots-start" style={{ color: '#cbd5e1', fontWeight: '800' }}>...</span>;
+                    } else if (num === totalPages - 1 && currentPage < totalPages - 2) {
+                      return <span key="dots-end" style={{ color: '#cbd5e1', fontWeight: '800' }}>...</span>;
+                    }
+                    return null;
+                  })}
+                </div>
+                <button 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  style={{ 
+                    padding: '12px 40px', 
+                    borderRadius: '50px', 
+                    background: currentPage === totalPages ? '#f1f5f9' : '#61d997', 
+                    border: 'none', 
+                    color: currentPage === totalPages ? '#94a3b8' : 'white', 
+                    fontWeight: '800', 
+                    fontSize: '14px', 
+                    cursor: currentPage === totalPages ? 'default' : 'pointer',
+                    boxShadow: '0 4px 10px rgba(97, 217, 151, 0.2)',
+                    transition: '0.3s'
+                  }}>
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </>
+  );
+};
+
+export default TendersPage;

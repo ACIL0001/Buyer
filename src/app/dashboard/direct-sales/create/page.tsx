@@ -16,6 +16,8 @@ import {
   Stack,
   Divider,
   Skeleton,
+  Container,
+  Button,
 } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import * as Yup from 'yup';
@@ -23,7 +25,10 @@ import { useFormik, FormikProvider } from 'formik';
 import { useTranslation } from 'react-i18next';
 import { 
     MdStore, 
+    MdImage,
+    MdAddAPhoto,
     MdHandshake, 
+    MdFlashOn,
     MdKeyboardArrowRight,
     MdLocationOn,
     MdEmail,
@@ -35,15 +40,16 @@ import useAuth from '@/hooks/useAuth';
 import { useSettingsStore } from '@/contexts/settingsStore';
 
 // Shared Wizard Components
-import WizardWrapper from '@/components/shared/wizard/WizardWrapper';
-import WizardStepper from '@/components/shared/wizard/WizardStepper';
-import SelectionCard from '@/components/shared/wizard/SelectionCard';
 import RichFileUpload from '@/components/shared/wizard/RichFileUpload';
-import WizardNavigation from '@/components/shared/wizard/WizardNavigation';
 
 const DIRECT_SALE_TYPES = {
     PRODUCT: 'PRODUCT',
     SERVICE: 'SERVICE',
+};
+
+const AUCTION_TYPES = {
+    CLASSIC: 'CLASSIC',
+    EXPRESS: 'EXPRESS',
 };
 
 const WILAYAS = [
@@ -137,7 +143,6 @@ export default function CreateDirectSalePage() {
         }
     }), [theme, directSaleColor]);
 
-    const [activeStep, setActiveStep] = useState(0);
     const [mediaFiles, setMediaFiles] = useState<File[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -165,13 +170,19 @@ export default function CreateDirectSalePage() {
             saleType: '',
             productCategory: '',
             price: '',
-            quantity: '1',
+            quantity: '',
             wilaya: '',
             location: '',
+            auctionType: AUCTION_TYPES.CLASSIC,
+            duration: '',
             isPro: false,
             hidden: false,
             professionalOnly: false,
             contactNumber: '',
+            // New fields from design
+            size: '',
+            color: '',
+            status: '',
         },
         validationSchema,
         validateOnChange: false,
@@ -188,8 +199,7 @@ export default function CreateDirectSalePage() {
         const savedSession = sessionStorage.getItem('mazadclick-create-directsale-draft');
         if (savedSession) {
             try {
-                const { step, values } = JSON.parse(savedSession);
-                if (step !== undefined) setActiveStep(step);
+                const { values } = JSON.parse(savedSession);
                 if (values) formik.setValues(values);
             } catch (e) {
                 console.error("Failed to restore session draft", e);
@@ -202,11 +212,10 @@ export default function CreateDirectSalePage() {
     useEffect(() => {
         if (isHydrated) {
             sessionStorage.setItem('mazadclick-create-directsale-draft', JSON.stringify({
-                step: activeStep,
                 values: formik.values
             }));
         }
-    }, [activeStep, formik.values, isHydrated]);
+    }, [formik.values, isHydrated]);
 
     const loadCategories = async () => {
         try {
@@ -233,38 +242,7 @@ export default function CreateDirectSalePage() {
         }
     };
 
-    const validateStep = (step: number) => {
-        const { values } = formik;
-        switch(step) {
-            case 0: return !!values.saleType;
-            case 1: return !!values.productCategory;
-            case 2: return !!values.title && !!values.description && !!values.price && !!values.wilaya && !!values.location;
-            default: return true;
-        }
-    };
 
-    const handleNext = () => {
-        if(validateStep(activeStep)) {
-            setActiveStep(prev => prev + 1);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-             // force touch 
-             formik.submitForm(); // easiest way to trigger validation display
-        }
-    };
-
-    const handleBack = () => {
-        const prevStep = activeStep - 1;
-        setActiveStep(prevStep);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        // Unselect values for the step we are going back to
-        if (prevStep === 0) {
-            formik.setFieldValue('saleType', '');
-        } else if (prevStep === 1) {
-            formik.setFieldValue('productCategory', '');
-        }
-    };
 
     const handleSubmit = async (values: any) => {
         setIsSubmitting(true);
@@ -299,262 +277,407 @@ export default function CreateDirectSalePage() {
         }
     };
 
-    const steps = [
-        formik.values.saleType ? (formik.values.saleType === DIRECT_SALE_TYPES.PRODUCT ? t('createDirectSale.product') : t('createDirectSale.service')) : t('createDirectSale.steps.type'),
-        categories.find(c => c._id === formik.values.productCategory)?.name || t('createDirectSale.steps.category'),
-        t('createDirectSale.steps.details')
-    ];
+    const fieldLabelStyle = {
+        color: '#002795',
+        fontWeight: 700,
+        fontSize: '0.95rem',
+        mb: 1,
+        display: 'block'
+    };
 
-    const renderStepContent = (step: number) => {
-        switch(step) {
-            case 0:
-                return (
-                    <Box>
-                        <Typography variant="h5" fontWeight="bold" textAlign="center" gutterBottom>
-                            {t('createDirectSale.whatSelling')}
-                        </Typography>
-                        <Grid container spacing={2} justifyContent="center" sx={{ mt: 2 }}>
-                            <Grid size={{ xs: 12, md: 5 }}>
-                                <SelectionCard
-                                    title={t('createDirectSale.product')}
-                                    description={t('createDirectSale.productDesc')}
-                                    icon={<MdStore />}
-                                    selected={formik.values.saleType === DIRECT_SALE_TYPES.PRODUCT}
-                                    onClick={() => {
-                                        formik.setFieldValue('saleType', DIRECT_SALE_TYPES.PRODUCT);
-                                        setTimeout(() => {
-                                            setActiveStep(prev => prev + 1);
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }, 300);
-                                    }}
-                                />
-                            </Grid>
-                            <Grid size={{ xs: 12, md: 5 }}>
-                                <SelectionCard
-                                    title={t('createDirectSale.service')}
-                                    description={t('createDirectSale.serviceDesc')}
-                                    icon={<MdEmail />}
-                                    selected={formik.values.saleType === DIRECT_SALE_TYPES.SERVICE}
-                                    onClick={() => {
-                                        formik.setFieldValue('saleType', DIRECT_SALE_TYPES.SERVICE);
-                                        setTimeout(() => {
-                                            setActiveStep(prev => prev + 1);
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }, 300);
-                                    }}
-                                />
-                            </Grid>
-                        </Grid>
-                    </Box>
-                );
-            case 1:
-                const filteredCats = categories.filter(c => c.type === formik.values.saleType || !c.type);
-                return (
-                    <Box>
-                        <Typography variant="h5" fontWeight="bold" textAlign="center" gutterBottom>
-                            {t('createDirectSale.selectCategory')}
-                        </Typography>
-                        <Grid container spacing={2} sx={{ mt: 2 }}>
-                            {filteredCats.map(cat => (
-                                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={cat._id}>
-                                    <SelectionCard
-                                        title={cat.name}
-                                        icon={<MdKeyboardArrowRight />}
-                                        selected={formik.values.productCategory === cat._id}
-                                        onClick={() => {
-                                            formik.setFieldValue('productCategory', cat._id);
-                                            setTimeout(() => {
-                                                setActiveStep(prev => prev + 1);
-                                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                                            }, 300);
-                                        }}
-                                        className="h-full"
-                                    />
-                                </Grid>
-                            ))}
-                        </Grid>
-                    </Box>
-                );
-            case 2:
-                return (
-                    <Grid container spacing={3}>
-                         {/* BASIC INFO */}
-                        <Grid size={{ xs: 12, md: 8 }}>
-                             <Typography variant="h6" fontWeight="bold" gutterBottom>{t('createDirectSale.fillDetails')}</Typography>
-                             <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4 }}>
-                                 <TextField 
-                                    label={t('createDirectSale.titleLabel')} 
-                                    fullWidth 
-                                    variant="outlined"
-                                    {...formik.getFieldProps('title')} 
-                                    error={formik.touched.title && !!formik.errors.title}
-                                    helperText={formik.touched.title && formik.errors.title}
-                                    sx={{ mb: 3 }}
-                                />
-                                <TextField 
-                                    label={t('createDirectSale.descriptionLabel')} 
-                                    fullWidth multiline rows={5} 
-                                    variant="outlined"
-                                    {...formik.getFieldProps('description')} 
-                                    error={formik.touched.description && !!formik.errors.description}
-                                    helperText={formik.touched.description && formik.errors.description}
-                                />
-                             </Box>
-                        </Grid>
-
-                        {/* PRICING & QUANTITY */}
-                        <Grid size={{ xs: 12, md: 4 }}>
-                            <Typography variant="h6" fontWeight="bold" gutterBottom>{t('createDirectSale.pricing')}</Typography>
-                             <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                <TextField 
-                                    label={t('createDirectSale.price')} 
-                                    fullWidth type="number" 
-                                    variant="outlined"
-                                    InputProps={{ endAdornment: <InputAdornment position="end">DA</InputAdornment> }}
-                                    {...formik.getFieldProps('price')} 
-                                    error={formik.touched.price && !!formik.errors.price}
-                                    helperText={formik.touched.price && formik.errors.price}
-                                />
-                                <TextField 
-                                    label={t('createDirectSale.quantity')} 
-                                    fullWidth type="text" 
-                                    variant="outlined"
-                                    {...formik.getFieldProps('quantity')} 
-                                />
-                             </Box>
-                        </Grid>
-                        
-                        {/* LOCATION */}
-                        <Grid size={{ xs: 12, md: 6 }}>
-                             <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>{t('createDirectSale.location')}</Typography>
-                             <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4 }}>
-                                <TextField select label={t('createDirectSale.wilaya')} fullWidth variant="outlined" {...formik.getFieldProps('wilaya')} sx={{ mb: 3 }}>
-                                    {WILAYAS.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
-                                </TextField>
-                                <TextField 
-                                    label={t('createDirectSale.place')} 
-                                    fullWidth 
-                                    variant="outlined"
-                                    InputProps={{ startAdornment: <InputAdornment position="start"><MdLocationOn /></InputAdornment> }}
-                                    {...formik.getFieldProps('location')} 
-                                />
-                             </Box>
-                         </Grid>
-
-                         {/* CONTACT NUMBER */}
-                         <Grid size={{ xs: 12, md: 6 }}>
-                             <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>Contact (Optionnel)</Typography>
-                             <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4 }}>
-                                 <TextField
-                                     fullWidth
-                                     label="Numéro de contact"
-                                     placeholder="Ex: 0555123456"
-                                     variant="outlined"
-                                     InputProps={{ 
-                                         startAdornment: <InputAdornment position="start"><MdPhone /></InputAdornment> 
-                                     }}
-                                     helperText="Si non fourni, votre numéro d'inscription sera affiché"
-                                     {...formik.getFieldProps('contactNumber')}
-                                     error={formik.touched.contactNumber && !!formik.errors.contactNumber}
-                                />
-                             </Box>
-                         </Grid>
-
-                         {/* SETTINGS */}
-                        <Grid size={{ xs: 12, md: 6 }}>
-                            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>{t('createDirectSale.settings')}</Typography>
-                            <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4 }}>
-                                <FormControlLabel
-                                    control={<Switch checked={formik.values.hidden} onChange={formik.handleChange} name="hidden" />}
-                                    label={
-                                        <Box>
-                                            <Typography variant="body1" fontWeight="bold">Masquer l'utilisateur</Typography>
-                                            <Typography variant="caption" color="text.secondary">{t('createDirectSale.anonymousDesc')}</Typography>
-                                        </Box>
-                                    }
-                                    sx={{ mb: 2, width: '100%', alignItems: 'flex-start' }}
-                                />
-
-                                {auth.user?.type === 'PROFESSIONAL' && (
-                                <FormControlLabel
-                                    control={<Switch checked={formik.values.professionalOnly} onChange={formik.handleChange} name="professionalOnly" />}
-                                    label={
-                                        <Box>
-                                            <Typography variant="body1" fontWeight="bold">Professionnels uniquement</Typography>
-                                            <Typography variant="caption" color="text.secondary">Visible uniquement par les comptes professionnels</Typography>
-                                        </Box>
-                                    }
-                                    sx={{ width: '100%', alignItems: 'flex-start' }}
-                                />
-                                )}
-                            </Box>
-                        </Grid>
-
-                        {/* MEDIA */}
-                        <Grid size={12}>
-                             <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>{t('createDirectSale.media')}</Typography>
-                             <RichFileUpload 
-                                files={mediaFiles}
-                                onFilesChange={setMediaFiles}
-                                accept="image/*,video/*"
-                                subtitle={t('createDirectSale.uploadMedia')}
-                             />
-                        </Grid>
-                    </Grid>
-                );
-            default: return null;
+    const inputStyle = {
+        '& .MuiOutlinedInput-root': {
+            borderRadius: '12px',
+            backgroundColor: '#ffffff',
+            '& fieldset': { borderColor: '#D1D1D1', borderWidth: '1.6px' },
+            '&:hover fieldset': { borderColor: '#cbd5e1' },
+            '&.Mui-focused fieldset': { borderColor: '#002795', borderWidth: '1.6px' },
+        },
+        '& .MuiInputBase-input': {
+            padding: '12px 16px',
         }
     };
 
+    const cardStyle = {
+        p: { xs: 3, md: 5 },
+        backgroundColor: '#ffffff',
+        borderRadius: '32px',
+        border: '1px solid #f1f5f9',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+    };
+
+    const actionButtonStyle = {
+        borderRadius: '12px',
+        textTransform: 'none',
+        fontWeight: 700,
+        py: 1.5,
+        px: 4,
+        fontSize: '1rem',
+        transition: 'all 0.2s ease',
+    };
+
+    if (!isHydrated) return null;
+
     return (
         <ThemeProvider theme={pageTheme}>
-        <FormikProvider value={formik}>
-            <WizardWrapper 
-                title={t('createDirectSale.title')}
-                subtitle={t('createDirectSale.subtitle')}
-                onBack={activeStep > 0 ? handleBack : undefined}
-                backLabel={t('createDirectSale.back')}
-            >
-                <WizardStepper activeStep={activeStep} steps={steps} />
-                
-                <Box sx={{ minHeight: 200, position: 'relative' }}>
-                    {(!isHydrated || isLoadingCategories) ? (
-                        <Box sx={{ p: 2 }}>
-                            <Skeleton variant="text" width="40%" height={50} sx={{ mx: 'auto', mb: 3 }} />
-                            <Grid container spacing={2}>
-                                {[1, 2].map((i) => (
-                                    <Grid size={{ xs: 12, sm: 6 }} key={i}>
-                                        <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 4 }} />
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        </Box>
-                    ) : (
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeStep}
-                                initial={{ opacity: 0, y: 15 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -15 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                {renderStepContent(activeStep)}
-                            </motion.div>
-                        </AnimatePresence>
-                    )}
-                </Box>
+            <Box sx={{ 
+                minHeight: '100vh', 
+                backgroundColor: '#f8fafc', 
+                p: { xs: 1, md: 2, xl: 4 }, 
+                display: 'flex', 
+                justifyContent: 'center',
+                overflow: 'auto',
+                fontFamily: "'DM Sans', sans-serif"
+            }}>
+                <Container maxWidth={false} sx={{ 
+                    width: { xl: '1161px' }, 
+                    transform: { xl: 'scale(0.82)', lg: 'scale(0.8)' },
+                    transformOrigin: 'top center',
+                    p: '0 !important', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '16px',
+                    pb: 10
+                }}>
+                    <FormikProvider value={formik}>
+                        <Grid container spacing={2.75}>
+                            {/* LEFT COLUMN: INFORMATION */}
+                            <Grid size={{ xs: 12, md: 7.5 }}>
+                                <Box sx={{ ...cardStyle }}>
+                                    <Typography 
+                                        variant="h4" 
+                                        sx={{ 
+                                            color: '#002795', 
+                                            fontFamily: "'DM Sans', sans-serif",
+                                            fontWeight: 600, 
+                                            fontSize: '22px',
+                                            lineHeight: '130%',
+                                            letterSpacing: '0%',
+                                            mb: 1, 
+                                            display: 'flex',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        {t('createDirectSale.title', 'Informations produit')}
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ color: '#94a3b8', mb: 5 }}>
+                                        {t('createDirectSale.subtitle', 'Remplissez les détails ci-dessous pour publier votre annonce.')}
+                                    </Typography>
 
-                <WizardNavigation 
-                    onNext={activeStep < steps.length - 1 ? handleNext : () => formik.handleSubmit()}
-                    isLastStep={activeStep === steps.length - 1}
-                    isSubmitting={isSubmitting}
-                    disableNext={!validateStep(activeStep)}
-                    submitLabel={t('createDirectSale.publishSale')}
-                    hideNext={activeStep === 0 || activeStep === 1}
-                    nextLabel={t('createDirectSale.nextStep')}
-                />
-            </WizardWrapper>
-        </FormikProvider>
+                                    <Grid container spacing={3}>
+
+
+                                        <Grid size={{ xs: 12 }}>
+                                            <Typography sx={fieldLabelStyle}>{t('createDirectSale.descriptionLabel', 'Description')}</Typography>
+                                            <TextField
+                                                fullWidth
+                                                placeholder="description"
+                                                variant="outlined" multiline rows={4}
+                                                {...formik.getFieldProps('description')}
+                                                error={formik.touched.description && !!formik.errors.description}
+                                                helperText={formik.touched.description && formik.errors.description}
+                                                sx={inputStyle}
+                                            />
+                                        </Grid>
+
+                                        <Grid size={{ xs: 12 }}>
+                                            <Typography sx={fieldLabelStyle}>{t('createDirectSale.titleLabel', 'Nom de produit')}</Typography>
+                                            <TextField
+                                                fullWidth
+                                                placeholder="Nom"
+                                                variant="outlined"
+                                                {...formik.getFieldProps('title')}
+                                                error={formik.touched.title && !!formik.errors.title}
+                                                helperText={formik.touched.title && formik.errors.title}
+                                                sx={inputStyle}
+                                            />
+                                        </Grid>
+
+                                        <Grid size={{ xs: 12, sm: 6 }}>
+                                            <Typography sx={fieldLabelStyle}>{t('createDirectSale.size', 'Taille ou poids')}</Typography>
+                                            <TextField
+                                                fullWidth
+                                                placeholder="Taille"
+                                                variant="outlined"
+                                                {...formik.getFieldProps('size')}
+                                                sx={inputStyle}
+                                            />
+                                        </Grid>
+
+                                        <Grid size={{ xs: 12, sm: 6 }}>
+                                            <Typography sx={fieldLabelStyle}>{t('createDirectSale.color', 'Couleurs')}</Typography>
+                                            <TextField
+                                                fullWidth
+                                                placeholder="Couleur"
+                                                variant="outlined"
+                                                {...formik.getFieldProps('color')}
+                                                sx={inputStyle}
+                                            />
+                                        </Grid>
+
+                                        <Grid size={{ xs: 12, sm: 6 }}>
+                                            <Typography sx={fieldLabelStyle}>{t('createDirectSale.productCategory', 'Catégories')}</Typography>
+                                            <TextField
+                                                select
+                                                fullWidth
+                                                variant="outlined"
+                                                placeholder="Sélectionner catégorie"
+                                                {...formik.getFieldProps('productCategory')}
+                                                error={formik.touched.productCategory && !!formik.errors.productCategory}
+                                                sx={inputStyle}
+                                                SelectProps={{ native: false, displayEmpty: true }}
+                                            >
+                                                <MenuItem value="" disabled>Sélectionner catégorie</MenuItem>
+                                                {categories.map(cat => (
+                                                    <MenuItem key={cat._id} value={cat._id}>{cat.name}</MenuItem>
+                                                ))}
+                                            </TextField>
+                                        </Grid>
+
+                                        <Grid size={{ xs: 12, sm: 6 }}>
+                                            <Typography sx={fieldLabelStyle}>{t('createDirectSale.price', 'Prix')}</Typography>
+                                            <TextField
+                                                fullWidth type="number"
+                                                placeholder="Prix"
+                                                variant="outlined"
+                                                {...formik.getFieldProps('price')}
+                                                error={formik.touched.price && !!formik.errors.price}
+                                                sx={inputStyle}
+                                                InputProps={{ endAdornment: <InputAdornment position="end">DA</InputAdornment> }}
+                                            />
+                                        </Grid>
+
+                                        <Grid size={{ xs: 12 }}>
+                                            <Typography sx={fieldLabelStyle}>{t('createDirectSale.quantity', 'Quantité')}</Typography>
+                                            <TextField
+                                                fullWidth
+                                                placeholder="entree quantité en stock"
+                                                variant="outlined"
+                                                {...formik.getFieldProps('quantity')}
+                                                sx={inputStyle}
+                                            />
+                                        </Grid>
+
+                                        <Grid size={{ xs: 12 }}>
+                                            <Typography sx={fieldLabelStyle}>Statut de produit</Typography>
+                                            <TextField
+                                                select
+                                                fullWidth
+                                                variant="outlined"
+                                                placeholder="Produit ou Service"
+                                                {...formik.getFieldProps('saleType')}
+                                                sx={inputStyle}
+                                                SelectProps={{ displayEmpty: true }}
+                                            >
+                                                <MenuItem value="" disabled>Produit ou Service</MenuItem>
+                                                <MenuItem value={DIRECT_SALE_TYPES.PRODUCT}>Produit</MenuItem>
+                                                <MenuItem value={DIRECT_SALE_TYPES.SERVICE}>Service</MenuItem>
+                                            </TextField>
+                                        </Grid>
+                                        
+                                        <Grid size={{ xs: 12, sm: 6 }}>
+                                            <Typography sx={fieldLabelStyle}>{t('createDirectSale.wilaya', 'Wilaya')}</Typography>
+                                            <TextField select fullWidth variant="outlined" placeholder="Sélectionner Wilaya" {...formik.getFieldProps('wilaya')} sx={inputStyle} SelectProps={{ displayEmpty: true }}>
+                                                <MenuItem value="" disabled>Sélectionner Wilaya</MenuItem>
+                                                {WILAYAS.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
+                                            </TextField>
+                                        </Grid>
+
+                                        <Grid size={{ xs: 12, sm: 6 }}>
+                                            <Typography sx={fieldLabelStyle}>{t('createDirectSale.location', 'Localisation')}</Typography>
+                                            <TextField 
+                                                fullWidth 
+                                                placeholder="Ex: Alger Center"
+                                                variant="outlined"
+                                                {...formik.getFieldProps('location')} 
+                                                sx={inputStyle}
+                                            />
+                                        </Grid>
+
+                                        {/* Contact (Optional but keep function) */}
+                                        <Grid size={{ xs: 12 }}>
+                                             <Typography sx={fieldLabelStyle}>Contact (Optionnel)</Typography>
+                                             <TextField
+                                                 fullWidth
+                                                 placeholder="Ex: 0555123456"
+                                                 variant="outlined"
+                                                 {...formik.getFieldProps('contactNumber')}
+                                                 error={formik.touched.contactNumber && !!formik.errors.contactNumber}
+                                                 sx={inputStyle}
+                                                 InputProps={{ startAdornment: <InputAdornment position="start"><MdPhone /></InputAdornment> }}
+                                            />
+                                        </Grid>
+                                    </Grid>
+                                </Box>
+                                
+                                {/* SETTINGS CARD (Secondary) */}
+                                {/* Advanced Settings Moving to Right Column */}
+                            </Grid>
+
+                            {/* RIGHT COLUMN: MEDIA & ACTIONS */}
+                            <Grid size={{ xs: 12, md: 4.5 }}>
+                                <Stack spacing={4}>
+                                    <Box sx={cardStyle}>
+                                        <Typography variant="h5" sx={{ color: '#002795', fontWeight: 700, fontSize: '20px', mb: 2 }}>
+                                            Paramètres avancés
+                                        </Typography>
+                                        <Stack spacing={2}>
+                                           <FormControlLabel
+                                               control={<Switch checked={formik.values.hidden} onChange={formik.handleChange} name="hidden" />}
+                                               label={
+                                                   <Box>
+                                                       <Typography variant="body2" fontWeight="bold">Masquer l'utilisateur</Typography>
+                                                       <Typography variant="caption" color="text.secondary">Publier anonymement</Typography>
+                                                   </Box>
+                                               }
+                                           />
+                                           {auth.user?.type === 'PROFESSIONAL' && (
+                                               <FormControlLabel
+                                                   control={<Switch checked={formik.values.professionalOnly} onChange={formik.handleChange} name="professionalOnly" />}
+                                                   label={
+                                                       <Box>
+                                                           <Typography variant="body2" fontWeight="bold">Professionnels uniquement</Typography>
+                                                           <Typography variant="caption" color="text.secondary">Visible uniquement par les comptes professionnels</Typography>
+                                                       </Box>
+                                                   }
+                                               />
+                                           )}
+                                        </Stack>
+                                    </Box>
+
+                                    <Box sx={{ 
+                                        width: '475px',
+                                        height: '215px',
+                                        backgroundColor: '#ffffff',
+                                        borderRadius: '24px',
+                                        border: '1px solid #E7E7E7',
+                                        p: '24px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '16px',
+                                        opacity: 1,
+                                        boxSizing: 'border-box'
+                                    }}>
+                                        <Typography 
+                                            variant="h5" 
+                                            sx={{ 
+                                                color: '#002795', 
+                                                fontFamily: "'DM Sans', sans-serif",
+                                                fontWeight: 600, 
+                                                fontSize: '22px',
+                                                lineHeight: '130%',
+                                                letterSpacing: '0%',
+                                                mb: 0,
+                                                display: 'flex',
+                                                alignItems: 'center'
+                                            }}
+                                        >
+                                            Image offre/ service
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ color: '#002795', fontWeight: 600, display: 'block', mb: 0 }}>
+                                            Note : <span style={{ color: '#94a3b8', fontWeight: 400 }}>Format photos SVG, PNG, or JPG (Max size 4mb)</span>
+                                        </Typography>
+
+                                        <Box sx={{ 
+                                            display: 'flex', 
+                                            gap: '16px', 
+                                            width: '427px', 
+                                            height: '97px', 
+                                            opacity: 1
+                                        }}>
+                                            {[1, 2, 3, 4].map((i) => {
+                                                const file = mediaFiles[i - 1];
+                                                const preview = file ? URL.createObjectURL(file) : null;
+                                                return (
+                                                    <Box
+                                                        key={i}
+                                                        onClick={() => {
+                                                            const input = document.createElement('input');
+                                                            input.type = 'file';
+                                                            input.accept = 'image/*';
+                                                            input.onchange = (e: any) => {
+                                                                const newFile = e.target.files[0];
+                                                                if (newFile) {
+                                                                    const newFiles = [...mediaFiles];
+                                                                    newFiles[i - 1] = newFile;
+                                                                    setMediaFiles(newFiles.filter(Boolean));
+                                                                }
+                                                            };
+                                                            input.click();
+                                                        }}
+                                                        sx={{
+                                                            width: '94.75px',
+                                                            height: '97px',
+                                                            borderRadius: '8px',
+                                                            border: '1px dashed #1A71F6',
+                                                            backgroundColor: '#EEF7FF',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            gap: '8px',
+                                                            cursor: 'pointer',
+                                                            overflow: 'hidden',
+                                                            transition: 'all 0.2s ease',
+                                                            '&:hover': {
+                                                                backgroundColor: '#e0edff',
+                                                                borderColor: '#002795'
+                                                            }
+                                                        }}
+                                                    >
+                                                        {preview ? (
+                                                            <Box component="img" src={preview} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        ) : (
+                                                            <>
+                                                                <Box sx={{ color: '#1A71F6', fontSize: '28px', display: 'flex' }}>
+                                                                    <MdImage />
+                                                                </Box>
+                                                                <Typography sx={{ color: '#64748b', fontWeight: 600, fontSize: '11px', fontFamily: "'DM Sans', sans-serif" }}>
+                                                                    Photo {i}
+                                                                </Typography>
+                                                            </>
+                                                        )}
+                                                    </Box>
+                                               );
+                                           })}
+                                        </Box>
+                                    </Box>
+
+                                    <Stack spacing={2} sx={{ alignItems: 'flex-end' }}>
+                                        <Button
+                                            fullWidth
+                                            variant="contained"
+                                            size="large"
+                                            onClick={() => formik.handleSubmit()}
+                                            disabled={isSubmitting || !formik.isValid}
+                                            sx={{
+                                                ...actionButtonStyle,
+                                                backgroundColor: '#002795',
+                                                '&:hover': { backgroundColor: '#001e75', transform: 'translateY(-2px)' },
+                                                boxShadow: '0 10px 20px -5px rgba(0,39,149,0.3)',
+                                            }}
+                                        >
+                                            {isSubmitting ? 'En cours...' : t('createDirectSale.publishSale', 'Publier Produit')}
+                                        </Button>
+                                        <Button
+                                            fullWidth
+                                            variant="contained"
+                                            size="large"
+                                            sx={{
+                                                ...actionButtonStyle,
+                                                backgroundColor: '#001e75', 
+                                                '&:hover': { backgroundColor: '#001450', transform: 'translateY(-2px)' },
+                                            }}
+                                        >
+                                            {t('createDirectSale.saveDraft', 'Enregistrer produit')}
+                                        </Button>
+                                    </Stack>
+                                </Stack>
+                            </Grid>
+                        </Grid>
+                    </FormikProvider>
+                </Container>
+            </Box>
         </ThemeProvider>
     );
 }

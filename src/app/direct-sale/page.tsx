@@ -20,11 +20,20 @@ export default function DirectSalePage() {
 
   return (
     <>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@700&display=swap" rel="stylesheet" />
       <AxiosInterceptor>
         <RequestProvider>
           <SnackbarProvider maxSnack={3}>
             <Header />
-            <main className="direct-sale-page" style={{ position: 'relative', zIndex: 1, minHeight: '100vh', paddingTop: 'clamp(80px, 10vw, 120px)', paddingBottom: 'clamp(40px, 5vw, 80px)' }}>
+            <main className="direct-sale-page" style={{ 
+              position: 'relative', 
+              zIndex: 1, 
+              minHeight: '100vh', 
+              paddingTop: 'clamp(80px, 10vw, 120px)', 
+              paddingBottom: 'clamp(40px, 5vw, 80px)',
+              fontFamily: '"DM Sans", sans-serif',
+              fontWeight: 700
+            }}>
               
               {/* Main Content - Sidebar/Grid Component */}
               <MultipurposeDirectSaleSidebar />

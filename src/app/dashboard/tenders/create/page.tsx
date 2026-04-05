@@ -7,44 +7,30 @@ import {
   Grid,
   TextField,
   Typography,
-  InputAdornment,
   MenuItem,
   useTheme,
-  alpha,
   FormControlLabel,
   Switch,
+  Button,
+  Container,
+  Stack,
   Divider,
-  Skeleton,
 } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import * as Yup from 'yup';
 import { useFormik, FormikProvider } from 'formik';
 import { useTranslation } from 'react-i18next';
-import { 
-    MdStore, 
-    MdCheck, 
-    MdGavel, 
-    MdFlashOn, 
-    MdTrendingDown,
-    MdStar,
-    MdKeyboardArrowRight,
-    MdAccessTime,
-    MdLocationOn,
-    MdEmail,
-    MdPaid,
-    MdPhone,
-} from 'react-icons/md';
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import useAuth from '@/hooks/useAuth';
-import { useSettingsStore } from '@/contexts/settingsStore';
+import { MdStore, MdImage, MdGavel, MdFlashOn } from 'react-icons/md';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// Shared Wizard Components
-import WizardWrapper from '@/components/shared/wizard/WizardWrapper';
-import WizardStepper from '@/components/shared/wizard/WizardStepper';
-import SelectionCard from '@/components/shared/wizard/SelectionCard';
+// Components
 import RichFileUpload from '@/components/shared/wizard/RichFileUpload';
-import WizardNavigation from '@/components/shared/wizard/WizardNavigation';
+
+// Services
+import { CategoryAPI } from '@/services/category';
+import { TendersAPI } from '@/services/tenders';
 
 const TENDER_TYPES = {
     PRODUCT: "PRODUCT",
@@ -77,243 +63,87 @@ export default function CreateTenderPage() {
     const router = useRouter();
     const { auth, isLogged } = useAuth();
     const { t } = useTranslation();
-    const { tenderColor } = useSettingsStore();
 
     const pageTheme = React.useMemo(() => createTheme(theme, {
         palette: {
-            primary: { 
-                main: tenderColor || '#059669',
-                light: tenderColor || '#059669',
-                dark: tenderColor || '#059669',
-                contrastText: '#fff'
-            },
-            secondary: { 
-                main: tenderColor || '#059669',
-                light: tenderColor || '#059669',
-                dark: tenderColor || '#059669',
-                contrastText: '#fff'
-            },
+            primary: { main: '#002795', contrastText: '#fff' },
         },
-        components: {
-            MuiOutlinedInput: {
-                styleOverrides: {
-                    root: {
-                        borderRadius: '16px',
-                        backgroundColor: alpha('#888', 0.05),
-                        '& fieldset': { borderColor: 'transparent', transition: 'all 0.2s ease' },
-                        transition: 'all 0.2s ease-in-out',
-                        '&:hover fieldset': {
-                            borderColor: alpha('#888', 0.15),
-                        },
-                        '&.Mui-focused': {
-                            backgroundColor: theme.palette.background.paper,
-                            '& fieldset': {
-                                borderColor: theme.palette.primary.main,
-                                borderWidth: '2px',
-                            },
-                        },
-                    }
-                }
-            },
-            MuiSwitch: {
-                styleOverrides: {
-                    root: {
-                        width: 42,
-                        height: 26,
-                        padding: 0,
-                        '& .MuiSwitch-switchBase': {
-                            padding: 0,
-                            margin: 2,
-                            transitionDuration: '300ms',
-                            '&.Mui-checked': {
-                                transform: 'translateX(16px)',
-                                color: '#fff',
-                                '& + .MuiSwitch-track': {
-                                    backgroundColor: tenderColor || '#059669',
-                                    opacity: 1,
-                                    border: 0,
-                                },
-                            },
-                        },
-                        '& .MuiSwitch-thumb': {
-                            boxSizing: 'border-box',
-                            width: 22,
-                            height: 22,
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                        },
-                        '& .MuiSwitch-track': {
-                            borderRadius: 26 / 2,
-                            backgroundColor: '#E9E9EA',
-                            opacity: 1,
-                        },
-                    }
-                }
-            }
-        }
-    }), [theme, tenderColor]);
+        typography: { fontFamily: "'DM Sans', sans-serif" },
+    }), [theme]);
     
     // State
-    const [activeStep, setActiveStep] = useState(0);
     const [categories, setCategories] = useState<any[]>([]);
     const [attachments, setAttachments] = useState<File[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isHydrated, setIsHydrated] = useState(false);
-    const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
     // Formik
     const validationSchema = Yup.object().shape({
-        tenderType: Yup.string().required(t('createTender.errors.selectionRequired')),
-        auctionType: Yup.string().required(t('createTender.errors.selectionRequired')),
-        evaluationType: Yup.string().required(t('createTender.errors.selectionRequired')),
-        category: Yup.string().required(t('createTender.errors.selectionRequired')),
         title: Yup.string().min(3).required(t('createTender.errors.titleRequired')),
+        category: Yup.string().required(t('createTender.errors.selectionRequired')),
         description: Yup.string().min(10).required(t('createTender.errors.descriptionRequired')),
-        duration: Yup.number().nullable().required(t('createTender.errors.durationRequired')),
+        evaluationType: Yup.string().required(t('createTender.errors.selectionRequired')),
         wilaya: Yup.string().required(t('createTender.errors.wilayaRequired')),
         location: Yup.string().required(t('createTender.errors.locationRequired')),
-        contactNumber: Yup.string().matches(
-            /^[0-9]{10}$/,
-            'Le numéro de contact doit contenir 10 chiffres'
-        ).optional(),
     });
 
     const formik = useFormik({
         initialValues: {
             title: '',
             description: '',
-            tenderType: '',
-            auctionType: '',
-            evaluationType: '',
+            tenderType: 'PRODUCT',
+            auctionType: TENDER_AUCTION_TYPES.CLASSIC,
+            evaluationType: '', // MOINS_DISANT or MIEUX_DISANT
             category: '',
-            duration: null,
+            duration: '',
             location: '',
             wilaya: '',
             quantity: '',
             isPro: false,
             hidden: false,
             professionalOnly: false,
-            price: '', // Budget
+            price: '', 
             contactNumber: '',
         },
         validationSchema,
         validateOnChange: false,
         validateOnBlur: true,
-        onSubmit: async (values) => {
-            await handleSubmit(values);
-        },
+        onSubmit: async (values) => { await handleSubmit(values); },
     });
 
     useEffect(() => {
-        if (!isLogged) {
-            router.push('/auth/login');
-            return;
-        }
+        if (!isLogged) { router.push('/auth/login'); return; }
         loadCategories();
-        
-        // Restore session state
         const savedSession = sessionStorage.getItem('mazadclick-create-tender-draft');
         if (savedSession) {
             try {
-                const { step, values } = JSON.parse(savedSession);
-                if (step !== undefined) setActiveStep(step);
-                if (values) formik.setValues(values);
-            } catch (e) {
-                console.error("Failed to restore session draft", e);
-            }
+                const { values } = JSON.parse(savedSession);
+                if (values) formik.setValues({ ...formik.initialValues, ...values });
+            } catch (e) { console.error("Failed to restore session draft", e); }
         }
         setIsHydrated(true);
     }, [isLogged]);
 
-    // Save session state on change
     useEffect(() => {
         if (isHydrated) {
-            sessionStorage.setItem('mazadclick-create-tender-draft', JSON.stringify({
-                step: activeStep,
-                values: formik.values
-            }));
+            sessionStorage.setItem('mazadclick-create-tender-draft', JSON.stringify({ values: formik.values }));
         }
-    }, [activeStep, formik.values, isHydrated]);
+    }, [formik.values, isHydrated]);
 
     const loadCategories = async () => {
         try {
-            const cached = sessionStorage.getItem('mazadclick-categories-cache');
-            if (cached) {
-                setCategories(JSON.parse(cached));
-                setIsLoadingCategories(false);
-            }
-
-            const { CategoryAPI } = await import('@/services/category');
             const response = await CategoryAPI.getCategoryTree();
-            let categoryData: any[] = [];
-            if (response?.data && Array.isArray(response.data)) categoryData = response.data;
-            else if (Array.isArray(response)) categoryData = response;
-            
-            if (categoryData.length > 0) {
-                setCategories(categoryData);
-                sessionStorage.setItem('mazadclick-categories-cache', JSON.stringify(categoryData));
-            }
-        } catch (error) {
-            console.error('Error loading categories', error);
-        } finally {
-            setIsLoadingCategories(false);
-        }
-    };
-
-    const steps = [
-        formik.values.tenderType ? (formik.values.tenderType === TENDER_TYPES.PRODUCT ? t('createTender.product') : t('createTender.service')) : t('createTender.steps.type'),
-        formik.values.evaluationType ? (formik.values.evaluationType === TENDER_EVALUATION_TYPES.MOINS_DISANT ? t('createTender.lowestPrice') : t('createTender.bestOffer')) : t('createTender.steps.evaluation'),
-        categories.find(c => c._id === formik.values.category)?.name || t('createTender.steps.category'),
-        t('createTender.steps.details')
-    ];
-
-    const validateStep = (step: number) => {
-        const { values } = formik;
-        switch (step) {
-            case 0: return !!values.tenderType && !!values.auctionType;
-            case 1: return !!values.evaluationType;
-            case 2: return !!values.category;
-            case 3: return !!values.title && !!values.description && !!values.duration && !!values.wilaya && !!values.location;
-            default: return true;
-        }
-    };
-
-
-    const handleNext = () => {
-        if(validateStep(activeStep)) {
-            setActiveStep(prev => prev + 1);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    };
-
-    const handleBack = () => {
-        const prevStep = activeStep - 1;
-        setActiveStep(prevStep);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        // Unselect values for the step we are going back to
-        if (prevStep === 0) {
-            formik.setFieldValue('tenderType', '');
-            formik.setFieldValue('auctionType', '');
-        } else if (prevStep === 1) {
-            formik.setFieldValue('evaluationType', '');
-        } else if (prevStep === 2) {
-            formik.setFieldValue('category', '');
-        }
+            setCategories(response?.data || response || []);
+        } catch (error) { console.error('Error loading categories', error); }
     };
 
     const handleSubmit = async (values: any) => {
+        setIsSubmitting(true);
         try {
-            setIsSubmitting(true);
-            const { TendersAPI } = await import('@/services/tenders');
-            
             const startDate = new Date();
             const endDate = new Date(startDate);
-            // Tender duration
-            if (values.auctionType === 'EXPRESS') {
-                endDate.setHours(endDate.getHours() + Number(values.duration));
-            } else {
-                endDate.setDate(endDate.getDate() + Number(values.duration));
-            }
+            if (values.auctionType === 'EXPRESS') endDate.setHours(endDate.getHours() + Number(values.duration || 24));
+            else endDate.setDate(endDate.getDate() + Number(values.duration || 7));
 
             const payload = {
                 ...values,
@@ -321,353 +151,321 @@ export default function CreateTenderPage() {
                 startingAt: startDate.toISOString(),
                 endingAt: endDate.toISOString(),
                 owner: auth?.user?._id,
-                professionalOnly: values.professionalOnly,
-                hidden: values.hidden === true,
-                maxBudget: values.price ? Number(values.price) : undefined,
+                maxBudget: values.evaluationType === 'MOINS_DISANT' && values.price ? Number(values.price) : undefined,
             };
 
             const formData = new FormData();
             formData.append('data', JSON.stringify(payload));
-            
-            attachments.forEach((file) => {
-                formData.append('attachments[]', file);
-            });
+            attachments.forEach((file) => formData.append('attachments[]', file));
 
             await TendersAPI.create(formData);
             sessionStorage.removeItem('mazadclick-create-tender-draft');
             router.push('/dashboard/tenders');
-        } catch (error) {
-            console.error('Error creating tender', error);
-        } finally {
-            setIsSubmitting(false);
-        }
+        } catch (error) { console.error('Error creating tender', error); }
+        finally { setIsSubmitting(false); }
     };
 
-    const renderStepContent = (step: number) => {
-        switch (step) {
-            case 0:
-                return (
-                    <Box>
-                        <Typography variant="h5" fontWeight="bold" textAlign="center" gutterBottom>
-                            {t('createTender.chooseType')}
-                        </Typography>
-                        <Grid container spacing={2} sx={{ mt: 2 }}>
-                            <Grid size={12}>
-                                <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>{t('createTender.typeOfListing')}</Typography>
-                                <Grid container spacing={2}>
-                                    {[TENDER_TYPES.PRODUCT, TENDER_TYPES.SERVICE].map(type => (
-                                         <Grid size={{ xs: 6, md: 6 }} key={type}>
-                                            <SelectionCard
-                                                title={type === TENDER_TYPES.PRODUCT ? t('createTender.product') : t('createTender.service')}
-                                                description={type === TENDER_TYPES.PRODUCT ? t('createTender.productDesc') : t('createTender.serviceDesc')}
-                                                icon={type === TENDER_TYPES.PRODUCT ? <MdStore /> : <MdEmail />}
-                                                selected={formik.values.tenderType === type}
-                                                onClick={() => {
-                                                    formik.setFieldValue('tenderType', type);
-                                                    if(formik.values.auctionType) {
-                                                        setTimeout(() => {
-                                                            setActiveStep(prev => prev + 1);
-                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                        }, 300);
-                                                    }
-                                                }}
-                                             />
-                                          </Grid>
-                                     ))}
-                                 </Grid>
-                            </Grid>
-
-                            <Grid size={12}>
-                                <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>{t('createTender.tenderMode')}</Typography>
-                                <Grid container spacing={2}>
-                                    {[TENDER_AUCTION_TYPES.CLASSIC, TENDER_AUCTION_TYPES.EXPRESS].map(type => (
-                                         <Grid size={{ xs: 6, md: 6 }} key={type}>
-                                            <SelectionCard
-                                                title={type === TENDER_AUCTION_TYPES.CLASSIC ? t('createTender.classic') : t('createTender.express')}
-                                                description={type === TENDER_AUCTION_TYPES.CLASSIC ? t('createTender.classicDesc') : t('createTender.expressDesc')}
-                                                icon={type === TENDER_AUCTION_TYPES.CLASSIC ? <MdGavel /> : <MdFlashOn />}
-                                                selected={formik.values.auctionType === type}
-                                                onClick={() => {
-                                                    formik.setFieldValue('auctionType', type);
-                                                    if(formik.values.tenderType) {
-                                                        setTimeout(() => {
-                                                            setActiveStep(prev => prev + 1);
-                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                        }, 300);
-                                                    }
-                                                }}
-                                            />
-                                         </Grid>
-                                    ))}
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                    </Box>
-                );
-            case 1:
-                return (
-                    <Box>
-                         <Typography variant="h5" fontWeight="bold" textAlign="center" gutterBottom>
-                            {t('createTender.evaluationType')}
-                        </Typography>
-                        <Grid container spacing={2} justifyContent="center" sx={{ mt: 2 }}>
-                            {[TENDER_EVALUATION_TYPES.MOINS_DISANT, TENDER_EVALUATION_TYPES.MIEUX_DISANT].map(type => (
-                                 <Grid size={{ xs: 12, md: 5 }} key={type}>
-                                    <SelectionCard
-                                        title={type === TENDER_EVALUATION_TYPES.MOINS_DISANT ? t('createTender.lowestPrice') : t('createTender.bestOffer')}
-                                        description={type === TENDER_EVALUATION_TYPES.MOINS_DISANT ? t('createTender.lowestPriceDesc') : t('createTender.bestOfferDesc')}
-                                        icon={type === TENDER_EVALUATION_TYPES.MOINS_DISANT ? <MdTrendingDown /> : <MdStar />}
-                                        selected={formik.values.evaluationType === type}
-                                        onClick={() => {
-                                            formik.setFieldValue('evaluationType', type);
-                                            setTimeout(() => {
-                                                setActiveStep(prev => prev + 1);
-                                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                                            }, 300);
-                                        }}
-                                    />
-                                 </Grid>
-                            ))}
-                        </Grid>
-                    </Box>
-                );
-            case 2:
-                return (
-                    <Box>
-                        <Typography variant="h5" fontWeight="bold" textAlign="center" gutterBottom>
-                            {t('createTender.selectCategory')}
-                        </Typography>
-                        <Grid container spacing={2} sx={{ mt: 2 }}>
-                            {categories.filter(c => c.type === formik.values.tenderType || !c.type).map(cat => (
-                                 <Grid size={{ xs: 12, sm: 6, md: 3 }} key={cat._id}>
-                                    <SelectionCard
-                                        title={cat.name}
-                                        icon={<MdKeyboardArrowRight />}
-                                        selected={formik.values.category === cat._id}
-                                        onClick={() => {
-                                            formik.setFieldValue('category', cat._id);
-                                            setTimeout(() => {
-                                                setActiveStep(prev => prev + 1);
-                                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                                            }, 300);
-                                        }}
-                                        className="h-full"
-                                    />
-                                 </Grid>
-                            ))}
-                        </Grid>
-                    </Box>
-                );
-            case 3:
-                const durationOptions = formik.values.auctionType === TENDER_AUCTION_TYPES.EXPRESS ? [2, 4, 8, 24] : [2, 7, 15, 30, 60];
-                return (
-                    <Grid container spacing={3}>
-                         {/* DURATION */}
-                         <Grid size={12}>
-                             <Typography variant="h6" gutterBottom fontWeight="bold">{t('createTender.duration')}</Typography>
-                             <Grid container spacing={2}>
-                                {durationOptions.map(val => (
-                                    <Grid size={{ xs: 6, md: 3 }} key={val}>
-                                        <SelectionCard
-                                            title={`${val} ${formik.values.auctionType === TENDER_AUCTION_TYPES.EXPRESS ? t('createTender.hours') : t('createTender.days')}`}
-                                            icon={<MdAccessTime />}
-                                            selected={formik.values.duration === val}
-                                            onClick={() => formik.setFieldValue('duration', val)}
-                                        />
-                                    </Grid>
-                                ))}
-                             </Grid>
-                             <Divider sx={{ my: 4 }} />
-                         </Grid>
-
-                        {/* PROJECT INFO */}
-                        <Grid size={{ xs: 12, md: 8 }}>
-                             <Typography variant="h6" gutterBottom fontWeight="bold">{t('createTender.projectInfo')}</Typography>
-                             <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4 }}>
-                                 <TextField
-                                    fullWidth
-                                    label={t('createTender.tenderTitle')}
-                                    placeholder={t('createTender.tenderTitlePlaceholder')}
-                                    variant="outlined"
-                                    {...formik.getFieldProps('title')}
-                                    error={formik.touched.title && !!formik.errors.title}
-                                    helperText={formik.touched.title && formik.errors.title}
-                                    sx={{ mb: 3 }}
-                                 />
-                                 <TextField
-                                    fullWidth
-                                    multiline
-                                    rows={6}
-                                    label={t('createTender.specifications')}
-                                    placeholder={t('createTender.specificationsPlaceholder')}
-                                    variant="outlined"
-                                    {...formik.getFieldProps('description')}
-                                    error={formik.touched.description && !!formik.errors.description}
-                                    helperText={formik.touched.description && formik.errors.description}
-                                 />
-                             </Box>
-                        </Grid>
-
-                        {/* BUDGET & QUANTITY */}
-                        <Grid size={{ xs: 12, md: 4 }}>
-                            <Typography variant="h6" gutterBottom fontWeight="bold">
-                                {formik.values.evaluationType === TENDER_EVALUATION_TYPES.MIEUX_DISANT 
-                                    ? "Quantité et Détails" 
-                                    : t('createTender.budgetAndDetails')}
-                            </Typography>
-                            <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                {formik.values.evaluationType !== TENDER_EVALUATION_TYPES.MIEUX_DISANT && (
-                                    <TextField
-                                        fullWidth
-                                        type="number"
-                                        label={t('createTender.budgetEstimate')}
-                                        placeholder={t('createTender.optional')}
-                                        InputProps={{ endAdornment: <InputAdornment position="end">DA</InputAdornment> }}
-                                        variant="outlined"
-                                        {...formik.getFieldProps('price')}
-                                        error={formik.touched.price && !!formik.errors.price}
-                                        helperText={formik.touched.price && formik.errors.price}
-                                    />
-                                )}
-                                 {(formik.values.tenderType === TENDER_TYPES.PRODUCT || formik.values.tenderType === TENDER_TYPES.SERVICE) && (
-                                     <TextField
-                                        fullWidth
-                                        label={t('createTender.quantity')}
-                                        type="text"
-                                        variant="outlined"
-                                        {...formik.getFieldProps('quantity')}
-                                        error={formik.touched.quantity && !!formik.errors.quantity}
-                                        helperText={formik.touched.quantity && formik.errors.quantity}
-                                     />
-                                 )}
-                            </Box>
-                        </Grid>
-
-                        {/* LOCATION */}
-                        <Grid size={{ xs: 12, md: 6 }}>
-                             <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>{t('createTender.location')}</Typography>
-                             <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4 }}>
-                                 <TextField
-                                    fullWidth
-                                    select
-                                    label={t('createTender.wilaya')}
-                                    variant="outlined"
-                                    {...formik.getFieldProps('wilaya')}
-                                    error={formik.touched.wilaya && !!formik.errors.wilaya}
-                                    helperText={formik.touched.wilaya && formik.errors.wilaya}
-                                    sx={{ mb: 3 }}
-                                 >
-                                    {WILAYAS.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
-                                 </TextField>
-                                 <TextField
-                                    fullWidth
-                                    label={t('createTender.address')}
-                                    variant="outlined"
-                                    InputProps={{ startAdornment: <InputAdornment position="start"><MdLocationOn /></InputAdornment> }}
-                                    {...formik.getFieldProps('location')}
-                                    error={formik.touched.location && !!formik.errors.location}
-                                    helperText={formik.touched.location && formik.errors.location}
-                                />
-                             </Box>
-                        </Grid>
-
-
-
-                        {/* SETTINGS */}
-                        <Grid size={{ xs: 12, md: 6 }}>
-                            <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>{t('createTender.settings')}</Typography>
-                            <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4 }}>
-                                <FormControlLabel
-                                    control={<Switch checked={formik.values.hidden} onChange={formik.handleChange} name="hidden" />}
-                                    label={
-                                        <Box>
-                                            <Typography variant="body1" fontWeight="bold">Masquer l'utilisateur</Typography>
-                                            <Typography variant="caption" color="text.secondary">{t('createTender.hiddenDesc')}</Typography>
-                                        </Box>
-                                    }
-                                    sx={{ mb: 2, width: '100%', alignItems: 'flex-start' }}
-                                />
-
-                                {auth.user?.type === 'PROFESSIONAL' && (
-                                <FormControlLabel
-                                    control={<Switch checked={formik.values.professionalOnly} onChange={formik.handleChange} name="professionalOnly" />}
-                                    label={
-                                        <Box>
-                                            <Typography variant="body1" fontWeight="bold">Professionnels uniquement</Typography>
-                                            <Typography variant="caption" color="text.secondary">Visible uniquement par les comptes professionnels</Typography>
-                                        </Box>
-                                    }
-                                    sx={{ width: '100%', alignItems: 'flex-start' }}
-                                />
-                                )}
-                            </Box>
-                        </Grid>
-
-                        {/* ATTACHMENTS */}
-                        <Grid size={12}>
-                             <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>{t('createTender.attachments')}</Typography>
-                             <RichFileUpload 
-                                files={attachments}
-                                onFilesChange={setAttachments}
-                                subtitle={t('createTender.uploadAttachments')}
-                             />
-                        </Grid>
-                    </Grid>
-                );
-            default:
-                return null;
-        }
+    const fieldLabelStyle = {
+        color: '#002795', fontWeight: 600, fontSize: '18px', mb: 1.2, display: 'block'
     };
+
+    const inputStyle = {
+        '& .MuiOutlinedInput-root': {
+            borderRadius: '12px', backgroundColor: '#ffffff',
+            '& fieldset': { borderColor: '#D1D1D1', borderWidth: '1.6px' },
+            '&:hover fieldset': { borderColor: '#b1b1b1' },
+            '&.Mui-focused fieldset': { borderColor: '#002795', borderWidth: '1.6px' },
+        },
+        '& .MuiInputBase-input': { padding: '14px 16px' }
+    };
+
+    const cardStyle = {
+        p: { xs: 3, md: 5 }, backgroundColor: '#ffffff', borderRadius: '24px',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.04)',
+    };
+
+    if (!isHydrated) return null;
 
     return (
         <ThemeProvider theme={pageTheme}>
-        <FormikProvider value={formik}>
-            <WizardWrapper 
-                title={t('createTender.title')}
-                subtitle={t('createTender.subtitle')}
-                onBack={activeStep > 0 ? handleBack : undefined}
-                backLabel={t('createTender.back')}
-            >
-                <WizardStepper activeStep={activeStep} steps={steps} />
-                
-                <Box sx={{ minHeight: 200, position: 'relative' }}>
-                    {(!isHydrated || isLoadingCategories) ? (
-                        <Box sx={{ p: 2 }}>
-                            <Skeleton variant="text" width="40%" height={50} sx={{ mx: 'auto', mb: 3 }} />
-                            <Grid container spacing={2}>
-                                {[1, 2].map((i) => (
-                                    <Grid size={{ xs: 12, sm: 6 }} key={i}>
-                                        <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 4 }} />
-                                    </Grid>
-                                ))}
+            <Box sx={{ 
+                minHeight: '100vh', 
+                backgroundColor: '#f8fafc', 
+                p: { xs: 1, md: 2, xl: 4 }, 
+                display: 'flex', 
+                justifyContent: 'center',
+                overflow: 'auto'
+            }}>
+                <Container maxWidth={false} sx={{ 
+                    width: { xl: '1161px' }, 
+                    transform: { xl: 'scale(0.82)', lg: 'scale(0.8)' },
+                    transformOrigin: 'top center',
+                    p: '0 !important', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '16px',
+                    pb: 10
+                }}>
+                    
+                    {/* TOP SELECTORS - PREMIUM DROP LISTS */}
+                    <Box sx={{ ...cardStyle, mb: 1, py: 4, px: 6 }}>
+                        <Grid container spacing={4}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
+                                <Typography variant="h6" sx={{ color: '#002795', fontWeight: 800, mb: 2 }}>
+                                    Méthode d'offre
+                                </Typography>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    variant="outlined"
+                                    placeholder="Choisir une méthode"
+                                    {...formik.getFieldProps('evaluationType')}
+                                    sx={inputStyle}
+                                    SelectProps={{ displayEmpty: true }}
+                                >
+                                    <MenuItem value="" disabled>Choisir une méthode</MenuItem>
+                                    <MenuItem value="MOINS_DISANT">✨ Moins disant</MenuItem>
+                                    <MenuItem value="MIEUX_DISANT">🏆 Mieux disant</MenuItem>
+                                </TextField>
                             </Grid>
-                        </Box>
-                    ) : (
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeStep}
-                                initial={{ opacity: 0, y: 15 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -15 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                {renderStepContent(activeStep)}
-                            </motion.div>
-                        </AnimatePresence>
-                    )}
-                </Box>
+                            <Grid size={{ xs: 12, sm: 6 }}>
+                                <Typography variant="h6" sx={{ color: '#002795', fontWeight: 800, mb: 2 }}>
+                                    Type d'appel d'offre
+                                </Typography>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    variant="outlined"
+                                    placeholder="Choisir un type"
+                                    {...formik.getFieldProps('auctionType')}
+                                    sx={inputStyle}
+                                    SelectProps={{ displayEmpty: true }}
+                                >
+                                    <MenuItem value="CLASSIC">⚖️ Appel d'offre Classique</MenuItem>
+                                    <MenuItem value="EXPRESS">⚡ Appel d'offre Express</MenuItem>
+                                </TextField>
+                            </Grid>
+                        </Grid>
+                    </Box>
 
-                <WizardNavigation 
-                    onNext={activeStep < steps.length - 1 ? handleNext : () => formik.handleSubmit()}
-                    isLastStep={activeStep === steps.length - 1}
-                    isSubmitting={isSubmitting}
-                    disableNext={!validateStep(activeStep)}
-                    hideNext={activeStep === 0 || activeStep === 1 || activeStep === 2}
-                    nextLabel={t('createTender.nextStep')}
-                    submitLabel={t('createTender.publishTender')}
-                />
-            </WizardWrapper>
-        </FormikProvider>
+                    {formik.values.evaluationType ? (
+                        <FormikProvider value={formik}>
+                            <Grid container spacing={4}>
+                                {/* LEFT COLUMN */}
+                                <Grid size={{ xs: 12, md: 7.5 }}>
+                                    <Stack spacing={4}>
+                                        <Box sx={cardStyle}>
+                                            <Typography variant="h5" sx={{ color: '#002795', fontWeight: 700, fontSize: '24px', mb: 1 }}>
+                                                Détails de l'offre
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ color: '#64748b', mb: 4 }}>
+                                                {formik.values.evaluationType === 'MOINS_DISANT' 
+                                                    ? "Appel d'offre basé sur le critère du prix." 
+                                                    : "Appel d'offre basé sur la qualité de l'expertise."}
+                                            </Typography>
+
+                                            <Grid container spacing={3}>
+                                                <Grid size={{ xs: 12 }}>
+                                                    <Typography sx={fieldLabelStyle}>Titre</Typography>
+                                                    <TextField fullWidth placeholder="Titre" {...formik.getFieldProps('title')} sx={inputStyle} />
+                                                </Grid>
+                                                <Grid size={{ xs: 12 }}>
+                                                    <Typography sx={fieldLabelStyle}>Catégorie</Typography>
+                                                    <TextField select fullWidth {...formik.getFieldProps('category')} sx={inputStyle} SelectProps={{ displayEmpty: true }}>
+                                                        <MenuItem value="" disabled>Categories</MenuItem>
+                                                        {categories.map(c => <MenuItem key={c._id} value={c._id}>{c.name}</MenuItem>)}
+                                                    </TextField>
+                                                </Grid>
+                                                <Grid size={{ xs: 12 }}>
+                                                    <Typography sx={fieldLabelStyle}>Description</Typography>
+                                                    <TextField fullWidth multiline rows={8} placeholder="Description offre" {...formik.getFieldProps('description')} sx={inputStyle} />
+                                                </Grid>
+                                                <Grid size={{ xs: 12 }}>
+                                                    <Typography sx={fieldLabelStyle}>Statut de produit</Typography>
+                                                    <TextField select fullWidth {...formik.getFieldProps('tenderType')} sx={inputStyle} SelectProps={{ displayEmpty: true }}>
+                                                        <MenuItem value="" disabled>select statut product</MenuItem>
+                                                        <MenuItem value="PRODUCT">Produit</MenuItem>
+                                                        <MenuItem value="SERVICE">Service</MenuItem>
+                                                    </TextField>
+                                                </Grid>
+                                            </Grid>
+                                        </Box>
+
+                                        <Box sx={cardStyle}>
+                                            <Typography variant="h5" sx={{ color: '#002795', fontWeight: 700, fontSize: '22px', mb: 3 }}>
+                                                Configuration & Localisation
+                                            </Typography>
+                                            <Grid container spacing={3}>
+                                                <Grid size={{ xs: 12, sm: 6 }}>
+                                                    <Typography sx={fieldLabelStyle}>Délai</Typography>
+                                                    <TextField select fullWidth {...formik.getFieldProps('duration')} sx={inputStyle} SelectProps={{ displayEmpty: true }}>
+                                                        <MenuItem value="" disabled>Choisir un délai</MenuItem>
+                                                        {formik.values.auctionType === 'EXPRESS' ? (
+                                                            [1, 2, 4, 12, 24].map(v => (
+                                                                <MenuItem key={v} value={v}>{v} {v === 1 ? 'heure' : 'heures'}</MenuItem>
+                                                            ))
+                                                        ) : (
+                                                            [2, 7, 15, 30, 60].map(v => <MenuItem key={v} value={v}>{v} jours</MenuItem>)
+                                                        )}
+                                                    </TextField>
+                                                </Grid>
+                                                <Grid size={{ xs: 12, sm: 6 }}>
+                                                    {formik.values.evaluationType === 'MOINS_DISANT' ? (
+                                                        <>
+                                                            <Typography sx={fieldLabelStyle}>Budget (DA)</Typography>
+                                                            <TextField fullWidth type="number" placeholder="Optionnel" {...formik.getFieldProps('price')} sx={inputStyle} />
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Typography sx={fieldLabelStyle}>Quantité</Typography>
+                                                            <TextField fullWidth placeholder="Ex: 100 unités / 5 lots" {...formik.getFieldProps('quantity')} sx={inputStyle} />
+                                                        </>
+                                                    )}
+                                                </Grid>
+                                                <Grid size={{ xs: 12, sm: 6 }}>
+                                                    <Typography sx={fieldLabelStyle}>Wilaya</Typography>
+                                                    <TextField select fullWidth {...formik.getFieldProps('wilaya')} sx={inputStyle} SelectProps={{ displayEmpty: true }}>
+                                                        <MenuItem value="" disabled>Wilaya</MenuItem>
+                                                        {WILAYAS.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
+                                                    </TextField>
+                                                </Grid>
+                                                <Grid size={{ xs: 12, sm: 6 }}>
+                                                    <Typography sx={fieldLabelStyle}>Localisation</Typography>
+                                                    <TextField fullWidth placeholder="Commune, Quartier..." {...formik.getFieldProps('location')} sx={inputStyle} />
+                                                </Grid>
+                                            </Grid>
+                                        </Box>
+                                    </Stack>
+                                </Grid>
+
+                                {/* RIGHT COLUMN */}
+                                <Grid size={{ xs: 12, md: 4.5 }}>
+                                    <Stack spacing={4}>
+                                        <Box sx={cardStyle}>
+                                            <Typography variant="h5" sx={{ color: '#002795', fontWeight: 700, fontSize: '20px', mb: 2 }}>
+                                                Paramètres avancés
+                                            </Typography>
+                                            <Grid container spacing={2}>
+                                                <Grid size={{ xs: 12 }}>
+                                                    <Stack spacing={1}>
+                                                        <FormControlLabel control={<Switch checked={formik.values.professionalOnly} {...formik.getFieldProps('professionalOnly')} />} label="Professionnels uniquement" />
+                                                        <FormControlLabel control={<Switch checked={formik.values.isPro} {...formik.getFieldProps('isPro')} />} label="Compte Professionnel" />
+                                                        <FormControlLabel control={<Switch checked={formik.values.hidden} {...formik.getFieldProps('hidden')} />} label="Masquer mon identité" />
+                                                    </Stack>
+                                                </Grid>
+                                            </Grid>
+                                        </Box>
+
+                                        <Box sx={{ 
+                                            width: '475px',
+                                            height: '215px',
+                                            backgroundColor: '#ffffff',
+                                            borderRadius: '24px',
+                                            border: '1px solid #E7E7E7',
+                                            p: '24px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '16px',
+                                            opacity: 1,
+                                            boxSizing: 'border-box'
+                                        }}>
+                                            <Typography variant="h5" sx={{ color: '#002795', fontWeight: 700, fontSize: '22px', mb: 0, lineHeight: 1 }}>
+                                                Image offre/ service
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ color: '#94a3b8', mb: 0, lineHeight: 1 }}>
+                                                <Typography component="span" sx={{ color: '#002795', fontWeight: 700 }}>Note :</Typography> Format photos SVG, PNG, or JPG (Max size 4mb)
+                                            </Typography>
+                                            
+                                            <Box sx={{ 
+                                                display: 'flex', 
+                                                gap: '16px', 
+                                                width: '427px', 
+                                                height: '97px', 
+                                                opacity: 1
+                                            }}>
+                                                {[1, 2, 3, 4].map((i) => {
+                                                    const file = attachments[i - 1];
+                                                    const preview = file ? URL.createObjectURL(file) : null;
+                                                    return (
+                                                        <Box
+                                                            key={i}
+                                                            onClick={() => {
+                                                                const input = document.createElement('input');
+                                                                input.type = 'file';
+                                                                input.accept = 'image/*';
+                                                                input.onchange = (e: any) => {
+                                                                    const newFile = e.target.files[0];
+                                                                    if (newFile) {
+                                                                        const newAttachments = [...attachments];
+                                                                        newAttachments[i - 1] = newFile;
+                                                                        setAttachments(newAttachments.filter(Boolean));
+                                                                    }
+                                                                };
+                                                                input.click();
+                                                            }}
+                                                            sx={{
+                                                                width: '94.75px',
+                                                                height: '97px',
+                                                                borderRadius: '8px',
+                                                                border: '1px dashed #1A71F6',
+                                                                backgroundColor: '#EEF7FF',
+                                                                display: 'flex',
+                                                                flexDirection: 'column',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                gap: '8px',
+                                                                cursor: 'pointer',
+                                                                overflow: 'hidden',
+                                                                transition: 'all 0.2s ease',
+                                                                '&:hover': {
+                                                                    backgroundColor: '#e0edff',
+                                                                    borderColor: '#002795'
+                                                                }
+                                                            }}
+                                                        >
+                                                            {preview ? (
+                                                                <Box component="img" src={preview} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            ) : (
+                                                                <>
+                                                                    <Box sx={{ color: '#1A71F6', fontSize: '28px', display: 'flex' }}>
+                                                                        <MdImage />
+                                                                    </Box>
+                                                                    <Typography sx={{ color: '#64748b', fontWeight: 600, fontSize: '11px', fontFamily: "'DM Sans', sans-serif" }}>
+                                                                        Photo {i}
+                                                                    </Typography>
+                                                                </>
+                                                            )}
+                                                        </Box>
+                                                    );
+                                                })}
+                                            </Box>
+                                        </Box>
+
+                                        <Button
+                                            fullWidth variant="contained" size="large"
+                                            onClick={() => formik.handleSubmit()}
+                                            disabled={isSubmitting || !formik.isValid}
+                                            sx={{
+                                                borderRadius: '16px', py: 2, fontWeight: 800, fontSize: '1.2rem',
+                                                backgroundColor: '#002795', '&:hover': { backgroundColor: '#001e75' },
+                                                boxShadow: '0 8px 30px rgba(0,39,149,0.3)', transition: 'all 0.3s ease'
+                                            }}
+                                        >
+                                            {isSubmitting ? 'Publication en cours...' : "Publier l'offre"}
+                                        </Button>
+                                    </Stack>
+                                </Grid>
+                            </Grid>
+                        </FormikProvider>
+                    ) : (
+                        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+                            <Typography sx={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '1.2rem' }}>
+                                Veuillez choisir une méthode d'évaluation pour continuer.
+                            </Typography>
+                        </Box>
+                    )}
+                </Container>
+            </Box>
         </ThemeProvider>
     );
 }

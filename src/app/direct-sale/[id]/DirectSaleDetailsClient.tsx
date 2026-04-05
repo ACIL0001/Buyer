@@ -1,6 +1,5 @@
 "use client";
 import ShareButton from "@/components/common/ShareButton";
-
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/header/Header";
@@ -11,24 +10,22 @@ import useAuth from "@/hooks/useAuth";
 import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useSnackbar } from 'notistack';
-import { SnackbarProvider } from 'notistack';
+import { SnackbarProvider, useSnackbar } from 'notistack';
 import RequestProvider from "@/contexts/RequestContext";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Autoplay, Pagination } from "swiper/modules";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import app from "@/config";
+import app, { getSellerUrl } from "@/config";
 import Link from "next/link";
 import { useTranslation } from 'react-i18next';
-
-
 import CommentItem from "@/components/common/CommentItem";
 
-// Import styles from the reference component
+// Import styles from the reference components
 import "@/components/auction-details/st.css";
 import "@/components/auction-details/modern-details.css";
+import "@/components/auction-details/multipurpose-redesign.css";
 
 export interface CommentUser {
   _id: string;
@@ -68,22 +65,21 @@ interface DirectSale {
     photoURL?: string;
     entreprise?: string;
     companyName?: string;
+    description?: string;
     hidden?: boolean;
   };
   hidden?: boolean;
-  productCategory?: {
-    _id: string;
-    name: string;
-  };
-  productSubCategory?: {
-    _id: string;
-    name: string;
-  };
+  productCategory?: { _id: string; name: string };
+  productSubCategory?: { _id: string; name: string };
+  category?: { _id: string; name: string };
+  categoryName?: string;
   wilaya: string;
   place: string;
   attributes?: string[];
   comments?: Comment[];
   createdAt?: string;
+  isPro?: boolean;
+  views?: number;
 }
 
 const DEFAULT_DIRECT_SALE_IMAGE = "/assets/images/logo-dark.png";
@@ -97,6 +93,7 @@ function DirectSaleDetailContent() {
   const searchParams = useSearchParams();
   const { isLogged, auth } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
+  
   const [directSale, setDirectSale] = useState<DirectSale | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -109,130 +106,55 @@ function DirectSaleDetailContent() {
   const [activeTab, setActiveTab] = useState("comments");
   const [newComment, setNewComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
-  const [showAllComments, setShowAllComments] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const directSaleId = params?.id as string;
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.scrollTo(0, 0);
-    }
-  }, []);
+    const fetchDirectSale = async () => {
+      try {
+        setLoading(true);
+        const data = await DirectSaleAPI.getDirectSaleById(directSaleId);
+        setDirectSale(data);
+        
+        const commentId = searchParams?.get('commentId');
+        if (commentId) {
+             setActiveTab('comments');
+             setTimeout(() => {
+                 const element = document.getElementById(`comment-${commentId}`);
+                 if (element) {
+                     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     element.classList.add('highlight-comment');
+                 }
+             }, 800);
+        }
+        setError(null);
+      } catch (err: any) {
+        setError(t('details.errorLoading'));
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  useEffect(() => {
+    const fetchAllDirectSales = async () => {
+      try {
+        const data = await DirectSaleAPI.getDirectSales();
+        setAllDirectSales(Array.isArray(data) ? data : []);
+      } catch (_) {}
+    };
+
     if (directSaleId) {
       fetchDirectSale();
       fetchAllDirectSales();
     }
-  }, [directSaleId]);
+  }, [directSaleId, refreshKey, t, searchParams]);
 
-  // Filter similar direct sales (same category, exclude current)
   const similarDirectSales = useMemo(() => {
     if (!directSale || !allDirectSales.length) return [];
     return allDirectSales
-      .filter((sale) => {
-        // Exclude current sale
-        if (sale._id === directSale._id) return false;
-        // Filter by same category if available
-        if (directSale.productCategory?._id) {
-          return sale.productCategory?._id === directSale.productCategory._id;
-        }
-        // If no category, return all active sales
-        return sale.status === 'ACTIVE';
-      })
-      .slice(0, 4);
+      .filter((sale) => sale._id !== directSale._id && sale.status === 'ACTIVE')
+      .slice(0, 8);
   }, [directSale, allDirectSales]);
-
-  const swiperSettings = useMemo(() => {
-    return {
-      slidesPerView: "auto" as const,
-      speed: 1500,
-      spaceBetween: 15,
-      grabCursor: true,
-      autoplay: {
-        delay: 2500,
-        disableOnInteraction: false,
-      },
-      navigation: {
-        nextEl: ".category-slider-next",
-        prevEl: ".category-slider-prev",
-      },
-      breakpoints: {
-        280: { slidesPerView: 2 },
-        350: { slidesPerView: 3, spaceBetween: 10 },
-        576: { slidesPerView: 3, spaceBetween: 15 },
-        768: { slidesPerView: 4 },
-        992: { slidesPerView: 5, spaceBetween: 15 },
-        1200: { slidesPerView: 5 },
-      },
-    };
-  }, []);
-
-  const settingsForSimilar = useMemo(() => {
-    return {
-      slidesPerView: "auto" as const,
-      speed: 1500,
-      spaceBetween: 25,
-      autoplay: {
-        delay: 2500,
-        disableOnInteraction: false,
-      },
-      navigation: {
-        nextEl: ".auction-slider-next",
-        prevEl: ".auction-slider-prev",
-      },
-      breakpoints: {
-        280: { slidesPerView: 1 },
-        576: { slidesPerView: 1 },
-        768: { slidesPerView: 2 },
-        992: { slidesPerView: 3 },
-        1200: { slidesPerView: 4 },
-      },
-    };
-  }, []);
-
-  const fetchAllDirectSales = async () => {
-    try {
-      const data = await DirectSaleAPI.getDirectSales();
-      setAllDirectSales(Array.isArray(data) ? data : []);
-    } catch (err: any) {
-      console.error("Error fetching all direct sales:", err);
-    }
-  };
-
-  const fetchDirectSale = async () => {
-    try {
-      setLoading(true);
-      const data = await DirectSaleAPI.getDirectSaleById(directSaleId);
-      setDirectSale(data);
-      
-      // Handle Comment Redirection
-      const commentId = searchParams?.get('commentId');
-      if (commentId) {
-           console.log("💬 Detected commentId in URL:", commentId);
-           setActiveTab('comments'); // Corrected tab name for Direct Sales
-           setShowAllComments(true); // Ensure all comments are loaded so scrolling works
-           // Use setTimeout to allow tab switch and rendering to complete
-           setTimeout(() => {
-               const element = document.getElementById(`comment-${commentId}`);
-               if (element) {
-                   console.log("📍 Scrolling to comment:", commentId);
-                   element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                   element.classList.add('highlight-comment'); // Optional: Add CSS class for visual highlight
-               } else {
-                   console.warn("❌ Comment element not found in DOM:", commentId);
-               }
-           }, 800); // 800ms delay to ensure tab content is rendered
-      }
-
-      setError(null);
-    } catch (err: any) {
-      console.error("Error fetching direct sale:", err);
-      setError(t('details.errorLoading'));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handlePurchase = async () => {
     if (!isLogged) {
@@ -240,17 +162,7 @@ function DirectSaleDetailContent() {
       router.push('/auth/login');
       return;
     }
-
     if (!directSale) return;
-
-    const availableQuantity = directSale.quantity === 0 
-      ? Infinity 
-      : directSale.quantity - directSale.soldQuantity;
-
-    if (directSale.quantity > 0 && quantity > availableQuantity) {
-      toast.error(t('details.onlyQuantityAvailable', { quantity: availableQuantity }));
-      return;
-    }
 
     if (directSale.owner?._id === auth?.user?._id) {
       toast.error(t('details.cannotBuyOwnProduct'));
@@ -259,756 +171,339 @@ function DirectSaleDetailContent() {
 
     try {
       setPurchasing(true);
-      await DirectSaleAPI.purchase({
-        directSaleId: directSale._id,
-        quantity: quantity
-      });
+      await DirectSaleAPI.purchase({ directSaleId: directSale._id, quantity });
       enqueueSnackbar(t('details.orderSuccessful'), { variant: 'success' });
-      
-      // Refresh the direct sale data to update quantity
-      await fetchDirectSale();
-      
-      // Reset quantity to 1 after successful purchase
+      setRefreshKey(prev => prev + 1);
       setQuantity(1);
-
     } catch (err: any) {
-      console.error("Error purchasing:", err);
       toast.error(err.response?.data?.message || t('details.errorOrdering'));
     } finally {
       setPurchasing(false);
     }
   };
 
-  const getAvailableQuantity = (): number => {
-    if (!directSale) return 0;
-    if (directSale.quantity === 0) return 999; // Unlimited
-    return directSale.quantity - directSale.soldQuantity;
-  };
-
   const getImageUrl = (imagePath?: string): string => {
     if (!imagePath) return DEFAULT_DIRECT_SALE_IMAGE;
     if (imagePath.startsWith('http')) return imagePath;
-    if (imagePath.startsWith('/')) return `${app.route}${imagePath}`;
-    return `${app.route}/${imagePath}`;
+    const base = app.baseURL || app.route || "";
+    const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+    return `${base}${cleanPath}`;
   };
 
   const formatPrice = (price: number) => {
-    return `${price.toLocaleString()} DA`;
+    return `${Math.floor(price).toLocaleString()} DA`;
   };
 
   if (loading) {
     return (
-      <div className="auction-details-section mb-110" style={{ 
-        marginTop: 0, 
-        paddingTop: 'clamp(120px, 15vw, 140px)',
-        minHeight: 'calc(100vh - 120px)'
-      }}>
-        <div className="container-fluid">
-          <div className="row">
-            <div className="col-12 text-center">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </div>
-              <h3 className="mt-3">{t('details.loading')}</h3>
-            </div>
-          </div>
-        </div>
+      <div className="redesign-v2-container text-center py-5">
+        <div className="spinner-border text-primary"></div>
+        <h3 className="mt-4">{t('details.loading')}</h3>
       </div>
     );
   }
 
   if (error || !directSale) {
     return (
-      <div className="auction-details-section mb-110" style={{ 
-        marginTop: 0, 
-        paddingTop: 'clamp(120px, 15vw, 140px)',
-        minHeight: 'calc(100vh - 120px)'
-      }}>
-        <div className="container">
-          <div className="alert alert-danger text-center">
-            <h3>{error || t('details.notFound')}</h3>
-            <button className="btn btn-primary mt-3" onClick={() => router.push('/direct-sale')}>
-              {t('details.back')}
-            </button>
-          </div>
+      <div className="redesign-v2-container text-center py-5">
+        <div className="alert alert-danger">
+          <h3>{error || t('details.notFound')}</h3>
+          <button className="btn btn-primary" onClick={() => router.push('/direct-sale')}>Retour</button>
         </div>
       </div>
     );
   }
 
-  const availableQuantity = getAvailableQuantity();
+  const availableQuantity = directSale.quantity === 0 ? 999 : directSale.quantity - directSale.soldQuantity;
   const isSoldOut = directSale.status === 'SOLD_OUT' || (directSale.quantity > 0 && availableQuantity <= 0);
   const isOwner = isLogged && directSale.owner?._id === auth?.user?._id;
-
   const safeThumbs = directSale.thumbs || [];
   const safeVideos = directSale.videos || [];
 
   return (
     <>
-      <style jsx>{`
-        :global(.auction-details-section) {
-          padding-top: clamp(120px, 15vw, 140px) !important;
-        }
-        .quantity-selector {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          background: #f8f9fa;
-          padding: 5px;
-          border-radius: 8px;
-          border: 1px solid #e9ecef;
-        }
-        .qty-btn {
-          width: 36px;
-          height: 36px;
-          border: none;
-          background: white;
-          border-radius: 6px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 18px;
-          color: #333;
-          cursor: pointer;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-          transition: all 0.2s;
-        }
-        .qty-btn:hover:not(:disabled) {
-          background: #0063b1;
-          color: white;
-        }
-        .qty-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-        .qty-input {
-          width: 50px;
-          text-align: center;
-          border: none;
-          background: transparent;
-          font-weight: 600;
-          font-size: 16px;
-        }
-      `}</style>
+      <div className="redesign-v2-container">
+        {/* Product Hero Section */}
+        <div className="product-hero-section mt-3">
+          <div className="thumbnails-vertical">
+            {safeThumbs.length > 0 ? safeThumbs.map((thumb, index) => (
+              <div key={`thumb-img-${index}`} className={`thumb-item ${!showVideo && index === selectedImageIndex ? 'active' : ''}`} onClick={() => { setSelectedImageIndex(index); setShowVideo(false); }}>
+                <img src={getImageUrl(thumb.url)} alt="" onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_DIRECT_SALE_IMAGE; }} />
+              </div>
+            )) : (
+              <div className="thumb-item active"><img src={DEFAULT_DIRECT_SALE_IMAGE} alt="Default" /></div>
+            )}
+            {safeVideos.length > 0 && safeVideos.map((video, index) => (
+              <div key={`thumb-vid-${index}`} className={`thumb-item ${showVideo && index === selectedVideoIndex ? 'active' : ''}`} onClick={() => { setSelectedVideoIndex(index); setShowVideo(true); }}>
+                <video src={getImageUrl(video.url)} muted />
+              </div>
+            ))}
+          </div>
 
-      <div className="auction-details-section auction-details-modern mb-110" style={{ 
-        marginTop: 0, 
-        paddingTop: 'clamp(120px, 15vw, 140px)',
-        minHeight: 'calc(100vh - 120px)'
-      }}>
-        <div className="container">
-          <div className="row gy-5">
-            {/* Left Column - Image Section */}
-            <div className="col-xl-7 image-column-top-spacing" style={{ paddingTop: '0' }}>
-              <div className="main-image-container" style={{ position: 'relative', marginTop: '0' }}>
-                <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    left: '10px',
-                    zIndex: 10,
+          <div className="main-image-area">
+            <div className="badge-overlay-v2">
+              <span className="badge-item-v2">
+                <i className="fa fa-eye"></i> {directSale.views || 0}
+              </span>
+            </div>
+            <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 5 }}>
+              <ShareButton 
+                type="directSale" 
+                id={directSale._id} 
+                title={directSale.title} 
+                description={directSale.description} 
+                imageUrl={getImageUrl(safeThumbs[0]?.url)} 
+              />
+            </div>
+            {showVideo && safeVideos.length > 0 ? (
+              <video src={getImageUrl(safeVideos[selectedVideoIndex]?.url)} controls style={{ maxHeight: '100%', maxWidth: '100%' }} />
+            ) : (
+              <img 
+                src={getImageUrl(safeThumbs[selectedImageIndex]?.url)} 
+                alt={directSale.title} 
+                onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_DIRECT_SALE_IMAGE; }}
+              />
+            )}
+          </div>
+
+          <div className="product-info-area">
+            <h1 className="product-title">{directSale.title}</h1>
+            
+            <div className="price-section mt-1 mb-3">
+              <span 
+                className="current-price" 
+                style={{ 
+                  fontFamily: 'Inter, sans-serif',
+                  fontWeight: 400,
+                  fontSize: '24px',
+                  lineHeight: '24px',
+                  letterSpacing: '0.03em',
+                  color: '#000000',
+                  display: 'inline-block',
+                  width: 'auto',
+                  height: '24px'
                 }}
-                onClick={(e) => e.stopPropagation()}
-                >
-                  <ShareButton
-                    type="directSale"
-                    id={directSale._id}
-                    title={directSale.title}
-                    description={directSale.description}
-                    imageUrl={getImageUrl(safeThumbs[0]?.url)}
-                  />
-                </div>
-                {showVideo && safeVideos.length > 0 ? (
-                  <video
-                    src={getImageUrl(safeVideos[selectedVideoIndex]?.url)}
-                    controls
-                    className="main-video"
-                    style={{ width: '100%', height: '400px', objectFit: 'contain', borderRadius: '8px' }}
-                  />
-                ) : (
-                  <img
-                    src={getImageUrl(safeThumbs[selectedImageIndex]?.url)}
-                    alt={directSale.title}
-                    className="main-image"
-                    onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_DIRECT_SALE_IMAGE; }}
-                  />
-                )}
-
-                {/* Media Toggle Buttons */}
-                {(safeThumbs.length > 0 || safeVideos.length > 0) && (
-                  <div className="media-toggle-buttons" style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px', zIndex: 10 }}>
-                    {safeThumbs.length > 0 && (
-                      <button
-                        onClick={() => setShowVideo(false)}
-                        className={`media-toggle-btn ${!showVideo ? 'active' : ''}`}
-                        style={{ padding: '8px 12px', border: 'none', borderRadius: '4px', backgroundColor: !showVideo ? '#0063b1' : 'rgba(255,255,255,0.8)', color: !showVideo ? 'white' : '#333', cursor: 'pointer', fontSize: '12px', fontWeight: '500' }}
-                      >
-                        📷 {t('details.images')} ({safeThumbs.length})
-                      </button>
-                    )}
-                    {safeVideos.length > 0 && (
-                      <button
-                        onClick={() => setShowVideo(true)}
-                        className={`media-toggle-btn ${showVideo ? 'active' : ''}`}
-                        style={{ padding: '8px 12px', border: 'none', borderRadius: '4px', backgroundColor: showVideo ? '#0063b1' : 'rgba(255,255,255,0.8)', color: showVideo ? 'white' : '#333', cursor: 'pointer', fontSize: '12px', fontWeight: '500' }}
-                      >
-                        🎥 {t('details.videos')} ({safeVideos.length})
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="thumbnail-gallery-container">
-                <Swiper {...swiperSettings} className="swiper thumbnail-gallery">
-                  {safeThumbs.map((thumb, index) => (
-                    <SwiperSlide className="swiper-slide" key={`img-${index}`}>
-                      <div className={`thumbnail ${!showVideo && index === selectedImageIndex ? "active" : ""}`} onClick={() => { setSelectedImageIndex(index); setShowVideo(false); }}>
-                        <img src={getImageUrl(thumb.url)} alt={`Thumb ${index}`} onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_DIRECT_SALE_IMAGE; }} />
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                  {safeVideos.map((video, index) => (
-                    <SwiperSlide className="swiper-slide" key={`vid-${index}`}>
-                      <div className={`thumbnail ${showVideo && index === selectedVideoIndex ? "active" : ""}`} onClick={() => { setSelectedVideoIndex(index); setShowVideo(true); }}>
-                        <video src={getImageUrl(video.url)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <div className="play-overlay" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: 'white' }}>▶</div>
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
-
-              {/* Product Description Below Image */}
-              <div style={{ marginTop: '30px', padding: '20px', background: '#fff', borderRadius: '12px', border: '1px solid #e9ecef', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '15px', color: '#333' }}>
-                  {t('details.productDescription') || "Description du produit"}
-                </h3>
-                <p style={{ fontSize: '15px', lineHeight: '1.6', color: '#555', whiteSpace: 'pre-wrap' }}>
-                  {directSale.description || t('auctionDetails.noDescription') || "Aucune description disponible."}
-                </p>
-              </div>
-
+              >
+                {formatPrice(directSale.price).replace('DA', '').trim()} DA
+              </span>
             </div>
 
-            {/* Right Column - Details */}
-            <div className="col-xl-5">
-              <div className="auction-details-content" style={{ paddingTop: 'clamp(120px, 15vw, 140px)' }}>
-                {/* Title Display - Prominently at the top */}
-                <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-                  <h1 className="auction-title" style={{
-                    fontSize: 'clamp(20px, 4vw, 28px)',
-                    fontWeight: '700',
-                    color: '#333',
-                    margin: '0 0 15px 0',
-                    lineHeight: '1.3',
-                    wordBreak: 'break-word',
-                    display: 'block',
-                    width: '100%',
-                    visibility: 'visible',
-                    opacity: 1
-                  }}>
-                    {directSale.title}
-                  </h1>
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                  <span style={{ 
-                    background: directSale.saleType === 'PRODUCT' ? '#e3f2fd' : '#fff3e0',
-                    color: directSale.saleType === 'PRODUCT' ? '#1976d2' : '#f57c00',
-                    padding: '4px 12px', 
-                    borderRadius: '20px', 
-                    fontSize: '12px', 
-                    fontWeight: '600' 
-                  }}>
-                    {directSale.saleType === 'PRODUCT' ? t('details.product') : t('details.service')}
-                  </span>
-                  {directSale.productCategory && (
-                      <span style={{ 
-                        background: '#f5f5f5', 
-                        color: '#666', 
-                        padding: '4px 12px', 
-                        borderRadius: '20px', 
-                        fontSize: '12px' 
-                      }}>
-                      {directSale.productCategory.name}
-                    </span>
-                  )}
-                  </div>
-                </div>
-
-                <div className="auction-details-table mb-4">
-                  <table className="table">
-                    <tbody>
-                      {directSale.saleType === 'PRODUCT' && (
-                        <tr>
-                          <td className="fw-bold">{t('details.availability')}</td>
-                          <td>
-                            {isSoldOut ? (
-                              <span className="text-danger fw-bold">{t('details.soldOut')}</span>
-                            ) : (
-                              <span className="text-success fw-bold">
-                                {directSale.quantity === 0 ? t('details.unlimited') : `${availableQuantity} ${t('details.inStock')}`}
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      )}
-                      <tr>
-                        <td className="fw-bold">{t('details.unitPrice')}</td>
-                        <td><span style={{ color: '#0063b1', fontWeight: '700', fontSize: '20px' }}>{formatPrice(directSale.price)}</span></td>
-                      </tr>
-                      {directSale.owner && (
-                      <tr>
-                        <td className="fw-bold">{t('details.seller')}</td>
-                        <td>
-                            {directSale.hidden === true ? (
-                              <span>{t('details.anonymous') || 'Anonyme'}</span>
-                            ) : (
-                              <Link
-                                href={`/profile/${directSale.owner._id || directSale.owner}`}
-                                style={{
-                                  color: '#0063b1',
-                                  textDecoration: 'none',
-                                  fontWeight: '600',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '6px',
-                                  transition: 'all 0.3s ease',
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.color = '#004d8c';
-                                  e.currentTarget.style.textDecoration = 'underline';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.color = '#0063b1';
-                                  e.currentTarget.style.textDecoration = 'none';
-                                }}
-                              >
-                                {directSale.owner.entreprise || 
-                                 directSale.owner.companyName ||
-                                 (directSale.owner.firstName && directSale.owner.lastName ? `${directSale.owner.firstName} ${directSale.owner.lastName}` : directSale.owner.name || directSale.owner.username || 'Vendeur')}
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
-                                  <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
-                                </svg>
-                              </Link>
-                            )}
-                        </td>
-                      </tr>
-                      )}
-                      <tr>
-                        <td className="fw-bold">{t('details.location')}</td>
-                        <td>{directSale.wilaya}, {directSale.place}</td>
-                      </tr>
-                      <tr>
-                        <td className="fw-bold">{t('details.contact')}</td>
-                        <td>
-                          {(directSale as any).contactNumber || (directSale.owner as any)?.phoneNumber || t('details.notAvailable')}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                {!isSoldOut && (
-                  <div className="bid-section">
-                    {isOwner && (
-                       <div className="alert alert-warning">
-                          {t('details.cannotBuyOwnProduct')}
-                       </div>
-                    )}
-                    
-                    <div style={{ background: 'white', padding: '20px', borderRadius: '12px', border: '1px solid #e9ecef', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <span style={{ fontWeight: '600', color: '#333' }}>{t('details.orderQuantity')}:</span>
-                        <div className="quantity-selector">
-                          <button 
-                            className="qty-btn" 
-                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                            disabled={quantity <= 1}
-                          >-</button>
-                          <input 
-                            type="number" 
-                            className="qty-input" 
-                            value={quantity} 
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value) || 1;
-                              const max = directSale.quantity === 0 ? 999 : availableQuantity;
-                              setQuantity(Math.max(1, Math.min(val, max)));
-                            }}
-                          />
-                          <button 
-                            className="qty-btn"
-                            onClick={() => setQuantity(Math.min(directSale.quantity === 0 ? 999 : availableQuantity, quantity + 1))}
-                            disabled={quantity >= (directSale.quantity === 0 ? 999 : availableQuantity)}
-                          >+</button>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
-                        <span style={{ color: '#666' }}>{t('details.totalToPay')}:</span>
-                        <span style={{ color: '#0063b1', fontWeight: '700', fontSize: '18px' }}>
-                          {formatPrice(directSale.price * quantity)}
-                        </span>
-                      </div>
-
-                      <button
-                        className="bid-btn-modern"
-                        onClick={handlePurchase}
-                        disabled={purchasing || isOwner}
-                        style={{ width: '100%', opacity: (purchasing || isOwner) ? 0.7 : 1, cursor: (purchasing || isOwner) ? 'not-allowed' : 'pointer' }}
-                      >
-                        <div className="btn-content" style={{ justifyContent: 'center' }}>
-                          <span>{purchasing ? t('details.processing') : t('details.buyNow')}</span>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="ask-question-area" style={{ marginTop: '15px', textAlign: 'center' }}>
-                   <button 
-                      onClick={(e) => {
-                         e.preventDefault();
-                         setActiveTab('comments');
-                         setTimeout(() => {
-                            window.scrollBy({ top: 500, behavior: 'smooth' });
-                         }, 100);
-                      }}
-                      style={{ 
-                         background: 'none', 
-                         border: 'none', 
-                         color: '#0063b1', 
-                         textDecoration: 'none', 
-                         cursor: 'pointer', 
-                         fontSize: '15px',
-                         fontWeight: '600',
-                         display: 'inline-flex',
-                         alignItems: 'center',
-                         gap: '6px'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.textDecoration = 'underline';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.textDecoration = 'none';
-                      }}
-                   >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                         <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
-                      </svg>
-                      {t('auctionDetails.askQuestion') || 'Poser une question'}
-                   </button>
-                </div>
-
+            <div className="info-grid-mini mt-3">
+              <div className="info-item-mini">
+                <span className="info-label-mini">VENDEUR:</span>
+                <Link href={`/profile/${directSale.owner?._id}`} className="info-text-mini hover-link">
+                  {directSale.owner?.entreprise || directSale.owner?.name || 'Vendeur'}
+                </Link>
               </div>
+              <div className="info-item-mini">
+                <span className="info-label-mini">LOCALISATION:</span>
+                <span className="info-text-mini">{directSale.wilaya}, {directSale.place}</span>
+              </div>
+              <div className="info-item-mini">
+                <span className="info-label-mini">QUANTITÉ:</span>
+                <span className="info-text-mini">{directSale.quantity === 0 ? 'En stock (Illimité)' : `${availableQuantity} disponible(s)`}</span>
+              </div>
+              <div className="info-item-mini">
+                <span className="info-label-mini">TYPE:</span>
+                <span className="info-text-mini">{directSale.saleType === 'SERVICE' ? '🛠️ Service' : '📦 Produit'}</span>
+              </div>
+              <div className="info-item-mini">
+                <span className="info-label-mini">MODE:</span>
+                <span className="info-text-mini">🤝 Vente directe</span>
+              </div>
+              <div className="info-item-mini">
+                <span className="info-label-mini">STATUT:</span>
+                <span className="info-text-mini" style={{ color: isSoldOut ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>
+                  {isSoldOut ? 'Sold Out' : 'En Stock'}
+                </span>
+              </div>
+              <div className="info-item-mini">
+                <span className="info-label-mini">CATÉGORIE:</span>
+                <span className="info-text-mini">{directSale.category?.name || directSale.categoryName || directSale.productSubCategory?.name || directSale.productCategory?.name || 'Non spécifiée'}</span>
+              </div>
+              {(directSale.owner as any)?.phoneNumber && (
+                <div className="info-item-mini">
+                  <span className="info-label-mini">CONTACT:</span>
+                  <span className="info-text-mini">{(directSale.owner as any).phoneNumber}</span>
+                </div>
+              )}
             </div>
+
+            <div className="divider"></div>
+            
+            {!isSoldOut && (
+              <div className="bid-input-section">
+                {isOwner && <div className="alert alert-warning py-2 mb-3" style={{fontSize: '13px'}}>{t('details.cannotBuyOwnProduct')}</div>}
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <span style={{ fontWeight: '600', color: '#333' }}>Quantité:</span>
+                  <div className="quantity-selector-custom">
+                    <button className="qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={quantity <= 1}>-</button>
+                    <input type="number" className="qty-input" value={quantity} onChange={(e) => setQuantity(Math.max(1, Math.min(parseInt(e.target.value) || 1, availableQuantity)))} />
+                    <button className="qty-btn" onClick={() => setQuantity(Math.min(availableQuantity, quantity + 1))} disabled={quantity >= availableQuantity}>+</button>
+                  </div>
+                </div>
+
+                <div className="total-to-pay mb-3 p-3" style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: '600', color: '#475569' }}>Total à payer:</span>
+                  <span style={{ color: '#0063B1', fontWeight: '800', fontSize: '20px' }}>{formatPrice(directSale.price * quantity)}</span>
+                </div>
+                
+                <button className="enchirir-btn" onClick={handlePurchase} disabled={purchasing || isOwner}>
+                  {purchasing ? 'Traitement...' : 'Acheter maintenant'}
+                </button>
+              </div>
+            )}
           </div>
+        </div>
 
-          {/* Description Section */}
-          <div className="row mt-5">
-            <div className="col-12">
-              <div className="auction-details-description-area">
-                <div className="tab-container">
-                  {directSale.attributes && directSale.attributes.length > 0 && (
-                    <button
-                      className={`tab-button ${activeTab === "attributes" ? "active" : ""}`}
-                      onClick={() => setActiveTab("attributes")}
-                    >
-                      {t('details.features')}
-                    </button>
-                  )}
-                  <button
-                    className={`tab-button ${activeTab === "comments" ? "active" : ""}`}
-                    onClick={() => setActiveTab("comments")}
-                  >
-                    {t('details.comments')} ({directSale.comments?.length || 0})
-                  </button>
-                </div>
-
-                <div className="tab-content">
-                  {activeTab === "attributes" && (
-                    <div className="description-content fade show active">
-                      <h3>{t('details.features')}</h3>
-                      <ul className="features-list">
-                        {directSale.attributes?.map((attr, index) => (
-                          <li key={index}>
-                            <i className="bi bi-check-circle-fill text-primary me-2"></i>
-                            {attr}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {activeTab === "comments" && (
-                    <div className="description-content fade show active">
-                       <div className="comments-area" style={{ marginBottom: 32 }}>
-                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '2px solid #f0f0f0', paddingBottom: '10px' }}>
-                            <h4 style={{ margin: 0, color: '#333', fontSize: '18px' }}>💬 {t('details.comments')} ({directSale.comments?.length || 0})</h4>
-                         </div>
-                         
-                         {/* Comment Form */}
-                         {isLogged ? (
-                           <div style={{ background: '#f8f9fa', borderRadius: '12px', padding: '16px', marginBottom: '20px', border: '1px solid #e9ecef' }}>
-                             <form onSubmit={async (e) => {
-                               e.preventDefault();
-                               if (!newComment.trim()) return;
-                               setSubmittingComment(true);
-                               try {
-                                 await commentsApi.createCommentForDirectSale(directSaleId, newComment, auth?.user?._id || '');
-                                 setNewComment("");
-                                 await fetchDirectSale(); // Refresh comments
-                                 enqueueSnackbar("Commentaire publié avec succès", { variant: 'success' });
-                               } catch (err: any) {
-                                 console.error("Error submitting comment:", err);
-                                 toast.error("Erreur lors de l'envoi du commentaire");
-                               } finally {
-                                 setSubmittingComment(false);
-                               }
-                             }}>
-                               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                                 <img 
-                                   src={auth?.user?.photoURL || DEFAULT_USER_AVATAR} 
-                                   alt="Avatar" 
-                                   style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #0063b1' }} 
-                                   onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_USER_AVATAR; }}
-                                 />
-                                 <div style={{ flex: 1 }}>
-                                   <textarea
-                                     value={newComment}
-                                     onChange={(e) => setNewComment(e.target.value)}
-                                     placeholder="Posez votre question ou partagez votre avis..."
-                                     required
-                                     rows={2}
-                                     style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '8px', fontSize: '14px', resize: 'vertical' }}
-                                   />
-                                   <button 
-                                     type="submit" 
-                                     disabled={submittingComment} 
-                                     className="btn btn-primary btn-sm"
-                                     style={{ borderRadius: '6px', fontWeight: '500' }}
-                                   >
-                                     {submittingComment ? "Envoi..." : "Publier"}
-                                   </button>
-                                 </div>
-                               </div>
-                             </form>
-                           </div>
-                         ) : (
-                           <div style={{ background: '#fff3cd', border: '1px solid #ffeaa7', borderRadius: '8px', padding: '12px', marginBottom: '20px', color: '#856404', textAlign: 'center' }}>
-                             🔒 {t('details.loginToComment')}
-                           </div>
-                         )}
-
-                         {/* Comments List */}
-                         {(directSale.comments && directSale.comments.length > 0) ? (
-                           <div>
-                            <div className="comments-list" style={{ maxHeight: showAllComments ? 'none' : '400px', overflow: 'hidden', transition: 'all 0.3s ease' }}>
-                              {(showAllComments ? directSale.comments : directSale.comments.slice(0, 5)).map((c) => (
-                                <CommentItem 
-                                  key={c._id} 
-                                  comment={c} 
-                                  isLogged={isLogged} 
-                                  authUser={auth.user} 
-                                  onReplySuccess={fetchDirectSale}
-                                />
-                              ))}
-                            </div>
-                             {directSale.comments.length > 5 && (
-                               <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                                 <button onClick={() => setShowAllComments(!showAllComments)} className="btn btn-link btn-sm" style={{ color: '#0063b1', textDecoration: 'none', fontWeight: '600' }}>
-                                   {showAllComments ? `${t('details.showLess')} ▲` : `${t('details.showMore')} (${directSale.comments.length - 5}) ▼`}
-                                 </button>
-                               </div>
-                             )}
-                           </div>
-                         ) : (
-                           <div style={{ textAlign: 'center', padding: '40px 20px', color: '#888', background: '#f8f9fa', borderRadius: '12px', border: '1px dashed #ddd' }}>
-                             <div style={{ fontSize: '48px', marginBottom: '16px' }}>💬</div>
-                             <p style={{ margin: 0, fontSize: '16px' }}>{t('details.noComments')}</p>
-                             <p style={{ margin: '8px 0 0 0', fontSize: '14px', color: '#aaa' }}>{t('details.beFirstToComment')}</p>
-                           </div>
-                         )}
-                       </div>
-                    </div>
-                  )}
+        {/* Details and Tabs */}
+        <div className="product-description-container mt-5">
+          <h2 className="description-title">Description du produit</h2>
+          <div className="description-body" style={{ whiteSpace: 'pre-wrap' }}>{directSale.description}</div>
+          
+          <div className="tabs-redesign mt-4">
+            <div className="tab-headers">
+              <button className={`tab-item ${activeTab === 'comments' ? 'active' : ''}`} onClick={() => setActiveTab('comments')}>Questions & Réponses</button>
+            </div>
+            <div className="tab-content-area p-4">
+              <div className="comments-section-v2">
+                {isLogged ? (
+                  <div className="comment-form-v2 mb-4">
+                    <textarea value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Posez une question au vendeur..."></textarea>
+                    <button onClick={async () => {
+                        if (!newComment.trim()) return;
+                        setSubmittingComment(true);
+                        try { 
+                          await commentsApi.createCommentForDirectSale(directSaleId, newComment, auth?.user?._id || ''); 
+                          setNewComment(""); 
+                          setRefreshKey(k => k + 1); 
+                          toast.success("Question envoyée"); 
+                        } finally { setSubmittingComment(false); }
+                    }} disabled={submittingComment}>{submittingComment ? '...' : 'Envoyer'}</button>
+                  </div>
+                ) : <div className="alert alert-info">Veuillez vous connecter pour poser une question.</div>}
+                <div className="comment-list-v2">
+                  {directSale.comments?.map(c => (
+                    <CommentItem 
+                      key={c._id} 
+                      comment={c} 
+                      isLogged={isLogged} 
+                      authUser={auth.user} 
+                      announcementOwnerId={directSale.owner?._id || (directSale.owner as any)}
+                      onReplySuccess={() => setRefreshKey(k => k + 1)} 
+                    />
+                  ))}
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Similar Direct Sales Section */}
-          {similarDirectSales.length > 0 && (
-            <div className="related-auction-section mb-110" style={{ paddingTop: 'clamp(120px, 15vw, 140px)' }}>
-              <div className="row mb-50">
-                <div className="col-lg-12 d-flex align-items-center justify-content-between flex-wrap gap-3">
-                  <div className="section-title">
-                    <h2 className="related-auction-title">Ventes Directes <span>Similaires</span></h2>
-                  </div>
-                  <div className="slider-btn-grp">
-                    <div className="slider-btn auction-slider-prev"><i className="bi bi-arrow-left"></i></div>
-                    <div className="slider-btn auction-slider-next"><i className="bi bi-arrow-right"></i></div>
+        {/* Seller Section */}
+        <div className="seller-section-card mt-5">
+          <div className="seller-avatar"><img src={directSale.owner?.photoURL || DEFAULT_PROFILE_IMAGE} alt="Seller" /></div>
+          <div className="seller-info-content">
+            <div className="seller-header">
+              <span className="seller-name">
+                {directSale.owner?.entreprise || directSale.owner?.companyName || directSale.owner?.name || "Vendeur"}
+              </span>
+            </div>
+            <div className="seller-bio">{directSale.owner?.description || "Ce vendeur n'a pas encore ajouté de description."}</div>
+            {(directSale.owner as any)?.phoneNumber && (
+              <div className="seller-contact-mini mt-2" style={{ fontSize: '14px', color: '#0063B1', fontWeight: 'bold' }}>
+                📞 {(directSale.owner as any).phoneNumber}
+              </div>
+            )}
+          </div>
+          <div className="seller-actions">
+            <Link href={getSellerUrl()} className="seller-btn btn-all-products">Boutique</Link>
+            <button className="seller-btn btn-contact" onClick={() => { setActiveTab('comments'); window.scrollBy({ top: 500, behavior: 'smooth' }); }}>Contacter</button>
+          </div>
+        </div>
+
+        {/* Similar Products */}
+        <div className="similar-auctions-redesign mt-5">
+          <h2 className="redesign-title mb-4">Produits Similaires</h2>
+          <Swiper modules={[Autoplay, Navigation]} navigation spaceBetween={20} slidesPerView={1} breakpoints={{ 640: { slidesPerView: 2 }, 1024: { slidesPerView: 4 } }}>
+            {similarDirectSales.map(t => (
+              <SwiperSlide key={t._id}>
+                <div className="similar-card-redesign" onClick={() => window.location.assign(`/direct-sale/${t._id}`)}>
+                  <div className="card-image-wrapper"><img src={getImageUrl(t.thumbs?.[0]?.url)} alt="" /></div>
+                  <div className="card-info-mini">
+                    <h4>{t.title}</h4>
+                    <div className="price-tag-mini">{formatPrice(t.price)}</div>
                   </div>
                 </div>
-              </div>
-              <div className="auction-slider-area">
-                <Swiper {...settingsForSimilar} className="swiper auction-slider">
-                  {similarDirectSales.map((sale) => (
-                    <SwiperSlide className="swiper-slide" key={sale._id}>
-                      <div className="auction-card-hover" style={{ 
-                        background: "white", 
-                        borderRadius: "20px", 
-                        overflow: "hidden", 
-                        boxShadow: "0 8px 25px rgba(0,0,0,0.08)",
-                        border: "1px solid rgba(0,0,0,0.05)",
-                        cursor: "pointer",
-                        transition: "all 0.3s"
-                      }}
-                      onClick={() => router.push(`/direct-sale/${sale._id}`)}
-                      >
-                        <div style={{ position: "relative", height: "200px", overflow: "hidden" }}>
-                          <img 
-                            src={getImageUrl(sale.thumbs?.[0]?.url)} 
-                            alt={sale.title} 
-                            style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                            onError={(e) => { (e.target as HTMLImageElement).src = DEFAULT_DIRECT_SALE_IMAGE; }}
-                          />
-                        </div>
-                        <div style={{ padding: "clamp(16px, 3vw, 20px)" }}>
-                          <h3 style={{ 
-                            fontSize: "18px", 
-                            fontWeight: "600", 
-                            marginBottom: "12px", 
-                            lineHeight: "1.3",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                          }}>
-                            {sale.title}
-                          </h3>
-
-                          {/* Location and Quantity Info */}
-                          <div style={{
-                            display: "grid",
-                            gridTemplateColumns: sale.saleType === 'SERVICE' ? '1fr' : '1fr 1fr',
-                            gap: "6px",
-                            marginBottom: "8px",
-                          }}>
-                            {sale.saleType !== 'SERVICE' && sale.quantity && String(sale.quantity) !== "Non spécifiée" && !isNaN(Number(sale.quantity)) && String(sale.quantity) !== "" && (
-                              <div style={{
-                                background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                borderRadius: '8px',
-                                padding: '4px 8px',
-                                borderLeft: '3px solid var(--primary-ds-color)',
-                              }}>
-                                <p style={{
-                                  fontSize: "10px",
-                                  color: "#666",
-                                  margin: "0 0 2px 0",
-                                  fontWeight: "600",
-                                }}>
-                                  📦 Quantité
-                                </p>
-                                <p style={{
-                                  fontSize: "12px",
-                                  color: "#333",
-                                  margin: 0,
-                                  fontWeight: "500",
-                                }}>
-                                  {sale.quantity}
-                                </p>
-                              </div>
-                            )}
-                            <div style={{
-                              background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                              borderRadius: '8px',
-                              padding: '4px 8px',
-                              borderLeft: '3px solid var(--primary-ds-color)',
-                            }}>
-                              <p style={{
-                                fontSize: "10px",
-                                color: "#666",
-                                margin: "0 0 2px 0",
-                                fontWeight: "600",
-                              }}>
-                                📍 Localisation
-                              </p>
-                              <p style={{
-                                fontSize: "12px",
-                                color: "#333",
-                                margin: 0,
-                                fontWeight: "500",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}>
-                                {sale.wilaya || sale.place || "Non spécifiée"}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Price Info */}
-                          {sale.price && !isNaN(sale.price) && sale.price > 0 && (
-                          <div style={{
-                            background: "linear-gradient(135deg, #f8f9fa, #e9ecef)",
-                            borderRadius: "8px",
-                            padding: "4px 8px",
-                            marginBottom: "12px",
-                            border: "1px solid #e9ecef",
-                            borderLeft: '3px solid var(--primary-ds-color)',
-                          }}>
-                            <p style={{
-                              fontSize: "10px",
-                              color: "#666",
-                              margin: "0 0 2px 0",
-                              fontWeight: "600",
-                            }}>
-                              💰 Prix
-                            </p>
-                            <p style={{
-                              fontSize: "12px",
-                              color: "#0063b1",
-                              margin: 0,
-                              fontWeight: "600",
-                            }}>
-                            {formatPrice(sale.price)}
-                            </p>
-                          </div>
-                          )}
-
-                          <button className="btn btn-primary w-100" style={{ borderRadius: "20px" }}>Voir les détails</button>
-                        </div>
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
-            </div>
-          )}
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
       </div>
+
+      <style jsx>{`
+        .redesign-v2-container { max-width: 1440px; margin: 0 auto; padding: 120px 20px 100px; }
+        .product-hero-section { display: grid; grid-template-columns: 96px 632px 400px; gap: 19px; margin-bottom: 50px; justify-content: center; }
+        .thumbnails-vertical { display: flex; flex-direction: column; gap: 15px; max-height: 600px; }
+        .thumb-item { width: 96px; height: 78px; border-radius: 2.25px; overflow: hidden; border: 2px solid transparent; cursor: pointer; background: #fff; }
+        .thumb-item.active { border-color: #0063B1; }
+        .thumb-item img, .thumb-item video { width: 100%; height: 100%; object-fit: cover; }
+        .main-image-area { background: #f8fafc; border-radius: 4px; display: flex; align-items: center; justify-content: center; position: relative; width: 632px; height: 600px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .main-image-area img { max-height: 100%; max-width: 100%; object-fit: contain; }
+        .product-title { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 600; line-height: 24px; letter-spacing: 0.03em; color: #1e293b; margin: 10px 0; }
+        .tender-budget-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+        .budget-item { background: #f1f5f9; padding: 15px; border-radius: 16px; }
+        .budget-item.highlight { background: #ecfdf5; border: 1px solid #10b981; }
+        .budget-label { font-size: 13px; color: #64748b; font-weight: 600; display: block; margin-bottom: 5px; }
+        .budget-value { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 400; line-height: 24px; letter-spacing: 0.03em; color: #000; display: block; }
+        .divider { height: 1px; background: #e2e8f0; margin: 25px 0; }
+        .quantity-selector-custom { display: flex; align-items: center; gap: 10px; background: #f1f5f9; padding: 5px; border-radius: 10px; }
+        .qty-btn { width: 32px; height: 32px; border-radius: 8px; border: none; background: white; font-weight: bold; cursor: pointer; }
+        .qty-input { width: 50px; border: none; background: transparent; text-align: center; font-weight: bold; }
+        .enchirir-btn { width: 336px; height: 44px; border-radius: 4px; padding: 10px 48px; background: #002d9c; color: white; font-weight: 700; border: none; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .enchirir-btn:hover { background: #001f6d; transform: translateY(-2px); }
+        .product-description-container { margin-top: 69px; padding-left: 27px; }
+        .description-title { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 25px; color: #000; }
+        .description-body { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: 0.03em; color: #444; max-width: 1158px; white-space: pre-wrap; margin-bottom: 20px; }
+        .seller-section-card { background: white; border-radius: 24px; padding: 30px; display: flex; align-items: center; gap: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .seller-avatar img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #0063B1; }
+        .seller-actions { margin-left: auto; display: flex; gap: 10px; }
+        .seller-btn { padding: 10px 20px; border-radius: 10px; font-weight: 600; text-decoration: none; font-size: 14px; }
+        .btn-all-products { background: #0063B1; color: white; }
+        .btn-contact { background: #f1f5f9; color: #475569; border: 1px solid #ddd; }
+        .similar-card-redesign { background: white; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: 0.3s; }
+        .similar-card-redesign:hover { transform: translateY(-5px); }
+        .card-image-wrapper { height: 180px; overflow: hidden; }
+        .card-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .card-info-mini { padding: 15px; }
+        .price-tag-mini { color: #0063B1; font-weight: 700; font-size: 16px; }
+        @media (max-width: 992px) {
+          .product-hero-section { grid-template-columns: 1fr; }
+          .thumbnails-vertical { flex-direction: row; order: 2; overflow-x: auto; }
+          .main-image-area { order: 1; }
+          .product-info-area { order: 3; }
+          .seller-section-card { flex-direction: column; text-align: center; }
+          .seller-actions { margin-left: 0; justify-content: center; width: 100%; }
+        }
+      `}</style>
     </>
   );
 }
 
 export default function DirectSaleDetailsClient() {
   const { initializeAuth } = useAuth();
-
-  useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
+  useEffect(() => { initializeAuth(); }, [initializeAuth]);
 
   return (
-    <>
-      <AxiosInterceptor>
-        <RequestProvider>
-          <SnackbarProvider maxSnack={3}>
-            <ToastContainer position="top-right" autoClose={5000} />
-            <Header />
-            <DirectSaleDetailContent />
-            <Footer />
-          </SnackbarProvider>
-        </RequestProvider>
-      </AxiosInterceptor>
-    </>
+    <AxiosInterceptor>
+      <RequestProvider>
+        <SnackbarProvider maxSnack={3}>
+          <ToastContainer position="top-right" autoClose={3000} />
+          <Header />
+          <DirectSaleDetailContent />
+          <Footer />
+        </SnackbarProvider>
+      </RequestProvider>
+    </AxiosInterceptor>
   );
 }

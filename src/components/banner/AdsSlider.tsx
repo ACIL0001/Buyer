@@ -28,7 +28,6 @@ const AdsSlider: React.FC = () => {
           setAds(response.data);
         }
       } catch (error: unknown) {
-        // Ignore AbortError - it's expected when navigating away
         if (error instanceof Error && error.name === 'AbortError') return;
         if (isMounted) console.error('Error fetching ads:', error);
       } finally {
@@ -36,10 +35,8 @@ const AdsSlider: React.FC = () => {
       }
     };
 
-    // First fetch with loading indicator
     fetchAds(true);
 
-    // Set up polling interval to fetch ads continuously without page refresh
     const intervalId = setInterval(() => {
       fetchAds(false);
     }, 15000);
@@ -55,7 +52,6 @@ const AdsSlider: React.FC = () => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
-    
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -63,29 +59,20 @@ const AdsSlider: React.FC = () => {
 
   const getAdImageUrl = (ad: Ad): string => {
     let imageUrl = '';
-    
-    // Handle image field - can be string or object
     if (typeof ad.image === 'string') {
       imageUrl = ad.image;
     } else if (ad.image && typeof ad.image === 'object' && 'url' in ad.image) {
       imageUrl = ad.image.url;
     }
-    
-    if (!imageUrl) {
-      return '/assets/images/cat.avif'; // Fallback image
-    }
-
+    if (!imageUrl) return '/assets/images/cat.avif';
     return normalizeImageUrl(imageUrl);
   };
 
   const handleAdClick = (ad: Ad) => {
     if (!ad.url) return;
-    
-    // Check if it's an internal URL (starts with /)
     if (ad.url.startsWith('/')) {
       router.push(ad.url);
     } else {
-      // External URL - open in new tab
       window.open(ad.url, '_blank', 'noopener,noreferrer');
     }
   };
@@ -94,38 +81,92 @@ const AdsSlider: React.FC = () => {
     return (
       <div style={{
         width: '100%',
-        height: 'clamp(10px, 2vw, 25px)',
+        height: isMobile ? '280px' : '640px',
+        background: 'linear-gradient(135deg, #0f1c2e 0%, #1a3050 40%, #1e3a5f 70%, #2b5496 100%)',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        justifyContent: 'flex-end',
+        position: 'relative',
+        overflow: 'hidden',
       }}>
-        <div style={{ color: '#64748b', fontSize: 'clamp(14px, 2vw, 18px)' }}>Loading ads...</div>
+        {/* Shimmer overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%)',
+          animation: 'shimmerAds 1.5s infinite',
+        }} />
+        <div style={{
+          padding: isMobile ? '20px' : '40px 60px',
+          textAlign: 'right',
+          zIndex: 2,
+        }}>
+          <div style={{
+            width: '200px', height: '12px', borderRadius: '6px',
+            background: 'rgba(255,255,255,0.15)', marginBottom: '12px', marginLeft: 'auto',
+          }} />
+          <div style={{
+            width: '140px', height: '8px', borderRadius: '4px',
+            background: 'rgba(255,255,255,0.1)', marginLeft: 'auto',
+          }} />
+        </div>
+        <style jsx>{`
+          @keyframes shimmerAds {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+        `}</style>
       </div>
     );
   }
 
+  /* ── Fallback banner when no ads from API ── */
   if (ads.length === 0) {
-    return null; // Don't render anything if no ads
+    return (
+      <div style={{
+        width: '100%',
+        height: isMobile ? '280px' : '640px',
+        position: 'relative',
+        overflow: 'hidden',
+        cursor: 'default',
+      }}>
+        {/* Background image */}
+        <img
+          src="/assets/images/ads-bg.jpg"
+          alt="Advertising space"
+          style={{
+            position: 'absolute', inset: 0,
+            width: '100%', height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            filter: 'brightness(0.65)',
+          }}
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
+        />
+        {/* Dark gradient overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(110deg, rgba(5,15,30,0.55) 0%, rgba(10,25,50,0.35) 45%, rgba(10,25,50,0.15) 70%, transparent 100%)',
+        }} />
+      </div>
+    );
   }
 
+  /* ── Swiper when ads exist ── */
   return (
     <>
       <style jsx>{`
         .ads-slider-container {
           width: 100%;
           max-width: 100vw;
-          margin: 0 auto;
           position: relative;
           overflow: hidden;
-          border-radius: 0;
-          box-shadow: none;
         }
 
         .ads-swiper {
           width: 100%;
-          height: clamp(150px, 15vw, 200px);
-          min-height: clamp(150px, 15vw, 200px);
+          height: ${isMobile ? '280px' : '500px'};
         }
 
         .ad-slide {
@@ -134,191 +175,133 @@ const AdsSlider: React.FC = () => {
           position: relative;
           cursor: pointer;
           overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: white;
         }
 
         .ad-image {
-          width: 50%;
-          max-width: 100%;
+          width: 100%;
           height: 100%;
-          max-height: 100%;
-          object-fit: contain;
-          transition: transform 0.5s ease;
-          margin: 0 auto;
-          display: block;
+          object-fit: cover;
+          object-position: center;
+          transition: transform 0.6s ease;
         }
 
         .ad-slide:hover .ad-image {
-          transform: scale(1.05);
+          transform: scale(1.04);
         }
 
-        .ad-overlay {
+        /* Dark gradient overlay always present */
+        .ad-dark-overlay {
           position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 30%;
-          background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+          inset: 0;
+          background: linear-gradient(110deg, rgba(5,15,30,0.5) 0%, rgba(10,25,50,0.25) 50%, transparent 80%);
+          pointer-events: none;
+        }
+
+        /* Text overlay */
+        .ad-text-overlay {
+          position: absolute;
+          inset: 0;
           display: flex;
-          align-items: flex-end;
-          padding: clamp(16px, 3vw, 24px);
-          opacity: 0;
-          transition: opacity 0.3s ease;
+          align-items: center;
+          justify-content: flex-end;
+          padding: ${isMobile ? '20px 24px' : '40px 60px'};
+          z-index: 2;
+          pointer-events: none;
         }
 
-        .ad-slide:hover .ad-overlay {
-          opacity: 1;
-        }
-
-        .ad-title {
+        .ad-title-text {
           color: white;
-          font-size: clamp(16px, 2.5vw, 24px);
+          font-size: ${isMobile ? 'clamp(20px, 5.5vw, 28px)' : 'clamp(30px, 3.8vw, 46px)'};
           font-weight: 700;
-          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+          font-family: 'DM Sans', sans-serif;
+          text-align: right;
+          text-shadow: 0 2px 20px rgba(0,0,0,0.6);
           margin: 0;
+          letter-spacing: -0.5px;
+          line-height: 1.2;
         }
 
-        /* Navigation buttons */
+        /* Swiper nav buttons */
         .ads-swiper :global(.swiper-button-next),
         .ads-swiper :global(.swiper-button-prev) {
-          width: clamp(28px, 4vw, 36px) !important;
-          height: clamp(28px, 4vw, 36px) !important;
-          background: rgba(255, 255, 255, 0.9) !important;
+          width: 44px !important;
+          height: 44px !important;
+          background: rgba(255,255,255,0.18) !important;
+          backdrop-filter: blur(8px) !important;
           border-radius: 50% !important;
-          color: #1e293b !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+          color: white !important;
+          border: 1px solid rgba(255,255,255,0.3) !important;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.2) !important;
           transition: all 0.3s ease !important;
-          margin-top: 0 !important;
           top: 50% !important;
           transform: translateY(-50%) !important;
+          margin-top: 0 !important;
         }
 
         .ads-swiper :global(.swiper-button-next:hover),
         .ads-swiper :global(.swiper-button-prev:hover) {
-          background: white !important;
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
-          transform: translateY(-50%) scale(1.1) !important;
+          background: rgba(255,255,255,0.32) !important;
+          transform: translateY(-50%) scale(1.08) !important;
         }
 
         .ads-swiper :global(.swiper-button-next::after),
         .ads-swiper :global(.swiper-button-prev::after) {
-          font-size: clamp(12px, 2vw, 16px) !important;
+          font-size: 15px !important;
           font-weight: 700 !important;
+          font-family: 'DM Sans', sans-serif !important;
         }
 
         /* Pagination */
         .ads-swiper :global(.swiper-pagination) {
-          bottom: clamp(12px, 2vw, 20px) !important;
+          bottom: 18px !important;
         }
 
         .ads-swiper :global(.swiper-pagination-bullet) {
-          width: clamp(8px, 1.5vw, 12px) !important;
-          height: clamp(8px, 1.5vw, 12px) !important;
-          background: rgba(255, 255, 255, 0.5) !important;
+          width: 8px !important;
+          height: 8px !important;
+          background: rgba(255,255,255,0.5) !important;
           opacity: 1 !important;
           transition: all 0.3s ease !important;
         }
 
         .ads-swiper :global(.swiper-pagination-bullet-active) {
           background: white !important;
-          width: clamp(24px, 4vw, 32px) !important;
+          width: 28px !important;
           border-radius: 4px !important;
         }
 
-        /* Mobile adjustments */
         @media (max-width: 768px) {
-          .ads-slider-container {
-            height: clamp(200px, 30vw, 300px) !important;
-            min-height: clamp(200px, 30vw, 300px) !important;
-          }
-
-          .ads-swiper {
-            height: clamp(200px, 30vw, 300px) !important;
-            min-height: clamp(200px, 30vw, 300px) !important;
-          }
-
-          .ads-swiper :global(.swiper-wrapper) {
-            height: clamp(200px, 30vw, 300px) !important;
-            min-height: clamp(200px, 30vw, 300px) !important;
-          }
-
-          .ads-swiper :global(.swiper-slide) {
-            height: clamp(200px, 30vw, 300px) !important;
-            min-height: clamp(200px, 30vw, 300px) !important;
-          }
-
-          .ad-slide {
-            height: clamp(200px, 30vw, 300px) !important;
-            min-height: clamp(200px, 30vw, 300px) !important;
-          }
-
-          .ad-image {
-            width: 80% !important;
-            max-width: 90% !important;
-            height: 100% !important;
-            max-height: 100% !important;
-          }
-          
           .ads-swiper :global(.swiper-button-next),
           .ads-swiper :global(.swiper-button-prev) {
-            width: 24px !important;
-            height: 24px !important;
-            display: none !important; /* Hide on mobile for cleaner look */
-          }
-
-          .ad-overlay {
-            opacity: 1; /* Always show on mobile */
-          }
-
-          .ad-title {
-            display: none !important; /* Hide ad title/name on mobile */
+            display: none !important;
           }
         }
       `}</style>
+
       <div className="ads-slider-container">
         <Swiper
-          modules={[Navigation, Pagination, Autoplay, Keyboard]}
+          modules={[Navigation, Pagination, Keyboard]}
           navigation={ads.length > 1}
-          pagination={{
-            clickable: true,
-            dynamicBullets: true,
-          }}
-          autoplay={{
-            delay: 3000,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-          }}
+          pagination={{ clickable: true, dynamicBullets: true }}
           loop={ads.length > 1}
-          speed={600}
-          keyboard={{
-            enabled: true,
-            onlyInViewport: true,
-          }}
+          speed={700}
+          keyboard={{ enabled: true, onlyInViewport: true }}
           className="ads-swiper"
-          style={isMobile ? {
-            height: 'clamp(200px, 30vw, 300px)',
-            minHeight: 'clamp(200px, 30vw, 300px)'
-          } : {
-            height: 'clamp(150px, 15vw, 200px)',
-            minHeight: 'clamp(150px, 15vw, 200px)'
-          }}
+          style={{ height: isMobile ? '280px' : '640px' }}
         >
           {ads.map((ad) => (
-            <SwiperSlide key={ad._id} className="ad-slide" onClick={() => handleAdClick(ad)}>
-              <img
-                src={getAdImageUrl(ad)}
-                alt={ad.title || 'Advertisement'}
-                className="ad-image"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/assets/images/cat.avif';
-                }}
-              />
-              <div className="ad-overlay">
-                {ad.title && <h3 className="ad-title">{ad.title}</h3>}
+            <SwiperSlide key={ad._id} onClick={() => handleAdClick(ad)}>
+              <div className="ad-slide">
+                <img
+                  src={getAdImageUrl(ad)}
+                  alt={ad.title || 'Advertisement'}
+                  className="ad-image"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/assets/images/cat.avif';
+                  }}
+                />
+                <div className="ad-dark-overlay" />
               </div>
             </SwiperSlide>
           ))}
@@ -329,4 +312,3 @@ const AdsSlider: React.FC = () => {
 };
 
 export default AdsSlider;
-

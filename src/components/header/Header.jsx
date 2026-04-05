@@ -1,22 +1,26 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useReducer, useState, useEffect, useRef } from "react";
+import React, { useReducer, useState, useEffect, useRef, useMemo, useCallback } from "react";
 import useAuth from "@/hooks/useAuth";
 import { authStore } from "@/contexts/authStore";
 import ChatNotifications from '@/components/chat/ChatNotifications';
 import NotificationBellStable from '@/components/NotificationBellStable';
-import BellNotifications from '@/components/header/BellNotifications';
-import { useChatNotificationsWithGeneral } from '@/hooks/useChatNotificationsWithGeneral';
 import { useCreateSocket } from '@/contexts/socket';
-import { BsChatDots } from 'react-icons/bs';
-import ButtonSwitchApp from "../ButtonSwitchApp/ButtonSwitchApp";
 import { useTranslation } from 'react-i18next';
 import { getSellerUrl, getFrontendUrl } from '@/config';
 import app from '@/config';
 import CategoryMegaMenu from './CategoryMegaMenu';
 import { useSettingsStore } from "@/contexts/settingsStore";
 import { normalizeImageUrl } from '@/utils/url';
+import { useQuery } from '@tanstack/react-query';
+import Fuse from 'fuse.js';
+
+// API Imports for Search
+import { CategoryAPI } from '@/app/api/category';
+import { AuctionsAPI } from '@/app/api/auctions';
+import { TendersAPI } from '@/app/api/tenders';
+import { DirectSaleAPI } from '@/app/api/direct-sale';
 
 const initialState = {
   activeMenu: "",
@@ -30,20 +34,15 @@ function reducer(state, action) {
       return {
         ...state,
         activeMenu: state.activeMenu === action.menu ? "" : action.menu,
-        activeSubMenu:
-          state.activeMenu === action.menu ? state.activeSubMenu : "",
+        activeSubMenu: state.activeMenu === action.menu ? state.activeSubMenu : "",
       };
     case "TOGGLE_SUB_MENU":
       return {
         ...state,
-        activeSubMenu:
-          state.activeSubMenu === action.subMenu ? "" : action.subMenu,
+        activeSubMenu: state.activeSubMenu === action.subMenu ? "" : action.subMenu,
       };
     case "TOGGLE_SIDEBAR":
-      return {
-        ...state,
-        isSidebarOpen: !state.isSidebarOpen,
-      };
+      return { ...state, isSidebarOpen: !state.isSidebarOpen };
     default:
       return state;
   }
@@ -58,1003 +57,403 @@ export const Header = () => {
   const { isLogged, isReady, initializeAuth, auth } = useAuth();
   const [isClient, setIsClient] = useState(false);
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
-  const [switchAccount , setSwitchAccount] = useState(false)
-  
-  // Add windowWidth state
+  const [switchAccount, setSwitchAccount] = useState(false);
   const [windowWidth, setWindowWidth] = useState(1024);
   const { logoUrl } = useSettingsStore();
-  
-  // Enhanced responsive state
+
   const isMobile = windowWidth <= 768;
   const isTablet = windowWidth > 768 && windowWidth <= 1024;
-  const isDesktop = windowWidth > 1024;
-  const isIPhone = windowWidth >= 375 && windowWidth <= 428;
-  const isSamsung = windowWidth >= 360 && windowWidth <= 412;
   const isSmallMobile = windowWidth <= 375;
   const socketContext = useCreateSocket();
-  const badgeRef = useRef(null);
-  const [windowVal , setWindowVal] = useState('')
-  const windowRef = useRef(null)
+  const windowRef = useRef(null);
   const headerRef = useRef(null);
 
-  // Chat notifications are handled by the ChatNotifications component directly
+  // --- SEARCH STATE & REFS ---
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFilter, setSearchFilter] = useState('all');
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [loadingSearch, setLoadingSearch] = useState(false);
+  const [showNotifyMe, setShowNotifyMe] = useState(false);
+  const [notifyMeEmail, setNotifyMeEmail] = useState('');
+  const searchInputRef = useRef(null);
+  const searchResultsRef = useRef(null);
+  const filterDropdownRef = useRef(null);
+  const accountDropdownRef = useRef(null);
 
-  // Add a badge style for reuse
-  const badgeStyle = {
-    position: 'absolute',
-    top: '-8px',
-    right: '-8px',
-    background: '#FF3366',
-    color: 'white',
-    borderRadius: '50%',
-    padding: '2px 6px',
-    fontSize: '12px',
-    fontWeight: 'bold',
-    zIndex: 5,
-    minWidth: '20px',
-    height: '20px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-    boxShadow: '0 0 0 2px #fff',
-    transition: 'transform 0.2s',
-    transform: 'scale(1)',
-  };
+  // --- DATA FETCHING FOR SEARCH ---
+  const { data: categoriesData } = useQuery({ queryKey: ['categories', 'all'], queryFn: () => CategoryAPI.getCategories() });
+  const { data: auctionsData } = useQuery({ queryKey: ['auctions', 'all'], queryFn: () => AuctionsAPI.getAuctions() });
+  const { data: tendersData } = useQuery({ queryKey: ['tenders', 'active'], queryFn: () => TendersAPI.getActiveTenders() });
+  const { data: directSalesData } = useQuery({ queryKey: ['direct-sales', 'all'], queryFn: () => DirectSaleAPI.getDirectSales() });
 
-  // Handle window resize only
+  const allCategories = useMemo(() => categoriesData?.success ? categoriesData.data : [], [categoriesData]);
+  const allAuctions = useMemo(() => auctionsData?.data || (Array.isArray(auctionsData) ? auctionsData : []), [auctionsData]);
+  const allTenders = useMemo(() => Array.isArray(tendersData?.data || tendersData) ? (tendersData?.data || tendersData) : [], [tendersData]);
+  const allDirectSales = useMemo(() => Array.isArray(directSalesData?.data || directSalesData) ? (directSalesData?.data || directSalesData) : [], [directSalesData]);
+
   useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-    
+    const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
-    
-    // Set initial size
     setWindowWidth(window.innerWidth);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
-  // Add toggleMenu function
+
   const toggleMenu = () => setMenuOpen((prev) => !prev);
 
+  useEffect(() => { initializeAuth(); }, [initializeAuth]);
+  useEffect(() => { setIsClient(true); }, []);
+
+  // Handle Clicks Outside
   useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // Note: Unread count is now handled by useChatNotificationsWithGeneral hook
-
-
-  useEffect(()=>{
-    if(window.localStorage.getItem('switch')){
-      if( window.localStorage.getItem('switch') == '1'){
-        setSwitchAccount(true)
+    const handleClickOutside = (event) => {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
+        setIsFilterDropdownOpen(false);
       }
-     }
-  },[])
+      if (showSearchResults && !event.target.closest('.header-search-container')) {
+        setShowSearchResults(false);
+      }
+      if (isAccountDropdownOpen && accountDropdownRef.current && !accountDropdownRef.current.contains(event.target)) {
+        setIsAccountDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showSearchResults, isAccountDropdownOpen]);
 
+  // --- SEARCH LOGIC ---
+  const performSearch = async (query, filter) => {
+    setSearchQuery(query);
+    setSearchFilter(filter);
+    
+    if (query.length > 0) {
+      setLoadingSearch(true);
+      setShowNotifyMe(false);
+      try {
+        const filteredCategories = filter === 'all' ? allCategories : allCategories.filter(c => c.type?.toUpperCase() === filter);
+        const filteredAuctions = filter === 'all' ? allAuctions : allAuctions.filter(a => a.bidType?.toUpperCase() === filter);
+        const filteredTenders = filter === 'all' ? allTenders : allTenders.filter(t => t.bidType?.toUpperCase() === filter);
+        const filteredDirectSales = filter === 'all' ? allDirectSales : allDirectSales.filter(d => d.bidType?.toUpperCase() === filter);
 
-  
-  // Real-time update for new messages
-  // (Removed badgeAnimate effect and related code for best practice)
+        const categoryFuse = new Fuse(filteredCategories, { keys: ['name'], threshold: 0.6, distance: 100, minMatchCharLength: 2, includeScore: true });
+        const auctionFuse = new Fuse(filteredAuctions, { keys: ['title', 'name', 'description'], threshold: 0.5, distance: 100, minMatchCharLength: 3, includeScore: true });
+        const tenderFuse = new Fuse(filteredTenders, { keys: ['title', 'name', 'description'], threshold: 0.5, distance: 100, minMatchCharLength: 3, includeScore: true });
+        const directSaleFuse = new Fuse(filteredDirectSales, { keys: ['title', 'name', 'description'], threshold: 0.5, distance: 100, minMatchCharLength: 3, includeScore: true });
 
-  // Note: Chat notifications are handled by the ChatNotifications component directly
+        const combinedResults = [
+          ...categoryFuse.search(query).map(r => ({ ...r.item, type: 'category', score: r.score })),
+          ...auctionFuse.search(query).map(r => ({ ...r.item, type: 'auction', score: r.score })),
+          ...tenderFuse.search(query).map(r => ({ ...r.item, type: 'tender', score: r.score })),
+          ...directSaleFuse.search(query).map(r => ({ ...r.item, type: 'directSale', score: r.score }))
+        ].sort((a, b) => (a.score || 0) - (b.score || 0));
+        
+        if (combinedResults.length === 0) {
+          try {
+            const fallbackResponse = await fetch(`${app.baseURL}search/fallback`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ query, limit: 3, minProbability: 50 })
+            });
+            const fallbackData = await fallbackResponse.json();
+            
+            if (fallbackData.success && fallbackData.hasResults) {
+              setSearchResults(fallbackData.results.map(r => ({ ...r, type: r.type || 'suggestion', isFallback: true, name: r.term })));
+              setShowSearchResults(true);
+              setShowNotifyMe(false);
+            } else {
+              setSearchResults([]);
+              setShowSearchResults(true);
+              setShowNotifyMe(true);
+            }
+          } catch (e) {
+            setSearchResults([]);
+            setShowSearchResults(true);
+            setShowNotifyMe(true);
+          }
+        } else {
+          setSearchResults(combinedResults);
+          setShowSearchResults(true);
+          setShowNotifyMe(false);
+        }
+      } catch (error) {
+        setSearchResults([]);
+        setShowNotifyMe(true);
+      } finally {
+        setLoadingSearch(false);
+      }
+    } else {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      setShowNotifyMe(false);
+    }
+  };
+
+  const handleSearchChange = async (e) => await performSearch(e.target.value, searchFilter);
+
+  const navigateWithTop = useCallback((url) => {
+    router.push(url, { scroll: false });
+    requestAnimationFrame(() => { window.scrollTo({ top: 0, behavior: "auto" }); });
+  }, [router]);
+
+  const handleSearchSelect = async (item) => {
+    setSearchQuery(item.title || item.name || item.term || '');
+    setShowSearchResults(false);
+    
+    if (item.isFallback && item.termId) {
+      try {
+        const typeMapping = { 'suggestion': 'category', 'product': 'category', 'category': 'category', 'auction': 'auction', 'tender': 'tender', 'directSale': 'directSale' };
+        await fetch(`${app.baseURL}search/update-edge-weight`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ searchQuery, selectedTermId: item.termId, selectedType: typeMapping[item.type] || 'category', selectedId: item.categoryId || item._id || item.id || item.termId })
+        });
+      } catch (e) {}
+    }
+    
+    if (item.type === 'category' || item.type === 'suggestion') {
+      const catId = item.categoryId || item._id || item.id;
+      if (catId) navigateWithTop(`/category?category=${catId}&name=${encodeURIComponent(item.name || item.term)}`);
+    } else if (item.type === 'auction') navigateWithTop(`/auction-details/${item._id || item.id}`);
+    else if (item.type === 'tender') navigateWithTop(`/tender-details/${item._id || item.id}`);
+    else if (item.type === 'directSale') navigateWithTop(`/direct-sale/${item._id || item.id}`);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchResults.length > 0) handleSearchSelect(searchResults[0]);
+  };
+
+  const handleNotifyMe = async () => {
+    if (!notifyMeEmail.trim()) return alert('Please enter a valid email address');
+    try {
+      const res = await fetch(`${app.baseURL}search/notify-me`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ searchQuery, email: notifyMeEmail })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('✅ ' + data.message);
+        setShowNotifyMe(false);
+        setNotifyMeEmail('');
+        setShowSearchResults(false);
+      } else alert('❌ Failed to submit request.');
+    } catch (e) { alert('❌ Error occurred.'); }
+  };
+
+  const getCategoryImageUrl = (cat) => normalizeImageUrl(cat.thumb?.url || cat.thumb?.fullUrl || cat.image || '') || '/assets/images/cat.avif';
 
   const handleLogout = () => {
     authStore.getState().clear();
     router.push('/auth/login');
   };
 
-  // Helper to get avatar URL
   const getAvatarUrl = () => {
     if (!auth?.user) return '';
-
-    // Priority 1: photoURL
-    const photoURL = auth.user?.photoURL;
-    if (photoURL && photoURL.trim() !== '') {
-      return normalizeImageUrl(photoURL);
-    }
-
-    // Priority 2: avatar string (from registration)
-    const avatar = auth.user?.avatar;
-    if (typeof avatar === 'string' && avatar.trim() !== '') {
-      return normalizeImageUrl(avatar);
-    }
-
-    // Priority 3: avatar object
-    if (avatar) {
-      // Try fullUrl first
-      if (avatar.fullUrl) {
-        return normalizeImageUrl(avatar.fullUrl);
-      }
-      
-      // Try url
-      if (avatar.url) {
-        return normalizeImageUrl(avatar.url);
-      }
-      
-      // Try filename
-      if (avatar.filename) {
-        return normalizeImageUrl(`/static/${avatar.filename}`);
-      }
-    }
-    return '';
+    return normalizeImageUrl(auth.user?.photoURL || auth.user?.avatar?.url || auth.user?.avatar?.fullUrl || '');
   };
 
-  // Navigation Items
-  const navItems = [
-    { name: t('navigation.home'), path: "/", matchPaths: ["/"] },
-    { name: t('navigation.categories'), path: "/category", matchPaths: ["/category"] },
-    { name: t('navigation.auctions'), path: "/auction-sidebar", matchPaths: ["/auction-sidebar", "/auction-details"] },
-    { name: t('navigation.tenders'), path: "/tenders", matchPaths: ["/tenders", "/tender-details"] },
-    { name: t('navigation.directSales'), path: "/direct-sale", matchPaths: ["/direct-sale"] },
-    { name: t('navigation.howToBid'), path: "/how-to-bid", matchPaths: ["/how-to-bid"] },
-    { name: t('navigation.plans'), path: "/plans", matchPaths: ["/plans"] },
+  const isNavActive = (matchPaths) => matchPaths.some(mp => pathName === mp || pathName.startsWith(mp + '/'));
+
+  const navRow2 = [
+    { name: t('navigation.home') || 'Accueil', path: '/', matchPaths: ['/'] },
+    { name: t('navigation.howToBid') || 'Comment ça marche', path: '/how-to-bid', matchPaths: ['/how-to-bid'] },
+    { name: 'Startup', path: '/startup', matchPaths: ['/startup'] },
+    { name: 'International', path: '/international', matchPaths: ['/international'] },
+    { name: 'Nos plans', path: '/plans', matchPaths: ['/plans'] },
+    { name: 'A propos', path: '/about', matchPaths: ['/about'] },
   ];
 
-  // Helper function to check if a nav item is active
-  const isNavItemActive = (item) => {
-    return item.matchPaths.some(matchPath => pathName === matchPath || pathName.startsWith(matchPath + '/'));
-  };
-
-
-  async function swithAcc() {
-    if(switchAccount){
-      setSwitchAccount(false)
-      console.log(windowRef);
-      if (windowRef.current) {
-        windowRef.current.close();
-      }
-      window.localStorage.removeItem('switch')
-    }else{
-      try {
-        setSwitchAccount(true)
-        window.localStorage.setItem('switch', "1")
-        
-        console.log('🔄 Switching to seller mode from buyer app...');
-        
-        // Call the mark-as-seller API (we need to create this endpoint)
-        const response = await fetch(`${app.baseURL.replace(/\/$/, '')}/auth/mark-as-seller`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${auth.tokens.accessToken}`,
-            'x-access-key': app.apiKey,
-            'Content-Type': 'application/json',
-          },
-          withCredentials: true,
-        });
-
-        const data = await response.json();
-        console.log('✅ Mark as seller response:', data);
-
-        if (data.success) {
-          // Use the seller URL from config and add /dashboard/app path
-          const sellerBaseUrl = getSellerUrl();
-          const sellerAppUrl = new URL('/dashboard/app', sellerBaseUrl);
-          sellerAppUrl.searchParams.append('token', auth.tokens.accessToken);
-          sellerAppUrl.searchParams.append('refreshToken', auth.tokens.refreshToken);
-          sellerAppUrl.searchParams.append('from', 'buyer');
-          
-          console.log('🔄 Redirecting to seller dashboard:', sellerAppUrl.toString());
-          
-          // Clear buyer session before redirecting
-          authStore.getState().clear();
-          
-          // Redirect to seller app dashboard
-          window.location.href = sellerAppUrl.toString();
-        } else {
-          throw new Error(data.message || 'Failed to mark user as seller');
-        }
-      } catch (error) {
-        console.error('❌ Error switching to seller mode:', error);
-        setSwitchAccount(false);
-        window.localStorage.removeItem('switch');
-        
-        // Show error message to user
-        alert('Failed to switch to seller mode. Please try again.');
-      }
-    }
-  }
-  useEffect(()=>{
-    const vlInt = setInterval(()=>{
-      if(windowRef.current && windowRef.current.closed){
-         setSwitchAccount(false)
-         window.localStorage.removeItem('switch')
-      }
-    },2000)
-    return () => clearInterval(vlInt);
-  },[])
-
-  useEffect(() => {
-    if (!socketContext?.socket) return;
-    const handler = (notification) => {
-      console.log('[Header] Received notification update:', notification);
-    };
-    socketContext.socket.on('notificationUpdate', handler);
-    return () => {
-      socketContext.socket.off('notificationUpdate', handler);
-    };
-  }, [socketContext?.socket]);
-
-
-
-
-
-
   return (
-    <header 
+    <header
       ref={headerRef}
       style={{
-        width: '100%',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 9999,
-        transition: 'all 0.3s ease',
-        paddingTop: 'env(safe-area-inset-top, 0px)',
-        backgroundColor: 'white',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-        willChange: 'transform',
-        transform: 'translateZ(0)',
-        WebkitTransform: 'translateZ(0)',
-        paddingRight: '0',
-        boxSizing: 'border-box',
-        /* Ensure header doesn't cover scrollbar - scrollbar will appear over it */
-        pointerEvents: 'auto',
+        width: '100%', position: 'fixed', top: 0, left: 0, right: 0,
+        zIndex: 9999, backgroundColor: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+        paddingTop: 'env(safe-area-inset-top, 0px)', boxSizing: 'border-box',
+        fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontWeight: 400
       }}
     >
-      <div style={{
-        background: 'white',
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
-        padding: isMobile ? '8px 0' : '16px 0',
-        transition: 'all 0.3s ease'
-      }}>
-        <div className="container-responsive" style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          height: isSmallMobile ? '56px' : isMobile ? '60px' : isTablet ? '70px' : '80px',
-          transition: 'height 0.3s ease',
-          paddingLeft: isSmallMobile ? '12px' : isMobile ? '16px' : '20px',
-          paddingRight: isSmallMobile ? '12px' : isMobile ? '16px' : '20px',
-          maxWidth: '100vw'
-        }}>
-          {/* Logo */}
-          <div style={{ 
-            flexShrink: 0, 
-            padding: 0, 
-            margin: 5,
-            display: 'flex',
-            alignItems: 'center'
-          }}>
-            <Link href={getFrontendUrl()} style={{ display: 'flex', alignItems: 'center' }}>
-              <div style={{
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <img
-                  src={logoUrl || "/assets/img/logo.png"}
-                  alt="MazadClick"
-                  className="header-logo"
-                  style={{ 
+      <div style={{ background: 'white', padding: isMobile ? '8px 16px' : '12px 24px', borderBottom: '1px solid #f0f2f5' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '20px', maxWidth: '1400px', margin: '0 auto' }}>
+          
+          <Link href={getFrontendUrl()} style={{ flexShrink: 0 }}>
+            <img src={logoUrl || '/assets/img/logo.png'} alt="MazadClick" style={{ height: isMobile ? '44px' : '52px', objectFit: 'contain' }} />
+          </Link>
 
-                    height: isMobile ? '50px' : isTablet ? '65px' : '65px',
-                    width: isMobile ? '120px' : isTablet ? '155px' : '165px',
+          {/* ADVANCED SEARCH BAR PORTED FROM HOME1BANNER */}
+          {!(isMobile && !isTablet) && (
+            <div className="header-search-container" style={{ flex: 1, maxWidth: '650px', position: 'relative', zIndex: 100 }}>
+              <form onSubmit={handleSearchSubmit} style={{ margin: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', background: '#f4f5f9', borderRadius: '50px', padding: '0 6px 0 20px', height: '46px', border: '1px solid transparent', transition: 'box-shadow 0.3s', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.03)' }}>
+                  
+                  <input
+                    ref={searchInputRef} type="text" placeholder={t('category.searchPlaceholder') || 'Rechercher un produit ...'}
+                    value={searchQuery} onChange={handleSearchChange} onFocus={() => { if (searchResults.length > 0) setShowSearchResults(true); }}
+                    style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '14.5px', color: '#333' }}
+                  />
 
-                    transition: 'all 0.3s ease',
-                    objectFit: 'contain',
-                    objectPosition: 'center center',
-                    borderRadius: isMobile ? '12px' : '16px',
-                    display: 'block',
-                    filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))',
-                    maxWidth: '100%'
-                  }}
-                />
-              </div>
-            </Link>
-          </div>
+                  {/* Filter Dropdown */}
+                  <div ref={filterDropdownRef} style={{ position: 'relative', display: 'flex', alignItems: 'center', borderLeft: '1px solid #e2e8f0', paddingLeft: '8px', height: '24px' }}>
+                    <div onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)} style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', color: '#64748b', fontSize: '13px', fontWeight: '400', padding: '0 8px' }}>
+                      {searchFilter === 'all' && 'Tous'}
+                      {searchFilter === 'PRODUCT' && 'Produit'}
+                      {searchFilter === 'SERVICE' && 'Service'}
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                    {isFilterDropdownOpen && (
+                      <div style={{ position: 'absolute', top: 'calc(100% + 15px)', right: 0, background: 'white', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', padding: '6px', minWidth: '120px', zIndex: 1000 }}>
+                        {[{v: 'all', l: 'Tous'}, {v: 'PRODUCT', l: 'Produit'}, {v: 'SERVICE', l: 'Service'}].map(opt => (
+                          <div key={opt.v} onClick={() => { setSearchFilter(opt.v); performSearch(searchQuery, opt.v); setIsFilterDropdownOpen(false); }}
+                            style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', borderRadius: '6px', background: searchFilter === opt.v ? '#f0f7ff' : 'transparent', color: searchFilter === opt.v ? '#0063b1' : '#333' }}>
+                            {opt.l}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-          {/* Navigation - Desktop */}
-          {isClient && windowWidth > 992 && (
-            <nav style={{
-              flex: 1,
-              marginLeft: '40px'
-            }}>
-              <ul style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '30px',
-                listStyle: 'none',
-                margin: 0,
-                padding: 0
-              }}>
-                {navItems.map((item, index) => {
-                  const isActive = isNavItemActive(item);
-                  return (
-                    <li key={index}>
-                      {item.path === '/category' ? (
-                        <CategoryMegaMenu item={item} isActive={isActive} />
-                      ) : (
-                        <Link 
-                          href={item.path} 
-                          style={{
-                            color: isActive ? '#0063b1' : '#333',
-                            fontWeight: isActive ? '600' : '500',
-                            textDecoration: 'none',
-                            fontSize: '16px',
-                            position: 'relative',
-                            padding: '8px 0',
-                            transition: 'all 0.3s ease'
-                          }}
-                        >
-                          {item.name}
-                          {isActive && (
-                            <span style={{
-                              position: 'absolute',
-                              bottom: '0',
-                              left: '0',
-                              width: '100%',
-                              height: '2px',
-                              background: '#0063b1',
-                              borderRadius: '2px'
-                            }}></span>
-                          )}
-                        </Link>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
+                  {/* Search Button (Blue Icon) */}
+                  <button type="submit" style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'white', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.06)', cursor: 'pointer', marginLeft: '6px' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  </button>
+                </div>
+              </form>
+
+              {/* SEARCH RESULTS DROPDOWN */}
+              {showSearchResults && searchResults.length > 0 && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', borderRadius: '16px', marginTop: '8px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', maxHeight: '350px', overflowY: 'auto', zIndex: 1000 }}>
+                  {searchResults.map((item, idx) => (
+                    <div key={idx} onClick={() => handleSearchSelect(item)} style={{ padding: '12px 16px', cursor: 'pointer', borderBottom: idx < searchResults.length - 1 ? '1px solid #f1f5f9' : 'none', display: 'flex', alignItems: 'center', gap: '12px' }} onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      {item.type === 'category' && <img src={getCategoryImageUrl(item)} alt="" style={{ width: '24px', height: '24px', borderRadius: '4px', objectFit: 'cover' }} />}
+                      {item.type === 'auction' && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2"><path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3Z"/></svg>}
+                      {item.type === 'tender' && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9"/></svg>}
+                      {item.type === 'directSale' && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2"><path d="M20 4H4v2h16V4z"/></svg>}
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '400', color: '#1e293b' }}>{item.name || item.title || item.term}</span>
+                        <span style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase' }}>{item.type}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* NOTIFY ME FALLBACK */}
+              {(showNotifyMe || (showSearchResults && searchResults.length === 0 && searchQuery.length > 0 && !loadingSearch)) && (
+                <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', borderRadius: '16px', marginTop: '8px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', zIndex: 1000, overflow: 'hidden' }}>
+                  <div style={{ padding: '20px', textAlign: 'center', background: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
+                    <h3 style={{ margin: '0 0 6px 0', fontSize: '15px', color: '#1e293b' }}>Aucun résultat pour "{searchQuery}"</h3>
+                  </div>
+                  <div style={{ padding: '16px' }}>
+                    <div style={{ fontSize: '13px', color: '#002896', fontWeight: '400', marginBottom: '10px' }}>Être notifié de la disponibilité</div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input type="email" placeholder="Votre adresse email" value={notifyMeEmail} onChange={e => setNotifyMeEmail(e.target.value)} style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px' }} />
+                      <button onClick={handleNotifyMe} style={{ background: '#002896', color: 'white', border: 'none', borderRadius: '8px', padding: '0 16px', fontSize: '13px', fontWeight: '400', cursor: 'pointer' }}>M'avertir</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
-          {/* Right section - Search, Language Switcher, Account, Menu Toggle */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '20px'
-          }}>
-            {/* Language Switcher moved to floating button at bottom-right */}
-            
-
-          
-
-            {/* Notification Bell - Testing stable version */}
-            {isClient && isReady && isLogged && (
-              <div style={{ position: 'relative' }}>
-                <NotificationBellStable key="notification-bell-header" variant="header" />
-              </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '20px', marginLeft: 'auto' }}>
+            {!isMobile && (
+              <>
+                <span style={{ fontSize: '14px', color: '#002896', cursor: 'pointer', fontWeight: 400 }}>Langue</span>
+                <Link href="/contact" style={{ fontSize: '14px', color: '#002896', textDecoration: 'none', fontWeight: 400 }}>Nous contacter</Link>
+              </>
             )}
-
-            {/* Chat Icon - Messages Notifications */}
             {isClient && isReady && isLogged && (
-              <div style={{ position: 'relative' }}>
-                <ChatNotifications variant="header" />
-              </div>
+              <>
+                <div style={{ color: '#002896' }}><NotificationBellStable variant="header" /></div>
+                <div style={{ color: '#002896' }}><ChatNotifications variant="header" /></div>
+              </>
             )}
-
-            {/* Account Section */}
             {isClient && isReady && (
-              <div style={{ position: 'relative' }}>
-                {isLogged ? (
-                  <button
-                    onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      background: isAccountDropdownOpen ? '#0063b1' : 'linear-gradient(45deg, #0063b1, #0078d7)',
-                      border: 'none',
-                      borderRadius: '30px',
-                      padding: isMobile ? '8px 12px' : isTablet ? '9px 16px' : '10px 20px',
-                      color: 'white',
-                      fontSize: isMobile ? '13px' : isTablet ? '14px' : '15px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      boxShadow: isAccountDropdownOpen 
-                        ? '0 4px 15px rgba(0, 99, 177, 0.5)' 
-                        : '0 3px 10px rgba(0, 99, 177, 0.3)'
-                    }}
-                    onMouseOver={(e) => {
-                      if (!isAccountDropdownOpen) {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 6px 15px rgba(0, 99, 177, 0.4)';
-                      }
-                    }}
-                    onMouseOut={(e) => {
-                      if (!isAccountDropdownOpen) {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 3px 10px rgba(0, 99, 177, 0.3)';
-                      }
-                    }}
-                  >
-                    {(() => {
-                      // Helper to get avatar URL - uses shared normalizeImageUrl utility
-                      const getAvatarUrl = () => {
-                        if (!auth?.user) return '';
-
-                        // Priority 1: photoURL
-                        const photoURL = auth.user?.photoURL;
-                        if (photoURL && photoURL.trim() !== '') {
-                          return normalizeImageUrl(photoURL);
-                        }
-
-                        // Priority 2: avatar string (from registration)
-                        const avatar = auth.user?.avatar;
-                        if (typeof avatar === 'string' && avatar.trim() !== '') {
-                          return normalizeImageUrl(avatar);
-                        }
-
-                        // Priority 3: avatar object
-                        if (avatar) {
-                          if (avatar.fullUrl) return normalizeImageUrl(avatar.fullUrl);
-                          if (avatar.url) return normalizeImageUrl(avatar.url);
-                          if (avatar.filename) return normalizeImageUrl(`/static/${avatar.filename}`);
-                        }
-
-                        return '';
-                      };
-
-                      const avatarUrl = getAvatarUrl();
-                      
-                      return (
-                        <div style={{
-                          width: isMobile ? '20px' : '24px',
-                          height: isMobile ? '20px' : '24px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          overflow: 'hidden',
-                          position: 'relative',
-                          background: 'white' // Ensure icon has white background, not blue
-                        }}>
-                          {/* SVG fallback - rendered only if no avatar */}
-                          {!avatarUrl && (
-                            <svg width={isMobile ? 14 : 16} height={isMobile ? 14 : 16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute', zIndex: 0 }}>
-                              <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" fill="#0063b1" />
-                              <path d="M8 9C5.79086 9 4 10.7909 4 13C4 13.5523 4.44772 14 5 14H11C11.5523 14 12 13.5523 12 13C12 10.7909 10.2091 9 8 9Z" fill="#0063b1" />
-                            </svg>
-                          )}
-                          {/* Profile picture - rendered on top if available */}
-                          {avatarUrl && (
-                            <img
-                              src={avatarUrl}
-                              alt={auth?.user?.firstName || 'User'}
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                borderRadius: '50%',
-                                objectFit: 'cover',
-                                border: '2px solid transparent',
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                zIndex: 1
-                              }}
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                          )}
-                        </div>
-                      );
-                    })()}
-                    {!isMobile ? (
-                      auth?.user?.socialReason ||
-                      auth?.user?.entreprise || 
-                      auth?.user?.companyName || 
-                      'User'
-                    ) : ""}
-                    <svg 
-                      width={12} 
-                      height={12} 
-                      viewBox="0 0 12 12" 
-                      fill="none" 
-                      xmlns="http://www.w3.org/2000/svg"
-                      style={{
-                        transform: isAccountDropdownOpen ? 'rotate(180deg)' : 'rotate(0)',
-                        transition: 'transform 0.3s ease',
-                        opacity: 0.8
-                      }}
-                    >
-                      <path d="M2.5 4.5L6 8L9.5 4.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => router.push('/auth/login')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      background: 'linear-gradient(45deg, #0063b1, #0078d7)',
-                      border: 'none',
-                      borderRadius: '30px',
-                      padding: isMobile ? '8px 12px' : isTablet ? '9px 16px' : '10px 20px',
-                      color: 'white',
-                      fontSize: isMobile ? '13px' : isTablet ? '14px' : '15px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      boxShadow: '0 3px 10px rgba(0, 99, 177, 0.3)'
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 6px 15px rgba(0, 99, 177, 0.4)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 3px 10px rgba(0, 99, 177, 0.3)';
-                    }}
-                  >
-                    <div style={{
-                      width: isMobile ? '20px' : '24px',
-                      height: isMobile ? '20px' : '24px',
-                      borderRadius: '50%',
-                      background: 'rgba(255, 255, 255, 0.2)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      <svg width={isMobile ? 14 : 16} height={isMobile ? 14 : 16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" fill="white" />
-                        <path d="M8 9C5.79086 9 4 10.7909 4 13C4 13.5523 4.44772 14 5 14H11C11.5523 14 12 13.5523 12 13C12 10.7909 10.2091 9 8 9Z" fill="white" />
-                      </svg>
-                    </div>
-                    {!isMobile ? t('common.login') : ""}
-                  </button>
-                )}
-
-                {/* Account Dropdown */}
-                {isAccountDropdownOpen && (
-                  <div style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 10px)',
-                    right: 0,
-                    background: 'white',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                    width: '220px',
+              <div style={{ position: 'relative' }} ref={accountDropdownRef}>
+                <button onClick={() => isLogged ? setIsAccountDropdownOpen(!isAccountDropdownOpen) : router.push('/auth/login')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#002896', padding: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  {!isLogged && <span style={{ fontSize: '14px', fontWeight: 400 }}>Connexion</span>}
+                </button>
+                {isAccountDropdownOpen && isLogged && (
+                  <div style={{ 
+                    position: 'absolute', top: 'calc(100% + 15px)', right: 0, 
+                    background: 'rgba(255, 255, 255, 0.9)', 
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    borderRadius: '20px', 
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.12)', 
+                    width: '240px', 
                     zIndex: 9999,
+                    border: '1px solid rgba(255, 255, 255, 0.5)',
                     overflow: 'hidden',
-                    animation: 'fadeIn 0.2s ease-out'
+                    padding: '8px'
                   }}>
-                    {/* User Info Header - Compact */}
-                    <div style={{
-                      padding: '12px 16px',
-                      borderBottom: '1px solid #f0f0f0',
-                      background: '#fafafa',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px'
+                    {/* User Header */}
+                    <div style={{ 
+                      padding: '16px', 
+                      borderBottom: '1px solid rgba(0,0,0,0.05)', 
+                      background: 'rgba(0, 43, 197, 0.03)',
+                      borderRadius: '14px',
+                      marginBottom: '8px'
                     }}>
-                      {/* Avatar */}
-                      <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        overflow: 'hidden',
-                        flexShrink: 0,
-                        position: 'relative',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: 'transparent',
-                        border: '1px solid #e0e0e0'
-                      }}>
-                        {/* Initials as fallback background */}
-                        <span style={{ 
-                            fontSize: '16px', 
-                            fontWeight: 'bold', 
-                            color: '#666',
-                            position: 'absolute',
-                            zIndex: 0
-                        }}>
-                            {((auth?.user?.entreprise || auth?.user?.firstName || 'U')).charAt(0).toUpperCase()}
-                        </span>
-
-                        {getAvatarUrl() && (
-                           <img 
-                             src={getAvatarUrl()} 
-                             alt={auth?.user?.firstName || 'User'}
-                             style={{
-                               width: '100%',
-                               height: '100%',
-                               objectFit: 'cover',
-                               position: 'relative',
-                               zIndex: 1
-                             }}
-                             onError={(e) => {
-                               e.currentTarget.style.display = 'none';
-                             }} 
-                           />
-                        )}
+                      <div style={{ fontSize: '15px', fontWeight: 400, color: '#002896', marginBottom: '2px' }}>
+                        {auth?.user?.entreprise || auth?.user?.firstName || 'Utilisateur'}
                       </div>
-                      
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            color: '#333',
-                            marginBottom: '2px',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis'
-                          }}>
-                            {auth?.user?.entreprise || auth?.user?.companyName || `${auth?.user?.firstName || 'User'} ${auth?.user?.lastName || ''}`.trim()}
-                          </div>
-                          <div style={{
-                            fontSize: '12px',
-                            color: '#666',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis'
-                          }}>
-                            {auth?.user?.email || 'user@example.com'}
-                          </div>
+                      <div style={{ fontSize: '12px', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {auth?.user?.email || ''}
                       </div>
                     </div>
 
-                    {/* Menu Items - Compact */}
-                    <div style={{ padding: '4px 0' }}>
-                      {/* Profile Link */}
-                      <Link href="/profile" onClick={() => setIsAccountDropdownOpen(false)}>
-                        <div style={{
-                          padding: '10px 16px',
-                          color: '#333',
-                          transition: 'all 0.2s ease',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          fontSize: '14px'
-                        }}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.backgroundColor = '#f5f5f5';
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
-                        >
-                          <svg width={18} height={18} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                            <path d="M8 8C10.2091 8 12 6.20914 12 4C12 1.79086 10.2091 0 8 0C5.79086 0 4 1.79086 4 4C4 6.20914 5.79086 8 8 8Z" fill="#0063b1"/>
-                            <path d="M8 10C3.58172 10 0 12.6863 0 16H16C16 12.6863 12.4183 10 8 10Z" fill="#0063b1"/>
-                          </svg>
-                          <span>{t('account.myProfile')}</span>
-                        </div>
-                      </Link>
+                    {/* Menu Items */}
+                    <Link href="/profile" onClick={() => setIsAccountDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', color: '#1e293b', textDecoration: 'none', fontSize: '14px', fontWeight: 400, borderRadius: '12px', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0, 43, 197, 0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      Profil
+                    </Link>
 
-                      {/* Dashboard Link */}
-                      <Link href="/dashboard" onClick={() => setIsAccountDropdownOpen(false)}>
-                        <div style={{
-                          padding: '10px 16px',
-                          color: '#333',
-                          transition: 'all 0.2s ease',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          fontSize: '14px'
-                        }}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.backgroundColor = '#f5f5f5';
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
-                        >
-                          <svg width={18} height={18} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                            <rect x="1" y="1" width="6" height="6" rx="1" stroke="#0063b1" strokeWidth="1.5" fill="none"/>
-                            <rect x="9" y="1" width="6" height="6" rx="1" stroke="#0063b1" strokeWidth="1.5" fill="none"/>
-                            <rect x="1" y="9" width="6" height="6" rx="1" stroke="#0063b1" strokeWidth="1.5" fill="none"/>
-                            <rect x="9" y="9" width="6" height="6" rx="1" stroke="#0063b1" strokeWidth="1.5" fill="none"/>
-                          </svg>
-                          <span>{t('navigation.dashboard')}</span>
-                        </div>
-                      </Link>
-                      
+                    <Link href="/dashboard" onClick={() => setIsAccountDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', color: '#1e293b', textDecoration: 'none', fontSize: '14px', fontWeight: 400, borderRadius: '12px', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0, 43, 197, 0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                      Tableau de bord
+                    </Link>
 
-                      {/* Settings Link */}
-                      <Link href="/settings" onClick={() => setIsAccountDropdownOpen(false)}>
-                        <div style={{
-                          padding: '10px 16px',
-                          color: '#333',
-                          transition: 'all 0.2s ease',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          fontSize: '14px'
-                        }}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.backgroundColor = '#f5f5f5';
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
-                        >
-                          <svg width={18} height={18} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                            <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z" fill="#0063b1"/>
-                          </svg>
-                          <span>{t("settings.title") || "Settings"}</span>
-                        </div>
-                      </Link>
-                    </div>
+                    <Link href="/settings" onClick={() => setIsAccountDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', color: '#1e293b', textDecoration: 'none', fontSize: '14px', fontWeight: 400, borderRadius: '12px', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0, 43, 197, 0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                      Paramètres
+                    </Link>
 
-                    <div style={{ borderTop: '1px solid #f0f0f0', margin: '4px 0' }} />
-
-                    {/* Logout Button - Compact */}
-                    <button
-                      onClick={handleLogout}
-                      style={{
-                        width: '100%',
-                        textAlign: 'left',
-                        padding: '10px 16px',
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#dc3545',
-                        transition: 'all 0.2s ease',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        fontSize: '14px'
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = '#fff5f5';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }}
-                    >
-                      <svg width={18} height={18} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                        <path d="M6 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V3.33333C2 2.97971 2.14048 2.64057 2.39052 2.39052C2.64057 2.14048 2.97971 2 3.33333 2H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M10.6667 11.3333L14 8L10.6667 4.66667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span>{t('account.logout')}</span>
+                    <button onClick={handleLogout} style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: 'transparent', border: 'none', color: '#ef4444', fontSize: '14px', fontWeight: 400, cursor: 'pointer', borderRadius: '12px', transition: 'all 0.2s', marginTop: '4px' }} onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                      Déconnexion
                     </button>
                   </div>
                 )}
               </div>
             )}
-
-            {/* Mobile Menu Toggle */}
             {isClient && windowWidth <= 992 && (
-              <button
-                className="mobile-menu-toggle"
-                onClick={toggleMenu}
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  width: '40px',
-                  height: '40px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                  zIndex: 9999
-                }}
-              >
-                <span style={{
-                  display: 'block',
-                  width: '24px',
-                  height: '2px',
-                  background: '#333',
-                  transform: isMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none',
-                  transition: 'transform 0.3s ease'
-                }}></span>
-                <span style={{
-                  display: 'block',
-                  width: '24px',
-                  height: '2px',
-                  background: '#333',
-                  opacity: isMenuOpen ? 0 : 1,
-                  transition: 'opacity 0.3s ease'
-                }}></span>
-                <span style={{
-                  display: 'block',
-                  width: '24px',
-                  height: '2px',
-                  background: '#333',
-                  transform: isMenuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none',
-                  transition: 'transform 0.3s ease'
-                }}></span>
+              <button onClick={() => setMenuOpen(!isMenuOpen)} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Enhanced Mobile Menu */}
-      {isClient && isMenuOpen && windowWidth <= 992 && (
-        <div 
-          className="safe-top safe-bottom"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100vh',
-            background: 'white',
-            zIndex: 9999,
-            paddingTop: isSmallMobile ? '65px' : isMobile ? '70px' : '90px',
-            paddingBottom: isIPhone ? 'env(safe-area-inset-bottom)' : '0',
-            animation: 'fadeIn 0.3s ease-out'
-          }}
-        >
-          {/* Close Button */}
-          <button
-            onClick={() => setMenuOpen(false)}
-            style={{
-              position: 'absolute',
-              top: isSmallMobile ? '20px' : isMobile ? '25px' : '30px',
-              right: isSmallMobile ? '15px' : isMobile ? '20px' : '25px',
-              background: 'transparent',
-              border: 'none',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              borderRadius: '50%',
-              transition: 'background-color 0.3s ease',
-              zIndex: 10000
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#f5f5f5';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';
-            }}
-            aria-label="Close menu"
-          >
-            <svg 
-              width="24" 
-              height="24" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path 
-                d="M18 6L6 18M6 6L18 18" 
-                stroke="#333" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-
-          <div className="container-responsive" style={{ 
-            padding: isSmallMobile ? '12px' : isMobile ? '16px' : '20px',
-            minHeight: isSmallMobile ? 'calc(100vh - 65px)' : isMobile ? 'calc(100vh - 70px)' : 'calc(100vh - 90px)',
-            maxWidth: '100vw'
-          }}>
-
-            {/* Mobile Navigation */}
+      {isClient && windowWidth > 992 && (
+        <div style={{ background: 'white', padding: '0 24px 10px 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '35px', maxWidth: '1400px', margin: '0 auto', paddingLeft: '80px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#002896', cursor: 'pointer' }}>
+              <CategoryMegaMenu item={{ name: 'Catégories', path: '/category', matchPaths: ['/category'] }} isActive={isNavActive(['/category'])} />
+            </div>
             <nav>
-              <ul style={{
-                listStyle: 'none',
-                padding: 0,
-                margin: 0
-              }}>
-                {navItems.map((item, index) => {
-                  const isActive = isNavItemActive(item);
-                  return (
-                    <li key={index} style={{ marginBottom: '8px' }}>
-                      {item.path === '/category' ? (
-                        <div style={{
-                          background: isActive ? '#f8f9fa' : 'transparent',
-                          borderRadius: '12px',
-                          borderLeft: isActive ? '4px solid #0063b1' : '4px solid transparent',
-                        }}>
-                          <CategoryMegaMenu item={item} isActive={isActive} isMobile={true} setMenuOpen={setMenuOpen} />
-                        </div>
-                      ) : (
-                        <Link
-                          href={item.path}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: isMobile ? '16px 20px' : '15px',
-                            background: isActive ? '#f8f9fa' : 'transparent',
-                            borderRadius: '12px',
-                            color: isActive ? '#0063b1' : '#333',
-                            fontWeight: isActive ? '600' : '500',
-                            fontSize: isMobile ? '16px' : '16px',
-                            textDecoration: 'none',
-                            transition: 'all 0.3s ease',
-                            borderLeft: isActive ? '4px solid #0063b1' : '4px solid transparent',
-                            minHeight: '44px' // Better touch target
-                          }}
-                          onClick={() => setMenuOpen(false)}
-                        >
-                          {item.name}
-                        </Link>
-                      )}
-                    </li>
-                  );
-                })}
+              <ul style={{ display: 'flex', alignItems: 'center', gap: '25px', listStyle: 'none', margin: 0, padding: 0 }}>
+                {navRow2.map((item, index) => (
+                  <li key={index}><Link href={item.path} style={{ color: '#002896', fontWeight: 400, fontSize: '14.5px', textDecoration: 'none' }}>{item.name}</Link></li>
+                ))}
               </ul>
             </nav>
           </div>
         </div>
       )}
-
-      {/* Animations */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-      <style jsx global>{`
-        .header-logo {
-          max-height: 75px;
-          max-width: 180px;
-        }
-        @media (max-width: 992px) {
-          .header-logo {
-            max-height: 65px;
-            max-width: 155px;
-          }
-          .header-container {
-            padding: 0 8px;
-          }
-        }
-        @media (max-width: 768px) {
-          .header-logo {
-            max-height: 50px;
-            max-width: 120px;
-          }
-          .header-container {
-            padding: 0 4px;
-          }
-          .mobile-menu-toggle {
-            width: 36px !important;
-            height: 36px !important;
-          }
-        }
-        @media (max-width: 576px) {
-          .header-logo {
-            max-height: 50px;
-            max-width: 120px;
-          }
-          .header-container {
-            padding: 0 2px;
-          }
-          .mobile-menu-toggle {
-            width: 32px !important;
-            height: 32px !important;
-          }
-          .header-container ul li a {
-            font-size: 14px !important;
-          }
-        }
-        .header-container ul li a {
-          font-size: 16px;
-        }
-      `}</style>
-
-
     </header>
   );
 };

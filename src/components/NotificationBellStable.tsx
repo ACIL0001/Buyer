@@ -650,6 +650,7 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
           border: 'none', borderRadius: '50%',
           width: variant === 'header' ? '40px' : '48px', height: variant === 'header' ? '40px' : '48px',
           cursor: 'pointer', transition: 'all 0.3s ease',
+          position: 'relative',
           boxShadow: isOpen ? '0 4px 15px rgba(0,0,0,0.08)' : '0 2px 10px rgba(0,0,0,0.05)'
         }}
         title="Notifications"

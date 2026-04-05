@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Typography, styled, Box, Link, alpha } from '@mui/material';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
@@ -91,8 +91,13 @@ export default function Register() {
   const { width } = useResponsive();
   const smUp = width >= 600;
 
+  useEffect(() => {
+    if (isLogged) {
+      router.replace('/');
+    }
+  }, [isLogged, router]);
+
   if (isLogged) {
-    router.replace('/');
     return null;
   }
 

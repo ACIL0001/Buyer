@@ -434,6 +434,8 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           animation: shimmer-text 4s ease-in-out infinite;
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
           line-height: 1.2;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 700;
         }
 
         @keyframes shimmer-text {

@@ -1,1047 +1,239 @@
-// Home1LiveDirectSales.tsx
 "use client";
 
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Autoplay, Pagination } from "swiper/modules";
+import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import "swiper/css/pagination";
 import Link from "next/link";
 import { useMemo, useState, useEffect, useCallback } from "react";
 import { DirectSaleAPI } from "@/app/api/direct-sale";
+import { motion } from "framer-motion";
 import app from '@/config';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CardSkeleton from '../skeletons/CardSkeleton';
 import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
-import "../auction-details/st.css";
-import "../auction-details/modern-details.css";
 import { useRouter } from "next/navigation";
-import ShareButton from '@/components/common/ShareButton';
 import { useCreateSocket } from '@/contexts/socket';
 
-// Default image constants
 const DEFAULT_DIRECT_SALE_IMAGE = "/assets/images/logo-white.png";
-const DEFAULT_PROFILE_IMAGE = "/assets/images/avatar.jpg";
 
-interface DirectSale {
-  _id: string;
-  title: string;
-  description?: string;
-  price: number;
-  quantity: number;
-  soldQuantity?: number;
-  saleType?: 'PRODUCT' | 'SERVICE';
-  status: 'ACTIVE' | 'SOLD_OUT' | 'INACTIVE' | 'ARCHIVED' | 'SOLD' | 'PAUSED';
-  thumbs?: Array<{ _id: string; url: string; filename?: string; fullUrl?: string }>;
-  videos?: Array<{ _id: string; url: string; filename?: string; fullUrl?: string }>;
-  owner?: {
-    _id: string;
-    firstName?: string;
-    lastName?: string;
-    username?: string;
-    entreprise?: string;
-    companyName?: string;
-    avatar?: { url: string; };
-    photoURL?: string;
-  };
-  productCategory?: {
-    name: string;
-  };
-  location?: string;
-  place?: string;
-  wilaya?: string;
-  isPro?: boolean;
-  hidden?: boolean;
-  verifiedOnly?: boolean;
-}
-
-// Helper function to get the correct image URL
-const getDirectSaleImageUrl = (directSale: DirectSale) => {
+const getDirectSaleImageUrl = (directSale: any) => {
   if (directSale.thumbs && directSale.thumbs.length > 0 && directSale.thumbs[0].url) {
-    const imageUrl = directSale.thumbs[0].url;
-    
-    // Use the centralized normalization utility for consistent URL handling
-    return normalizeImageUrl(imageUrl);
+    return normalizeImageUrl(directSale.thumbs[0].url);
   }
   return DEFAULT_DIRECT_SALE_IMAGE;
 };
 
-// Helper function to ensure URL is absolute (prefixed with API base URL)
-
-
 const Home1LiveDirectSales = () => {
   const { t } = useTranslation();
   const router = useRouter();
-  const { isLogged, auth } = useAuth();
-  const { data: allDirectSalesResponse, isLoading: directSalesLoading, error: directSalesError } = useQuery({
+  const { auth } = useAuth();
+  const { data: allDirectSalesResponse, isLoading: directSalesLoading } = useQuery({
     queryKey: ['direct-sales', 'all'],
     queryFn: () => DirectSaleAPI.getDirectSales(),
   });
 
-  const error = directSalesError ? (directSalesError as any).message || "Failed to load direct sales" : null;
-
   const allDirectSales = useMemo(() => {
-    const dataResponse = allDirectSalesResponse as any;
-    const data = dataResponse?.data || (Array.isArray(allDirectSalesResponse) ? allDirectSalesResponse : []);
+    const data = (allDirectSalesResponse as any)?.data || (Array.isArray(allDirectSalesResponse) ? allDirectSalesResponse : []);
     const transformed = (Array.isArray(data) ? data : []).map((sale: any) => ({
-      ...sale,
-      id: sale.id || sale._id,
+      ...sale, id: sale.id || sale._id,
     }));
-
-    // Filter by archived/inactive
-    const activeSales = transformed.filter((sale: DirectSale) => {
-      return sale.status !== 'ARCHIVED' && sale.status !== 'INACTIVE';
-    });
-
-    // Filter by verifiedOnly
+    const activeSales = transformed.filter((sale: any) => sale.status !== 'ARCHIVED' && sale.status !== 'INACTIVE');
     const isUserVerified = auth.user?.isVerified === true || auth.user?.isVerified === 1;
-    return activeSales.filter((sale: DirectSale) => {
-      if (sale.verifiedOnly === true && !isUserVerified) {
-        return false;
-      }
-      return true;
-    });
+    return activeSales.filter((sale: any) => sale.verifiedOnly === true ? isUserVerified : true);
   }, [allDirectSalesResponse, auth.user]);
 
   const queryClient = useQueryClient();
   const socketContext = useCreateSocket();
   const socket = socketContext?.socket;
-  const [animatedCards, setAnimatedCards] = useState<number[]>([]);
-  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
 
-  // Real-time: invalidate direct-sales query when a new direct sale is created
   useEffect(() => {
     if (!socket) return;
-    const handler = (data: { type: string }) => {
-      if (data?.type === 'directSale') {
-        queryClient.invalidateQueries({ queryKey: ['direct-sales'] });
-      }
-    };
+    const handler = (data: any) => { if (data?.type === 'directSale') queryClient.invalidateQueries({ queryKey: ['direct-sales'] }); };
     socket.on('newListingCreated', handler);
     return () => { socket.off('newListingCreated', handler); };
   }, [socket, queryClient]);
 
-
-  const handleImageError = (saleId: string) => {
-    setImageErrors(prev => ({ ...prev, [saleId]: true }));
-  };
-
-  // Filter and limit direct sales for display
   const directSales = useMemo(() => {
-    let filtered = [...allDirectSales];
-    
-    // Completely exclude sold-out items
-    filtered = filtered.filter(sale => {
+    return allDirectSales.filter(sale => {
       const availableQuantity = sale.quantity === 0 ? 999 : sale.quantity - (sale.soldQuantity || 0);
       return sale.status !== 'SOLD_OUT' && sale.status !== 'SOLD' && !(sale.quantity > 0 && availableQuantity <= 0);
-    });
-
-    return filtered.slice(0, 8);
+    }).slice(0, 8);
   }, [allDirectSales]);
 
-  // Intersection Observer for scroll animations
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = parseInt(entry.target.getAttribute('data-index') || '0');
-            setAnimatedCards(prev => [...prev, index]);
-          }
-        });
-      },
-      { threshold: 0.3, rootMargin: '0px 0px -50px 0px' }
-    );
-
-    const directSaleCards = document.querySelectorAll('.direct-sale-card-animate');
-    directSaleCards.forEach((card, index) => {
-      card.setAttribute('data-index', index.toString());
-      observer.observe(card);
-    });
-
-    return () => observer.disconnect();
-  }, [directSales]);
-
-  // Helper function to get seller display name
-  const getSellerDisplayName = useCallback((directSale: DirectSale) => {
-    if (directSale.hidden === true) {
-      return t('common.anonymous') || 'Anonyme';
-    }
-
-    // Prioritize company name over personal name
-    const companyName = directSale.owner?.entreprise || directSale.owner?.companyName;
-    if (companyName) {
-      return companyName;
-    }
-
-    const ownerName = directSale.owner?.firstName && directSale.owner?.lastName
-      ? `${directSale.owner.firstName} ${directSale.owner.lastName}`
-      : directSale.owner?.username;
-
-    return ownerName || t('directSale.seller') || 'Vendeur';
-  }, [t]);
-
-  // Helper function to check if current user is the owner
-  const isDirectSaleOwner = useCallback((directSale: DirectSale) => {
-    if (!isLogged || !auth.user?._id) return false;
-    return directSale.owner?._id === auth.user._id;
-  }, [isLogged, auth.user?._id]);
-
-  // Swiper settings
   const settings = useMemo(() => ({
-    slidesPerView: "auto" as const,
-    speed: 800,
-    spaceBetween: 25,
-    autoplay: {
-      delay: 2500,
-      disableOnInteraction: false,
-      pauseOnMouseEnter: true,
-    },
-    navigation: {
-      nextEl: ".direct-sale-slider-next",
-      prevEl: ".direct-sale-slider-prev",
-    },
-    pagination: {
-      el: ".swiper-pagination",
-      clickable: true,
-    },
+    slidesPerView: "auto" as const, speed: 800, spaceBetween: 20,
     breakpoints: {
-      280: {
-        slidesPerView: 1,
-        spaceBetween: 15,
-      },
-      576: {
-        slidesPerView: 2,
-        spaceBetween: 20,
-      },
-      768: {
-        slidesPerView: 2,
-        spaceBetween: 20,
-      },
-      992: {
-        slidesPerView: 3,
-        spaceBetween: 25,
-      },
-      1200: {
-        slidesPerView: 4,
-        spaceBetween: 25,
-      },
-      1400: {
-        slidesPerView: 5,
-        spaceBetween: 25,
-      },
-      1600: {
-        slidesPerView: 5,
-        spaceBetween: 30,
-      },
+      280: { slidesPerView: 1 }, 576: { slidesPerView: 2 }, 992: { slidesPerView: 3 }, 1200: { slidesPerView: 4 }
     },
   }), []);
 
-  const navigateWithScroll = useCallback((url: string) => {
-    router.push(url, { scroll: false });
-    requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, behavior: "auto" });
-    });
-  }, [router]);
+  const formatPrice = useCallback((price: number) => `${Number(price).toLocaleString()} DA`, []);
 
-  // Intersection Observer for scroll animations
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = parseInt(entry.target.getAttribute('data-index') || '0');
-            setAnimatedCards(prev => [...prev, index]);
-          }
-        });
-      },
-      { threshold: 0.3, rootMargin: '0px 0px -50px 0px' }
-    );
-
-    const directSaleCards = document.querySelectorAll('.direct-sale-card-animate');
-    directSaleCards.forEach((card, index) => {
-      card.setAttribute('data-index', index.toString());
-      observer.observe(card);
-    });
-
-    return () => observer.disconnect();
-  }, [directSales]);
-
-  if (directSalesLoading) {
-    return (
-      <div className="modern-direct-sales-section" style={{ padding: '10px 0 0 0' }}>
-        <div className="container-responsive">
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '24px',
-            padding: '20px'
-          }}>
-            {[...Array(5)].map((_, i) => (
-              <CardSkeleton key={i} />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="modern-direct-sales-section" style={{ padding: '10px 0 0 0' }}>
-        <div className="container-responsive">
-          <div className="section-header" style={{ textAlign: 'center', marginBottom: 'clamp(30px, 6vw, 50px)' }}>
-            <div className="alert alert-warning" style={{
-              background: 'rgba(247, 239, 138, 0.1)',
-              border: '1px solid rgba(247, 239, 138, 0.3)',
-              borderRadius: '12px',
-              padding: '20px',
-              color: 'var(--primary-ds-color)',
-              maxWidth: '600px',
-              margin: '0 auto',
-            }}>
-              <h3>❌ {t('liveDirectSales.loadingError')}</h3>
-              <p>{error}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (directSalesLoading) return <div style={{ background: '#fff', padding: '20px' }}><CardSkeleton /></div>;
 
   return (
-    <>
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-
-        /* Mobile responsiveness fixes */
-        @media (max-width: 768px) {
-          .modern-direct-sales-section {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            padding: 15px 16px 0 16px !important;
-            transform: none !important;
-            transition: none !important;
-            position: relative !important;
-            zIndex: 10 !important;
-            min-height: 200px !important;
-          }
-          
-          .direct-sale-slider {
-            padding-bottom: 0 !important;
-          }
-          
-          .view-all-button-container {
-            margin-top: 0 !important;
-          }
-          
-          .section-header {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            transform: none !important;
-            animation: none !important;
-          }
-          
-          .direct-sale-carousel-container {
-            padding: 0 16px !important;
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-          }
-          
-          .swiper {
-            padding: 0 16px !important;
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-          }
-
-          /* Force all direct sale content to be visible */
-          .direct-sale-card, .swiper-slide, .direct-sale-item {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-          }
-          
-          /* Ensure empty state is visible on mobile */
-          .empty-state-container {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            transform: none !important;
-            animation: none !important;
-            margin: 20px 0 !important;
-          }
-          
-          /* Ensure view all button is visible on mobile */
-          .view-all-button-container {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            transform: none !important;
-            animation: none !important;
-            margin: 30px 0 !important;
-          }
-        }
-
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
-
-        .direct-sale-card-animate {
-          opacity: 0;
-          transform: translateY(30px) scale(0.95);
-          transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-
-        .direct-sale-card-animate.animated {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
-
-        .direct-sale-card-hover {
-          transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-
-        .direct-sale-card-hover:hover {
-          transform: translateY(-8px) scale(1.02);
-          box-shadow: 0 20px 40px rgba(247, 239, 138, 0.15);
-        }
-      `}</style>
-
-      <div className="modern-direct-sales-section" style={{ padding: '10px 0 0 0', background: 'white' }}>
-        <div className="container-responsive">
-          {/* Section Header */}
-          <div className="section-header" style={{
-            textAlign: 'center',
-            marginBottom: 'clamp(12px, 2.5vw, 20px)',
-            opacity: 0,
-            transform: 'translateY(30px)',
-            animation: 'fadeInUp 0.8s ease-out forwards',
-          }}>
-            <h2 style={{
-              fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)',
-              fontWeight: '800',
-              color: 'var(--primary-ds-color)',
-              marginBottom: 'clamp(8px, 1.5vw, 12px)',
-            }}>
-              {t('liveDirectSales.title')}
-            </h2>
-            <p style={{
-              fontSize: 'clamp(0.85rem, 1.8vw, 1rem)',
-              color: 'var(--primary-ds-color)',
-              maxWidth: '600px',
-              margin: '0 auto clamp(12px, 2vw, 16px)',
-              lineHeight: '1.5',
-            }}>
-              {t('liveDirectSales.description')}
-            </p>
-            
-
-          </div>
-
-          {/* Direct Sales Content */}
-          {directSales.length > 0 ? (
-            <div className="direct-sale-carousel-container" style={{ position: 'relative' }}>
-              <Swiper
-                modules={[Navigation, Autoplay, Pagination]}
-                {...settings}
-                className="swiper direct-sale-slider"
-                style={{
-                  padding: 'clamp(10px, 2vw, 16px) 0 0',
-                  overflow: 'visible',
-                }}
-              >
-                {directSales.map((directSale, idx) => {
-                  const isAnimated = animatedCards.includes(idx);
-                  const availableQuantity = directSale.quantity === 0 
-                    ? 999 
-                    : directSale.quantity - (directSale.soldQuantity || 0);
-                  const isSoldOut = directSale.status === 'SOLD_OUT' || 
-                    directSale.status === 'SOLD' ||
-                    (directSale.quantity > 0 && availableQuantity <= 0);
-                  const displayName = getSellerDisplayName(directSale);
-
-                  return (
-                    <SwiperSlide key={directSale._id} style={{ height: 'auto', display: 'flex', justifyContent: 'center' }}>
-                      <div
-                        className={`direct-sale-card-animate direct-sale-card-hover ${isAnimated ? 'animated' : ''}`}
-                        style={{
-                          background: 'white',
-                          borderRadius: 'clamp(12px, 2.5vw, 16px)',
-                          overflow: 'hidden',
-                          boxShadow: '0 8px 25px rgba(247, 239, 138, 0.08)',
-                          border: '1px solid rgba(247, 239, 138, 0.1)',
-                          width: '100%',
-                          maxWidth: '320px',
-                          position: 'relative',
-                          minHeight: 'clamp(320px, 45vw, 360px)',
-                          opacity: isSoldOut ? 0.6 : 1,
-                          filter: isSoldOut ? 'grayscale(60%)' : 'none',
-                          cursor: isSoldOut ? 'not-allowed' : 'default'
-                        }}
-                      >
-                        {/* Direct Sale Image */}
-                        <div style={{
-                          position: 'relative',
-                          height: 'clamp(120px, 20vw, 160px)',
-                          overflow: 'hidden',
-                          background: 'var(--primary-ds-color)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}>
-                          {directSale.thumbs && directSale.thumbs.length > 0 && directSale.thumbs[0].url ? (
-                            <img
-                              src={getDirectSaleImageUrl(directSale)}
-                              alt={directSale.title}
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'contain',
-                                transition: 'transform 0.4s ease',
-                              }}
-                              onError={(e) => {
-                                if ((e.target as HTMLImageElement).src !== DEFAULT_DIRECT_SALE_IMAGE) {
-                                  (e.target as HTMLImageElement).src = DEFAULT_DIRECT_SALE_IMAGE;
-                                }
-                              }}
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div style={{
-                              color: 'white',
-                              fontSize: '48px',
-                              textAlign: 'center',
-                            }}>
-                              🛒
-                            </div>
-                          )}
-
-                          {/* Type Badge */}
-                          {directSale.saleType && (
-                            <div style={{
-                              position: 'absolute',
-                              top: '10px',
-                              left: '10px',
-                              background: 'rgba(255, 255, 255, 0.9)',
-                              color: 'var(--primary-ds-color)',
-                              padding: '6px 12px',
-                              borderRadius: '15px',
-                              fontSize: '12px',
-                              fontWeight: '600',
-                            }}>
-                              {directSale.saleType === 'PRODUCT' ? t('common.product') : t('common.service')}
-                            </div>
-                          )}
-
-                          {/* Sold Out Badge */}
-                          {isSoldOut && (
-                            <div style={{
-                              position: 'absolute',
-                              top: '10px',
-                              right: '10px',
-                              background: 'rgba(0, 0, 0, 0.7)',
-                              color: 'white',
-                              padding: '8px 12px',
-                              borderRadius: '20px',
-                              fontSize: '12px',
-                              fontWeight: '600',
-                            }}>
-                              {t('liveDirectSales.soldOut')}
-                            </div>
-                          )}
-
-                          {/* Owner Badge */}
-                          {isDirectSaleOwner(directSale) && (
-                            <div style={{
-                              position: 'absolute',
-                              top: '10px',
-                              left: '50%',
-                              transform: 'translateX(-50%)',
-                              background: 'rgba(247, 239, 138, 0.9)',
-                              color: '#3d370e',
-                              padding: '6px 12px',
-                              borderRadius: '15px',
-                              fontSize: '12px',
-                              fontWeight: '600',
-                              whiteSpace: 'nowrap',
-                            }}>
-                              {t('liveDirectSales.yourSale')}
-                            </div>
-                          )}
-
-                          {/* Share Button - Positioned in bottom-right of image */}
-                          <div style={{
-                            position: 'absolute',
-                            bottom: '10px',
-                            right: '10px',
-                            zIndex: 10,
-                          }}>
-                            <ShareButton
-                              type="directSale"
-                              id={directSale._id}
-                              title={directSale.title}
-                              description={directSale.description}
-                              imageUrl={getDirectSaleImageUrl(directSale)}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Direct Sale Details */}
-                        <div style={{ padding: 'clamp(12px, 2.5vw, 16px)' }}>
-                          <h3 style={{
-                            fontSize: 'clamp(14px, 2.2vw, 16px)',
-                            fontWeight: '600',
-                            color: '#3d370e',
-                            marginBottom: 'clamp(8px, 1.5vw, 10px)',
-                            lineHeight: '1.3',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                          }}>
-                            {directSale.title || t('liveDirectSales.directSaleTitle')}
-                          </h3>
-
-                          {/* Location and Quantity Info */}
-                          <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
-                            gap: '6px',
-                            marginBottom: '8px',
-                          }}>
-                            <div style={{
-                              background: 'linear-gradient(135deg, #fefce8, #fef9c3)',
-                              borderRadius: '8px',
-                              padding: '4px 8px',
-                              border: '1px solid #fef9c3',
-                              borderLeft: '3px solid var(--primary-ds-color)',
-                              position: 'relative',
-                              overflow: 'hidden',
-                            }}>
-                              <p style={{
-                                fontSize: '10px',
-                                color: '#8a7e1f',
-                                margin: '0 0 2px 0',
-                                fontWeight: '600',
-                              }}>
-                                📍 {t('common.location')}
-                              </p>
-                              <p style={{
-                                fontSize: '12px',
-                                color: '#3d370e',
-                                margin: 0,
-                                fontWeight: '500',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                              }}>
-                                {(() => {
-                                  const location = directSale.location || directSale.place || '';
-                                  const wilaya = directSale.wilaya || '';
-                                  const parts = [location, wilaya].filter(Boolean);
-                                  return parts.length > 0 ? parts.join(', ') : t('common.notSpecified');
-                                })()}
-                              </p>
-                            </div>
-
-                            <div style={{
-                              background: 'linear-gradient(135deg, #fefce8, #fef9c3)',
-                              borderRadius: '8px',
-                              padding: '4px 8px',
-                              border: '1px solid #fef9c3',
-                              borderLeft: '3px solid var(--primary-ds-color)',
-                              position: 'relative',
-                              overflow: 'hidden',
-                            }}>
-                              <p style={{
-                                fontSize: '10px',
-                                color: '#8a7e1f',
-                                margin: '0 0 2px 0',
-                                fontWeight: '600',
-                              }}>
-                                📦 {t('liveDirectSales.available')}
-                              </p>
-                              <p style={{
-                                fontSize: '12px',
-                                color: '#3d370e',
-                                margin: 0,
-                                fontWeight: '500',
-                              }}>
-                                {directSale.quantity === 0 
-                                  ? t('liveDirectSales.unlimited') 
-                                  : `${availableQuantity} / ${directSale.quantity}`}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Price Info */}
-                          <div style={{
-                            background: 'linear-gradient(135deg, #fefce8, #fef9c3)',
-                            borderRadius: '8px',
-                            padding: '4px 8px',
-                            marginBottom: '8px',
-                            border: '1px solid #fef9c3',
-                            borderLeft: '3px solid var(--primary-ds-color)',
-                          }}>
-                            <p style={{
-                              fontSize: '10px',
-                              color: 'var(--primary-ds-color)',
-                              margin: '0 0 2px 0',
-                              fontWeight: '600',
-                            }}>
-                              💰 {t('liveDirectSales.fixedPrice')}
-                            </p>
-                            <p style={{
-                              fontSize: '12px',
-                              color: 'var(--primary-ds-color)',
-                              margin: 0,
-                              fontWeight: '600',
-                            }}>
-                              {Number(directSale.price || 0).toLocaleString()} DA
-                            </p>
-                          </div>
-
-                          {/* Owner Info */}
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 'clamp(6px, 1.5vw, 10px)',
-                            marginBottom: 'clamp(10px, 2vw, 14px)',
-                          }}>
-                            {directSale.owner && !directSale.hidden ? (
-                              <Link
-                                href={`/profile/${directSale.owner?._id}`}
-                                scroll={false}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  navigateWithScroll(`/profile/${directSale.owner?._id}`);
-                                }}
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '10px',
-                                  textDecoration: 'none',
-                                }}
-                              >
-                                <img
-                                  src={normalizeImageUrl(directSale.owner?.avatar?.url || directSale.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
-                                  alt={displayName}
-                                  style={{
-                                    width: '32px',
-                                    height: '32px',
-                                    borderRadius: '50%',
-                                    objectFit: 'contain',
-                                  }}
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = DEFAULT_PROFILE_IMAGE;
-                                  }}
-                                />
-                                <span style={{
-                                  fontSize: '14px',
-                                  color: isSoldOut ? '#888' : 'var(--primary-ds-color)',
-                                  fontWeight: '600',
-                                  transition: 'color 0.3s ease',
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (!isSoldOut) {
-                                    e.currentTarget.style.color = '#3d370e';
-                                    e.currentTarget.style.textDecoration = 'underline';
-                                  }
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (!isSoldOut) {
-                                    e.currentTarget.style.color = 'var(--primary-ds-color)';
-                                    e.currentTarget.style.textDecoration = 'none';
-                                  }
-                                }}
-                                >
-                                  {directSale.owner.entreprise || displayName}
-                                  {!isSoldOut && (
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
-                                      <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
-                                    </svg>
-                                  )}
-                                </span>
-                              </Link>
-                            ) : (
-                              <>
-                                <img
-                                  src={normalizeImageUrl(directSale.owner?.avatar?.url || directSale.owner?.photoURL) || DEFAULT_PROFILE_IMAGE}
-                                  alt={displayName}
-                                  style={{
-                                    width: '32px',
-                                    height: '32px',
-                                    borderRadius: '50%',
-                                    objectFit: 'contain',
-                                  }}
-                                  onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = DEFAULT_PROFILE_IMAGE;
-                                  }}
-                                />
-                                <span style={{
-                                  fontSize: '14px',
-                                  color: 'var(--primary-ds-color)',
-                                  fontWeight: '500',
-                                }}>
-                                  {displayName}
-                                </span>
-                              </>
-                            )}
-                          </div>
-
-                          {/* View Details Button */}
-                          <Link
-                            href={`/direct-sale/${directSale._id}`}
-                            scroll={false}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              navigateWithScroll(`/direct-sale/${directSale._id}`);
-                            }}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: 'clamp(6px, 1.5vw, 8px)',
-                              width: '100%',
-                              padding: 'clamp(10px, 2vw, 12px) clamp(16px, 3vw, 20px)',
-                              background: isSoldOut ? '#c7c7c7' : 'var(--primary-ds-color)',
-                              color: 'white',
-                              textDecoration: 'none',
-                              borderRadius: '25px',
-                              fontWeight: '600',
-                              fontSize: 'clamp(12px, 2vw, 14px)',
-                              transition: 'all 0.3s ease',
-                              boxShadow: isSoldOut ? 'none' : '0 4px 12px rgba(247, 239, 138, 0.3)',
-                              pointerEvents: isSoldOut ? 'none' : 'auto'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isSoldOut) {
-                                e.currentTarget.style.background = 'var(--primary-ds-color)';
-                                e.currentTarget.style.transform = 'translateY(-2px)';
-                                e.currentTarget.style.boxShadow = '0 8px 20px rgba(247, 239, 138, 0.4)';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isSoldOut) {
-                                e.currentTarget.style.background = 'var(--primary-ds-color)';
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(247, 239, 138, 0.3)';
-                              }
-                            }}
-                          >
-                            {isSoldOut ? t('liveDirectSales.soldOut') : t('liveDirectSales.viewDetails')}
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
-                            </svg>
-                          </Link>
-                        </div>
-                      </div>
-                    </SwiperSlide>
-                  );
-                })}
-              </Swiper>
-
-              {/* Navigation Buttons */}
-              <div className="slider-navigation" style={{
-                position: 'absolute',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'space-between',
-                pointerEvents: 'none',
-                zIndex: 10,
-              }}>
-                <button
-                  className="direct-sale-slider-prev"
-                  style={{
-                    background: 'white',
-                    border: 'none',
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 4px 15px rgba(247, 239, 138, 0.1)',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    pointerEvents: 'auto',
-                    marginLeft: '-25px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--primary-ds-color)';
-                    e.currentTarget.style.color = 'white';
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'white';
-                    e.currentTarget.style.color = 'var(--primary-ds-color)';
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M15.41 7.41L14 6L8 12L14 18L15.41 16.59L10.83 12Z"/>
-                  </svg>
-                </button>
-
-                <button
-                  className="direct-sale-slider-next"
-                  style={{
-                    background: 'white',
-                    border: 'none',
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 4px 15px rgba(247, 239, 138, 0.1)',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    pointerEvents: 'auto',
-                    marginRight: '-25px',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--primary-ds-color)';
-                    e.currentTarget.style.color = 'white';
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'white';
-                    e.currentTarget.style.color = 'var(--primary-ds-color)';
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
-                  </svg>
-                </button>
-              </div>
-
-              {/* Pagination */}
-              <div className="swiper-pagination" style={{
-                position: 'relative',
-                marginTop: 'clamp(20px, 3vw, 25px)',
-              }}></div>
-            </div>
-          ) : (
-            <div 
-              className="empty-state-container"
-              style={{
-                textAlign: 'center',
-                padding: '60px 20px',
-                background: 'white',
-                borderRadius: '20px',
-                boxShadow: '0 8px 25px rgba(247, 239, 138, 0.08)',
-                opacity: 0,
-                transform: 'translateY(30px)',
-                animation: 'fadeInUp 0.8s ease-out forwards',
-                margin: '20px 0',
-                minHeight: '200px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}>
-              <div style={{
-                fontSize: '48px',
-                marginBottom: '20px',
-              }}>🛒</div>
-              <h3 style={{
-                fontSize: '24px',
-                fontWeight: '600',
-                color: 'var(--primary-ds-color)',
-                marginBottom: '12px',
-              }}>
-                {t('liveDirectSales.noActiveSales')}
-              </h3>
-              <p style={{
-                fontSize: '16px',
-                color: 'var(--primary-ds-color)',
-                marginBottom: '30px',
-              }}>
-                {t('liveDirectSales.comeBackLater')}
-              </p>
-            </div>
-          )}
-
-          {/* View All Button */}
-          <div 
-            className="view-all-button-container"
-            style={{
-              textAlign: 'center',
-              marginTop: '0',
-              opacity: 0,
-              transform: 'translateY(30px)',
-              animation: 'fadeInUp 0.8s ease-out 0.4s forwards',
-            }}>
-            <Link
-              href="/direct-sale"
-              scroll={false}
-              onClick={(e) => {
-                e.preventDefault();
-                navigateWithScroll("/direct-sale");
-              }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 'clamp(8px, 1.5vw, 10px)',
-                padding: 'clamp(12px, 2.5vw, 14px) clamp(24px, 4vw, 28px)',
-                background: 'var(--primary-ds-color)',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '50px',
-                fontWeight: '600',
-                fontSize: 'clamp(13px, 2.2vw, 15px)',
-                boxShadow: '0 8px 25px rgba(247, 239, 138, 0.3)',
-                transition: 'all 0.3s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--primary-ds-color)';
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.boxShadow = '0 12px 30px rgba(247, 239, 138, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--primary-ds-color)';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 8px 25px rgba(247, 239, 138, 0.3)';
-              }}
-            >
-              {t('liveDirectSales.viewAll')}
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
-              </svg>
-            </Link>
-          </div>
+    <div style={{ background: 'transparent', width: '100%', paddingBottom: '0px' }}>
+      {/* SECTION HEADER - REMOVED OVERFLOW HIDDEN */}
+      <div style={{ 
+        width: '100%', 
+        position: 'relative', 
+        padding: '60px 0 40px', 
+        textAlign: 'center',
+        overflow: 'visible' /* Prevent scale clipping */
+      }}>
+        <motion.div 
+          animate={{ scale: [1, 1.1, 1], x: [0, 20, 0] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          style={{ position: 'absolute', top: '10%', right: '20%', width: '600px', height: '400px', background: 'radial-gradient(circle, rgba(14, 165, 233, 0.06) 0%, transparent 70%)', filter: 'blur(100px)', zIndex: 0 }}
+        />
+        <div style={{ position: 'relative', zIndex: 1, display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+          <motion.h2 
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            style={{ color: '#002896', fontSize: 'clamp(26px, 4.5vw, 38px)', fontWeight: '900', margin: 0, letterSpacing: '-1.5px', background: 'linear-gradient(135deg, #002896 0%, #0ea5e9 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+          >
+            Marchés et ventes en cours
+          </motion.h2>
+          <motion.div initial={{ width: 0 }} whileInView={{ width: '100px' }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 1 }} style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #002896, transparent)', marginTop: '15px', borderRadius: '10px' }} />
         </div>
       </div>
-    </>
+
+      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1400px', margin: '0 auto', padding: '0 20px', overflow: 'visible' }}>
+        {directSales.length > 0 ? (
+          <div className="direct-sale-carousel-container" style={{ position: 'relative', overflow: 'visible' }}>
+            <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper direct-sale-slider" style={{ padding: '30px 10px', margin: '-30px -10px', overflow: 'visible' }}>
+              {directSales.map((sale: any) => {
+                const companyName = sale.owner?.entreprise || sale.owner?.companyName || sale.owner?.firstName || 'Nom Entreprise';
+                const availableQuantity = sale.quantity > 0 ? (sale.quantity - (sale.soldQuantity || 0)) : 'Illimité';
+                
+                return (
+                  <SwiperSlide key={sale.id} style={{ overflow: 'visible' }}>
+                    <div 
+                      key={sale.id}
+                      style={{ 
+                        width: '295px', 
+                        height: '383px',
+                        cursor: 'pointer',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        zIndex: 1,
+                        borderRadius: '24px',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}
+                      onMouseOver={e => {
+                        e.currentTarget.style.transform = 'scale(1.03) translateY(-4px)';
+                        e.currentTarget.style.zIndex = '10';
+                      }}
+                      onMouseOut={e => {
+                        e.currentTarget.style.transform = 'scale(1) translateY(0)';
+                        e.currentTarget.style.zIndex = '1';
+                      }}
+                      onClick={() => router.push(`/direct-sale/${sale.id}`)}
+                    >
+                      <div style={{ width: '295px', height: '295px', borderRadius: '24px', overflow: 'hidden', flexShrink: 0 }}>
+                        <img 
+                          src={getDirectSaleImageUrl(sale)} 
+                          alt={sale.title} 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                          onError={(e) => (e.currentTarget.src = DEFAULT_DIRECT_SALE_IMAGE)} 
+                        />
+                      </div>
+                      <div style={{ 
+                        padding: '12px 10px', 
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between'
+                      }}>
+                        <h4 style={{ 
+                          fontFamily: 'Roboto, sans-serif',
+                          fontWeight: '700', 
+                          fontSize: '20px', 
+                          lineHeight: '100%',
+                          letterSpacing: '0px',
+                          verticalAlign: 'middle',
+                          color: '#002896', 
+                          margin: '0 0 6px 0', 
+                          whiteSpace: 'nowrap', 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis' 
+                        }}>
+                          {sale.title || 'Nom Produit'}
+                        </h4>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                          <span style={{ 
+                            fontFamily: 'Inter, sans-serif',
+                            fontWeight: '700', 
+                            fontSize: '24px', 
+                            lineHeight: '100%',
+                            letterSpacing: '0px',
+                            verticalAlign: 'middle',
+                            color: '#002896' 
+                          }}>
+                           {Number(sale.price || 0).toLocaleString()}
+                          </span>
+                          <span style={{ 
+                            display: 'inline-flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            width: '46px', 
+                            height: '29px', 
+                            background: 'rgba(0, 40, 150, 0.08)', 
+                            color: '#002896', 
+                            borderRadius: '8px', 
+                            fontSize: '13px', 
+                            fontWeight: '800' 
+                          }}>DA</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '11px', color: '#002896', fontWeight: '700', textTransform: 'uppercase' }}>
+                            {availableQuantity} en stock
+                          </span>
+                          <span style={{ 
+                            fontFamily: 'Roboto, sans-serif',
+                            fontSize: '14px', 
+                            fontWeight: '400', 
+                            lineHeight: '100%',
+                            letterSpacing: '0px',
+                            verticalAlign: 'middle',
+                            color: '#002896', 
+                            whiteSpace: 'nowrap', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            maxWidth: '101px', 
+                            textAlign: 'right' 
+                          }}>
+                            {companyName}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: '11px', color: '#002896', fontWeight: '600' }}>
+                            Achat Immédiat • {sale.wilaya || "Algérie"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                );
+              })}
+            </Swiper>
+            
+            <div style={{ textAlign: 'center', marginTop: '60px' }}>
+              <Link href="/direct-sale" style={{ display: 'inline-block', padding: '10px 30px', color: '#002896', textDecoration: 'none', fontSize: '18px', fontWeight: '800', transition: 'all 0.3s ease' }}>
+                Voir tout
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div style={{ color: '#002896', textAlign: 'center', padding: '40px', fontWeight: 'bold' }}>Aucune vente en cours</div>
+        )}
+      </div>
+    </div>
   );
 };
 

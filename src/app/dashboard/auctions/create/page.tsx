@@ -13,8 +13,11 @@ import {
   alpha,
   FormControlLabel,
   Switch,
+  Stack,
   Divider,
   Skeleton,
+  Container,
+  Button,
 } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import * as Yup from 'yup';
@@ -22,6 +25,7 @@ import { useFormik, FormikProvider } from 'formik';
 import { useTranslation } from 'react-i18next';
 import { 
     MdStore, 
+    MdImage,
     MdCheck, 
     MdGavel, 
     MdFlashOn, 
@@ -38,12 +42,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useAuth from '@/hooks/useAuth';
 import { useSettingsStore } from '@/contexts/settingsStore';
 
-// Shared Wizard Components
-import WizardWrapper from '@/components/shared/wizard/WizardWrapper';
-import WizardStepper from '@/components/shared/wizard/WizardStepper';
-import SelectionCard from '@/components/shared/wizard/SelectionCard';
+// Shared Components
 import RichFileUpload from '@/components/shared/wizard/RichFileUpload';
-import WizardNavigation from '@/components/shared/wizard/WizardNavigation';
 
 const BID_TYPES = {
   PRODUCT: "PRODUCT",
@@ -76,78 +76,16 @@ export default function CreateAuctionPage() {
     const pageTheme = React.useMemo(() => createTheme(theme, {
         palette: {
             primary: { 
-                main: auctionColor || '#0284c7',
-                light: auctionColor || '#0284c7',
-                dark: auctionColor || '#0284c7',
-                contrastText: '#fff'
-            },
-            secondary: { 
-                main: auctionColor || '#0284c7',
-                light: auctionColor || '#0284c7',
-                dark: auctionColor || '#0284c7',
+                main: '#002795',
                 contrastText: '#fff'
             },
         },
-        components: {
-            MuiOutlinedInput: {
-                styleOverrides: {
-                    root: {
-                        borderRadius: '16px',
-                        backgroundColor: alpha('#888', 0.05),
-                        '& fieldset': { borderColor: 'transparent', transition: 'all 0.2s ease' },
-                        transition: 'all 0.2s ease-in-out',
-                        '&:hover fieldset': {
-                            borderColor: alpha('#888', 0.15),
-                        },
-                        '&.Mui-focused': {
-                            backgroundColor: theme.palette.background.paper,
-                            '& fieldset': {
-                                borderColor: theme.palette.primary.main,
-                                borderWidth: '2px',
-                            },
-                        },
-                    }
-                }
-            },
-            MuiSwitch: {
-                styleOverrides: {
-                    root: {
-                        width: 42,
-                        height: 26,
-                        padding: 0,
-                        '& .MuiSwitch-switchBase': {
-                            padding: 0,
-                            margin: 2,
-                            transitionDuration: '300ms',
-                            '&.Mui-checked': {
-                                transform: 'translateX(16px)',
-                                color: '#fff',
-                                '& + .MuiSwitch-track': {
-                                    backgroundColor: auctionColor || '#0284c7',
-                                    opacity: 1,
-                                    border: 0,
-                                },
-                            },
-                        },
-                        '& .MuiSwitch-thumb': {
-                            boxSizing: 'border-box',
-                            width: 22,
-                            height: 22,
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                        },
-                        '& .MuiSwitch-track': {
-                            borderRadius: 26 / 2,
-                            backgroundColor: '#E9E9EA',
-                            opacity: 1,
-                        },
-                    }
-                }
-            }
-        }
-    }), [theme, auctionColor]);
+        typography: {
+            fontFamily: "'DM Sans', sans-serif",
+        },
+    }), [theme]);
     
     // State
-    const [activeStep, setActiveStep] = useState(0);
     const [categories, setCategories] = useState<any[]>([]);
     const [images, setImages] = useState<File[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -157,24 +95,17 @@ export default function CreateAuctionPage() {
     // Formik
     const validationSchema = Yup.object().shape({
         bidType: Yup.string().required(t('createAuction.errors.selectBidType')),
-        auctionType: Yup.string().required(t('createAuction.errors.selectBidType')),
         productCategory: Yup.string().required(t('createAuction.errors.categoryRequired')),
         title: Yup.string().min(3).required(t('createAuction.errors.titleRequired')),
-        description: Yup.string().min(10).required(t('createAuction.errors.descriptionRequired')),
+        description: Yup.string().min(10, 'La description doit contenir au moins 10 caractères').required('La description est requise'),
         startingPrice: Yup.number().min(1).required(t('createAuction.errors.startingPricePositive')),
         duration: Yup.number().nullable().required(t('createAuction.errors.noDuration')),
         place: Yup.string().required(t('createAuction.errors.placeRequired')),
         wilaya: Yup.string().required(t('createAuction.errors.wilayaRequired')),
-        quantity: Yup.string().when('bidType', {
-            is: BID_TYPES.PRODUCT,
-            then: (schema) => schema.required(t('createAuction.errors.quantityRequired')),
-            otherwise: (schema) => schema.notRequired(),
-        }),
-        reservePrice: Yup.number().min(0).required(t('createAuction.errors.reservePriceRequired')),
-        contactNumber: Yup.string().matches(
-            /^[0-9]{10}$/,
-            'Le numéro de contact doit contenir 10 chiffres'
-        ).optional(),
+        quantity: Yup.string().required(t('createAuction.errors.quantityRequired')),
+        reservePrice: Yup.number().min(0).optional(),
+        size: Yup.string().optional(),
+        color: Yup.string().optional(),
     });
 
     const formik = useFormik({
@@ -182,11 +113,11 @@ export default function CreateAuctionPage() {
             title: '',
             description: '',
             bidType: '',
-            auctionType: '',
+            auctionType: AUCTION_TYPES.CLASSIC,
             productCategory: '',
             productSubCategory: '',
             startingPrice: '',
-            duration: null,
+            duration: '',
             place: '',
             wilaya: '',
             quantity: '',
@@ -195,6 +126,8 @@ export default function CreateAuctionPage() {
             professionalOnly: false,
             reservePrice: '',
             contactNumber: '',
+            size: '',
+            color: '',
         },
         validationSchema,
         validateOnChange: false,
@@ -215,9 +148,15 @@ export default function CreateAuctionPage() {
         const savedSession = sessionStorage.getItem('mazadclick-create-auction-draft');
         if (savedSession) {
             try {
-                const { step, values } = JSON.parse(savedSession);
-                if (step !== undefined) setActiveStep(step);
-                if (values) formik.setValues(values);
+                const { values } = JSON.parse(savedSession);
+                if (values) {
+                    // Sanitize null values to empty strings to avoid React value prop errors
+                    const sanitizedValues = Object.keys(values).reduce((acc: any, key) => {
+                        acc[key] = values[key] ?? formik.initialValues[key as keyof typeof formik.initialValues];
+                        return acc;
+                    }, {});
+                    formik.setValues({ ...formik.initialValues, ...sanitizedValues });
+                }
             } catch (e) {
                 console.error("Failed to restore session draft", e);
             }
@@ -229,74 +168,10 @@ export default function CreateAuctionPage() {
     useEffect(() => {
         if (isHydrated) {
             sessionStorage.setItem('mazadclick-create-auction-draft', JSON.stringify({
-                step: activeStep,
                 values: formik.values
             }));
         }
-    }, [activeStep, formik.values, isHydrated]);
-
-    const loadCategories = async () => {
-        try {
-            const cached = sessionStorage.getItem('mazadclick-categories-cache');
-            if (cached) {
-                setCategories(JSON.parse(cached));
-                setIsLoadingCategories(false);
-            }
-
-            const { CategoryAPI } = await import('@/services/category');
-            const response = await CategoryAPI.getCategoryTree();
-            let categoryData: any[] = [];
-            if (response?.data && Array.isArray(response.data)) categoryData = response.data;
-            else if (Array.isArray(response)) categoryData = response;
-            
-            if (categoryData.length > 0) {
-                setCategories(categoryData);
-                sessionStorage.setItem('mazadclick-categories-cache', JSON.stringify(categoryData));
-            }
-        } catch (error) {
-            console.error('Error loading categories', error);
-        } finally {
-            setIsLoadingCategories(false);
-        }
-    };
-
-    const validateStep = (step: number) => {
-        const { values } = formik;
-        switch (step) {
-            case 0: return !!values.bidType && !!values.auctionType;
-            case 1: return !!values.productCategory;
-            case 2: return !!values.title && !!values.description && !!values.startingPrice && !!values.duration && !!values.place && !!values.wilaya;
-            default: return true;
-        }
-    };
-
-    const handleNext = () => {
-        if (validateStep(activeStep)) {
-            setActiveStep((prev) => prev + 1);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            return;
-        }
-        formik.validateForm().then((errors) => {
-             // force touch to show errors if any
-             formik.setTouched(
-                 Object.keys(formik.initialValues).reduce((acc, key) => ({ ...acc, [key]: true }), {})
-             );
-        });
-    };
-
-    const handleBack = () => {
-        const prevStep = activeStep - 1;
-        setActiveStep(prevStep);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        // Unselect values for the step we are going back to
-        if (prevStep === 0) {
-            formik.setFieldValue('bidType', '');
-            formik.setFieldValue('auctionType', '');
-        } else if (prevStep === 1) {
-            formik.setFieldValue('productCategory', '');
-        }
-    };
+    }, [formik.values, isHydrated]);
 
     const handleSubmit = async (values: any) => {
         try {
@@ -348,328 +223,404 @@ export default function CreateAuctionPage() {
         t('createAuction.steps.details')
     ];
 
-    const getDurationIcon = (val: number) => {
-        if(val <= 2) return MdFlashOn;
-        if(val <= 7) return MdCalendarToday;
-        if(val <= 15) return MdCalendarViewMonth;
-        return MdDateRange;
+    const loadCategories = async () => {
+        try {
+            const cached = sessionStorage.getItem('mazadclick-categories-cache');
+            if (cached) {
+                setCategories(JSON.parse(cached));
+                setIsLoadingCategories(false);
+            }
+            const { CategoryAPI } = await import('@/services/category');
+            const response = await CategoryAPI.getCategoryTree();
+            let categoryData: any[] = [];
+            if (response?.data && Array.isArray(response.data)) categoryData = response.data;
+            else if (Array.isArray(response)) categoryData = response;
+            if (categoryData.length > 0) {
+                setCategories(categoryData);
+                sessionStorage.setItem('mazadclick-categories-cache', JSON.stringify(categoryData));
+            }
+        } catch (error) { console.error(error); } finally { setIsLoadingCategories(false); }
     };
 
-    const renderStepContent = (step: number) => {
-        switch (step) {
-            case 0:
-                return (
-                    <Box>
-                        <Typography variant="h5" fontWeight="bold" textAlign="center" gutterBottom>
-                            {t('createAuction.chooseType')}
-                        </Typography>
-                        <Grid container spacing={2} sx={{ mt: 2 }}>
-                            <Grid size={12}>
-                                <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>{t('createAuction.typeOfListing')}</Typography>
-                                <Grid container spacing={2}>
-                                    {[BID_TYPES.PRODUCT].map((type) => (
-                                        <Grid size={{ xs: 6, md: 6 }} key={type}>
-                                            <SelectionCard 
-                                                title={type === BID_TYPES.PRODUCT ? t('createAuction.product') : t('createAuction.service')}
-                                                description={type === BID_TYPES.PRODUCT ? t('createAuction.productDesc') : t('createAuction.serviceDesc')}
-                                                icon={type === BID_TYPES.PRODUCT ? <MdStore /> : <MdEmail />}
-                                                selected={formik.values.bidType === type}
-                                                onClick={() => {
-                                                formik.setFieldValue('bidType', type);
-                                                // Check if other field is already set (using current render's value)
-                                                if(formik.values.auctionType) {
-                                                    setTimeout(() => {
-                                                        setActiveStep(prev => prev + 1);
-                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                    }, 300); 
-                                                }
-                                            }}
-                                        />
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        </Grid>
-
-                        <Grid size={12}>
-                            <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>{t('createAuction.auctionStyle')}</Typography>
-                            <Grid container spacing={2}>
-                                {[AUCTION_TYPES.CLASSIC, AUCTION_TYPES.EXPRESS].map((type) => (
-                                    <Grid size={{ xs: 6, md: 6 }} key={type}>
-                                        <SelectionCard 
-                                            title={type === AUCTION_TYPES.CLASSIC ? t('createAuction.classic') : t('createAuction.express')}
-                                            description={type === AUCTION_TYPES.CLASSIC ? t('createAuction.classicDesc') : t('createAuction.expressDesc')}
-                                            icon={type === AUCTION_TYPES.CLASSIC ? <MdGavel /> : <MdFlashOn />}
-                                            selected={formik.values.auctionType === type}
-                                            onClick={() => {
-                                                formik.setFieldValue('auctionType', type);
-                                                if(formik.values.bidType) {
-                                                    setTimeout(() => {
-                                                        setActiveStep(prev => prev + 1);
-                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                    }, 300);
-                                                }
-                                            }}
-                                        />
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                </Box>
-            );
-
-        case 1:
-            const filteredCats = categories.filter(c => c.type === formik.values.bidType || !c.type);
-            return (
-                <Box>
-                        <Typography variant="h5" fontWeight="bold" textAlign="center" gutterBottom>
-                        {t('createAuction.selectCategory')}
-                    </Typography>
-                    <Grid container spacing={2} sx={{ mt: 2 }}>
-                        {filteredCats.map((category) => (
-                                <Grid size={{ xs: 12, sm: 6, md: 3 }} key={category._id}>
-                                <SelectionCard
-                                    title={category.name}
-                                    icon={<MdKeyboardArrowRight />}
-                                    selected={formik.values.productCategory === category._id}
-                                    onClick={() => {
-                                        formik.setFieldValue('productCategory', category._id);
-                                        setTimeout(() => {
-                                            setActiveStep(prev => prev + 1);
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }, 300);
-                                    }}
-                                    className="h-full"
-                                />
-                                </Grid>
-                        ))}
-                    </Grid>
-                </Box>
-            );
-
-            case 2:
-                const timeOptions = formik.values.auctionType === AUCTION_TYPES.EXPRESS 
-                    ? [2, 4, 8, 24]
-                    : [2, 7, 15, 30, 60];
-
-                return (
-                    <Grid container spacing={3}>
-                         {/* DURATION SECTION */}
-                         <Grid size={12}>
-                             <Typography variant="h6" gutterBottom fontWeight="bold">{t('createAuction.duration')}</Typography>
-                             <Grid container spacing={2}>
-                                {timeOptions.map((val) => {
-                                    const Icon = getDurationIcon(val);
-                                    const label = formik.values.auctionType === AUCTION_TYPES.EXPRESS ? `${val} ${t('createAuction.hours')}` : `${val} ${t('createAuction.days')}`;
-                                    
-                                    return (
-                                        <Grid size={{ xs: 6, md: 3 }} key={val}>
-                                            <SelectionCard 
-                                                title={label}
-                                                icon={<Icon />}
-                                                selected={formik.values.duration === val}
-                                                onClick={() => formik.setFieldValue('duration', val)}
-                                            />
-                                        </Grid>
-                                    );
-                                })}
-                             </Grid>
-                             <Divider sx={{ my: 4 }} />
-                         </Grid>
-
-                        {/* BASIC INFO */}
-                        <Grid size={{ xs: 12, md: 8 }}>
-                             <Typography variant="h6" gutterBottom fontWeight="bold">{t('createAuction.itemDetails')}</Typography>
-                             <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4 }}>
-                                 <TextField
-                                    fullWidth
-                                    label={t('createAuction.titleLabel')}
-                                    variant="outlined"
-                                    {...formik.getFieldProps('title')}
-                                    error={formik.touched.title && Boolean(formik.errors.title)}
-                                    helperText={formik.touched.title && formik.errors.title}
-                                    sx={{ mb: 3 }}
-                                 />
-                                 <TextField
-                                    fullWidth
-                                    multiline
-                                    rows={5}
-                                    label={t('createAuction.descriptionLabel')}
-                                    variant="outlined"
-                                    {...formik.getFieldProps('description')}
-                                    error={formik.touched.description && Boolean(formik.errors.description)}
-                                    helperText={formik.touched.description && formik.errors.description}
-                                 />
-                             </Box>
-                        </Grid>
-
-                        {/* PRICING & QUANTITY */}
-                        <Grid size={{ xs: 12, md: 4 }}>
-                             <Typography variant="h6" gutterBottom fontWeight="bold">{t('createAuction.pricing')}</Typography>
-                             <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                 <TextField
-                                    fullWidth
-                                    type="number"
-                                    label={t('createAuction.startingPrice')}
-                                    InputProps={{ endAdornment: <InputAdornment position="end">DA</InputAdornment> }}
-                                    variant="outlined"
-                                    {...formik.getFieldProps('startingPrice')}
-                                    error={formik.touched.startingPrice && Boolean(formik.errors.startingPrice)}
-                                    helperText={formik.touched.startingPrice && formik.errors.startingPrice}
-                                 />
-                                 
-                                 <TextField
-                                    fullWidth
-                                    type="number"
-                                    label={t('createAuction.reservePrice')}
-                                    placeholder={t('createAuction.optional')}
-                                    InputProps={{ endAdornment: <InputAdornment position="end">DA</InputAdornment> }}
-                                    variant="outlined"
-                                    {...formik.getFieldProps('reservePrice')}
-                                    error={formik.touched.reservePrice && Boolean(formik.errors.reservePrice)}
-                                    helperText={(formik.touched.reservePrice && formik.errors.reservePrice) || t('createAuction.reservePriceHelp')}
-                                 />
-
-                                 {formik.values.bidType === BID_TYPES.PRODUCT && (
-                                     <TextField
-                                        fullWidth
-                                        label={t('createAuction.quantity')}
-                                        type="text"
-                                        variant="outlined"
-                                        {...formik.getFieldProps('quantity')}
-                                        error={formik.touched.quantity && Boolean(formik.errors.quantity)}
-                                        helperText={formik.touched.quantity && formik.errors.quantity}
-                                     />
-                                 )}
-                             </Box>
-                        </Grid>
-                        
-                        {/* LOCATION */}
-                        <Grid size={{ xs: 12, md: 6 }}>
-                             <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>{t('createAuction.location')}</Typography>
-                             <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4 }}>
-                                 <TextField
-                                    fullWidth
-                                    select
-                                    label={t('createAuction.wilaya')}
-                                    variant="outlined"
-                                    {...formik.getFieldProps('wilaya')}
-                                    error={formik.touched.wilaya && Boolean(formik.errors.wilaya)}
-                                    helperText={formik.touched.wilaya && formik.errors.wilaya}
-                                    sx={{ mb: 3 }}
-                                 >
-                                     {WILAYAS.map((w) => <MenuItem key={w} value={w}>{w}</MenuItem>)}
-                                 </TextField>
-                                 <TextField
-                                    fullWidth
-                                    label={t('createAuction.address')}
-                                    variant="outlined"
-                                    InputProps={{ startAdornment: <InputAdornment position="start"><MdLocationOn /></InputAdornment> }}
-                                    {...formik.getFieldProps('place')}
-                                    error={formik.touched.place && Boolean(formik.errors.place)}
-                                    helperText={formik.touched.place && formik.errors.place}
-                                 />
-                             </Box>
-                         </Grid>
-
-
-
-                        {/* VISIBILITY SETTINGS */}
-                        <Grid size={{ xs: 12, md: 6 }}>
-                            <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>{t('createAuction.settings')}</Typography>
-                            <Box sx={{ p: { xs: 3, md: 4 }, backgroundColor: alpha(theme.palette.text.primary, 0.02), borderRadius: 4 }}>
-                                <FormControlLabel
-                                    control={<Switch checked={formik.values.hidden} onChange={formik.handleChange} name="hidden" />}
-                                    label={
-                                        <Box>
-                                            <Typography variant="body1" fontWeight="bold">Masquer l'utilisateur</Typography>
-                                            <Typography variant="caption" color="text.secondary">{t('createAuction.hiddenDesc')}</Typography>
-                                        </Box>
-                                    }
-                                    sx={{ mb: 2, width: '100%', alignItems: 'flex-start' }}
-                                />
-
-                                {auth.user?.type === 'PROFESSIONAL' && (
-                                <FormControlLabel
-                                    control={<Switch checked={formik.values.professionalOnly} onChange={formik.handleChange} name="professionalOnly" />}
-                                    label={
-                                        <Box>
-                                            <Typography variant="body1" fontWeight="bold">Professionnels uniquement</Typography>
-                                            <Typography variant="caption" color="text.secondary">Visible uniquement par les comptes professionnels</Typography>
-                                        </Box>
-                                    }
-                                    sx={{ width: '100%', alignItems: 'flex-start' }}
-                                />
-                                )}
-                            </Box>
-                        </Grid>
-
-                        {/* IMAGES */}
-                        <Grid size={12}>
-                             <Typography variant="h6" gutterBottom fontWeight="bold" sx={{ mt: 2 }}>{t('createAuction.images')}</Typography>
-                             <RichFileUpload 
-                                files={images}
-                                onFilesChange={setImages}
-                                accept="image/*"
-                                subtitle={t('createAuction.uploadImages')}
-                             />
-                        </Grid>
-                    </Grid>
-                );
-            default:
-                return null;
-        }
+    const fieldLabelStyle = {
+        color: '#002795',
+        fontWeight: 700,
+        fontSize: '0.95rem',
+        mb: 1,
+        display: 'block'
     };
+
+    const inputStyle = {
+        '& .MuiOutlinedInput-root': {
+            borderRadius: '12px',
+            backgroundColor: '#ffffff',
+            '& fieldset': { borderColor: '#D1D1D1', borderWidth: '1.6px' },
+            '&:hover fieldset': { borderColor: '#cbd5e1' },
+            '&.Mui-focused fieldset': { borderColor: '#002795', borderWidth: '1.6px' },
+        },
+        '& .MuiInputBase-input': { padding: '12px 16px' }
+    };
+
+    const cardStyle = {
+        p: { xs: 3, md: 5 },
+        backgroundColor: '#ffffff',
+        borderRadius: '32px',
+        border: '1px solid #f1f5f9',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+    };
+
+    if (!isHydrated) return null;
 
     return (
         <ThemeProvider theme={pageTheme}>
-        <FormikProvider value={formik}>
-            <WizardWrapper 
-                title={t('createAuction.title')}
-                subtitle={t('createAuction.subtitle')}
-                onBack={activeStep > 0 ? handleBack : undefined}
-                backLabel={t('createAuction.back')}
-            >
-                <WizardStepper activeStep={activeStep} steps={steps} />
-                
-                <Box sx={{ minHeight: 200, position: 'relative' }}>
-                    {(!isHydrated || isLoadingCategories) ? (
-                        <Box sx={{ p: 2 }}>
-                            <Skeleton variant="text" width="40%" height={50} sx={{ mx: 'auto', mb: 3 }} />
-                            <Grid container spacing={2}>
-                                {[1, 2].map((i) => (
-                                    <Grid size={{ xs: 12, sm: 6 }} key={i}>
-                                        <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 4 }} />
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        </Box>
-                    ) : (
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeStep}
-                                initial={{ opacity: 0, y: 15 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -15 }}
-                                transition={{ duration: 0.3 }}
+            <Box sx={{ 
+                minHeight: '100vh', 
+                backgroundColor: '#f8fafc', 
+                p: { xs: 1, md: 2, xl: 4 }, 
+                display: 'flex', 
+                justifyContent: 'center',
+                overflow: 'auto'
+            }}>
+                <Container maxWidth={false} sx={{ 
+                    width: { xl: '1161px' }, 
+                    transform: { xl: 'scale(0.82)', lg: 'scale(0.8)' },
+                    transformOrigin: 'top center',
+                    p: '0 !important', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    gap: '16px',
+                    pb: 10
+                }}>
+                    {/* TOP LEVEL AUCTION TYPE SELECTOR - PREMIUM DROP LIST */}
+                    <Box sx={{ ...cardStyle, mb: 1, py: 4, px: 6, textAlign: 'center' }}>
+                        <Typography variant="h5" sx={{ color: '#002795', fontWeight: 800, mb: 3 }}>
+                            Type d'enchère
+                        </Typography>
+                        <Box sx={{ maxWidth: '600px', mx: 'auto' }}>
+                            <TextField
+                                select
+                                fullWidth
+                                variant="outlined"
+                                placeholder="Choisir un type"
+                                {...formik.getFieldProps('auctionType')}
+                                sx={inputStyle}
+                                SelectProps={{ displayEmpty: true }}
                             >
-                                {renderStepContent(activeStep)}
-                            </motion.div>
-                        </AnimatePresence>
-                    )}
-                </Box>
+                                <MenuItem value={AUCTION_TYPES.CLASSIC}>⚖️ Enchère Classique</MenuItem>
+                                <MenuItem value={AUCTION_TYPES.EXPRESS}>⚡ Enchère Express</MenuItem>
+                            </TextField>
+                        </Box>
+                    </Box>
 
-                <WizardNavigation 
-                    onNext={activeStep < steps.length - 1 ? handleNext : () => formik.handleSubmit()}
-                    isLastStep={activeStep === steps.length - 1}
-                    isSubmitting={isSubmitting}
-                    disableNext={!validateStep(activeStep)}
-                    submitLabel={t('createAuction.publishAuction')}
-                    nextLabel={t('createAuction.nextStep')}
-                    hideNext={activeStep === 0 || activeStep === 1}
-                />
-            </WizardWrapper>
-        </FormikProvider>
+                    <FormikProvider value={formik}>
+                        <Grid container spacing={2.75}>
+                            {/* LEFT COLUMN: INFORMATION */}
+                            <Grid size={{ xs: 12, md: 7.5 }}>
+                                <Stack spacing={2.75}>
+                                    <Box sx={cardStyle}>
+                                        <Typography 
+                                            variant="h4" 
+                                            sx={{ 
+                                                color: '#002795', 
+                                                fontFamily: "'DM Sans', sans-serif",
+                                                fontWeight: 600, 
+                                                fontSize: '22px',
+                                                lineHeight: '130%',
+                                                mb: 1, 
+                                                display: 'flex',
+                                                alignItems: 'center'
+                                            }}
+                                        >
+                                            Informations enchère
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ color: '#94a3b8', mb: 4 }}>
+                                            Remplissez les détails ci-dessous pour publier votre enchère.
+                                        </Typography>
+
+                                        <Grid container spacing={2.5}>
+                                            <Grid size={{ xs: 12 }}>
+                                                <Typography sx={fieldLabelStyle}>Délai</Typography>
+                                                <TextField 
+                                                    select fullWidth variant="outlined" 
+                                                    placeholder="choisir un delai"
+                                                    {...formik.getFieldProps('duration')} 
+                                                    sx={inputStyle}
+                                                    SelectProps={{ displayEmpty: true }}
+                                                >
+                                                    <MenuItem value="" disabled>choisir un delai</MenuItem>
+                                                    {formik.values.auctionType === AUCTION_TYPES.EXPRESS ? (
+                                                        [1, 2, 4, 12, 24].map(v => (
+                                                            <MenuItem key={v} value={v}>{v} {v === 1 ? 'heure' : 'heures'}</MenuItem>
+                                                        ))
+                                                    ) : (
+                                                        [1, 2, 3, 5, 7, 10, 15, 30].map(v => (
+                                                            <MenuItem key={v} value={v}>{v} {v === 1 ? 'jour' : 'jours'}</MenuItem>
+                                                        ))
+                                                    )}
+                                                </TextField>
+                                            </Grid>
+
+                                            <Grid size={{ xs: 12 }}>
+                                                <Typography sx={fieldLabelStyle}>Nom produit</Typography>
+                                                <TextField
+                                                    fullWidth placeholder="Nom" variant="outlined"
+                                                    {...formik.getFieldProps('title')}
+                                                    error={formik.touched.title && !!formik.errors.title}
+                                                    helperText={formik.touched.title && formik.errors.title}
+                                                    sx={inputStyle}
+                                                />
+                                            </Grid>
+
+                                            <Grid size={{ xs: 12 }}>
+                                                <Typography sx={fieldLabelStyle}>Description</Typography>
+                                                <TextField
+                                                    fullWidth placeholder="Description détaillée du produit ou service" 
+                                                    variant="outlined" multiline rows={4}
+                                                    {...formik.getFieldProps('description')}
+                                                    error={formik.touched.description && !!formik.errors.description}
+                                                    helperText={formik.touched.description && formik.errors.description}
+                                                    sx={inputStyle}
+                                                />
+                                            </Grid>
+
+                                            <Grid size={{ xs: 12, sm: 6 }}>
+                                                <Typography sx={fieldLabelStyle}>Taille ou poids</Typography>
+                                                <TextField
+                                                    fullWidth placeholder="Taille" variant="outlined"
+                                                    {...formik.getFieldProps('size')}
+                                                    sx={inputStyle}
+                                                />
+                                            </Grid>
+
+                                            <Grid size={{ xs: 12, sm: 6 }}>
+                                                <Typography sx={fieldLabelStyle}>Couleur</Typography>
+                                                <TextField
+                                                    fullWidth placeholder="Couleur" variant="outlined"
+                                                    {...formik.getFieldProps('color')}
+                                                    sx={inputStyle}
+                                                />
+                                            </Grid>
+
+                                            <Grid size={{ xs: 12, sm: 6 }}>
+                                                <Typography sx={fieldLabelStyle}>Categorie</Typography>
+                                                <TextField
+                                                    select fullWidth variant="outlined"
+                                                    placeholder="Selectionner catégorie"
+                                                    {...formik.getFieldProps('productCategory')}
+                                                    sx={inputStyle}
+                                                    SelectProps={{ displayEmpty: true }}
+                                                >
+                                                    <MenuItem value="" disabled>Selectionner catégorie</MenuItem>
+                                                    {categories.map(cat => <MenuItem key={cat._id} value={cat._id}>{cat.name}</MenuItem>)}
+                                                </TextField>
+                                            </Grid>
+
+                                            <Grid size={{ xs: 12, sm: 6 }}>
+                                                <Typography sx={fieldLabelStyle}>Prix</Typography>
+                                                <TextField
+                                                    fullWidth type="number" placeholder="Prix" variant="outlined"
+                                                    {...formik.getFieldProps('startingPrice')}
+                                                    sx={inputStyle}
+                                                    InputProps={{ endAdornment: <InputAdornment position="end">DA</InputAdornment> }}
+                                                />
+                                            </Grid>
+
+                                            <Grid size={{ xs: 12 }}>
+                                                <Typography sx={fieldLabelStyle}>Quantité</Typography>
+                                                <TextField
+                                                    fullWidth placeholder="Entrer quantité en stock" variant="outlined"
+                                                    {...formik.getFieldProps('quantity')}
+                                                    sx={inputStyle}
+                                                />
+                                            </Grid>
+
+                                            <Grid size={{ xs: 12 }}>
+                                                <Typography sx={fieldLabelStyle}>Status enchère</Typography>
+                                                <TextField
+                                                    select fullWidth variant="outlined"
+                                                    placeholder="Select status product"
+                                                    {...formik.getFieldProps('bidType')}
+                                                    sx={inputStyle}
+                                                    SelectProps={{ displayEmpty: true }}
+                                                >
+                                                    <MenuItem value="" disabled>Select status product</MenuItem>
+                                                    <MenuItem value={BID_TYPES.PRODUCT}>Produit</MenuItem>
+                                                    <MenuItem value={BID_TYPES.SERVICE}>Service</MenuItem>
+                                                </TextField>
+                                            </Grid>
+                                        </Grid>
+                                    </Box>
+
+                                    {/* SECONDARY CARD: LOCATION */}
+                                    <Box sx={cardStyle}>
+                                        <Typography variant="h5" sx={{ color: '#002795', fontWeight: 600, fontSize: '20px', mb: 3 }}>
+                                            Information Localisation
+                                        </Typography>
+                                        <Grid container spacing={2.5}>
+                                            <Grid size={{ xs: 12, sm: 6 }}>
+                                                <Typography sx={fieldLabelStyle}>Wilaya</Typography>
+                                                <TextField select fullWidth variant="outlined" placeholder="Wilaya" {...formik.getFieldProps('wilaya')} sx={inputStyle} SelectProps={{ displayEmpty: true }}>
+                                                    <MenuItem value="" disabled>Wilaya</MenuItem>
+                                                    {WILAYAS.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
+                                                </TextField>
+                                            </Grid>
+                                            <Grid size={{ xs: 12, sm: 6 }}>
+                                                <Typography sx={fieldLabelStyle}>Localisation</Typography>
+                                                <TextField fullWidth placeholder="Localisation" variant="outlined" {...formik.getFieldProps('place')} sx={inputStyle} />
+                                            </Grid>
+                                        </Grid>
+                                    </Box>
+
+                                </Stack>
+                            </Grid>
+
+                            {/* RIGHT COLUMN: MEDIA & ACTIONS */}
+                            <Grid size={{ xs: 12, md: 4.5 }}>
+                                <Stack spacing={4}>
+                                    <Box sx={cardStyle}>
+                                        <Typography variant="h5" sx={{ color: '#002795', fontWeight: 700, fontSize: '20px', mb: 2 }}>
+                                            Paramètres avancés
+                                        </Typography>
+                                        <Grid container spacing={2}>
+
+                                            <Grid size={{ xs: 12 }}>
+                                                <Typography sx={fieldLabelStyle}>Prix de réserve (DA)</Typography>
+                                                <TextField 
+                                                    fullWidth type="number" placeholder="Optionnel" variant="outlined" 
+                                                    {...formik.getFieldProps('reservePrice')} 
+                                                    sx={inputStyle} 
+                                                />
+                                            </Grid>
+                                            <Grid size={{ xs: 12 }}>
+                                                <Typography sx={fieldLabelStyle}>Numéro de contact</Typography>
+                                                <TextField 
+                                                    fullWidth placeholder="0XXXXXXXXX" variant="outlined" 
+                                                    {...formik.getFieldProps('contactNumber')} 
+                                                    sx={inputStyle} 
+                                                />
+                                            </Grid>
+                                            <Grid size={{ xs: 12 }}>
+                                                <Stack spacing={1}>
+                                                    <FormControlLabel
+                                                        control={<Switch checked={formik.values.professionalOnly} {...formik.getFieldProps('professionalOnly')} />}
+                                                        label="Professionnel uniquement"
+                                                    />
+                                                    <FormControlLabel
+                                                        control={<Switch checked={formik.values.isPro} {...formik.getFieldProps('isPro')} />}
+                                                        label="Compte Professionnel"
+                                                    />
+                                                    <FormControlLabel
+                                                        control={<Switch checked={formik.values.hidden} {...formik.getFieldProps('hidden')} />}
+                                                        label="Cacher de la recherche"
+                                                    />
+                                                </Stack>
+                                            </Grid>
+                                        </Grid>
+                                    </Box>
+
+                                    <Box sx={{ 
+                                        width: '475px',
+                                        height: '215px',
+                                        backgroundColor: '#ffffff',
+                                        borderRadius: '24px',
+                                        border: '1px solid #E7E7E7',
+                                        p: '24px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '16px',
+                                        opacity: 1,
+                                        boxSizing: 'border-box'
+                                    }}>
+                                        <Typography variant="h5" sx={{ color: '#002795', fontWeight: 600, fontSize: '22px', mb: 0, lineHeight: 1 }}>
+                                            Image offre/ service
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ color: '#94a3b8', mb: 0, lineHeight: 1 }}>
+                                            <Typography component="span" sx={{ color: '#002795', fontWeight: 700 }}>Note :</Typography> Format photos SVG, PNG, or JPG (Max size 4mb)
+                                        </Typography>
+                                        
+                                        <Box sx={{ 
+                                            display: 'flex', 
+                                            gap: '16px', 
+                                            width: '427px', 
+                                            height: '97px', 
+                                            opacity: 1
+                                        }}>
+                                            {[1, 2, 3, 4].map((i) => {
+                                                const file = images[i - 1];
+                                                const preview = file ? URL.createObjectURL(file) : null;
+                                                return (
+                                                    <Box
+                                                        key={i}
+                                                        onClick={() => {
+                                                            const input = document.createElement('input');
+                                                            input.type = 'file';
+                                                            input.accept = 'image/*';
+                                                            input.onchange = (e: any) => {
+                                                                const newFile = e.target.files[0];
+                                                                if (newFile) {
+                                                                    const newImages = [...images];
+                                                                    newImages[i - 1] = newFile;
+                                                                    setImages(newImages.filter(Boolean));
+                                                                }
+                                                            };
+                                                            input.click();
+                                                        }}
+                                                        sx={{
+                                                            width: '94.75px',
+                                                            height: '97px',
+                                                            borderRadius: '8px',
+                                                            border: '1px dashed #1A71F6',
+                                                            backgroundColor: '#EEF7FF',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            gap: '8px',
+                                                            cursor: 'pointer',
+                                                            overflow: 'hidden',
+                                                            transition: 'all 0.2s ease',
+                                                            '&:hover': {
+                                                                backgroundColor: '#e0edff',
+                                                                borderColor: '#002795'
+                                                            }
+                                                        }}
+                                                    >
+                                                        {preview ? (
+                                                            <Box component="img" src={preview} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        ) : (
+                                                            <>
+                                                                <Box sx={{ color: '#1A71F6', fontSize: '28px', display: 'flex' }}>
+                                                                    <MdImage />
+                                                                </Box>
+                                                                <Typography sx={{ color: '#64748b', fontWeight: 600, fontSize: '11px', fontFamily: "'DM Sans', sans-serif" }}>
+                                                                    Photo {i}
+                                                                </Typography>
+                                                            </>
+                                                        )}
+                                                    </Box>
+                                                );
+                                            })}
+                                        </Box>
+                                    </Box>
+
+                                    <Button
+                                        fullWidth variant="contained" size="large"
+                                        onClick={() => formik.handleSubmit()}
+                                        disabled={isSubmitting || !formik.isValid}
+                                        sx={{
+                                            borderRadius: '12px', textTransform: 'none', fontWeight: 700, py: 1.5, fontSize: '1rem',
+                                            backgroundColor: '#002795', '&:hover': { backgroundColor: '#001e75' },
+                                            boxShadow: '0 10px 20px -5px rgba(0,39,149,0.3)',
+                                        }}
+                                    >
+                                        {isSubmitting ? 'En cours...' : "Publier l'enchère"}
+                                    </Button>
+                                </Stack>
+                            </Grid>
+                        </Grid>
+                    </FormikProvider>
+                </Container>
+            </Box>
         </ThemeProvider>
     );
 }

@@ -12,3 +12,10 @@ export const dmsans = {
         fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
     }
 }
+
+export const inter = {
+    variable: "--font-inter",
+    style: {
+        fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+    }
+}

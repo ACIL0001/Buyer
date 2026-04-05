@@ -3,6 +3,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectFade, Navigation, Pagination } from "swiper/modules";
 import "./st.css";
 import "./modern-details.css";
+import "./multipurpose-redesign.css";
 import Link from "next/link";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { useCountdownTimer } from "@/customHooks/useCountdownTimer";
@@ -22,6 +23,13 @@ import commentsApi from "@/app/api/comments";
 import { useTranslation } from 'react-i18next';
 import { motion } from "framer-motion";
 import ShareButton from "@/components/common/ShareButton";
+import CommentItem from "@/components/common/CommentItem";
+
+const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-dark.png";
+const DEFAULT_USER_AVATAR = "/assets/images/avatar.jpg";
+const DEFAULT_PROFILE_IMAGE = "/assets/images/avatar.jpg";
+
+
 
 // Helper function to calculate time remaining and format with leading zeros
 function getTimeRemaining(endDate) {
@@ -70,7 +78,7 @@ const MultipurposeDetails1 = () => {
   });
   const [allAuctions, setAllAuctions] = useState([]);
   const [similarAuctionTimers, setSimilarAuctionTimers] = useState([]);
-  const [activeTab, setActiveTab] = useState("reviews"); // State for active tab
+  const [activeTab, setActiveTab] = useState("comments"); // State for active tab
   const [reviewText, setReviewText] = useState(""); // State for review text
   const [reviewRating, setReviewRating] = useState(0); // State for review rating
   const [selectedImageIndex, setSelectedImageIndex] = useState(0); // State for selected image index
@@ -91,9 +99,6 @@ const MultipurposeDetails1 = () => {
   const routeId = params?.id;
   const queryId = searchParams.get("id");
   const auctionId = routeId || queryId;
-  const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-dark.png";
-  const DEFAULT_USER_AVATAR = "/assets/images/avatar.jpg";
-  const DEFAULT_PROFILE_IMAGE = "/assets/images/avatar.jpg";
 
   // Add error boundary with better error information
   if (error && !loading) {
@@ -222,8 +227,10 @@ const MultipurposeDetails1 = () => {
           console.warn("Server health check failed:", healthError);
         }
 
-        const data = await AuctionsAPI.getAuctionById(auctionId);
-        console.log("Auction data received:", data);
+        const response = await AuctionsAPI.getAuctionById(auctionId);
+        console.log("Auction response received:", response);
+        
+        let data = response?.data || (response?.success ? response.data : response);
         
         if (!data) {
           throw new Error("Aucune donnée reçue du serveur");
@@ -931,6 +938,24 @@ const MultipurposeDetails1 = () => {
     return `${Math.floor(Number(price)).toLocaleString()} `;
   };
 
+  const formatRemainingTime = (endDate) => {
+    if (!endDate) return "";
+    const end = new Date(endDate);
+    const now = new Date();
+    const diff = end - now;
+    if (diff <= 0) return "Vente terminée";
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    
+    // Add day of week and time like in the image
+    const dayNames = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+    const dayName = dayNames[end.getDay()];
+    const timeStr = end.getHours().toString().padStart(2, '0') + "H" + end.getMinutes().toString().padStart(2, '0');
+
+    return `Temps restant ${days}j ${hours}h (${dayName}, ${timeStr})`;
+  };
+
   // Handle auto-bid for professional users
   const handleAutoBidSave = async () => {
     if (!isLogged || !auth.tokens) {
@@ -1133,42 +1158,6 @@ const MultipurposeDetails1 = () => {
 
   return (
     <>
-      <style jsx>{`
-        :global(.auction-details-section) {
-          padding-top: clamp(120px, 15vw, 140px) !important;
-        }
-
-        @keyframes pulse {
-          0% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.05);
-          }
-          100% {
-            transform: scale(1);
-          }
-        }
-
-        .auction-card-hover {
-          transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-
-        .auction-card-hover:hover {
-          transform: translateY(-8px) scale(1.02);
-          box-shadow: 0 20px 40px rgba(0, 99, 177, 0.15);
-        }
-
-        .timer-digit {
-          animation: pulse 1s infinite;
-        }
-
-        .timer-digit.urgent {
-          animation: pulse 0.5s infinite;
-          color: white;
-        }
-      `}</style>
-
       <ToastContainer
         position="top-right"
         autoClose={5000}
@@ -1182,2138 +1171,434 @@ const MultipurposeDetails1 = () => {
       />
 
       {loading ? (
-        <div
-          className="auction-details-section mb-110"
-          style={{ 
-            marginTop: 0, 
-            paddingTop: 'clamp(100px, 12vw, 120px)',
-            minHeight: 'calc(100vh - 100px)'
-          }}
-        >
-          <div className="container-fluid">
-            <div className="row">
-              <div className="col-12 text-center">
-                <div className="spinner-border text-warning" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-                <h3 className="mt-3">Chargement des détails de l'enchère...</h3>
-              </div>
-            </div>
-          </div>
+        <div className="redesign-v2-container text-center py-100">
+           <div className="spinner-border text-primary" role="status">
+             <span className="visually-hidden">Loading...</span>
+           </div>
+           <h3 className="mt-4">Chargement des détails de l'enchère...</h3>
         </div>
       ) : error ? (
-        <div
-          className="auction-details-section mb-110"
-          style={{ 
-            marginTop: 0, 
-            paddingTop: 'clamp(100px, 12vw, 120px)',
-            minHeight: 'calc(100vh - 100px)'
-          }}
-        >
-          <div className="container-fluid">
-            <div className="row">
-              <div className="col-12 text-center">
-                <div className="alert alert-danger">
-                  <h3>{error}</h3>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="redesign-v2-container text-center py-100">
+           <div className="alert alert-danger">
+             <h3>{error}</h3>
+             <button className="btn btn-primary mt-3" onClick={() => window.location.reload()}>Réessayer</button>
+           </div>
         </div>
       ) : (
-        <>
-          <div
-            className="auction-details-section auction-details-modern mb-110"
-            style={{ 
-              marginTop: 0, 
-              paddingTop: 'clamp(120px, 15vw, 140px)',
-              minHeight: 'calc(100vh - 120px)'
-            }}
-          >
-            <div className="container">
-              <div className="row gy-5">
-                {/* Left Column - Image Section */}
-                <div className="col-xl-7 image-column-top-spacing" style={{ paddingTop: '0' }}>
-                  <div className="main-image-container" style={{ position: 'relative', marginTop: '0' }}>
-                    <div style={{
-                        position: 'absolute',
-                        top: '10px',
-                        left: '10px',
-                        zIndex: 10,
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    >
-                      <ShareButton
-                        type="auction"
-                        id={safeAuctionData._id || auctionId}
-                        title={safeTitle}
-                        description={safeDescription}
-                        imageUrl={safeThumbs.length > 0 ? (safeThumbs[0].url.startsWith('http') ? safeThumbs[0].url : `${app.baseURL}${safeThumbs[0].url.startsWith('/') ? safeThumbs[0].url.substring(1) : safeThumbs[0].url}`) : DEFAULT_AUCTION_IMAGE}
-                      />
-                    </div>
-                    {showVideo && safeVideos.length > 0 ? (
-                      <video
-                        src={(() => {
-                          const videoUrl = safeVideos[selectedVideoIndex]?.url;
-                          if (videoUrl) {
-                            if (videoUrl.startsWith('http')) {
-                              return videoUrl;
-                            } else if (videoUrl.startsWith('/static/')) {
-                              return `${app.baseURL}${videoUrl.substring(1)}`;
-                            } else if (videoUrl.startsWith('/')) {
-                              return `${app.baseURL}${videoUrl.substring(1)}`;
-                            } else {
-                              return `${app.baseURL}${videoUrl}`;
+        <div className="redesign-v2-container">
+          {/* Top Product Hero (Image 1 inspired) */}
+          <div className="product-hero-section mt-3">
+            <div className="thumbnails-vertical">
+              {safeThumbs.length > 0 ? safeThumbs.map((thumb, index) => (
+                <div 
+                  key={`thumb-img-${index}`}
+                  className={`thumb-item ${!showVideo && index === selectedImageIndex ? 'active' : ''}`}
+                  onClick={() => handleThumbnailClick(index)}
+                >
+                  <img src={thumb.url.startsWith('http') ? thumb.url : `${app.baseURL}${thumb.url.startsWith('/') ? thumb.url.substring(1) : thumb.url}`} alt="" crossOrigin="use-credentials" />
+                </div>
+              )) : (
+                <div className="thumb-item active">
+                  <img src={DEFAULT_AUCTION_IMAGE} alt="Default" />
+                </div>
+              )}
+              {safeVideos.length > 0 && safeVideos.map((video, index) => (
+                <div 
+                  key={`thumb-vid-${index}`}
+                  className={`thumb-item ${showVideo && index === selectedVideoIndex ? 'active' : ''}`}
+                  onClick={() => handleVideoThumbnailClick(index)}
+                >
+                  <video src={video.url.startsWith('http') ? video.url : `${app.baseURL}${video.url.startsWith('/') ? video.url.substring(1) : video.url}`} muted />
+                </div>
+              ))}
+            </div>
+
+            <div className="main-image-area">
+              <div className="badge-overlay-v2">
+                <span className="badge-item-v2">
+                  <i className="fa fa-eye"></i> {auctionData?.views || 0}
+                </span>
+              </div>
+              <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 5 }}>
+                <ShareButton
+                  type="auction"
+                  id={safeAuctionData._id || auctionId}
+                  title={safeTitle}
+                  description={safeDescription}
+                  imageUrl={safeThumbs.length > 0 ? (safeThumbs[0].url.startsWith('http') ? safeThumbs[0].url : `${app.baseURL}${safeThumbs[0].url.startsWith('/') ? safeThumbs[0].url.substring(1) : safeThumbs[0].url}`) : DEFAULT_AUCTION_IMAGE}
+                />
+              </div>
+              {showVideo && safeVideos.length > 0 ? (
+                <video 
+                  src={safeVideos[selectedVideoIndex]?.url.startsWith('http') ? safeVideos[selectedVideoIndex]?.url : `${app.baseURL}${safeVideos[selectedVideoIndex]?.url.startsWith('/') ? safeVideos[selectedVideoIndex].url.substring(1) : safeVideos[selectedVideoIndex].url}`} 
+                  controls 
+                  style={{ maxHeight: '100%', maxWidth: '100%' }}
+                  crossOrigin="use-credentials"
+                />
+              ) : (
+                <img 
+                  src={safeThumbs.length > 0 ? (safeThumbs[selectedImageIndex]?.url.startsWith('http') ? safeThumbs[selectedImageIndex]?.url : `${app.baseURL}${safeThumbs[selectedImageIndex]?.url.startsWith('/') ? safeThumbs[selectedImageIndex].url.substring(1) : safeThumbs[selectedImageIndex].url}`) : DEFAULT_AUCTION_IMAGE} 
+                  alt={safeTitle} 
+                  crossOrigin="use-credentials"
+                />
+              )}
+            </div>
+
+            <div className="product-info-area">
+              <h1 className="product-title">{safeTitle}</h1>
+              <div className="countdown-info">{formatRemainingTime(safeAuctionData.endingAt)}</div>
+              <div className="price-section mt-1 mb-3">
+                <span 
+                  className="current-price" 
+                  style={{ 
+                    fontFamily: 'Inter, sans-serif',
+                    fontWeight: 400,
+                    fontSize: '24px',
+                    lineHeight: '24px',
+                    letterSpacing: '0.03em',
+                    color: '#000000',
+                    display: 'inline-block',
+                    width: 'auto',
+                    height: '24px'
+                  }}
+                >
+                  {formatPrice(safeCurrentPrice || safeStartingPrice).replace('DA', '').trim()} DA
+                </span>
+                <span className="bid-count ms-2" style={{ fontSize: '16px', color: '#666' }}>({offers?.length || 0} bids)</span>
+              </div>
+
+              <div className="info-grid-mini mt-3">
+                <div className="info-item-mini">
+                  <span className="info-label-mini">VENDEUR:</span>
+                  <Link href={`/profile/${safeOwner?._id}`} className="info-text-mini hover-link">
+                    {safeOwner?.entreprise || safeOwner?.name || 'Vendeur'}
+                  </Link>
+                </div>
+                <div className="info-item-mini">
+                  <span className="info-label-mini">LOCALISATION:</span>
+                  <span className="info-text-mini">{auctionData?.wilaya || 'Algérie'}</span>
+                </div>
+                <div className="info-item-mini">
+                  <span className="info-label-mini">QUANTITÉ:</span>
+                  <span className="info-text-mini">{auctionData?.quantity || '1'}</span>
+                </div>
+                <div className="info-item-mini">
+                  <span className="info-label-mini">TYPE:</span>
+                  <span className="info-text-mini">
+                    {auctionData?.bidType === 'SERVICE' ? '🛠️ Service' : '📦 Produit'}
+                  </span>
+                </div>
+                <div className="info-item-mini">
+                  <span className="info-label-mini">MODE:</span>
+                  <span className="info-text-mini">
+                    {auctionData?.auctionType?.toLowerCase() === 'express' ? '⚡ Express' : '🤝 Classique'}
+                  </span>
+                </div>
+                <div className="info-item-mini">
+                  <span className="info-label-mini">STATUT:</span>
+                  <span className="info-text-mini" style={{ color: auctionData?.status === 'ACTIVE' ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>
+                    {auctionData?.status === 'ACTIVE' ? 'Actif' : (auctionData?.status || 'Terminé')}
+                  </span>
+                </div>
+                <div className="info-item-mini" style={{ gridColumn: 'span 2' }}>
+                  <span className="info-label-mini">CATÉGORIE:</span>
+                  <span className="info-text-mini">{auctionData?.category?.name || auctionData?.categoryName || auctionData?.productSubCategory?.name || auctionData?.productCategory?.name || 'Non spécifiée'}</span>
+                </div>
+              </div>
+
+              <div className="divider"></div>
+              
+              <div className="bid-input-section">
+                {isOwner && (
+                  <div className="alert alert-warning py-2 mb-3" style={{fontSize: '13px'}}>
+                    Vous ne pouvez pas enchérir sur votre propre enchère.
+                  </div>
+                )}
+                <div className="quantity-stepper">
+                  <HandleQuantity
+                    initialValue={safeCurrentPrice || safeStartingPrice || 0}
+                    startingPrice={safeCurrentPrice || safeStartingPrice}
+                  />
+                </div>
+                <button 
+                  className="enchirir-btn" 
+                  onClick={handleBidClick} 
+                  disabled={isOwner}
+                  style={{ opacity: isOwner ? 0.6 : 1 }}
+                >
+                  Placer une Enchère (Enchérir)
+                </button>
+              </div>
+            </div>
+          </div>
+
+
+          {/* Product Description Section (Updated per User Request) */}
+          <div className="product-description-container">
+            <h2 className="description-title">Description du produit</h2>
+            <div className="description-body">
+              {safeDescription}
+            </div>
+            
+            <div className="tabs-redesign mt-4">
+              <div className="tab-headers">
+                <button 
+                  className={`tab-item ${activeTab === 'comments' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('comments')}
+                >
+                  Questions & Réponses
+                </button>
+              </div>
+              
+              <div className="tab-content-area">
+                {activeTab === 'comments' && (
+                  <div className="comments-section-v2">
+                    {isLogged ? (
+                      <div className="comment-form-v2">
+                        <textarea
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          placeholder="Posez une question au vendeur..."
+                          rows={3}
+                        />
+                        <button 
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            if (!newComment.trim()) return;
+                            setSubmitting(true);
+                            try {
+                              await commentsApi.createCommentForBid(auctionId, newComment, auth.user._id);
+                              setNewComment("");
+                              const data = await AuctionsAPI.getAuctionById(auctionId);
+                              setAuctionData(data);
+                              toast.success("Question envoyée");
+                            } catch (err) {
+                              toast.error("Erreur lors de l'envoi de la question.");
                             }
-                          }
-                          return '';
-                        })()}
-                        controls
-                        className="main-video"
-                        crossOrigin="use-credentials"
-                        style={{
-                          width: '100%',
-                          height: '400px',
-                          objectFit: 'contain',
-                          borderRadius: '8px'
-                        }}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = '';
-                        }}
-                      >
-                        Your browser does not support the video tag.
-                      </video>
+                            setSubmitting(false);
+                          }}
+                          disabled={submitting}
+                        >
+                          {submitting ? '...' : 'Envoyer'}
+                        </button>
+                      </div>
                     ) : (
-                    <img
-                      src={(() => {
-                        if (safeThumbs.length > 0) {
-                          const imageUrl = safeThumbs[selectedImageIndex]?.url;
-                          if (imageUrl) {
-                            // Handle different URL formats
-                            if (imageUrl.startsWith('http')) {
-                              return imageUrl; // Already a full URL
-                            } else if (imageUrl.startsWith('/static/')) {
-                              const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                              console.log('🎯 AUCTION DETAILS MAIN IMAGE:', {
-                                originalUrl: imageUrl,
-                                finalUrl: finalUrl,
-                                index: selectedImageIndex
-                              });
-                              return finalUrl;
-                            } else if (imageUrl.startsWith('/')) {
-                              const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                              console.log('🎯 AUCTION DETAILS MAIN IMAGE:', {
-                                originalUrl: imageUrl,
-                                finalUrl: finalUrl,
-                                index: selectedImageIndex
-                              });
-                              return finalUrl;
-                            } else {
-                              const finalUrl = `${app.baseURL}${imageUrl}`;
-                              console.log('🎯 AUCTION DETAILS MAIN IMAGE:', {
-                                originalUrl: imageUrl,
-                                finalUrl: finalUrl,
-                                index: selectedImageIndex
-                              });
-                              return finalUrl;
-                            }
-                          }
-                        }
-                        return DEFAULT_AUCTION_IMAGE;
-                      })()}
-                      alt={safeTitle}
-                      className="main-image"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = DEFAULT_AUCTION_IMAGE;
-                      }}
-                      crossOrigin="use-credentials"
-                    />
+                      <div className="login-prompt">Veuillez vous connecter pour poser une question.</div>
                     )}
                     
-                    {/* Media type toggle buttons */}
-                    {(safeThumbs.length > 0 || safeVideos.length > 0) && (
-                      <div className="media-toggle-buttons" style={{
-                        position: 'absolute',
-                        top: '10px',
-                        right: '10px',
-                        display: 'flex',
-                        gap: '8px',
-                        zIndex: 10
-                      }}>
-                        {safeThumbs.length > 0 && (
-                          <button
-                            onClick={() => setShowVideo(false)}
-                            className={`media-toggle-btn ${!showVideo ? 'active' : ''}`}
-                            style={{
-                              padding: '8px 12px',
-                              border: 'none',
-                              borderRadius: '4px',
-                              backgroundColor: !showVideo ? '#007bff' : 'rgba(255,255,255,0.8)',
-                              color: !showVideo ? 'white' : '#333',
-                              cursor: 'pointer',
-                              fontSize: '12px',
-                              fontWeight: '500',
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                            }}
-                          >
-                            📷 Images ({safeThumbs.length})
-                          </button>
-                        )}
-                        {safeVideos.length > 0 && (
-                          <button
-                            onClick={() => setShowVideo(true)}
-                            className={`media-toggle-btn ${showVideo ? 'active' : ''}`}
-                            style={{
-                              padding: '8px 12px',
-                              border: 'none',
-                              borderRadius: '4px',
-                              backgroundColor: showVideo ? '#007bff' : 'rgba(255,255,255,0.8)',
-                              color: showVideo ? 'white' : '#333',
-                              cursor: 'pointer',
-                              fontSize: '12px',
-                              fontWeight: '500',
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                            }}
-                          >
-                            🎥 Videos ({safeVideos.length})
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="thumbnail-gallery-container">
-                    <Swiper {...settings} className="swiper thumbnail-gallery">
-                      {/* Image thumbnails */}
-                      {safeThumbs.length > 0 && safeThumbs.map((thumb, index) => (
-                        <SwiperSlide className="swiper-slide" key={`img-${index}`}>
-                            <div
-                              className={`thumbnail ${
-                              !showVideo && index === selectedImageIndex ? "active" : ""
-                              }`}
-                            style={{ position: 'relative' }}
-                            >
-                              <img
-                                src={(() => {
-                                  const imageUrl = thumb.url;
-                                  if (imageUrl) {
-                                    if (imageUrl.startsWith('http')) {
-                                      return imageUrl;
-                                    } else if (imageUrl.startsWith('/static/')) {
-                                      const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                      console.log('🎯 AUCTION DETAILS THUMBNAIL:', {
-                                        originalUrl: imageUrl,
-                                        finalUrl: finalUrl,
-                                        index: index
-                                      });
-                                      return finalUrl;
-                                    } else if (imageUrl.startsWith('/')) {
-                                      const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                      console.log('🎯 AUCTION DETAILS THUMBNAIL:', {
-                                        originalUrl: imageUrl,
-                                        finalUrl: finalUrl,
-                                        index: index
-                                      });
-                                      return finalUrl;
-                                    } else {
-                                      const finalUrl = `${app.baseURL}${imageUrl}`;
-                                      console.log('🎯 AUCTION DETAILS THUMBNAIL:', {
-                                        originalUrl: imageUrl,
-                                        finalUrl: finalUrl,
-                                        index: index
-                                      });
-                                      return finalUrl;
-                                    }
-                                  }
-                                  return DEFAULT_AUCTION_IMAGE;
-                                })()}
-                              alt={`${safeTitle} - Image ${index + 1}`}
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = DEFAULT_AUCTION_IMAGE;
-                                }}
-                                crossOrigin="use-credentials"
-                                onClick={() => handleThumbnailClick(index)}
-                              style={{ cursor: 'pointer' }}
-                            />
-                            <div 
-                              className="media-type-indicator"
-                              style={{
-                                position: 'absolute',
-                                top: '4px',
-                                left: '4px',
-                                backgroundColor: 'rgba(0,0,0,0.7)',
-                                color: 'white',
-                                padding: '2px 6px',
-                                borderRadius: '3px',
-                                fontSize: '10px',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              📷
-                            </div>
-                            </div>
-                          </SwiperSlide>
+                    <div className="comment-list-v2">
+                      {auctionData?.comments?.map((comment) => (
+                        <CommentItem 
+                          key={comment._id} 
+                          comment={comment} 
+                          isLogged={isLogged} 
+                          authUser={auth.user} 
+                          announcementOwnerId={safeOwner?._id || safeOwner}
+                          onReplySuccess={async () => {
+                            const response = await AuctionsAPI.getAuctionById(auctionId);
+                            let data = response?.data || (response?.success ? response.data : response);
+                            if (data) setAuctionData(data);
+                          }}
+                        />
                       ))}
-                      
-                      {/* Video thumbnails */}
-                      {safeVideos.length > 0 && safeVideos.map((video, index) => (
-                        <SwiperSlide className="swiper-slide" key={`vid-${index}`}>
-                          <div
-                            className={`thumbnail ${
-                              showVideo && index === selectedVideoIndex ? "active" : ""
-                            }`}
-                            style={{ position: 'relative' }}
-                          >
-                            <video
-                              src={(() => {
-                                const videoUrl = video.url;
-                                if (videoUrl) {
-                                  if (videoUrl.startsWith('http')) {
-                                    return videoUrl;
-                                  } else if (videoUrl.startsWith('/static/')) {
-                                    return `${app.baseURL}${videoUrl.substring(1)}`;
-                                  } else if (videoUrl.startsWith('/')) {
-                                    return `${app.baseURL}${videoUrl.substring(1)}`;
-                                  } else {
-                                    return `${app.baseURL}${videoUrl}`;
-                                  }
-                                }
-                                return '';
-                              })()}
-                              style={{
-                                width: '100%',
-                                height: '80px',
-                                objectFit: 'cover',
-                                borderRadius: '4px',
-                                cursor: 'pointer'
-                              }}
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = '';
-                              }}
-                              crossOrigin="use-credentials"
-                              onClick={() => handleVideoThumbnailClick(index)}
-                              muted
-                              preload="metadata"
-                            />
-                            <div 
-                              className="media-type-indicator"
-                              style={{
-                                position: 'absolute',
-                                top: '4px',
-                                left: '4px',
-                                backgroundColor: 'rgba(0,0,0,0.7)',
-                                color: 'white',
-                                padding: '2px 6px',
-                                borderRadius: '3px',
-                                fontSize: '10px',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              🎥
-                            </div>
-                            <div 
-                              className="play-overlay"
-                              style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                backgroundColor: 'rgba(0,0,0,0.6)',
-                                color: 'white',
-                                borderRadius: '50%',
-                                width: '24px',
-                                height: '24px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '12px'
-                              }}
-                            >
-                              ▶
-                            </div>
-                          </div>
-                        </SwiperSlide>
-                      ))}
-                      
-                      {/* Default thumbnail if no media */}
-                      {safeThumbs.length === 0 && safeVideos.length === 0 && (
-                        <SwiperSlide className="swiper-slide">
-                          <div className="thumbnail active">
-                            <img
-                              src={DEFAULT_AUCTION_IMAGE}
-                              alt="Default Auction Item"
-                              crossOrigin="use-credentials"
-                            />
-                          </div>
-                        </SwiperSlide>
-                      )}
-                    </Swiper>
-                  </div>
-
-                  {/* Product Description Below Image */}
-                  <div style={{ marginTop: '30px', padding: '20px', background: '#fff', borderRadius: '12px', border: '1px solid #e9ecef', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                    <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '15px', color: '#333' }}>
-                      {auctionData?.name || t('auctionDetails.productDetails') || "Détails du Produit"}
-                    </h3>
-                    <p style={{ fontSize: '15px', lineHeight: '1.6', color: '#555', whiteSpace: 'pre-line' }}>
-                      {auctionData?.description || t('auctionDetails.noDescription') || "Aucune description disponible."}
-                    </p>
-                  </div>
-
-                </div>
-
-                {/* Right Column - Auction Details */}
-                <div className="col-xl-5">
-                  <div className="auction-details-content" style={{ paddingTop: 'clamp(120px, 15vw, 140px)' }}>
-                    {/* Title above timer - Prominently displayed */}
-                    <div style={{ 
-                      marginBottom: '25px', 
-                      textAlign: 'center',
-                      padding: '15px 20px',
-                      background: 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
-                      borderRadius: '12px',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-                      border: '1px solid #e9ecef',
-                      display: 'block',
-                      width: '100%',
-                      visibility: 'visible',
-                      opacity: 1,
-                      position: 'relative',
-                      zIndex: 1
-                    }}>
-                      <h1 className="auction-title" style={{
-                        fontSize: 'clamp(18px, 3.5vw, 26px)',
-                        fontWeight: '700',
-                        color: '#0063b1',
-                        margin: 0,
-                        lineHeight: '1.4',
-                        wordBreak: 'break-word',
-                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-                        display: 'block',
-                        width: '100%',
-                        visibility: 'visible',
-                        opacity: 1
-                      }}>
-                      {safeTitle}
-                    </h1>
                     </div>
+                  </div>
+                )}
+                
 
-                    {/* Auction timer and bid information */}
-                    <div className="bid-container">
-                      <div className="boxTime">
-                        <div className="countdown-timer">
-                          {/* Changed ul to div and applied inline styles for layout and appearance */}
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "center",
-                              alignItems: "center",
-                              gap: "8px",
-                            }}
+              </div>
+            </div>
+          </div>
+
+          {/* Professional User Access Box */}
+          {auctionData?.isPro && (
+            <div className="professional-access-box mt-5">
+              <div className="pro-header">
+                <div className="pro-badge-main">👑 PRO ACCESS</div>
+                <h3>Options Professionnelles</h3>
+              </div>
+              <div className="pro-content">
+                <div className="pro-feature">
+                  <h4>Auto-Enchère (Auto-bid)</h4>
+                  <p>Configurez un montant maximum pour que le système enchérisse automatiquement pour vous.</p>
+                  
+                  {loadingAutoBid ? (
+                    <div className="pro-loading">Chargement...</div>
+                  ) : (
+                    <div className="autobid-controls">
+                      {hasExistingAutoBid ? (
+                        <div className="active-autobid-status">
+                          <span className="current-max-badge">Maximum configuré: <strong>{Number(professionalAmount).toLocaleString()} DA</strong></span>
+                          <button 
+                            className="btn-delete-autobid"
+                            onClick={handleAutoBidDelete}
+                            disabled={deletingAutoBid}
                           >
-                            <div
-                              style={{
-                                background: "rgba(255, 255, 255, 0.2)",
-                                backdropFilter: "blur(10px)",
-                                borderRadius: "8px",
-                                padding: "4px 8px",
-                                minWidth: "35px",
-                                textAlign: "center",
-                                fontSize: "20px", // Larger font for numbers
-                                fontWeight: "700", // Bolder font for numbers
-                              }}
-                            >
-                              {time.day}
-                              <div
-                                style={{
-                                  fontSize: "10px",
-                                  opacity: 0.8,
-                                  fontWeight: "normal",
-                                }}
-                              >
-                                J
-                              </div>
-                            </div>
-                            <span
-                              style={{
-                                opacity: 0.8,
-                                fontSize: "20px",
-                                fontWeight: "bold",
-                              }}
-                            >
-                              :
-                            </span>
-                            <div
-                              style={{
-                                background: "rgba(255, 255, 255, 0.2)",
-                                backdropFilter: "blur(10px)",
-                                borderRadius: "8px",
-                                padding: "4px 8px",
-                                minWidth: "35px",
-                                textAlign: "center",
-                                fontSize: "20px",
-                                fontWeight: "700",
-                              }}
-                            >
-                              {time.hour}
-                              <div
-                                style={{
-                                  fontSize: "10px",
-                                  opacity: 0.8,
-                                  fontWeight: "normal",
-                                }}
-                              >
-                                H
-                              </div>
-                            </div>
-                            <span
-                              style={{
-                                opacity: 0.8,
-                                fontSize: "20px",
-                                fontWeight: "bold",
-                              }}
-                            >
-                              :
-                            </span>
-                            <div
-                              style={{
-                                background: "rgba(255, 255, 255, 0.2)",
-                                backdropFilter: "blur(10px)",
-                                borderRadius: "8px",
-                                padding: "4px 8px",
-                                minWidth: "35px",
-                                textAlign: "center",
-                                fontSize: "20px",
-                                fontWeight: "700",
-                              }}
-                            >
-                              {time.mun}
-                              <div
-                                style={{
-                                  fontSize: "10px",
-                                  opacity: 0.8,
-                                  fontWeight: "normal",
-                                }}
-                              >
-                                M
-                              </div>
-                            </div>
-                            <span
-                              style={{
-                                opacity: 0.8,
-                                fontSize: "20px",
-                                fontWeight: "bold",
-                              }}
-                            >
-                              :
-                            </span>
-                            <div
-                              style={{
-                                background: "rgba(255, 255, 255, 0.2)",
-                                backdropFilter: "blur(10px)",
-                                borderRadius: "8px",
-                                padding: "4px 8px",
-                                minWidth: "35px",
-                                textAlign: "center",
-                                fontSize: "20px",
-                                fontWeight: "700",
-                              }}
-                            >
-                              {time.sec}
-                              <div
-                                style={{
-                                  fontSize: "10px",
-                                  opacity: 0.8,
-                                  fontWeight: "normal",
-                                }}
-                              >
-                                S
-                              </div>
-                            </div>
-                          </div>
+                            Désactiver l'auto-enchère
+                          </button>
                         </div>
-                      </div>
-
-                      <div className="auction-details-table mb-4">
-                        <table className="table">
-                          <tbody>
-                            <tr>
-                              <td className="fw-bold">{t('auctionDetails.startingPrice') || 'Prix de départ'}</td>
-                              <td>
-                                {formatPrice(safeStartingPrice)}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="fw-bold">{t('auctionDetails.currentPrice') || 'Prix actuel'}</td>
-                              <td>
-                                {formatPrice(safeCurrentPrice)}
-                              </td>
-                            </tr>
-                            {auctionData?.bidType !== 'SERVICE' && auctionData?.quantity && auctionData?.quantity !== "Non spécifiée" && !isNaN(auctionData.quantity) && auctionData.quantity !== "" && (
-                              <tr>
-                                <td className="fw-bold">{t('auctionDetails.availableQuantity') || 'Quantité disponible'}</td>
-                                <td>
-                                  <span style={{
-                                    color: '#0063b1',
-                                    fontWeight: '600',
-                                    fontSize: '16px'
-                                  }}>
-                                    {auctionData.quantity}
-                                  </span>
-                                </td>
-                              </tr>
-                            )}
-                            <tr>
-                              <td className="fw-bold">{t('auctionDetails.auctionType') || 'Type d\'enchère'}</td>
-                              <td>{auctionData?.bidType || "PRODUCT"}</td>
-                            </tr>
-                            <tr>
-                              <td className="fw-bold">{t('common.status')}</td>
-                              <td>
-                                <span className="status-badge">
-                                  {auctionData?.status || "OPEN"}
-                                </span>
-                              </td>
-                            </tr>
-                            {safeOwner && (
-                              <tr>
-                                <td className="fw-bold">{t('common.seller')}</td>
-                                <td>
-                                  {safeAuctionData.hidden === true ? (
-                                    <span>{t('common.anonymous') || 'Anonyme'}</span>
-                                  ) : (
-                                    <Link
-                                      href={`/profile/${safeOwner._id || safeOwner}`}
-                                      style={{
-                                        color: '#0063b1',
-                                        textDecoration: 'none',
-                                        fontWeight: '600',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        transition: 'all 0.3s ease',
-                                      }}
-                                      onMouseEnter={(e) => {
-                                        e.currentTarget.style.textDecoration = 'underline';
-                                        e.currentTarget.style.color = '#004c8c';
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        e.currentTarget.style.textDecoration = 'none';
-                                        e.currentTarget.style.color = '#0063b1';
-                                      }}
-                                    >
-                                      {safeOwner.entreprise || 
-                                       (safeOwner.firstName && safeOwner.lastName ? `${safeOwner.firstName} ${safeOwner.lastName}` : safeOwner.name || safeOwner.username || t('common.seller'))}
-                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '2px' }}>
-                                        <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
-                                      </svg>
-                                    </Link>
-                                  )}
-                                </td>
-                              </tr>
-                            )}
-                            <tr>
-                              <td className="fw-bold">{t('common.location') || 'Localisation'}</td>
-                              <td>
-                                {auctionData?.wilaya && auctionData?.place 
-                                  ? `${auctionData.place}, ${auctionData.wilaya}`
-                                  : auctionData?.wilaya || auctionData?.place || 'Non spécifiée'}
-                              </td>
-                            </tr>
-
-                          </tbody>
-                        </table>
-                      </div>
-
-                      <div className="bid-section">
-                        <p className="bid-label">{t('auctionDetails.yourBid') || 'Votre enchère'} DA </p>
-                        {isOwner && (
-                          <div
-                            style={{
-                              backgroundColor: "#fff3cd",
-                              border: "1px solid #ffeaa7",
-                              borderRadius: "8px",
-                              padding: "12px",
-                              marginBottom: "16px",
-                              color: "#856404",
-                              fontSize: "14px",
-                              fontWeight: "500",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                            }}
-                          >
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                            >
-                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                            </svg>
-                            {t('auctionDetails.cannotBidOwn') || 'Vous ne pouvez pas enchérir sur votre propre enchère.'}
-                          </div>
-                        )}
-                        <div className="quantity-counter-and-btn-area">
-                          <HandleQuantity
-                            initialValue={safeCurrentPrice || safeStartingPrice || 0}
-                            startingPrice={safeCurrentPrice || safeStartingPrice}
-                            placeholder={(() => {
-                              const lastOffer = Array.isArray(offers) && offers.length > 0
-                                ? (offers[offers.length - 1]?.price || offers[offers.length - 1]?.bidAmount)
-                                : null;
-                              const refPrice = lastOffer || safeCurrentPrice || safeStartingPrice || 0;
-                              if (refPrice > 0) {
-                                return `${t('auctionDetails.lastOffer') || 'Dernière offre'}: ${Number(refPrice).toLocaleString('fr-FR')} DA`;
-                              }
-                              return t('auctionDetails.enterYourBid') || "Entrez votre offre";
-                            })()}
+                      ) : (
+                        <div className="setup-autobid">
+                          <input 
+                            type="number" 
+                            className="pro-input"
+                            placeholder="Montant Max DA"
+                            onChange={(e) => setProfessionalAmount(e.target.value)}
+                            value={professionalAmount}
                           />
-                          <button
-                            className="bid-btn-modern"
-                            onClick={isOwner ? undefined : handleBidClick}
-                            disabled={isOwner}
-                            style={{
-                              opacity: isOwner ? 0.5 : 1,
-                              cursor: isOwner ? "not-allowed" : "pointer",
-                              pointerEvents: isOwner ? "none" : "auto",
-                            }}
-                            title={
-                              isOwner
-                                ? t('auctionDetails.cannotBidOwn') || "Vous ne pouvez pas enchérir sur votre propre enchère."
-                                : undefined
-                            }
+                          <button 
+                            className="btn-save-autobid"
+                            onClick={handleAutoBidSave}
+                            disabled={savingAutoBid}
                           >
-                            <div className="btn-content">
-                              <span>{t('auctionDetails.placeBid') || 'Placer une Enchère'}</span>
-                              <svg
-                                width="20"
-                                height="20"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M14.4301 5.92993L20.5001 11.9999L14.4301 18.0699"
-                                  stroke="white"
-                                  strokeWidth="2"
-                                  strokeMiterlimit="10"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                                <path
-                                  d="M3.5 12H20.33"
-                                  stroke="white"
-                                  strokeWidth="2"
-                                  strokeMiterlimit="10"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            </div>
+                            {savingAutoBid ? 'Enregistrement...' : 'Activer'}
                           </button>
                         </div>
-                      </div>
+                      )}
                     </div>
-
-                    <div className="ask-question-area" style={{ marginTop: '15px', textAlign: 'center' }}>
-                       <button 
-                          onClick={(e) => {
-                             e.preventDefault();
-                             setActiveTab('reviews');
-                             const commentsEl = document.getElementById('nav-tabContent');
-                             if (commentsEl) {
-                                commentsEl.scrollIntoView({ behavior: 'smooth' });
-                             } else {
-                                window.scrollBy({ top: 500, behavior: 'smooth' });
-                             }
-                          }}
-                          style={{ 
-                             background: 'none', 
-                             border: 'none', 
-                             color: '#0063b1', 
-                             textDecoration: 'none', 
-                             cursor: 'pointer', 
-                             fontSize: '15px',
-                             fontWeight: '600',
-                             display: 'inline-flex',
-                             alignItems: 'center',
-                             gap: '6px'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.textDecoration = 'underline';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.textDecoration = 'none';
-                          }}
-                       >
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                             <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
-                          </svg>
-                          {t('auctionDetails.askQuestion') || 'Poser une question'}
-                       </button>
-                    </div>
-
-                    {/* Professional User Special Access Box */}
-                    {isLogged && auth.user?.type === 'PROFESSIONAL' && (
-                      <div className="professional-access-box" style={{
-                        marginTop: '24px',
-                        padding: '24px',
-                        background: 'white',
-                        borderRadius: '16px',
-                        border: '1px solid #e9ecef',
-                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-                        position: 'relative'
-                      }}>
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                          {/* Header */}
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            marginBottom: '20px'
-                          }}>
-                            <div style={{
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '50%',
-                              background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}>
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="white"/>
-                              </svg>
-                            </div>
-                            <div>
-                              <h4 style={{
-                                margin: 0,
-                                color: '#333',
-                                fontSize: '18px',
-                                fontWeight: '600'
-                              }}>
-                                Accès Professionnel
-                                {loadingAutoBid && (
-                                  <span style={{
-                                    marginLeft: '8px',
-                                    fontSize: '14px',
-                                    color: '#666',
-                                    fontWeight: 'normal'
-                                  }}>
-                                    (Chargement...)
-                                  </span>
-                                )}
-                                {hasExistingAutoBid && !loadingAutoBid && (
-                                  <span style={{
-                                    marginLeft: '8px',
-                                    fontSize: '12px',
-                                    color: '#28a745',
-                                    fontWeight: '500',
-                                    background: '#d4edda',
-                                    padding: '2px 8px',
-                                    borderRadius: '12px',
-                                    border: '1px solid #c3e6cb'
-                                  }}>
-                                    ✓ Auto-enchère active
-                                  </span>
-                                )}
-                              </h4>
-                              <p style={{
-                                margin: '4px 0 0 0',
-                                color: '#666',
-                                fontSize: '14px'
-                              }}>
-                                {hasExistingAutoBid 
-                                  ? "Vous avez une auto-enchère configurée pour cette vente" 
-                                  : "Accès spécial pour les professionnels"
-                                }
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Input Section */}
-                          <div style={{
-                            background: '#f8f9fa',
-                            borderRadius: '12px',
-                            padding: '16px',
-                            marginBottom: '20px',
-                            border: '1px solid #e9ecef'
-                          }}>
-                            <label style={{
-                              display: 'block',
-                              marginBottom: '8px',
-                              color: '#333',
-                              fontSize: '14px',
-                              fontWeight: '500'
-                            }}>
-                              {hasExistingAutoBid ? 'Montant Auto-enchère Actuel (DA)' : 'Montant spécial (DA)'}
-                            </label>
-                            <input
-                              type="number"
-                              value={professionalAmount || safeCurrentPrice}
-                              onChange={(e) => setProfessionalAmount(e.target.value)}
-                              placeholder={
-                                loadingAutoBid 
-                                  ? (savingAutoBid ? "Mise à jour..." : "Chargement...") 
-                                  : "Entrez le montant"
-                              }
-                              disabled={loadingAutoBid}
-                              style={{
-                                width: '100%',
-                                padding: '12px 16px',
-                                borderRadius: '8px',
-                                border: '1px solid #ddd',
-                                background: loadingAutoBid ? '#f5f5f5' : 'white',
-                                color: loadingAutoBid ? '#999' : '#333',
-                                fontSize: '16px',
-                                outline: 'none',
-                                transition: 'all 0.3s ease',
-                                cursor: loadingAutoBid ? 'not-allowed' : 'text'
-                              }}
-                              onFocus={(e) => {
-                                if (!loadingAutoBid) {
-                                  e.target.style.borderColor = '#0063b1';
-                                  e.target.style.boxShadow = '0 0 0 3px rgba(0, 99, 177, 0.1)';
-                                }
-                              }}
-                              onBlur={(e) => {
-                                if (!loadingAutoBid) {
-                                  e.target.style.borderColor = '#ddd';
-                                  e.target.style.boxShadow = 'none';
-                                }
-                              }}
-                            />
-                            <p style={{
-                              margin: '8px 0 0 0',
-                              color: '#666',
-                              fontSize: '12px'
-                            }}>
-                              Montant minimum: {formatPrice(safeStartingPrice)}
-                            </p>
-                          </div>
-
-                          {/* Action Buttons */}
-                          <div style={{
-                            display: 'flex',
-                            gap: '12px'
-                          }}>
-                            {!hasExistingAutoBid ? (
-                              /* Create New Auto-Bid Buttons */
-                              <>
-                                <button
-                                  onClick={handleAutoBidSave}
-                                  disabled={savingAutoBid || loadingAutoBid}
-                                  style={{
-                                    flex: 1,
-                                    padding: '12px 20px',
-                                    borderRadius: '8px',
-                                    border: 'none',
-                                    background: (savingAutoBid || loadingAutoBid) ? '#ccc' : 'linear-gradient(90deg, #0063b1, #00a3e0)',
-                                    color: 'white',
-                                    fontSize: '14px',
-                                    fontWeight: '600',
-                                    cursor: (savingAutoBid || loadingAutoBid) ? 'not-allowed' : 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    boxShadow: (savingAutoBid || loadingAutoBid) ? 'none' : '0 4px 12px rgba(0, 99, 177, 0.3)'
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (!savingAutoBid && !loadingAutoBid) {
-                                      e.target.style.transform = 'translateY(-2px)';
-                                      e.target.style.boxShadow = '0 6px 16px rgba(0, 99, 177, 0.4)';
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (!savingAutoBid && !loadingAutoBid) {
-                                      e.target.style.transform = 'translateY(0)';
-                                      e.target.style.boxShadow = '0 4px 12px rgba(0, 99, 177, 0.3)';
-                                    }
-                                  }}
-                                >
-                                  {savingAutoBid ? 'Création...' : 'Créer Auto-enchère'}
-                                </button>
-                                <button
-                                  onClick={() => setProfessionalAmount('')}
-                                  disabled={loadingAutoBid}
-                                  style={{
-                                    padding: '12px 20px',
-                                    borderRadius: '8px',
-                                    border: '1px solid #ddd',
-                                    background: loadingAutoBid ? '#f5f5f5' : 'white',
-                                    color: loadingAutoBid ? '#999' : '#666',
-                                    fontSize: '14px',
-                                    fontWeight: '600',
-                                    cursor: loadingAutoBid ? 'not-allowed' : 'pointer',
-                                    transition: 'all 0.3s ease'
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (!loadingAutoBid) {
-                                      e.target.style.background = '#f8f9fa';
-                                      e.target.style.transform = 'translateY(-2px)';
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (!loadingAutoBid) {
-                                      e.target.style.background = 'white';
-                                      e.target.style.transform = 'translateY(0)';
-                                    }
-                                  }}
-                                >
-                                  Effacer
-                                </button>
-                              </>
-                            ) : (
-                              /* Update Auto-Bid Button */
-                              <>
-                                <button
-                                  onClick={handleAutoBidSave}
-                                  disabled={savingAutoBid || loadingAutoBid}
-                                  style={{
-                                    width: '100%',
-                                    padding: '12px 20px',
-                                    borderRadius: '8px',
-                                    border: 'none',
-                                    background: (savingAutoBid || loadingAutoBid) ? '#ccc' : 'linear-gradient(90deg, #ffa500, #ff8c00)',
-                                    color: 'white',
-                                    fontSize: '14px',
-                                    fontWeight: '600',
-                                    cursor: (savingAutoBid || loadingAutoBid) ? 'not-allowed' : 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    boxShadow: (savingAutoBid || loadingAutoBid) ? 'none' : '0 4px 12px rgba(255, 165, 0, 0.3)'
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    if (!savingAutoBid && !loadingAutoBid) {
-                                      e.target.style.transform = 'translateY(-2px)';
-                                      e.target.style.boxShadow = '0 6px 16px rgba(255, 165, 0, 0.4)';
-                                    }
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    if (!savingAutoBid && !loadingAutoBid) {
-                                      e.target.style.transform = 'translateY(0)';
-                                      e.target.style.boxShadow = '0 4px 12px rgba(255, 165, 0, 0.3)';
-                                    }
-                                  }}
-                                >
-                                  {savingAutoBid ? 'Mise à jour...' : 'Mettre à jour'}
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-
-                    <ul className="question-and-wishlist-area" style={{ display: 'none' }}></ul>
-
-                  </div>
-                </div>
-              </div>
-
-              {/* Product Description Section */}
-              <div className="row mt-5">
-                <div className="col-12">
-                  <div className="auction-details-description-area">
-                    <div className="tab-container">
-                      <button
-                        className={`tab-button ${
-                          activeTab === "reviews" ? "active" : ""
-                        }`}
-                        onClick={() => setActiveTab("reviews")}
-                        type="button"
-                        role="tab"
-                        aria-controls="nav-reviews"
-                        aria-selected={activeTab === "reviews"}
-                      >
-                        {t('common.comments') || 'Commentaires'} ({auctionData?.comments?.length || 0})
-                      </button>
-
-                    </div>
-
-                    <div className="tab-content" id="nav-tabContent">
-
-                      <div
-                        className={`tab-pane fade ${
-                          activeTab === "reviews" ? "show active" : ""
-                        }`}
-                        id="nav-reviews"
-                        role="tabpanel"
-                        aria-labelledby="nav-reviews-tab"
-                      >
-                        <div className="reviews-area">
-
-
-                          {/* --- Comments Section (from backend) --- */}
-                          <div
-                            className="comments-area"
-                            style={{ marginBottom: 32 }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                marginBottom: "20px",
-                                borderBottom: "2px solid #f0f0f0",
-                                paddingBottom: "10px",
-                              }}
-                            >
-                              <h4
-                                style={{
-                                  margin: 0,
-                                  color: "#333",
-                                  fontSize: "18px",
-                                }}
-                              >
-                                💬 Commentaires (
-                                {auctionData?.comments?.length || 0})
-                              </h4>
-                            </div>
-
-                            {/* Comment Form */}
-                            {isLogged ? (
-                              <div
-                                style={{
-                                  background: "#f8f9fa",
-                                  borderRadius: "12px",
-                                  padding: "16px",
-                                  marginBottom: "20px",
-                                  border: "1px solid #e9ecef",
-                                }}
-                              >
-                                <form
-                                  onSubmit={async (e) => {
-                                    e.preventDefault();
-                                    if (!newComment.trim()) return;
-                                    setSubmitting(true);
-                                    try {
-                                      console.log("[Comment Submit] Sending:", {
-                                        comment: newComment,
-                                        user: auth.user._id,
-                                        bid: auctionId,
-                                      });
-                                      const response =
-                                        await commentsApi.createCommentForBid(
-                                          auctionId,
-                                          newComment,
-                                          auth.user._id
-                                        );
-                                      console.log(
-                                        "[Comment Submit] Success:",
-                                        response
-                                      );
-                                      setNewComment("");
-                                      // Re-fetch auction details to update comments
-                                      const data =
-                                        await AuctionsAPI.getAuctionById(
-                                          auctionId
-                                        );
-                                      setAuctionData(data);
-                                    } catch (err) {
-                                      console.error(
-                                        "[Comment Submit] Error:",
-                                        err,
-                                        err?.response
-                                      );
-                                      toast.error(
-                                        "Erreur lors de l'envoi du commentaire."
-                                      );
-                                    }
-                                    setSubmitting(false);
-                                  }}
-                                >
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "flex-start",
-                                      gap: "12px",
-                                    }}
-                                  >
-                                    <img
-                                      src={
-                                        auth.user?.photoURL ||
-                                        DEFAULT_USER_AVATAR
-                                      }
-                                      alt="Your avatar"
-                                      style={{
-                                        width: "36px",
-                                        height: "36px",
-                                        borderRadius: "50%",
-                                        objectFit: "cover",
-                                        border: "2px solid #0063b1",
-                                      }}
-                                      onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = DEFAULT_USER_AVATAR;
-                                      }}
-                                    />
-                                    <div style={{ flex: 1 }}>
-                                      <textarea
-                                        value={newComment}
-                                        onChange={(e) =>
-                                          setNewComment(e.target.value)
-                                        }
-                                        placeholder="Partagez votre opinion sur cette enchère..."
-                                        required
-                                        rows={2}
-                                        style={{
-                                          width: "100%",
-                                          padding: "12px",
-                                          borderRadius: "8px",
-                                          border: "1px solid #ddd",
-                                          marginBottom: "8px",
-                                          fontFamily: "inherit",
-                                          fontSize: "14px",
-                                          resize: "vertical",
-                                          minHeight: "60px",
-                                        }}
-                                      />
-                                      <button
-                                        type="submit"
-                                        disabled={submitting}
-                                        style={{
-                                          background: submitting
-                                            ? "#ccc"
-                                            : "#0063b1",
-                                          color: "#fff",
-                                          border: "none",
-                                          borderRadius: "6px",
-                                          padding: "8px 16px",
-                                          cursor: submitting
-                                            ? "not-allowed"
-                                            : "pointer",
-                                          fontSize: "14px",
-                                          fontWeight: "500",
-                                          transition: "background 0.3s ease",
-                                        }}
-                                      >
-                                        {submitting ? "Envoi..." : "Publier"}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </form>
-                              </div>
-                            ) : (
-                              <div
-                                style={{
-                                  background: "#fff3cd",
-                                  border: "1px solid #ffeaa7",
-                                  borderRadius: "8px",
-                                  padding: "12px",
-                                  marginBottom: "20px",
-                                  color: "#856404",
-                                  textAlign: "center",
-                                }}
-                              >
-                                <span>
-                                  🔒 Connectez-vous pour ajouter un commentaire
-                                </span>
-                              </div>
-                            )}
-
-                             {/* Comments List */}
-                            <div className="comments-list">
-                              {auctionData?.comments &&
-                              auctionData.comments.length > 0 ? (
-                                <ul style={{ listStyle: "none", padding: 0 }}>
-                                  {(showAllComments
-                                    ? auctionData.comments
-                                    : auctionData.comments.slice(0, 3)
-                                  ).map((comment) => (
-                                    <CommentItem 
-                                       key={comment._id} 
-                                       comment={comment} 
-                                       isLogged={isLogged} 
-                                       authUser={auth.user} 
-                                       onReplySuccess={async () => {
-                                          const data = await AuctionsAPI.getAuctionById(auctionId);
-                                          setAuctionData(data);
-                                       }}
-                                    />
-                                  ))}
-                                </ul>
-                              ) : (
-                                <p
-                                  style={{
-                                    textAlign: "center",
-                                    color: "#999",
-                                    padding: "20px",
-                                    background: "#f9f9f9",
-                                    borderRadius: "8px",
-                                  }}
-                                >
-                                  Soyez le premier à commenter !
-                                </p>
-                              )}
-
-                              {auctionData?.comments?.length > 3 && (
-                                <div style={{ textAlign: "center", marginTop: "15px" }}>
-                                  <button
-                                    onClick={() => setShowAllComments(!showAllComments)}
-                                    style={{
-                                      background: "transparent",
-                                      border: "1px solid #0063b1",
-                                      color: "#0063b1",
-                                      padding: "8px 16px",
-                                      borderRadius: "20px",
-                                      cursor: "pointer",
-                                      fontSize: "14px",
-                                      fontWeight: "600",
-                                      transition: "all 0.3s ease",
-                                    }}
-                                  >
-                                    {showAllComments ? "Voir moins" : "Voir tous les commentaires"}
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Similar Auctions Section */}
-          <div className="related-auction-section mb-110" style={{ paddingTop: 'clamp(120px, 15vw, 140px)' }}>
-            <div className="container">
-              <div className="row mb-50">
-                <div className="col-lg-12 d-flex align-items-center justify-content-between flex-wrap gap-3">
-                  <div className="section-title">
-                    <h2 className="related-auction-title">
-                      {t('auctionDetails.similarAuctions') || 'Enchères'} <span>{t('auctionDetails.similar') || 'Similaires'}</span>
-                    </h2>
-                  </div>
-                  <div className="slider-btn-grp">
-                    <div className="slider-btn auction-slider-prev">
-                      <svg
-                        width={9}
-                        height={15}
-                        viewBox="0 0 9 15"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M0 7.50009L9 0L3.27273 7.50009L9 15L0 7.50009Z" />
-                      </svg>
-                    </div>
-                    <div className="slider-btn auction-slider-next">
-                      <svg
-                        width={9}
-                        height={15}
-                        viewBox="0 0 9 15"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M9 7.50009L0 0L5.72727 7.50009L0 15L9 7.50009Z" />
-                      </svg>
-                    </div>
-                  </div>
+
+          {/* Seller Section (Moved here) */}
+          <div className="seller-section-card mt-5">
+            <div className="seller-avatar">
+              <img 
+                src={safeOwner?.photoURL?.startsWith('http') ? safeOwner.photoURL : (safeOwner?.photoURL ? `${app.baseURL}${safeOwner.photoURL.startsWith('/') ? safeOwner.photoURL.substring(1) : safeOwner.photoURL}` : DEFAULT_PROFILE_IMAGE)} 
+                alt="Seller" 
+                onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_PROFILE_IMAGE; }}
+              />
+            </div>
+            <div className="seller-info-content">
+              <div className="seller-header">
+                <span className="seller-name">
+                  {safeOwner?.entreprise || (safeOwner?.firstName && safeOwner?.lastName ? `${safeOwner.firstName} ${safeOwner.lastName}` : safeOwner?.name || safeOwner?.username || t('common.seller'))}
+                </span>
+                <div className="seller-rating">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className={`star ${i < 4 ? 'filled' : ''}`}>★</span>
+                  ))}
+                  <span className="seller-review-count">(150 avis)</span>
                 </div>
               </div>
-              <div className="auction-slider-area">
-                <div className="row">
-                  <div className="col-lg-12">
-                    <Swiper
-                      {...settingsForUpcomingAuction}
-                      className="swiper auction-slider"
-                    >
-                      <div className="swiper-wrapper">
-                        {allAuctions && allAuctions.length > 1 ? (
-                          allAuctions
-                            .filter((auction) => auction._id !== auctionId)
-                            .slice(0, 4)
-                            .map((auction, index) => {
-                              const hasAuctionEnded =
-                                similarAuctionTimers[index]?.total <= 0;
-                              const timer = similarAuctionTimers[index] || { days: "00", hours: "00", minutes: "00", seconds: "00" };
-                              const isUrgent = parseInt(timer.hours) < 1 && parseInt(timer.minutes) < 30;
-
-                              // Get seller display name (handles anonymous sellers)
-                              const getSellerDisplayName = (auction) => {
-                                if (auction.hidden === true) {
-                                  return t('common.anonymous');
-                                }
-                                if (auction.owner?.firstName && auction.owner?.lastName) {
-                                  return `${auction.owner.firstName} ${auction.owner.lastName}`;
-                                }
-                                if (auction.owner?.name) {
-                                  return auction.owner.name;
-                                }
-                                if (auction.seller?.name) {
-                                  return auction.seller.name;
-                                }
-                                return t('liveAuction.seller');
-                              };
-
-                              const displayName = getSellerDisplayName(auction);
-
-                              return (
-                                <SwiperSlide
-                                  className="swiper-slide"
-                                  key={auction._id || index}
-                                  style={{ height: 'auto', display: 'flex', justifyContent: 'center' }}
-                                >
-                                  <div
-                                    className="auction-card-hover"
-                                    style={{
-                                      background: hasAuctionEnded ? "#f0f0f0" : "white",
-                                      borderRadius: "clamp(16px, 3vw, 20px)",
-                                      overflow: "hidden",
-                                      boxShadow: hasAuctionEnded ? "none" : "0 8px 25px rgba(0, 0, 0, 0.08)",
-                                      border: hasAuctionEnded ? "1px solid #d0d0d0" : "1px solid rgba(0, 0, 0, 0.05)",
-                                      width: "100%",
-                                      maxWidth: "320px",
-                                      position: "relative",
-                                      minHeight: "360px",
-                                      cursor: hasAuctionEnded ? "not-allowed" : "pointer",
-                                      opacity: hasAuctionEnded ? 0.6 : 1,
-                                      pointerEvents: hasAuctionEnded ? "none" : "auto",
-                                      transition: "all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)",
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      if (!hasAuctionEnded) {
-                                        e.currentTarget.style.transform = "translateY(-8px) scale(1.02)";
-                                        e.currentTarget.style.boxShadow = "0 20px 40px rgba(0, 99, 177, 0.15)";
-                                      }
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      if (!hasAuctionEnded) {
-                                        e.currentTarget.style.transform = "translateY(0) scale(1)";
-                                        e.currentTarget.style.boxShadow = "0 8px 25px rgba(0, 0, 0, 0.08)";
-                                      }
-                                    }}
-                                  >
-                                    {/* Auction Image */}
-                                    <div style={{
-                                      position: "relative",
-                                      height: "clamp(160px, 25vw, 200px)",
-                                      overflow: "hidden",
-                                    }}>
-                                      <img
-                                        src={(() => {
-                                          if (auction.thumbs && auction.thumbs.length > 0) {
-                                            const imageUrl = auction.thumbs[0].url;
-                                            if (imageUrl) {
-                                              if (imageUrl.startsWith('http')) {
-                                                return imageUrl;
-                                              } else if (imageUrl.startsWith('/static/')) {
-                                                const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                                console.log('🎯 SIMILAR AUCTION IMAGE:', {
-                                                  originalUrl: imageUrl,
-                                                  finalUrl: finalUrl,
-                                                  auctionId: auction._id
-                                                });
-                                                return finalUrl;
-                                              } else if (imageUrl.startsWith('/')) {
-                                                const finalUrl = `${app.baseURL}${imageUrl.substring(1)}`;
-                                                console.log('🎯 SIMILAR AUCTION IMAGE:', {
-                                                  originalUrl: imageUrl,
-                                                  finalUrl: finalUrl,
-                                                  auctionId: auction._id
-                                                });
-                                                return finalUrl;
-                                              } else {
-                                                const finalUrl = `${app.baseURL}${imageUrl}`;
-                                                console.log('🎯 SIMILAR AUCTION IMAGE:', {
-                                                  originalUrl: imageUrl,
-                                                  finalUrl: finalUrl,
-                                                  auctionId: auction._id
-                                                });
-                                                return finalUrl;
-                                              }
-                                            }
-                                          }
-                                          return DEFAULT_AUCTION_IMAGE;
-                                        })()}
-                                        alt={auction.title || auction.name || "Auction"}
-                                        style={{
-                                          width: "100%",
-                                          height: "100%",
-                                          objectFit: "cover",
-                                          transition: "transform 0.4s ease",
-                                          filter: hasAuctionEnded ? "grayscale(100%)" : "none",
-                                        }}
-                                        onMouseEnter={(e) => {
-                                          if (!hasAuctionEnded) {
-                                            e.currentTarget.style.transform = "scale(1.1)";
-                                          }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          e.currentTarget.style.transform = "scale(1)";
-                                        }}
-                                        onError={(e) => {
-                                          e.currentTarget.onerror = null;
-                                          e.currentTarget.src = DEFAULT_AUCTION_IMAGE;
-                                        }}
-                                        crossOrigin="use-credentials"
-                                      />
-
-                                      {/* Professional Badge */}
-                                      {auction.isPro && !hasAuctionEnded && (
-                                        <div style={{
-                                          position: "absolute",
-                                          top: "10px",
-                                          left: "10px",
-                                          background: "linear-gradient(45deg, #ffd700, #ffed4e)",
-                                          color: "#1a1a1a",
-                                          padding: "6px 12px",
-                                          borderRadius: "20px",
-                                          fontSize: "11px",
-                                          fontWeight: "700",
-                                          boxShadow: "0 4px 12px rgba(255, 215, 0, 0.4)",
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: "4px",
-                                          zIndex: 2,
-                                        }}>
-                                          <span>👑</span>
-                                          <span>PRO</span>
-                                        </div>
-                                      )}
-
-                                      {/* Timer Overlay */}
-                                      <div style={{
-                                        position: "absolute",
-                                        top: "10px",
-                                        right: "10px",
-                                        background: hasAuctionEnded 
-                                          ? "rgba(100, 100, 100, 0.8)" 
-                                          : isUrgent 
-                                            ? "linear-gradient(45deg, #ff4444, #ff6666)" 
-                                            : "linear-gradient(45deg, #0063b1, #00a3e0)",
-                                        color: "white",
-                                        padding: "8px 12px",
-                                        borderRadius: "20px",
-                                        fontSize: "12px",
-                                        fontWeight: "600",
-                                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-                                      }}>
-                                        <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-                                          <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.hours}</span>
-                                          <span style={{ color: 'white' }}>:</span>
-                                          <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.minutes}</span>
-                                          <span style={{ color: 'white' }}>:</span>
-                                          <span className={`timer-digit ${isUrgent ? 'urgent' : ''}`}>{timer.seconds}</span>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    {/* Auction Details */}
-                                    <div style={{ padding: "clamp(16px, 3vw, 20px)" }}>
-                                      {/* Title */}
-                                      <h3 style={{
-                                        fontSize: "18px",
-                                        fontWeight: "600",
-                                        color: hasAuctionEnded ? "#666" : "#333",
-                                        marginBottom: "12px",
-                                        lineHeight: "1.3",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
-                                      }}>
-                                        <Link
-                                          href={hasAuctionEnded ? "#" : `/auction-details/${auction._id}`}
-                                          style={{
-                                            color: "inherit",
-                                            textDecoration: "none",
-                                            cursor: hasAuctionEnded ? "not-allowed" : "pointer",
-                                          }}
-                                        >
-                                          {auction.title || auction.name || "Enchère sans titre"}
-                                        </Link>
-                                      </h3>
-
-                                      {/* Quantity and Location Info */}
-                                      {(() => {
-                                        const hasQuantity = auction.quantity && auction.quantity !== "Non spécifiée" && !isNaN(auction.quantity) && auction.quantity !== "";
-                                        const place = auction.place || '';
-                                        const address = auction.address || '';
-                                        const location = auction.location || '';
-                                        const wilaya = auction.wilaya || '';
-                                        const parts = [place, address, location, wilaya].filter(Boolean);
-                                        const uniqueParts = [...new Set(parts)];
-                                        const hasLocation = uniqueParts.length > 0;
-                                        const itemCount = (hasQuantity ? 1 : 0) + (hasLocation ? 1 : 0);
-                                        
-                                        if (itemCount === 0) return null;
-                                        
-                                        return (
-                                      <div style={{
-                                        display: "grid",
-                                            gridTemplateColumns: itemCount === 2 ? "1fr 1fr" : "1fr",
-                                            gap: "6px",
-                                            marginBottom: "8px",
-                                          }}>
-                                            {hasQuantity && (
-                                              <div style={{
-                                                background: hasAuctionEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                                borderRadius: '8px',
-                                                padding: '4px 8px',
-                                                borderLeft: hasAuctionEnded ? '3px solid #d0d0d0' : '3px solid #0063b1',
-                                              }}>
-                                          <p style={{
-                                                  fontSize: "10px",
-                                            color: hasAuctionEnded ? "#888" : "#666",
-                                                  margin: "0 0 2px 0",
-                                            fontWeight: "600",
-                                          }}>
-                                                  📦 Quantité
-                                          </p>
-                                          <p style={{
-                                                  fontSize: "12px",
-                                            color: hasAuctionEnded ? "#888" : "#333",
-                                            margin: 0,
-                                            fontWeight: "500",
-                                          }}>
-                                                  {auction.quantity}
-                                          </p>
-                                        </div>
-                                            )}
-
-                                            {hasLocation && (
-                                              <div style={{
-                                                background: hasAuctionEnded ? '#f0f0f0' : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                                                borderRadius: '8px',
-                                                padding: '4px 8px',
-                                                borderLeft: hasAuctionEnded ? '3px solid #d0d0d0' : '3px solid #0063b1',
-                                              }}>
-                                          <p style={{
-                                                  fontSize: "10px",
-                                            color: hasAuctionEnded ? "#888" : "#666",
-                                                  margin: "0 0 2px 0",
-                                            fontWeight: "600",
-                                          }}>
-                                                  📍 Localisation
-                                          </p>
-                                          <p style={{
-                                                  fontSize: "12px",
-                                            color: hasAuctionEnded ? "#888" : "#333",
-                                            margin: 0,
-                                            fontWeight: "500",
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis",
-                                            whiteSpace: "nowrap",
-                                          }}>
-                                                  {uniqueParts.join(', ')}
-                                          </p>
-                                        </div>
-                                            )}
-                                      </div>
-                                        );
-                                      })()}
-
-                                      {/* Price Info - Only show if price exists and is valid */}
-                                      {((auction.currentPrice && !isNaN(auction.currentPrice) && auction.currentPrice > 0) || 
-                                        (auction.startingPrice && !isNaN(auction.startingPrice) && auction.startingPrice > 0)) && (
-                                      <div style={{
-                                        background: hasAuctionEnded 
-                                            ? "#f0f0f0" 
-                                          : "linear-gradient(135deg, #f8f9fa, #e9ecef)",
-                                          borderRadius: "8px",
-                                          padding: "4px 8px",
-                                          marginBottom: "8px",
-                                        border: hasAuctionEnded 
-                                            ? "1px solid #e0e0e0" 
-                                          : "1px solid #e9ecef",
-                                          borderLeft: hasAuctionEnded ? '3px solid #d0d0d0' : '3px solid #0063b1',
-                                        }}>
-                                          <p style={{
-                                            fontSize: "10px",
-                                            color: hasAuctionEnded ? "#888" : "#666",
-                                            margin: "0 0 2px 0",
-                                            fontWeight: "600",
-                                          }}>
-                                            💰 {t('auctionDetails.currentPrice') || 'Prix actuel'}
-                                          </p>
-                                          <p style={{
-                                            fontSize: "12px",
-                                            color: hasAuctionEnded ? "#888" : "#0063b1",
-                                            margin: 0,
-                                            fontWeight: "600",
-                                          }}>
-                                            {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()} DA
-                                          </p>
-                                        </div>
-                                      )}
-
-                                      {/* Quantity Section - Only show if quantity exists and is valid */}
-                                      {auction.quantity && auction.quantity !== "Non spécifiée" && !isNaN(auction.quantity) && auction.quantity !== "" && (
-                                      <div style={{
-                                        background: hasAuctionEnded 
-                                            ? "#f0f0f0" 
-                                            : "linear-gradient(135deg, #f8f9fa, #e9ecef)",
-                                          borderRadius: "8px",
-                                          padding: "4px 8px",
-                                          marginBottom: "8px",
-                                        border: hasAuctionEnded 
-                                          ? "1px solid #e0e0e0" 
-                                            : "1px solid #e9ecef",
-                                          borderLeft: hasAuctionEnded ? '3px solid #d0d0d0' : '3px solid #0063b1',
-                                        }}>
-                                          <p style={{
-                                            fontSize: "10px",
-                                            color: hasAuctionEnded ? "#888" : "#666",
-                                            margin: "0 0 2px 0",
-                                            fontWeight: "600",
-                                          }}>
-                                            📦 Quantité disponible
-                                          </p>
-                                          <p style={{
-                                            fontSize: "12px",
-                                            color: hasAuctionEnded ? "#888" : "#0063b1",
-                                            margin: 0,
-                                            fontWeight: "600",
-                                          }}>
-                                            {auction.quantity}
-                                          </p>
-                                        </div>
-                                      )}
-
-
-                                      {/* Bidders Count */}
-                                      <div style={{
-                                        background: hasAuctionEnded 
-                                          ? "#f0f0f0" 
-                                          : "linear-gradient(135deg, #f8f9fa, #e9ecef)",
-                                        borderRadius: "8px",
-                                        padding: "6px 8px",
-                                        marginBottom: "8px",
-                                        border: hasAuctionEnded 
-                                          ? "1px solid #e0e0e0" 
-                                          : "1px solid #e9ecef",
-                                      }}>
-                                        <div style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          justifyContent: "center",
-                                          gap: "6px",
-                                        }}>
-                                          <div style={{
-                                            width: "6px",
-                                            height: "6px",
-                                            borderRadius: "50%",
-                                            background: hasAuctionEnded ? "#888" : "#0063b1",
-                                          }}></div>
-                                          <span style={{
-                                            fontSize: "12px",
-                                            fontWeight: "600",
-                                            color: hasAuctionEnded ? "#888" : "#0063b1",
-                                          }}>
-                                            {auction.biddersCount || 0} participant{(auction.biddersCount || 0) !== 1 ? "s" : ""} ont enchéri
-                                          </span>
-                                        </div>
-                                      </div>
-
-                                      {/* Seller Info */}
-                                      <div style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "10px",
-                                        marginBottom: "16px",
-                                      }}>
-                                        <img
-                                          src={auction.seller?.photoURL || auction.owner?.photoURL || DEFAULT_PROFILE_IMAGE}
-                                          alt={displayName}
-                                          style={{
-                                            width: "32px",
-                                            height: "32px",
-                                            borderRadius: "50%",
-                                            objectFit: "cover",
-                                            filter: hasAuctionEnded ? "grayscale(100%)" : "none",
-                                          }}
-                                          onError={(e) => {
-                                            e.currentTarget.onerror = null;
-                                            e.currentTarget.src = DEFAULT_PROFILE_IMAGE;
-                                          }}
-                                        />
-                                        <span style={{
-                                          fontSize: "14px",
-                                          color: hasAuctionEnded ? "#888" : "#666",
-                                          fontWeight: "500",
-                                        }}>
-                                          {displayName}
-                                        </span>
-                                      </div>
-
-                                      {/* View Auction Button */}
-                                      <Link
-                                        href={hasAuctionEnded ? "#" : `/auction-details/${auction._id}`}
-                                        style={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          justifyContent: "center",
-                                          gap: "8px",
-                                          width: "100%",
-                                          padding: "12px 20px",
-                                          background: hasAuctionEnded 
-                                            ? "#cccccc" 
-                                            : "linear-gradient(90deg, #0063b1, #00a3e0)",
-                                          color: hasAuctionEnded ? "#888" : "white",
-                                          textDecoration: "none",
-                                          borderRadius: "25px",
-                                          fontWeight: "600",
-                                          fontSize: "14px",
-                                          transition: "all 0.3s ease",
-                                          boxShadow: hasAuctionEnded ? "none" : "0 4px 12px rgba(0, 99, 177, 0.3)",
-                                          cursor: hasAuctionEnded ? "not-allowed" : "pointer",
-                                          pointerEvents: hasAuctionEnded ? "none" : "auto",
-                                        }}
-                                        onMouseEnter={(e) => {
-                                          if (!hasAuctionEnded) {
-                                            e.currentTarget.style.background = "linear-gradient(90deg, #00a3e0, #0063b1)";
-                                            e.currentTarget.style.transform = "translateY(-2px)";
-                                            e.currentTarget.style.boxShadow = "0 8px 20px rgba(0, 99, 177, 0.4)";
-                                          }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                          if (!hasAuctionEnded) {
-                                            e.currentTarget.style.background = "linear-gradient(90deg, #0063b1, #00a3e0)";
-                                            e.currentTarget.style.transform = "translateY(0)";
-                                            e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 99, 177, 0.3)";
-                                          }
-                                        }}
-                                      >
-                                        Voir les détails
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                          <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12Z"/>
-                                        </svg>
-                                      </Link>
-                                    </div>
-                                  </div>
-                                </SwiperSlide>
-                              );
-                            })
-                        ) : (
-                          <SwiperSlide className="swiper-slide">
-                            <div
-                              style={{
-                                minHeight: "300px",
-                                display: "flex",
-                                flexDirection: "row",
-                                flexWrap: "wrap",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                width: "100%",
-                                gap: "30px",
-                                background: "white",
-                                borderRadius: "12px",
-                                padding: "30px",
-                                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  flex: "1 1 auto",
-                                  minWidth: "300px",
-                                  maxWidth: "500px",
-                                }}
-                              >
-                                <h3
-                                  style={{
-                                    fontSize: "24px",
-                                    marginBottom: "20px",
-                                    color: "#333",
-                                  }}
-                                >
-                                  {t('auctionDetails.noSimilarAuctions')}
-                                </h3>
-                                <p
-                                  style={{
-                                    fontSize: "16px",
-                                    color: "#666",
-                                    lineHeight: "1.6",
-                                  }}
-                                >
-                                  {t('auctionDetails.checkMainPage')}
-                                </p>
-                              </div>
-                              <div style={{ flex: "0 0 auto" }}>
-                                <Link
-                                  href="/auction-sidebar"
-                                  className="primary-btn btn-hover"
-                                  style={{
-                                    display: "inline-block",
-                                    padding: "12px 25px",
-                                    borderRadius: "30px",
-                                    background: "#0063b1",
-                                    color: "white",
-                                    fontWeight: "600",
-                                    textDecoration: "none",
-                                    boxShadow:
-                                      "0 4px 8px rgba(0, 99, 177, 0.3)",
-                                    transition: "all 0.3s ease",
-                                  }}
-                                >
-                                  Voir toutes les enchères
-                                </Link>
-                              </div>
-                            </div>
-                          </SwiperSlide>
-                        )}
-                      </div>
-                    </Swiper>
-                  </div>
-                </div>
+              <div className="seller-bio">
+                {safeOwner?.description || "Description de l'entreprise ou du vendeur non disponible."}
               </div>
             </div>
+            <div className="seller-actions">
+              <Link href={getSellerUrl(safeOwner._id || safeOwner)} className="seller-btn btn-all-products">Tout les produits</Link>
+              <button 
+                className="seller-btn btn-contact"
+                onClick={() => {
+                   setActiveTab('reviews');
+                   window.scrollBy({ top: 500, behavior: 'smooth' });
+                }}
+              >
+                Contacter / Question
+              </button>
+            </div>
           </div>
-        </>
-      )}
 
-      {/* Bid Confirmation Modal */}
-      {showBidConfirmation && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 9999,
-          backdropFilter: 'blur(5px)',
-        }}>
-          <div style={{
-            background: 'white',
-            borderRadius: '20px',
-            padding: '40px',
-            maxWidth: '500px',
-            width: '90%',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
-            animation: 'modalSlideIn 0.3s ease-out',
-            position: 'relative',
-          }}>
-            {/* Close button */}
-            <button
-              onClick={handleCancelBidSubmit}
-              style={{
-                position: 'absolute',
-                top: '15px',
-                right: '15px',
-                background: 'none',
-                border: 'none',
-                fontSize: '24px',
-                color: '#999',
-                cursor: 'pointer',
-                padding: '5px',
-                borderRadius: '50%',
-                width: '35px',
-                height: '35px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s ease',
+          {/* Similar Auctions (Carousel) */}
+
+          <div className="similar-auctions-redesign mt-5">
+            <div className="section-header-redesign d-flex justify-content-between align-items-center mb-4">
+              <h2 className="redesign-title">Enchères similaires</h2>
+              <Link href="/auction-sidebar" className="btn-view-all">Tout voir →</Link>
+            </div>
+            
+            <Swiper
+              modules={[Navigation, Pagination, Autoplay]}
+              spaceBetween={20}
+              slidesPerView={1}
+              breakpoints={{
+                640: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
+                1200: { slidesPerView: 4 }
               }}
-              onMouseEnter={(e) => {
-                e.target.style.background = '#f5f5f5';
-                e.target.style.color = '#666';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = 'none';
-                e.target.style.color = '#999';
-              }}
+              className="similar-swiper-custom"
             >
-              ×
-            </button>
+              {allAuctions?.filter(a => a._id !== auctionId).slice(0, 8).map((auction) => (
+                <SwiperSlide key={auction._id}>
+                  <SimilarAuctionCard 
+                    auction={auction} 
+                    app={app} 
+                    formatPrice={formatPrice} 
+                    defaultImage={DEFAULT_AUCTION_IMAGE}
+                  />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
 
-            {/* Modal Icon */}
-            <div style={{
-              textAlign: 'center',
-              marginBottom: '20px',
-            }}>
-              <div style={{
-                width: '80px',
-                height: '80px',
-                background: 'linear-gradient(135deg, #0063b1, #00a3e0)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 20px',
-                animation: 'pulse 2s infinite',
-              }}>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
-              </div>
-            </div>
 
-            {/* Modal Content */}
-            <div style={{
-              textAlign: 'center',
-              marginBottom: '30px',
-            }}>
-              <h3 style={{
-                fontSize: '24px',
-                fontWeight: '700',
-                color: '#333',
-                marginBottom: '15px',
-                lineHeight: '1.3',
-              }}>
-                Confirmer votre enchère
-              </h3>
-              
-              <p style={{
-                fontSize: '16px',
-                color: '#666',
-                lineHeight: '1.6',
-                marginBottom: '20px',
-              }}>
-                Êtes-vous sûr de vouloir placer cette enchère ?
-              </p>
 
-              {/* Bid Amount Display */}
-              <div style={{
-                background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
-                borderRadius: '12px',
-                padding: '20px',
-                marginBottom: '20px',
-                border: '1px solid #e9ecef',
-              }}>
-                <p style={{
-                  fontSize: '14px',
-                  color: '#666',
-                  margin: '0 0 8px 0',
-                  fontWeight: '600',
-                }}>
-                  Montant de votre enchère
-                </p>
-                <div style={{
-                  fontSize: '28px',
-                  fontWeight: '700',
-                  color: '#0063b1',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                }}>
-                  <span id="modal-bid-amount">
+        {/* Improved Bid Confirmation Modal */}
+        {showBidConfirmation && (
+          <div className="modal-overlay-custom">
+            <div className="modal-card-custom animate-zoom">
+              <button className="modal-close-btn" onClick={handleCancelBidSubmit}>×</button>
+              <div className="modal-body-custom">
+                <div className="success-icon-wrapper">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                </div>
+                <h3>Confirmation d'enchère</h3>
+                <p>Souhaitez-vous confirmer cette offre ?</p>
+                <div className="bid-summary-card">
+                  <span className="summary-label">Montant de votre offre</span>
+                  <span className="summary-value">
                     {(() => {
-                      const bidInput = document.querySelector(".quantity__input");
-                      return bidInput ? bidInput.value : '0';
-                    })()}
+                      const input = document.querySelector('.quantity__input');
+                      return input ? Number(input.value).toLocaleString() : '0';
+                    })()} DA
                   </span>
-                  <span style={{ fontSize: '16px', color: '#666' }}>DA</span>
+                </div>
+                <div className="modal-actions-custom">
+                  <button className="btn-modal-cancel" onClick={handleCancelBidSubmit}>Annuler</button>
+                  <button className="btn-modal-confirm" onClick={handleConfirmedBidSubmit}>Confirmer</button>
                 </div>
               </div>
-
-              <p style={{
-                fontSize: '14px',
-                color: '#999',
-                lineHeight: '1.5',
-                fontStyle: 'italic',
-              }}>
-                Une fois confirmée, votre enchère sera soumise et ne pourra plus être annulée.
-              </p>
-            </div>
-
-            {/* Modal Buttons */}
-            <div style={{
-              display: 'flex',
-              gap: '15px',
-              justifyContent: 'center',
-            }}>
-              <button
-                onClick={handleCancelBidSubmit}
-                style={{
-                  padding: '14px 28px',
-                  borderRadius: '12px',
-                  border: '2px solid #ddd',
-                  background: 'white',
-                  color: '#666',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  minWidth: '120px',
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.borderColor = '#999';
-                  e.target.style.color = '#333';
-                  e.target.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.borderColor = '#ddd';
-                  e.target.style.color = '#666';
-                  e.target.style.transform = 'translateY(0)';
-                }}
-              >
-                Annuler
-              </button>
-              
-              <button
-                onClick={handleConfirmedBidSubmit}
-                style={{
-                  padding: '14px 28px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: 'linear-gradient(90deg, #0063b1, #00a3e0)',
-                  color: 'white',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  minWidth: '120px',
-                  boxShadow: '0 4px 12px rgba(0, 99, 177, 0.3)',
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'linear-gradient(90deg, #00a3e0, #0063b1)';
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 6px 16px rgba(0, 99, 177, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'linear-gradient(90deg, #0063b1, #00a3e0)';
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 12px rgba(0, 99, 177, 0.3)';
-                }}
-              >
-                Oui, Confirmer
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+    )}
 
-      {/* Modal Animation Styles */}
-      <style jsx>{`
-        @keyframes modalSlideIn {
-          from {
-            opacity: 0;
-            transform: scale(0.9) translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-        }
-        
-        @keyframes pulse {
-          0% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(0, 99, 177, 0.7);
-          }
-          70% {
-            transform: scale(1.05);
-            box-shadow: 0 0 0 10px rgba(0, 99, 177, 0);
-          }
-          100% {
-            transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(0, 99, 177, 0);
-          }
-        }
-      `}</style>
     </>
   );
 };
 
-import CommentItem from "@/components/common/CommentItem";
+/* Internal Helper Component for Similar Auctions */
+const SimilarAuctionCard = ({ auction, app, formatPrice, defaultImage }) => {
+  const timer = useCountdownTimer(auction.endTime);
+  const isEnded = timer.isExpired || timer.total <= 0;
+  
+  return (
+    <div className={`similar-card-redesign ${isEnded ? 'ended' : ''}`} onClick={() => !isEnded && window.location.assign(`/auction-details/${auction._id}`)}>
+      <div className="card-image-wrapper">
+        <img 
+          src={auction?.thumbs?.[0]?.url ? (auction.thumbs[0].url.startsWith('http') ? auction.thumbs[0].url : `${app.baseURL}${auction.thumbs[0].url.startsWith('/') ? auction.thumbs[0].url.substring(1) : auction.thumbs[0].url}`) : defaultImage} 
+          alt={auction.title} 
+        />
+        {!isEnded && (
+          <div className="urgent-badge-mini">
+            {timer.days > 0 ? `${timer.days}j` : `${timer.hours}h:${timer.minutes}m`}
+          </div>
+        )}
+      </div>
+      <div className="card-info-mini">
+        <h4>{auction.title}</h4>
+        <div className="price-tag-mini">{formatPrice(auction.currentPrice || auction.startingPrice)} DA</div>
+      </div>
+    </div>
+  );
+};
 
 export default MultipurposeDetails1;
+
 

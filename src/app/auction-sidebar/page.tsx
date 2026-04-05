@@ -22,6 +22,7 @@ const AuctionSidebarPage = () => {
 
   return (
     <>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@700&display=swap" rel="stylesheet" />
       <style jsx global>{`
         /* Global styles */
         * {
@@ -42,7 +43,8 @@ const AuctionSidebarPage = () => {
         }
         
         body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 700;
           line-height: 1.5;
           color: var(--text-color);
           background: transparent;

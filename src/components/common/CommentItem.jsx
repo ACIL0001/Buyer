@@ -3,13 +3,18 @@ import { useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import commentsApi from "@/app/api/comments";
 
-const CommentItem = ({ comment, isLogged, authUser, onReplySuccess }) => {
+const CommentItem = ({ comment, isLogged, authUser, onReplySuccess, announcementOwnerId }) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [submittingReply, setSubmittingReply] = useState(false);
   const searchParams = useSearchParams();
   const highlightCommentId = searchParams.get("commentId");
   const commentRef = useRef(null);
+
+  const commenterId = (comment.user?._id || comment.user)?.toString();
+  const ownerId = announcementOwnerId?.toString();
+  const isAnnouncementOwner = commenterId === ownerId;
+  const isCurrentUserOwner = authUser?._id?.toString() === ownerId;
 
   useEffect(() => {
     if (highlightCommentId && (highlightCommentId === comment._id) && commentRef.current) {
@@ -58,11 +63,12 @@ const CommentItem = ({ comment, isLogged, authUser, onReplySuccess }) => {
       style={{
         marginBottom: "16px",
         padding: "16px",
-        background: "#fff",
+        background: isAnnouncementOwner ? "#f8fbff" : "#fff",
         borderRadius: "12px",
-        border: "1px solid #eee",
+        border: isAnnouncementOwner ? "1px solid #d0e3ff" : "1px solid #eee",
         boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
         transition: "background-color 0.5s ease",
+        marginLeft: comment.isReply ? "20px" : "0"
       }}
     >
       <div
@@ -108,6 +114,20 @@ const CommentItem = ({ comment, isLogged, authUser, onReplySuccess }) => {
                 >
                 {comment.user?.companyName || comment.user?.entreprise || comment.user?.fullName || (comment.user?.firstName ? `${comment.user.firstName} ${comment.user.lastName}` : "Utilisateur")}
                 </span>
+                {isAnnouncementOwner && (
+                  <span style={{
+                    background: "#0063b1",
+                    color: "#fff",
+                    fontSize: "10px",
+                    padding: "2px 6px",
+                    borderRadius: "4px",
+                    fontWeight: "700",
+                    verticalAlign: "middle",
+                    marginRight: "8px"
+                  }}>
+                    VENDEUR
+                  </span>
+                )}
                 <small
                 style={{
                     color: "#999",
@@ -118,8 +138,8 @@ const CommentItem = ({ comment, isLogged, authUser, onReplySuccess }) => {
                 </small>
             </div>
             
-            {/* Reply Button */}
-            {isLogged && (
+            {/* Reply Button - Only shown to announcement owner or if common user can reply (flexible) */}
+            {isLogged && (isCurrentUserOwner) && !isAnnouncementOwner && (
                 <button 
                     onClick={() => setShowReplyForm(!showReplyForm)}
                     style={{
@@ -208,10 +228,11 @@ const CommentItem = ({ comment, isLogged, authUser, onReplySuccess }) => {
               {comment.replies.map((reply) => (
                 <CommentItem 
                     key={reply._id} 
-                    comment={reply} 
+                    comment={{...reply, isReply: true}} 
                     isLogged={isLogged} 
                     authUser={authUser} 
                     onReplySuccess={onReplySuccess}
+                    announcementOwnerId={announcementOwnerId}
                 />
               ))}
             </ul>

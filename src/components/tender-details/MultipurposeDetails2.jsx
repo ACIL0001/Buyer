@@ -21,6 +21,7 @@ import commentsApi from "@/app/api/comments";
 import { useTranslation } from 'react-i18next';
 import ShareButton from "@/components/common/ShareButton";
 import CommentItem from "@/components/common/CommentItem";
+import { normalizeImageUrl } from "@/utils/url";
 
 const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-dark.png";
 const DEFAULT_TENDER_IMAGE = "/assets/images/logo-white.png";
@@ -331,26 +332,26 @@ const MultipurposeDetails2 = () => {
             <div className="thumbnails-vertical">
               {safeAttachments.length > 0 ? safeAttachments.map((thumb, index) => (
                 <div key={`thumb-img-${index}`} className={`thumb-item ${!showVideo && index === selectedImageIndex ? 'active' : ''}`} onClick={() => handleThumbnailClick(index)}>
-                  <img src={thumb.url.startsWith('http') ? thumb.url : `${app.baseURL}${thumb.url.startsWith('/') ? thumb.url.substring(1) : thumb.url}`} alt="" />
+                  <img src={normalizeImageUrl(thumb.url)} alt="" />
                 </div>
               )) : (
                 <div className="thumb-item active"><img src={DEFAULT_TENDER_IMAGE} alt="Default" /></div>
               )}
               {safeVideos.length > 0 && safeVideos.map((video, index) => (
                 <div key={`thumb-vid-${index}`} className={`thumb-item ${showVideo && index === selectedVideoIndex ? 'active' : ''}`} onClick={() => handleVideoThumbnailClick(index)}>
-                  <video src={video.url.startsWith('http') ? video.url : `${app.baseURL}${video.url.startsWith('/') ? video.url.substring(1) : video.url}`} muted />
+                  <video src={normalizeImageUrl(video.url)} muted />
                 </div>
               ))}
             </div>
 
             <div className="main-image-area">
               <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 5 }}>
-                <ShareButton type="tender" id={tenderId} title={safeTitle} description={safeDescription} imageUrl={safeAttachments[0]?.url || DEFAULT_TENDER_IMAGE} />
+                <ShareButton type="tender" id={tenderId} title={safeTitle} description={safeDescription} imageUrl={safeAttachments.length > 0 ? normalizeImageUrl(safeAttachments[0].url) : DEFAULT_TENDER_IMAGE} />
               </div>
               {showVideo && safeVideos.length > 0 ? (
-                <video src={safeVideos[selectedVideoIndex]?.url.startsWith('http') ? safeVideos[selectedVideoIndex]?.url : `${app.baseURL}${safeVideos[selectedVideoIndex]?.url.startsWith('/') ? safeVideos[selectedVideoIndex].url.substring(1) : safeVideos[selectedVideoIndex].url}`} controls style={{ maxHeight: '100%', maxWidth: '100%' }} />
+                <video src={normalizeImageUrl(safeVideos[selectedVideoIndex]?.url)} controls style={{ maxHeight: '100%', maxWidth: '100%' }} />
               ) : (
-                <img src={safeAttachments.length > 0 ? (safeAttachments[selectedImageIndex]?.url.startsWith('http') ? safeAttachments[selectedImageIndex]?.url : `${app.baseURL}${safeAttachments[selectedImageIndex]?.url.startsWith('/') ? safeAttachments[selectedImageIndex].url.substring(1) : safeAttachments[selectedImageIndex].url}`) : DEFAULT_TENDER_IMAGE} alt={safeTitle} />
+                <img src={safeAttachments.length > 0 ? normalizeImageUrl(safeAttachments[selectedImageIndex]?.url) : DEFAULT_TENDER_IMAGE} alt={safeTitle} />
               )}
             </div>
 
@@ -598,7 +599,7 @@ const MultipurposeDetails2 = () => {
           )}
 
           <div className="seller-section-card mt-5">
-            <div className="seller-avatar"><img src={safeOwner?.photoURL || DEFAULT_PROFILE_IMAGE} alt="Seller" /></div>
+            <div className="seller-avatar"><img src={safeOwner?.photoURL ? normalizeImageUrl(safeOwner.photoURL) : DEFAULT_PROFILE_IMAGE} alt="Seller" /></div>
             <div className="seller-info-content">
               <div className="seller-header"><span className="seller-name">{safeOwner?.entreprise || safeOwner?.name || "Vendeur"}</span></div>
               <div className="seller-bio">{safeOwner?.description || "Pas de bio."}</div>
@@ -615,7 +616,7 @@ const MultipurposeDetails2 = () => {
               {allTenders?.filter(t => t._id !== tenderId).slice(0, 8).map(t => (
                 <SwiperSlide key={t._id}>
                   <div className="similar-card-redesign" onClick={() => window.location.assign(`/tender-details/${t._id}`)}>
-                    <div className="card-image-wrapper"><img src={t.attachments?.[0]?.url || DEFAULT_TENDER_IMAGE} alt="" /></div>
+                    <div className="card-image-wrapper"><img src={t.attachments?.[0]?.url ? normalizeImageUrl(t.attachments[0].url) : DEFAULT_TENDER_IMAGE} alt="" /></div>
                     <div className="card-info-mini"><h4>{t.title}</h4><div className="price-tag-mini">{formatPrice(t.maxBudget)} DA</div></div>
                   </div>
                 </SwiperSlide>

@@ -217,7 +217,6 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                         target.onerror = null;
                         target.src = DEFAULT_AUCTION_IMAGE;
                     }}
-                    crossOrigin="use-credentials"
                 />
             </Link>
 

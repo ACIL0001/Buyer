@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from "framer-motion";
 import ShareButton from "@/components/common/ShareButton";
 import CommentItem from "@/components/common/CommentItem";
+import { normalizeImageUrl } from "@/utils/url";
 
 const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-dark.png";
 const DEFAULT_USER_AVATAR = "/assets/images/avatar.jpg";
@@ -1195,7 +1196,7 @@ const MultipurposeDetails1 = () => {
                   className={`thumb-item ${!showVideo && index === selectedImageIndex ? 'active' : ''}`}
                   onClick={() => handleThumbnailClick(index)}
                 >
-                  <img src={thumb.url.startsWith('http') ? thumb.url : `${app.baseURL}${thumb.url.startsWith('/') ? thumb.url.substring(1) : thumb.url}`} alt="" crossOrigin="use-credentials" />
+                  <img src={normalizeImageUrl(thumb.url)} alt="" />
                 </div>
               )) : (
                 <div className="thumb-item active">
@@ -1208,7 +1209,7 @@ const MultipurposeDetails1 = () => {
                   className={`thumb-item ${showVideo && index === selectedVideoIndex ? 'active' : ''}`}
                   onClick={() => handleVideoThumbnailClick(index)}
                 >
-                  <video src={video.url.startsWith('http') ? video.url : `${app.baseURL}${video.url.startsWith('/') ? video.url.substring(1) : video.url}`} muted />
+                  <video src={normalizeImageUrl(video.url)} muted />
                 </div>
               ))}
             </div>
@@ -1220,21 +1221,19 @@ const MultipurposeDetails1 = () => {
                   id={safeAuctionData._id || auctionId}
                   title={safeTitle}
                   description={safeDescription}
-                  imageUrl={safeThumbs.length > 0 ? (safeThumbs[0].url.startsWith('http') ? safeThumbs[0].url : `${app.baseURL}${safeThumbs[0].url.startsWith('/') ? safeThumbs[0].url.substring(1) : safeThumbs[0].url}`) : DEFAULT_AUCTION_IMAGE}
+                  imageUrl={safeThumbs.length > 0 ? normalizeImageUrl(safeThumbs[0].url) : DEFAULT_AUCTION_IMAGE}
                 />
               </div>
               {showVideo && safeVideos.length > 0 ? (
                 <video 
-                  src={safeVideos[selectedVideoIndex]?.url.startsWith('http') ? safeVideos[selectedVideoIndex]?.url : `${app.baseURL}${safeVideos[selectedVideoIndex]?.url.startsWith('/') ? safeVideos[selectedVideoIndex].url.substring(1) : safeVideos[selectedVideoIndex].url}`} 
+                  src={normalizeImageUrl(safeVideos[selectedVideoIndex]?.url)} 
                   controls 
                   style={{ maxHeight: '100%', maxWidth: '100%' }}
-                  crossOrigin="use-credentials"
                 />
               ) : (
                 <img 
-                  src={safeThumbs.length > 0 ? (safeThumbs[selectedImageIndex]?.url.startsWith('http') ? safeThumbs[selectedImageIndex]?.url : `${app.baseURL}${safeThumbs[selectedImageIndex]?.url.startsWith('/') ? safeThumbs[selectedImageIndex].url.substring(1) : safeThumbs[selectedImageIndex].url}`) : DEFAULT_AUCTION_IMAGE} 
+                  src={safeThumbs.length > 0 ? normalizeImageUrl(safeThumbs[selectedImageIndex]?.url) : DEFAULT_AUCTION_IMAGE} 
                   alt={safeTitle} 
-                  crossOrigin="use-credentials"
                 />
               )}
             </div>
@@ -1462,7 +1461,7 @@ const MultipurposeDetails1 = () => {
           <div className="seller-section-card mt-5">
             <div className="seller-avatar">
               <img 
-                src={safeOwner?.photoURL?.startsWith('http') ? safeOwner.photoURL : (safeOwner?.photoURL ? `${app.baseURL}${safeOwner.photoURL.startsWith('/') ? safeOwner.photoURL.substring(1) : safeOwner.photoURL}` : DEFAULT_PROFILE_IMAGE)} 
+                src={safeOwner?.photoURL ? normalizeImageUrl(safeOwner.photoURL) : DEFAULT_PROFILE_IMAGE} 
                 alt="Seller" 
                 onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_PROFILE_IMAGE; }}
               />
@@ -1577,7 +1576,7 @@ const SimilarAuctionCard = ({ auction, app, formatPrice, defaultImage }) => {
     <div className={`similar-card-redesign ${isEnded ? 'ended' : ''}`} onClick={() => !isEnded && window.location.assign(`/auction-details/${auction._id}`)}>
       <div className="card-image-wrapper">
         <img 
-          src={auction?.thumbs?.[0]?.url ? (auction.thumbs[0].url.startsWith('http') ? auction.thumbs[0].url : `${app.baseURL}${auction.thumbs[0].url.startsWith('/') ? auction.thumbs[0].url.substring(1) : auction.thumbs[0].url}`) : defaultImage} 
+          src={auction?.thumbs?.[0]?.url ? normalizeImageUrl(auction.thumbs[0].url) : defaultImage} 
           alt={auction.title} 
         />
         {!isEnded && (

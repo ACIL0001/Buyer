@@ -21,6 +21,7 @@ import app, { getSellerUrl } from "@/config";
 import Link from "next/link";
 import { useTranslation } from 'react-i18next';
 import CommentItem from "@/components/common/CommentItem";
+import { normalizeImageUrl } from "@/utils/url";
 
 // Import styles from the reference components
 import "@/components/auction-details/st.css";
@@ -183,11 +184,7 @@ function DirectSaleDetailContent() {
   };
 
   const getImageUrl = (imagePath?: string): string => {
-    if (!imagePath) return DEFAULT_DIRECT_SALE_IMAGE;
-    if (imagePath.startsWith('http')) return imagePath;
-    const base = app.baseURL || app.route || "";
-    const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
-    return `${base}${cleanPath}`;
+    return normalizeImageUrl(imagePath) || DEFAULT_DIRECT_SALE_IMAGE;
   };
 
   const formatPrice = (price: number) => {

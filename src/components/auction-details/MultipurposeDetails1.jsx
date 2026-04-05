@@ -308,6 +308,12 @@ const MultipurposeDetails1 = () => {
     fetchAuctionDetails();
   }, [auctionId, params, searchParams]);
 
+  const getImgUrl = (imageObj) => {
+    if (!imageObj) return DEFAULT_AUCTION_IMAGE;
+    const rawPath = typeof imageObj === 'string' ? imageObj : (imageObj?.url || imageObj?.fullUrl);
+    return normalizeImageUrl(rawPath) || DEFAULT_AUCTION_IMAGE;
+  };
+
   // Extract fetchAutoBidData as a reusable function
   const fetchAutoBidData = async () => {
     if (!isLogged || !auth.tokens || !auctionId || !auctionData) {
@@ -1196,7 +1202,7 @@ const MultipurposeDetails1 = () => {
                   className={`thumb-item ${!showVideo && index === selectedImageIndex ? 'active' : ''}`}
                   onClick={() => handleThumbnailClick(index)}
                 >
-                  <img src={normalizeImageUrl(thumb.url)} alt="" />
+                  <img src={getImgUrl(thumb)} alt="" />
                 </div>
               )) : (
                 <div className="thumb-item active">
@@ -1209,7 +1215,7 @@ const MultipurposeDetails1 = () => {
                   className={`thumb-item ${showVideo && index === selectedVideoIndex ? 'active' : ''}`}
                   onClick={() => handleVideoThumbnailClick(index)}
                 >
-                  <video src={normalizeImageUrl(video.url)} muted />
+                  <video src={getImgUrl(video)} muted />
                 </div>
               ))}
             </div>
@@ -1221,18 +1227,18 @@ const MultipurposeDetails1 = () => {
                   id={safeAuctionData._id || auctionId}
                   title={safeTitle}
                   description={safeDescription}
-                  imageUrl={safeThumbs.length > 0 ? normalizeImageUrl(safeThumbs[0].url) : DEFAULT_AUCTION_IMAGE}
+                  imageUrl={safeThumbs.length > 0 ? getImgUrl(safeThumbs[0]) : DEFAULT_AUCTION_IMAGE}
                 />
               </div>
               {showVideo && safeVideos.length > 0 ? (
                 <video 
-                  src={normalizeImageUrl(safeVideos[selectedVideoIndex]?.url)} 
+                  src={getImgUrl(safeVideos[selectedVideoIndex])} 
                   controls 
                   style={{ maxHeight: '100%', maxWidth: '100%' }}
                 />
               ) : (
                 <img 
-                  src={safeThumbs.length > 0 ? normalizeImageUrl(safeThumbs[selectedImageIndex]?.url) : DEFAULT_AUCTION_IMAGE} 
+                  src={safeThumbs.length > 0 ? getImgUrl(safeThumbs[selectedImageIndex]) : DEFAULT_AUCTION_IMAGE} 
                   alt={safeTitle} 
                 />
               )}
@@ -1576,7 +1582,7 @@ const SimilarAuctionCard = ({ auction, app, formatPrice, defaultImage }) => {
     <div className={`similar-card-redesign ${isEnded ? 'ended' : ''}`} onClick={() => !isEnded && window.location.assign(`/auction-details/${auction._id}`)}>
       <div className="card-image-wrapper">
         <img 
-          src={auction?.thumbs?.[0]?.url ? normalizeImageUrl(auction.thumbs[0].url) : defaultImage} 
+          src={auction?.thumbs?.[0] ? getImgUrl(auction.thumbs[0]) : defaultImage} 
           alt={auction.title} 
         />
         {!isEnded && (

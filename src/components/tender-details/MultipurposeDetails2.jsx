@@ -280,6 +280,12 @@ const MultipurposeDetails2 = () => {
     finally { setDeletingAutoBid(false); }
   };
 
+  const getImgUrl = (imageObj) => {
+    if (!imageObj) return DEFAULT_TENDER_IMAGE;
+    const rawPath = typeof imageObj === 'string' ? imageObj : (imageObj?.url || imageObj?.fullUrl);
+    return normalizeImageUrl(rawPath) || DEFAULT_TENDER_IMAGE;
+  };
+
   return (
     <>
       <ToastContainer position="top-right" autoClose={3000} />
@@ -332,26 +338,26 @@ const MultipurposeDetails2 = () => {
             <div className="thumbnails-vertical">
               {safeAttachments.length > 0 ? safeAttachments.map((thumb, index) => (
                 <div key={`thumb-img-${index}`} className={`thumb-item ${!showVideo && index === selectedImageIndex ? 'active' : ''}`} onClick={() => handleThumbnailClick(index)}>
-                  <img src={normalizeImageUrl(thumb.url)} alt="" />
+                  <img src={getImgUrl(thumb)} alt="" />
                 </div>
               )) : (
                 <div className="thumb-item active"><img src={DEFAULT_TENDER_IMAGE} alt="Default" /></div>
               )}
               {safeVideos.length > 0 && safeVideos.map((video, index) => (
                 <div key={`thumb-vid-${index}`} className={`thumb-item ${showVideo && index === selectedVideoIndex ? 'active' : ''}`} onClick={() => handleVideoThumbnailClick(index)}>
-                  <video src={normalizeImageUrl(video.url)} muted />
+                  <video src={getImgUrl(video)} muted />
                 </div>
               ))}
             </div>
 
             <div className="main-image-area">
               <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 5 }}>
-                <ShareButton type="tender" id={tenderId} title={safeTitle} description={safeDescription} imageUrl={safeAttachments.length > 0 ? normalizeImageUrl(safeAttachments[0].url) : DEFAULT_TENDER_IMAGE} />
+                <ShareButton type="tender" id={tenderId} title={safeTitle} description={safeDescription} imageUrl={safeAttachments.length > 0 ? getImgUrl(safeAttachments[0]) : DEFAULT_TENDER_IMAGE} />
               </div>
               {showVideo && safeVideos.length > 0 ? (
-                <video src={normalizeImageUrl(safeVideos[selectedVideoIndex]?.url)} controls style={{ maxHeight: '100%', maxWidth: '100%' }} />
+                <video src={getImgUrl(safeVideos[selectedVideoIndex])} controls style={{ maxHeight: '100%', maxWidth: '100%' }} />
               ) : (
-                <img src={safeAttachments.length > 0 ? normalizeImageUrl(safeAttachments[selectedImageIndex]?.url) : DEFAULT_TENDER_IMAGE} alt={safeTitle} />
+                <img src={safeAttachments.length > 0 ? getImgUrl(safeAttachments[selectedImageIndex]) : DEFAULT_TENDER_IMAGE} alt={safeTitle} />
               )}
             </div>
 

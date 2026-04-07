@@ -230,7 +230,7 @@ const UserActivitiesSection = ({ userId }: UserActivitiesSectionProps) => {
                     <span style={{ 
                         fontSize: '64px', 
                         fontWeight: '900', 
-                        background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
+                        background: 'linear-gradient(135deg, #2563eb 0%, #002896 100%)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent',
                         lineHeight: 1

@@ -8,7 +8,7 @@ const PlansClient = dynamic(() => import('@/app/plans/PlansClient'), {
   ssr: false,
   loading: () => (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0', minHeight: '100vh', background: '#f8fafc' }}>
-      <div className="spinner" style={{ width: '48px', height: '48px', border: '4px solid rgba(0, 99, 177, 0.2)', borderTopColor: '#0063b1', borderRadius: '50%', animation: 'spin 1s ease-in-out infinite' }}></div>
+      <div className="spinner" style={{ width: '48px', height: '48px', border: '4px solid rgba(0, 40, 150, 0.2)', borderTopColor: '#0063b1', borderRadius: '50%', animation: 'spin 1s ease-in-out infinite' }}></div>
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }

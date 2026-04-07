@@ -479,7 +479,7 @@
 .comment-form-v2 textarea:focus {
     outline: none;
     border-color: #0063b1;
-    box-shadow: 0 0 0 3px rgba(0, 99, 177, 0.1);
+    box-shadow: 0 0 0 3px rgba(0, 40, 150, 0.1);
 }
 
 .comment-form-v2 button {

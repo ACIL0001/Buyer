@@ -80,7 +80,7 @@ export const getTouchTargetStyles = (deviceInfo: DeviceInfo) => {
     minHeight: `${baseSize}px`,
     minWidth: `${baseSize}px`,
     touchAction: 'manipulation' as const,
-    WebkitTapHighlightColor: 'rgba(0, 99, 177, 0.1)',
+    WebkitTapHighlightColor: 'rgba(0, 40, 150, 0.1)',
     cursor: 'pointer' as const,
   };
 };
@@ -223,7 +223,7 @@ export const getButtonStyles = (deviceInfo: DeviceInfo, variant: 'primary' | 'se
       ...baseStyles,
       background: 'linear-gradient(135deg, #0063b1 0%, #00a3e0 100%)',
       color: 'white',
-      boxShadow: '0 4px 15px rgba(0, 99, 177, 0.3)',
+      boxShadow: '0 4px 15px rgba(0, 40, 150, 0.3)',
     };
   }
 

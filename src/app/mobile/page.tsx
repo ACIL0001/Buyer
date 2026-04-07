@@ -146,7 +146,7 @@ export default function MobilePage() {
         /* Mobile-specific variables */
         :root {
           --primary-color: #0063b1;
-          --primary-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 12%, #334155 24%, #1e3a8a 36%, #1e40af 48%, #2563eb 60%, #3b82f6 72%, #60a5fa 84%, #93c5fd 96%, #dbeafe 100%);
+          --primary-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 12%, #334155 24%, #1e3a8a 36%, #002896 48%, #2563eb 60%, #3b82f6 72%, #60a5fa 84%, #93c5fd 96%, #dbeafe 100%);
           --secondary-color: #0ea5e9;
           --text-color: #1f2937;
           --bg-color: #ffffff;
@@ -193,15 +193,15 @@ export default function MobilePage() {
         @keyframes pulse {
           0% {
             transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(0, 99, 177, 0.7);
+            box-shadow: 0 0 0 0 rgba(0, 40, 150, 0.7);
           }
           70% {
             transform: scale(1);
-            box-shadow: 0 0 0 10px rgba(0, 99, 177, 0);
+            box-shadow: 0 0 0 10px rgba(0, 40, 150, 0);
           }
           100% {
             transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(0, 99, 177, 0);
+            box-shadow: 0 0 0 0 rgba(0, 40, 150, 0);
           }
         }
 
@@ -358,7 +358,7 @@ export default function MobilePage() {
                       135deg,
                       #0f172a 0%,
                       #1e293b 25%,
-                      #1e40af 50%,
+                      #002896 50%,
                       #3b82f6 75%,
                       #60a5fa 100%
                     )`,

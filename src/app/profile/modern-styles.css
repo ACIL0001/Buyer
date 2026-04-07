@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 :root {
-  --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+  --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #002896 100%);
   --success-gradient: linear-gradient(135deg, #48cc6c 0%, #22c55e 100%);
   --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
   --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
@@ -51,7 +51,7 @@
 .orb-1 {
   width: 400px;
   height: 400px;
-  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #002896 100%);
   top: -200px;
   right: -200px;
   animation-delay: 0s;

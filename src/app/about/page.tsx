@@ -46,7 +46,7 @@ const AboutPage = () => {
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              style={{ color: '#002bc5', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: '800', marginBottom: '20px' }}
+              style={{ color: '#002896', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: '800', marginBottom: '20px' }}
             >
               Contactez notre équipe pour plus de renseignements
             </motion.h1>
@@ -113,16 +113,16 @@ const AboutPage = () => {
               boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
             }}>
               <div>
-                <h2 style={{ color: '#002bc5', fontSize: '48px', fontWeight: '800' }}>15</h2>
-                <p style={{ color: '#002bc5', fontSize: '14px', fontWeight: '600' }}>Membres de l'équipe</p>
+                <h2 style={{ color: '#002896', fontSize: '48px', fontWeight: '800' }}>15</h2>
+                <p style={{ color: '#002896', fontSize: '14px', fontWeight: '600' }}>Membres de l'équipe</p>
               </div>
               <div>
-                <h2 style={{ color: '#002bc5', fontSize: '48px', fontWeight: '800' }}>10</h2>
-                <p style={{ color: '#002bc5', fontSize: '14px', fontWeight: '600' }}>Fonctionnalités</p>
+                <h2 style={{ color: '#002896', fontSize: '48px', fontWeight: '800' }}>10</h2>
+                <p style={{ color: '#002896', fontSize: '14px', fontWeight: '600' }}>Fonctionnalités</p>
               </div>
               <div>
-                <h2 style={{ color: '#002bc5', fontSize: '48px', fontWeight: '800' }}>+10</h2>
-                <p style={{ color: '#002bc5', fontSize: '14px', fontWeight: '600' }}>Entreprises</p>
+                <h2 style={{ color: '#002896', fontSize: '48px', fontWeight: '800' }}>+10</h2>
+                <p style={{ color: '#002896', fontSize: '14px', fontWeight: '600' }}>Entreprises</p>
               </div>
             </div>
           </div>
@@ -131,7 +131,7 @@ const AboutPage = () => {
         {/* 3. Nos Valeurs Section */}
         <section style={{ padding: '100px 20px' }}>
           <div className="container" style={{ maxWidth: '1100px', margin: '0 auto' }}>
-            <h2 style={{ color: '#002bc5', fontSize: '42px', fontWeight: '800', textAlign: 'center', marginBottom: '60px' }}>Nos valeurs</h2>
+            <h2 style={{ color: '#002896', fontSize: '42px', fontWeight: '800', textAlign: 'center', marginBottom: '60px' }}>Nos valeurs</h2>
             <div className="values-grid">
               {[
                 { title: "Clarté Totale", desc: "Des processus d'enchères et de soumissions traçables pour une confiance absolue." },
@@ -143,7 +143,7 @@ const AboutPage = () => {
               ].map((item, i) => (
                 <div key={i} className="value-card" style={glassStyleGrey}>
                   <div className="star-icon">★</div>
-                  <h3 style={{ color: '#002bc5', fontSize: '20px', fontWeight: '700', marginBottom: '12px' }}>{item.title}</h3>
+                  <h3 style={{ color: '#002896', fontSize: '20px', fontWeight: '700', marginBottom: '12px' }}>{item.title}</h3>
                   <p style={{ color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>
                     {item.desc}
                   </p>
@@ -156,10 +156,10 @@ const AboutPage = () => {
         {/* 4. Contact CTA */}
         <section style={{ padding: '80px 20px', textAlign: 'center' }}>
           <div className="container" style={{ maxWidth: '700px', margin: '0 auto' }}>
-            <h2 style={{ color: '#002bc5', fontSize: '38px', fontWeight: '800', marginBottom: '25px' }}>
+            <h2 style={{ color: '#002896', fontSize: '38px', fontWeight: '800', marginBottom: '25px' }}>
               Besoin d’un accompagnement
             </h2>
-            <p style={{ color: '#002bc5', fontSize: '16px', lineHeight: '1.8', marginBottom: '45px', opacity: 0.8 }}>
+            <p style={{ color: '#002896', fontSize: '16px', lineHeight: '1.8', marginBottom: '45px', opacity: 0.8 }}>
               Nos experts sont là pour vous aider à optimiser vos enchères ou finaliser
               vos soumissions. Envoyez-nous un message et recevez une réponse
               rapide.
@@ -231,7 +231,7 @@ const AboutPage = () => {
             margin-bottom: 20px;
           }
           .gradient-btn {
-            background: linear-gradient(95deg, #002bc5 0%, #3b82f6 100%);
+            background: linear-gradient(95deg, #002896 0%, #3b82f6 100%);
             color: white;
             padding: 18px 70px;
             border-radius: 50px;
@@ -240,11 +240,11 @@ const AboutPage = () => {
             font-size: 16px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 10px 20px rgba(0, 43, 197, 0.2);
+            box-shadow: 0 10px 20px rgba(0, 40, 150, 0.2);
           }
           .gradient-btn:hover {
             transform: scale(1.05);
-            box-shadow: 0 15px 30px rgba(0, 43, 197, 0.3);
+            box-shadow: 0 15px 30px rgba(0, 40, 150, 0.3);
           }
           @media (max-width: 992px) {
             .values-grid { grid-template-columns: repeat(2, 1fr); }

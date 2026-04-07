@@ -623,7 +623,7 @@ export default function UsersPage() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     margin: '0 auto 30px',
-                    boxShadow: '0 10px 30px rgba(0, 99, 177, 0.3)'
+                    boxShadow: '0 10px 30px rgba(0, 40, 150, 0.3)'
                   }}>
                     <i className="bi bi-shield-lock" style={{ 
                       fontSize: '2.5rem', 
@@ -736,7 +736,7 @@ export default function UsersPage() {
                       fontWeight: '600',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
-                      boxShadow: '0 8px 25px rgba(0, 99, 177, 0.3)',
+                      boxShadow: '0 8px 25px rgba(0, 40, 150, 0.3)',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
@@ -744,11 +744,11 @@ export default function UsersPage() {
                     }}
                     onMouseOver={(e) => {
                       e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 12px 35px rgba(0, 99, 177, 0.4)';
+                      e.currentTarget.style.boxShadow = '0 12px 35px rgba(0, 40, 150, 0.4)';
                     }}
                     onMouseOut={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 99, 177, 0.3)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 40, 150, 0.3)';
                     }}
                   >
                     <i className="bi bi-box-arrow-in-right" style={{ fontSize: '1.2rem' }}></i>
@@ -1059,7 +1059,7 @@ export default function UsersPage() {
             <div className="text-center mb-5">
               <h1 className="display-4 mb-4" style={{
                 fontWeight: '700',
-                background: 'linear-gradient(90deg, rgb(0, 99, 177), rgb(0, 163, 224))',
+                background: 'linear-gradient(90deg, rgb(0, 40, 150), rgb(0, 163, 224))',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text'
@@ -1110,7 +1110,7 @@ export default function UsersPage() {
                     }}
                   />
                   <button className="btn" style={{
-                    backgroundColor: 'rgb(0, 99, 177)',
+                    backgroundColor: 'rgb(0, 40, 150)',
                     border: 'none',
                     padding: '0 30px',
                     color: 'white'

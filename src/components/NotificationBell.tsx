@@ -594,7 +594,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
                 }}
                 onMouseOver={(e) => {
                   if (!isMarkingAllAsRead) {
-                    e.currentTarget.style.background = 'rgba(0, 99, 177, 0.1)';
+                    e.currentTarget.style.background = 'rgba(0, 40, 150, 0.1)';
                   }
                 }}
                 onMouseOut={(e) => {
@@ -639,8 +639,8 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
                     borderBottom: '1px solid #f0f0f0',
                     transition: 'background-color 0.2s ease',
                     backgroundColor: clickedNotificationId === notification._id
-                      ? 'rgba(0, 99, 177, 0.05)'
-                      : notification.read ? 'white' : 'rgba(0, 99, 177, 0.02)',
+                      ? 'rgba(0, 40, 150, 0.05)'
+                      : notification.read ? 'white' : 'rgba(0, 40, 150, 0.02)',
                     display: 'flex',
                     alignItems: 'flex-start',
                     gap: '12px',
@@ -758,7 +758,7 @@ const NotificationBell = memo(function NotificationBell({ variant = 'header', on
               }}
               onClick={() => setIsOpen(false)}
                       onMouseOver={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 99, 177, 0.1)';
+                e.currentTarget.style.background = 'rgba(0, 40, 150, 0.1)';
                 e.currentTarget.style.transform = 'translateY(-2px)';
                       }}
                       onMouseOut={(e) => {

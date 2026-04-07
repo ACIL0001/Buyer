@@ -19,7 +19,7 @@
 .gradient-orb {
   position: absolute;
   border-radius: 50%;
-  background: linear-gradient(45deg, rgba(0, 99, 177, 0.1), rgba(36, 83, 212, 0.05));
+  background: linear-gradient(45deg, rgba(0, 40, 150, 0.1), rgba(36, 83, 212, 0.05));
   backdrop-filter: blur(20px);
   animation: float 6s ease-in-out infinite;
 }
@@ -308,7 +308,7 @@
 
 .search-container-modern:focus-within {
   border-color: #0063b1;
-  box-shadow: 0 0 0 3px rgba(0, 99, 177, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 40, 150, 0.1);
 }
 
 .search-icon {
@@ -754,7 +754,7 @@
 
 .input-wrapper:focus-within {
   border-color: #0063b1;
-  box-shadow: 0 0 0 3px rgba(0, 99, 177, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 40, 150, 0.1);
 }
 
 .attach-button,

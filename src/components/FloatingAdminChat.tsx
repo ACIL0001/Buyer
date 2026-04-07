@@ -2478,7 +2478,7 @@ const FloatingAdminChat: React.FC = () => {
           width: 60px;
           height: 60px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+          background: linear-gradient(135deg, #3b82f6 0%, #002896 100%);
           border: none;
           color: white;
           font-size: 24px;
@@ -2497,7 +2497,7 @@ const FloatingAdminChat: React.FC = () => {
         .chat-fab:hover {
           transform: scale(1.1) translateY(-2px);
           box-shadow: 0 20px 60px rgba(59, 130, 246, 0.6);
-          background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+          background: linear-gradient(135deg, #002896 0%, #3b82f6 100%);
         }
 
         .chat-fab:active {
@@ -2598,7 +2598,7 @@ const FloatingAdminChat: React.FC = () => {
         }
 
         .chat-header {
-          background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+          background: linear-gradient(135deg, #3b82f6 0%, #002896 100%);
           color: white;
           padding: 24px;
           display: flex;
@@ -2797,7 +2797,7 @@ const FloatingAdminChat: React.FC = () => {
         }
 
         .message.own .message-bubble {
-          background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+          background: linear-gradient(135deg, #3b82f6 0%, #002896 100%);
           color: white;
           border-bottom-right-radius: 8px;
           margin-left: auto;
@@ -2823,7 +2823,7 @@ const FloatingAdminChat: React.FC = () => {
         .message.system-message .message-bubble {
           background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
           border: 1px solid #93c5fd;
-          color: #1e40af;
+          color: #002896;
           font-style: italic;
           text-align: center;
           margin: 0 auto;
@@ -2849,7 +2849,7 @@ const FloatingAdminChat: React.FC = () => {
           border: 1px solid #93c5fd;
           border-radius: 16px;
           text-align: center;
-          color: #1e40af;
+          color: #002896;
         }
 
         .guest-notice i {
@@ -2914,7 +2914,7 @@ const FloatingAdminChat: React.FC = () => {
         }
 
         .guest-form-header {
-          background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+          background: linear-gradient(135deg, #3b82f6 0%, #002896 100%);
           color: white;
           padding: 32px;
           text-align: center;
@@ -2979,7 +2979,7 @@ const FloatingAdminChat: React.FC = () => {
         .submit-btn {
           width: 100%;
           padding: 18px;
-          background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+          background: linear-gradient(135deg, #3b82f6 0%, #002896 100%);
           color: white;
           border: none;
           border-radius: 16px;
@@ -3307,7 +3307,7 @@ const FloatingAdminChat: React.FC = () => {
 
         .voice-btn {
           background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-          color: #1e40af;
+          color: #002896;
         }
 
         .voice-btn:hover {
@@ -3546,7 +3546,7 @@ const FloatingAdminChat: React.FC = () => {
           height: 48px;
           border-radius: 50%;
           border: none;
-          background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+          background: linear-gradient(135deg, #3b82f6 0%, #002896 100%);
           color: white;
           cursor: pointer;
           display: flex;

@@ -100,7 +100,7 @@ const variantStyles: Record<string, React.CSSProperties> = {
   outlined: { background: 'transparent', color: 'var(--primary-auction-color)', border: '1.5px solid var(--primary-auction-color)' },
   danger: { background: 'transparent', color: '#ef4444', border: '1.5px solid #ef4444' },
   success: { background: '#10b981', color: '#fff', border: '1.5px solid #10b981' },
-  ghost: { background: 'rgba(0,99,177,0.06)', color: 'var(--primary-auction-color)', border: '1.5px solid transparent' },
+  ghost: { background: 'rgba(0, 40, 150, 0.06)', color: 'var(--primary-auction-color)', border: '1.5px solid transparent' },
 };
 
 export function ActionBtn({ label, icon, onClick, href, variant = 'outlined', disabled = false, size = 'sm' }: ActionBtnProps) {

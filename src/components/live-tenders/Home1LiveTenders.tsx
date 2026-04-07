@@ -149,20 +149,12 @@ const Home1LiveTenders = () => {
                         width: '295px', 
                         height: '383px',
                         cursor: 'pointer',
-                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                         position: 'relative',
                         zIndex: 1,
-                        borderRadius: '24px',
+                        borderRadius: '20px',
                         display: 'flex',
-                        flexDirection: 'column'
-                      }}
-                      onMouseOver={e => {
-                        e.currentTarget.style.transform = 'scale(1.03) translateY(-4px)';
-                        e.currentTarget.style.zIndex = '10';
-                      }}
-                      onMouseOut={e => {
-                        e.currentTarget.style.transform = 'scale(1) translateY(0)';
-                        e.currentTarget.style.zIndex = '1';
+                        flexDirection: 'column',
+                        overflow: 'hidden'
                       }}
                       onClick={() => router.push(`/tender-details/${tender.id}`)}
                     >
@@ -201,7 +193,9 @@ const Home1LiveTenders = () => {
                           margin: '0 0 6px 0', 
                           whiteSpace: 'nowrap', 
                           overflow: 'hidden', 
-                          textOverflow: 'ellipsis' 
+                          textOverflow: 'ellipsis',
+                          width: '114px',
+                          height: '23px'
                         }}>
                           {tender.title || 'Nom Produit'}
                         </h4>
@@ -232,10 +226,7 @@ const Home1LiveTenders = () => {
                             }}>DA</span>
                           )}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                          <span style={{ fontSize: '11px', color: '#002896', fontWeight: '700', textTransform: 'uppercase' }}>
-                            {tender.submissionsCount || 0} offres
-                          </span>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: '8px' }}>
                           <span style={{ 
                             fontFamily: 'Roboto, sans-serif',
                             fontSize: '14px', 
@@ -254,7 +245,17 @@ const Home1LiveTenders = () => {
                           </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: '11px', color: '#002896', fontWeight: '600' }}>
+                          <span style={{ 
+                            fontFamily: 'Roboto, sans-serif',
+                            fontSize: '14px', 
+                            fontWeight: '400', 
+                            lineHeight: '100%',
+                            letterSpacing: '0px',
+                            verticalAlign: 'middle',
+                            color: '#002896',
+                            width: '213px',
+                            height: '16px'
+                          }}>
                             {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j${timer.hours}h ${timer.formattedEnd})`}
                           </span>
                         </div>
@@ -266,7 +267,7 @@ const Home1LiveTenders = () => {
             </Swiper>
             
             <div style={{ textAlign: 'center', marginTop: '60px' }}>
-              <Link href="/tenders" style={{ display: 'inline-block', padding: '10px 30px', color: '#002896', textDecoration: 'none', fontSize: '18px', fontWeight: '800', transition: 'all 0.3s ease' }}>
+              <Link href="/tenders" style={{ display: 'inline-flex', width: '93px', height: '28px', alignItems: 'center', justifyContent: 'center', color: '#002896', textDecoration: 'none', fontSize: '24px', fontWeight: '700', fontFamily: 'Roboto, sans-serif', lineHeight: '100%', whiteSpace: 'nowrap', transition: 'all 0.3s ease' }}>
                 Voir tout
               </Link>
             </div>

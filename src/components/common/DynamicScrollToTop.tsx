@@ -94,7 +94,7 @@ export default function DynamicScrollToTop({ colorSchema = 'gradient' }: Props) 
     },
     gradient: {
       background: 'linear-gradient(135deg, #0063b1 0%, #0ea5e9 100%)',
-      shadow: 'rgba(0, 99, 177, 0.4)',
+      shadow: 'rgba(0, 40, 150, 0.4)',
       hover: 'linear-gradient(135deg, #005496 0%, #0284c7 100%)',
     },
   };

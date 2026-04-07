@@ -98,7 +98,7 @@ const FloatingLanguageSwitcher = () => {
         onMouseEnter={(e) => {
           e.currentTarget.style.borderColor = '#0063b1';
           e.currentTarget.style.transform = 'translateY(-5px)';
-          e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 99, 177, 0.2)';
+          e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 40, 150, 0.2)';
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.1)';

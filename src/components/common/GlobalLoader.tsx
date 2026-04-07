@@ -59,7 +59,7 @@ const GlobalLoader: React.FC = () => {
         borderRadius: '20px',
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
         boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1)',
-        border: '1px solid rgba(0, 99, 177, 0.1)',
+        border: '1px solid rgba(0, 40, 150, 0.1)',
         animation: 'slideUp 0.4s ease-out'
       }}>
         <ModernSpinner

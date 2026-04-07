@@ -26,12 +26,12 @@
   font-size: 16px;
   transition: all 0.3s ease;
   position: relative;
-  box-shadow: 0 4px 20px rgba(0, 99, 177, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 40, 150, 0.3);
 }
 
 .chat-fab:hover {
   transform: scale(1.05);
-  box-shadow: 0 6px 25px rgba(0, 99, 177, 0.4);
+  box-shadow: 0 6px 25px rgba(0, 40, 150, 0.4);
 }
 
 .chat-badge {
@@ -216,7 +216,7 @@
 .message-input:focus {
   outline: none;
   border-color: #0063b1;
-  box-shadow: 0 0 0 2px rgba(0, 99, 177, 0.1);
+  box-shadow: 0 0 0 2px rgba(0, 40, 150, 0.1);
 }
 
 .send-button {

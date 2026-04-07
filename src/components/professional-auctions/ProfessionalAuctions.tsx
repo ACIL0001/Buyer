@@ -443,7 +443,7 @@ const ProfessionalAuctions: React.FC = () => {
           left: 0;
           right: 0;
           bottom: 0;
-          background: linear-gradient(45deg, rgba(0, 99, 177, 0.02) 0%, rgba(0, 163, 224, 0.02) 100%);
+          background: linear-gradient(45deg, rgba(0, 40, 150, 0.02) 0%, rgba(0, 163, 224, 0.02) 100%);
           pointer-events: none;
         }
         .professional-auction-slider .swiper-slide:first-child {
@@ -825,7 +825,7 @@ const ProfessionalAuctions: React.FC = () => {
                                 right: 0,
                                 width: '30px',
                                 height: '30px',
-                                background: 'linear-gradient(45deg, rgba(0, 99, 177, 0.1), rgba(0, 163, 224, 0.1))',
+                                background: 'linear-gradient(45deg, rgba(0, 40, 150, 0.1), rgba(0, 163, 224, 0.1))',
                                 borderRadius: '0 12px 0 100%',
                               }}></div>
                               <p style={{
@@ -876,7 +876,7 @@ const ProfessionalAuctions: React.FC = () => {
                                   right: 0,
                                   width: '30px',
                                   height: '30px',
-                                  background: 'linear-gradient(45deg, rgba(0, 99, 177, 0.1), rgba(0, 163, 224, 0.1))',
+                                  background: 'linear-gradient(45deg, rgba(0, 40, 150, 0.1), rgba(0, 163, 224, 0.1))',
                                   borderRadius: '0 12px 0 100%',
                                 }}></div>
                                 <p style={{
@@ -1028,17 +1028,17 @@ const ProfessionalAuctions: React.FC = () => {
                               fontWeight: '600',
                               fontSize: '14px',
                               transition: 'all 0.3s ease',
-                              boxShadow: '0 4px 12px rgba(0, 99, 177, 0.3)',
+                              boxShadow: '0 4px 12px rgba(0, 40, 150, 0.3)',
                             }}
                             onMouseEnter={(e) => {
                               e.currentTarget.style.background = 'var(--primary-auction-color)';
                               e.currentTarget.style.transform = 'translateY(-2px)';
-                              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 99, 177, 0.4)';
+                              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 40, 150, 0.4)';
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.background = 'var(--primary-auction-color)';
                               e.currentTarget.style.transform = 'translateY(0)';
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 99, 177, 0.3)';
+                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 40, 150, 0.3)';
                             }}
                           >
                             Enchérir
@@ -1204,15 +1204,15 @@ const ProfessionalAuctions: React.FC = () => {
                   transition: 'all 0.3s ease',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
-                  boxShadow: '0 8px 25px rgba(0, 99, 177, 0.3)',
+                  boxShadow: '0 8px 25px rgba(0, 40, 150, 0.3)',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-3px)';
-                  e.currentTarget.style.boxShadow = '0 12px 35px rgba(0, 99, 177, 0.4)';
+                  e.currentTarget.style.boxShadow = '0 12px 35px rgba(0, 40, 150, 0.4)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 99, 177, 0.3)';
+                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 40, 150, 0.3)';
                 }}
               >
                 View All Professional Auctions

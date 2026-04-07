@@ -20,7 +20,7 @@
   right: 0;
   width: 40%;
   height: 100%;
-  background: rgba(0, 99, 177, 0.05);
+  background: rgba(0, 40, 150, 0.05);
   clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%);
   z-index: 0;
 }
@@ -158,7 +158,7 @@
 .step-indicator.active .step-number {
   background-color: #0063b1;
   color: white;
-  box-shadow: 0 4px 10px rgba(0, 99, 177, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 40, 150, 0.3);
 }
 
 .step-indicator.active .step-title {
@@ -198,7 +198,7 @@
 .step-icon {
   width: 100px;
   height: 100px;
-  background: rgba(0, 99, 177, 0.1);
+  background: rgba(0, 40, 150, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -267,7 +267,7 @@
 .tip-icon {
   width: 70px;
   height: 70px;
-  background: rgba(0, 99, 177, 0.1);
+  background: rgba(0, 40, 150, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;

@@ -120,7 +120,7 @@ export default function VerificationPopup({ onClose, onContinue }: VerificationP
                   fontSize: '13px',
                   fontWeight: '600',
                   cursor: 'pointer',
-                  boxShadow: '0 2px 5px rgba(0, 99, 177, 0.2)',
+                  boxShadow: '0 2px 5px rgba(0, 40, 150, 0.2)',
                   transition: 'background-color 0.2s'
                 }}
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#005499'}

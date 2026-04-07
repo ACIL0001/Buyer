@@ -149,7 +149,7 @@ export const MobileOptimizer: React.FC<MobileOptimizerProps> = ({ children }) =>
           min-height: 44px;
           min-width: 44px;
           touch-action: manipulation;
-          -webkit-tap-highlight-color: rgba(0, 99, 177, 0.1);
+          -webkit-tap-highlight-color: rgba(0, 40, 150, 0.1);
         }
       }
       

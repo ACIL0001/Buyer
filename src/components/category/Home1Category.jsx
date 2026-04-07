@@ -530,7 +530,7 @@ const Home1Category = () => {
               paddingLeft: `${20 + (level * 24)}px`, // Indent based on level
               cursor: 'pointer',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              borderBottom: level === 0 ? '1px solid rgba(0, 99, 177, 0.12)' : '1px solid rgba(0, 99, 177, 0.06)',
+              borderBottom: level === 0 ? '1px solid rgba(0, 40, 150, 0.12)' : '1px solid rgba(0, 40, 150, 0.06)',
               position: 'relative',
               backgroundColor: 'transparent',
               borderRadius: level === 0 ? '12px' : '8px',
@@ -538,10 +538,10 @@ const Home1Category = () => {
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = level === 0 
-                ? 'rgba(0, 99, 177, 0.1)' 
-                : 'rgba(0, 99, 177, 0.06)';
+                ? 'rgba(0, 40, 150, 0.1)' 
+                : 'rgba(0, 40, 150, 0.06)';
               e.currentTarget.style.transform = 'translateX(4px)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 99, 177, 0.15)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 40, 150, 0.15)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent';
@@ -560,7 +560,7 @@ const Home1Category = () => {
                     top: '0',
                     bottom: '0',
                     width: '1px',
-                    background: 'rgba(0, 99, 177, 0.2)',
+                    background: 'rgba(0, 40, 150, 0.2)',
                   }} 
                 />
                 <div 
@@ -571,7 +571,7 @@ const Home1Category = () => {
                     top: '50%',
                     width: '12px',
                     height: '1px',
-                    background: 'rgba(0, 99, 177, 0.2)',
+                    background: 'rgba(0, 40, 150, 0.2)',
                   }} 
                 />
               </>
@@ -638,7 +638,7 @@ const Home1Category = () => {
                 width: '16px',
                 height: '16px',
                 borderRadius: '50%',
-                background: 'rgba(0, 99, 177, 0.1)',
+                background: 'rgba(0, 40, 150, 0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -681,7 +681,7 @@ const Home1Category = () => {
     // Dynamic gradient based on category index
     const gradients = [
       'linear-gradient(135deg, #0063b1 0%, #00a3e0 100%)',
-      'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
+      'linear-gradient(135deg, #002896 0%, #3b82f6 100%)',
       'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)',
       'linear-gradient(135deg, #059669 0%, #10b981 100%)',
       'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
@@ -704,7 +704,7 @@ const Home1Category = () => {
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           boxShadow: isHovered 
-            ? '0 20px 60px rgba(0, 99, 177, 0.25), 0 0 0 1px rgba(0, 99, 177, 0.1)' 
+            ? '0 20px 60px rgba(0, 40, 150, 0.25), 0 0 0 1px rgba(0, 40, 150, 0.1)' 
             : '0 8px 32px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(255, 255, 255, 0.5)',
           transform: isHovered ? 'translateY(-12px) scale(1.02)' : 'translateY(0) scale(1)',
           overflow: isExpanded ? 'visible' : 'hidden',
@@ -766,7 +766,7 @@ const Home1Category = () => {
               transition: 'all 0.4s ease',
               transform: isHovered ? 'rotate(6deg) scale(1.1)' : 'rotate(0deg) scale(1)',
               boxShadow: isHovered 
-                ? '0 12px 40px rgba(0, 99, 177, 0.3)' 
+                ? '0 12px 40px rgba(0, 40, 150, 0.3)' 
                 : '0 4px 20px rgba(0, 0, 0, 0.1)',
             }}>
               <div style={{
@@ -943,7 +943,7 @@ const Home1Category = () => {
         {/* Modern Expand Button */}
         {hasSubcategories && (
           <div style={{
-            borderTop: '1px solid rgba(0, 99, 177, 0.08)',
+            borderTop: '1px solid rgba(0, 40, 150, 0.08)',
             padding: '12px 20px',
             background: 'linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%)',
             borderRadius: '0 0 20px 20px',
@@ -961,7 +961,7 @@ const Home1Category = () => {
                   : 'transparent',
                 border: isExpanded 
                   ? 'none' 
-                  : '1px solid rgba(0, 99, 177, 0.2)',
+                  : '1px solid rgba(0, 40, 150, 0.2)',
                 borderRadius: '12px',
                 cursor: 'pointer',
                 display: 'flex',
@@ -973,12 +973,12 @@ const Home1Category = () => {
                 color: isExpanded ? 'white' : '#0063b1',
                 transition: 'all 0.3s ease',
                 boxShadow: isExpanded 
-                  ? '0 4px 20px rgba(0, 99, 177, 0.3)' 
+                  ? '0 4px 20px rgba(0, 40, 150, 0.3)' 
                   : 'none',
               }}
               onMouseEnter={(e) => {
                 if (!isExpanded) {
-                  e.currentTarget.style.background = 'rgba(0, 99, 177, 0.08)';
+                  e.currentTarget.style.background = 'rgba(0, 40, 150, 0.08)';
                   e.currentTarget.style.transform = 'translateY(-1px)';
                 }
               }}
@@ -1018,7 +1018,7 @@ const Home1Category = () => {
               left: '0',
               right: '0',
               background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)',
-              border: '1px solid rgba(0, 99, 177, 0.15)',
+              border: '1px solid rgba(0, 40, 150, 0.15)',
               borderTop: `3px solid`,
               borderImage: `${categoryGradient} 1`,
               borderRadius: '0 0 20px 20px',
@@ -1073,7 +1073,7 @@ const Home1Category = () => {
         <div style={{ 
           width: '40px', 
           height: '40px', 
-          border: '3px solid rgba(0, 99, 177, 0.2)', 
+          border: '3px solid rgba(0, 40, 150, 0.2)', 
           borderTop: '3px solid #0063b1', 
           borderRadius: '50%', 
           animation: 'spin 1s linear infinite' 
@@ -1090,7 +1090,7 @@ const Home1Category = () => {
         background: 'rgba(255, 255, 255, 0.9)',
         borderRadius: '16px',
         backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(0, 99, 177, 0.1)',
+        border: '1px solid rgba(0, 40, 150, 0.1)',
         margin: '20px',
       }}>
         <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.6 }}>📂</div>
@@ -1140,7 +1140,7 @@ const Home1Category = () => {
                 style={{
                   padding: '10px 16px',
                   borderRadius: '999px',
-                  border: filterType===k ? 'none' : '1px solid rgba(0,99,177,0.25)',
+                  border: filterType===k ? 'none' : '1px solid rgba(0, 40, 150, 0.25)',
                   background: filterType===k ? 'linear-gradient(135deg, #0063b1, #00a3e0)' : 'transparent',
                   color: filterType===k ? 'white' : '#0063b1',
                   fontWeight: 700,
@@ -1173,18 +1173,25 @@ const Home1Category = () => {
       {/* View all button */}
       <div style={{ textAlign:'center', marginTop:'20px' }}>
         {!showAll && (
-          <button
-            onClick={() => setShowAll(true)}
-            style={{
-              padding: '12px 20px',
-              borderRadius: '12px',
-              border: '1px solid rgba(0,99,177,0.25)',
-              background: 'white',
-              color: '#0063b1',
-              fontWeight: 700,
-              cursor: 'pointer'
-            }}
-          >Voir tout</button>
+            <button
+              onClick={() => setShowAll(true)}
+              style={{
+                display: 'inline-flex',
+                width: '93px',
+                height: '28px',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: 'none',
+                background: 'transparent',
+                color: '#002896',
+                fontFamily: 'Roboto, sans-serif',
+                fontWeight: 700,
+                fontSize: '24px',
+                lineHeight: '100%',
+                whiteSpace: 'nowrap',
+                cursor: 'pointer'
+              }}
+            >Voir tout</button>
         )}
       </div>
 
@@ -1273,17 +1280,17 @@ const Home1Category = () => {
         }
         
         .subcategory-dropdown-modern::-webkit-scrollbar-track {
-          background: rgba(0, 99, 177, 0.05);
+          background: rgba(0, 40, 150, 0.05);
           border-radius: 8px;
         }
         
         .subcategory-dropdown-modern::-webkit-scrollbar-thumb {
-          background: linear-gradient(135deg, rgba(0, 99, 177, 0.3), rgba(0, 163, 224, 0.3));
+          background: linear-gradient(135deg, rgba(0, 40, 150, 0.3), rgba(0, 163, 224, 0.3));
           border-radius: 8px;
         }
         
         .subcategory-dropdown-modern::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(135deg, rgba(0, 99, 177, 0.5), rgba(0, 163, 224, 0.5));
+          background: linear-gradient(135deg, rgba(0, 40, 150, 0.5), rgba(0, 163, 224, 0.5));
         }
         
         /* Tree structure enhancements */
@@ -1297,7 +1304,7 @@ const Home1Category = () => {
         
         .subcategory-tree-item:hover .tree-line {
           opacity: 0.8;
-          background: rgba(0, 99, 177, 0.3) !important;
+          background: rgba(0, 40, 150, 0.3) !important;
         }
         
         /* Responsive design */

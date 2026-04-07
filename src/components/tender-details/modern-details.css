@@ -145,14 +145,14 @@
 
 .auction-details-modern .thumbnail:hover {
   transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 5px 15px rgba(0, 99, 177, 0.12);
+  box-shadow: 0 5px 15px rgba(0, 40, 150, 0.12);
   border: 2px solid #00a3e0;
 }
 
 .auction-details-modern .thumbnail.active {
   border: 3px solid #0063b1;
   background: linear-gradient(white, white) padding-box, linear-gradient(90deg, #0063b1, #00a3e0) border-box;
-  box-shadow: 0 5px 15px rgba(0, 99, 177, 0.18);
+  box-shadow: 0 5px 15px rgba(0, 40, 150, 0.18);
 }
 
 .auction-details-modern .thumbnail img {
@@ -210,7 +210,7 @@
 .auction-details-modern .tab-button.active {
   background: linear-gradient(90deg, #0063b1, #00a3e0);
   color: white;
-  box-shadow: 0 4px 10px rgba(0, 99, 177, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 40, 150, 0.3);
 }
 
 .auction-details-modern .description-content {
@@ -403,7 +403,7 @@
   border-radius: 32px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(.4,0,.2,1);
-  box-shadow: 0 8px 24px rgba(0, 99, 177, 0.18);
+  box-shadow: 0 8px 24px rgba(0, 40, 150, 0.18);
   position: relative;
   overflow: hidden;
   z-index: 1;
@@ -419,7 +419,7 @@
 
 .auction-details-modern .primary-btn:hover, .auction-details-modern .primary-btn:focus {
   transform: scale(1.035);
-  box-shadow: 0 12px 32px rgba(0, 99, 177, 0.28);
+  box-shadow: 0 12px 32px rgba(0, 40, 150, 0.28);
   background: linear-gradient(90deg, #00a3e0, #0063b1);
 }
 
@@ -667,7 +667,7 @@
 .auction-details-modern .form-inner textarea:focus {
   border-color: #0063b1;
   outline: none;
-  box-shadow: 0 5px 15px rgba(0, 99, 177, 0.1);
+  box-shadow: 0 5px 15px rgba(0, 40, 150, 0.1);
 }
 
 .auction-details-modern .form-inner textarea {
@@ -797,8 +797,8 @@
 
 .auction-details-modern .quantity-counter:hover,
 .auction-details-modern .quantity-counter:focus-within {
-  box-shadow: 0 5px 15px rgba(0, 99, 177, 0.15);
-  border-color: rgba(0, 99, 177, 0.3);
+  box-shadow: 0 5px 15px rgba(0, 40, 150, 0.15);
+  border-color: rgba(0, 40, 150, 0.3);
 }
 
 .auction-details-modern .quantity__minus,
@@ -813,14 +813,14 @@
   color: white;
   font-size: 20px;
   cursor: pointer;
-  box-shadow: 0 3px 8px rgba(0, 99, 177, 0.2);
+  box-shadow: 0 3px 8px rgba(0, 40, 150, 0.2);
   transition: all 0.3s ease;
 }
 
 .auction-details-modern .quantity__minus:hover,
 .auction-details-modern .quantity__plus:hover {
   transform: scale(1.05);
-  box-shadow: 0 5px 12px rgba(0, 99, 177, 0.3);
+  box-shadow: 0 5px 12px rgba(0, 40, 150, 0.3);
 }
 
 .auction-details-modern .quantity__minus:active,
@@ -862,7 +862,7 @@
   border-radius: 30px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 6px 12px rgba(0, 99, 177, 0.3);
+  box-shadow: 0 6px 12px rgba(0, 40, 150, 0.3);
   position: relative;
   overflow: hidden;
   z-index: 1;
@@ -896,7 +896,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 3px 8px rgba(0, 99, 177, 0.25);
+  box-shadow: 0 3px 8px rgba(0, 40, 150, 0.25);
 }
 
 .auction-details-modern .bid-section {
@@ -912,7 +912,7 @@
 .auction-details-modern .bid-section:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-  border-color: rgba(0, 99, 177, 0.15);
+  border-color: rgba(0, 40, 150, 0.15);
 }
 
 .auction-details-modern .bid-label {
@@ -951,7 +951,7 @@
   border-radius: 30px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 6px 12px rgba(0, 99, 177, 0.3);
+  box-shadow: 0 6px 12px rgba(0, 40, 150, 0.3);
   position: relative;
   overflow: hidden;
   z-index: 1;
@@ -966,7 +966,7 @@
 .auction-details-modern .primary-btn:hover {
   background: linear-gradient(90deg, #00a3e0, #0063b1);
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 99, 177, 0.4);
+  box-shadow: 0 8px 20px rgba(0, 40, 150, 0.4);
 }
 
 .auction-details-modern .primary-btn svg {
@@ -1000,7 +1000,7 @@
   overflow: hidden;
   cursor: pointer;
   position: relative;
-  box-shadow: 0 8px 20px rgba(0, 99, 177, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 40, 150, 0.2);
   transition: all 0.3s ease;
   flex: 1;
   font-family: 'DM Sans', sans-serif;
@@ -1008,12 +1008,12 @@
 
 .auction-details-modern .bid-btn-modern:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 28px rgba(0, 99, 177, 0.3);
+  box-shadow: 0 12px 28px rgba(0, 40, 150, 0.3);
 }
 
 .auction-details-modern .bid-btn-modern:active {
   transform: translateY(0);
-  box-shadow: 0 5px 15px rgba(0, 99, 177, 0.2);
+  box-shadow: 0 5px 15px rgba(0, 40, 150, 0.2);
 }
 
 .auction-details-modern .bid-btn-modern .btn-content {

@@ -661,18 +661,18 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
                 fontWeight: 600,
                 padding: '8px 16px',
                 borderRadius: '20px',
-                background: 'rgba(0, 99, 177, 0.1)',
-                border: '1px solid rgba(0, 99, 177, 0.2)',
+                background: 'rgba(0, 40, 150, 0.1)',
+                border: '1px solid rgba(0, 40, 150, 0.2)',
                 transition: 'all 0.3s ease'
               }}
               onClick={() => setIsOpen(false)}
               onMouseOver={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 99, 177, 0.15)';
+                e.currentTarget.style.background = 'rgba(0, 40, 150, 0.15)';
                 e.currentTarget.style.transform = 'translateY(-1px)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 99, 177, 0.2)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 40, 150, 0.2)';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 99, 177, 0.1)';
+                e.currentTarget.style.background = 'rgba(0, 40, 150, 0.1)';
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = 'none';
               }}

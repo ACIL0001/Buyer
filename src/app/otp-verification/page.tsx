@@ -296,15 +296,15 @@ export default function OTPVerification() {
         @keyframes pulse {
           0% {
             transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(0, 99, 177, 0.7);
+            box-shadow: 0 0 0 0 rgba(0, 40, 150, 0.7);
           }
           70% {
             transform: scale(1.05);
-            box-shadow: 0 0 0 10px rgba(0, 99, 177, 0);
+            box-shadow: 0 0 0 10px rgba(0, 40, 150, 0);
           }
           100% {
             transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(0, 99, 177, 0);
+            box-shadow: 0 0 0 0 rgba(0, 40, 150, 0);
           }
         }
 
@@ -347,7 +347,7 @@ export default function OTPVerification() {
           z-index: 10;
           background: rgba(255, 255, 255, 0.9);
           backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(0, 99, 177, 0.1);
+          border-bottom: 1px solid rgba(0, 40, 150, 0.1);
           transition: all 0.3s ease;
         }
 
@@ -384,7 +384,7 @@ export default function OTPVerification() {
 
         .header-link:hover {
           color: #0063b1;
-          background: rgba(0, 99, 177, 0.05);
+          background: rgba(0, 40, 150, 0.05);
         }
 
         /* Background Elements */
@@ -401,7 +401,7 @@ export default function OTPVerification() {
         .floating-shape {
           position: absolute;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(0, 99, 177, 0.03) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(0, 40, 150, 0.03) 0%, transparent 70%);
           animation: float 8s ease-in-out infinite;
         }
 
@@ -443,8 +443,8 @@ export default function OTPVerification() {
         .verification-container {
           background: white;
           border-radius: 24px;
-          box-shadow: 0 20px 40px rgba(0, 99, 177, 0.08);
-          border: 1px solid rgba(0, 99, 177, 0.1);
+          box-shadow: 0 20px 40px rgba(0, 40, 150, 0.08);
+          border: 1px solid rgba(0, 40, 150, 0.1);
           overflow: hidden;
           max-width: 500px;
           width: 100%;
@@ -562,7 +562,7 @@ export default function OTPVerification() {
         .otp-input:focus {
           border-color: #0063b1;
           background: white;
-          box-shadow: 0 0 0 4px rgba(0, 99, 177, 0.1);
+          box-shadow: 0 0 0 4px rgba(0, 40, 150, 0.1);
           transform: scale(1.05);
         }
 
@@ -635,7 +635,7 @@ export default function OTPVerification() {
 
         .verify-button:hover:not(:disabled) {
           transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(0, 99, 177, 0.3);
+          box-shadow: 0 8px 25px rgba(0, 40, 150, 0.3);
         }
 
         .verify-button::before {
@@ -699,7 +699,7 @@ export default function OTPVerification() {
         }
 
         .resend-button.active:hover {
-          background: rgba(0, 99, 177, 0.05);
+          background: rgba(0, 40, 150, 0.05);
           transform: translateY(-1px);
         }
 

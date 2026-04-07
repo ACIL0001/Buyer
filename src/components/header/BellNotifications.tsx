@@ -519,7 +519,7 @@ export default function BellNotifications({ variant = 'header', onOpenChange }: 
                 transition: 'all 0.2s ease'
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 99, 177, 0.1)';
+                e.currentTarget.style.background = 'rgba(0, 40, 150, 0.1)';
               }}
               onMouseOut={(e) => {
                 e.currentTarget.style.background = 'transparent';

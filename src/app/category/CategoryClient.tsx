@@ -336,7 +336,7 @@ export default function CategoryClient() {
     // Dynamic gradient based on category index
     const gradients = [
       'linear-gradient(135deg, #0063b1 0%, #00a3e0 100%)',
-      'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
+      'linear-gradient(135deg, #002896 0%, #3b82f6 100%)',
       'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)',
       'linear-gradient(135deg, #059669 0%, #10b981 100%)',
       'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
@@ -359,7 +359,7 @@ export default function CategoryClient() {
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
               boxShadow: isHovered 
-            ? '0 20px 60px rgba(0, 99, 177, 0.25), 0 0 0 1px rgba(0, 99, 177, 0.1)' 
+            ? '0 20px 60px rgba(0, 40, 150, 0.25), 0 0 0 1px rgba(0, 40, 150, 0.1)' 
             : '0 8px 32px rgba(0, 0, 0, 0.06), 0 1px 0 rgba(255, 255, 255, 0.5)',
           transform: isHovered ? 'translateY(-12px) scale(1.02)' : 'translateY(0) scale(1)',
           overflow: isExpanded ? 'visible' : 'hidden',
@@ -421,7 +421,7 @@ export default function CategoryClient() {
               transition: 'all 0.4s ease',
               transform: isHovered ? 'rotate(6deg) scale(1.1)' : 'rotate(0deg) scale(1)',
               boxShadow: isHovered 
-                ? '0 12px 40px rgba(0, 99, 177, 0.3)' 
+                ? '0 12px 40px rgba(0, 40, 150, 0.3)' 
                 : '0 4px 20px rgba(0, 0, 0, 0.1)',
             }}>
               <div style={{
@@ -579,7 +579,7 @@ export default function CategoryClient() {
         {/* Modern Expand Button */}
         {hasSubcategories && (
           <div style={{
-            borderTop: '1px solid rgba(0, 99, 177, 0.08)',
+            borderTop: '1px solid rgba(0, 40, 150, 0.08)',
             padding: '12px 20px',
             background: 'linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%)',
             borderRadius: '0 0 20px 20px',
@@ -606,7 +606,7 @@ export default function CategoryClient() {
                 transition: 'all 0.3s ease',
                 }}
                 onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 99, 177, 0.1)';
+                e.currentTarget.style.background = 'rgba(0, 40, 150, 0.1)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';
@@ -641,7 +641,7 @@ export default function CategoryClient() {
               left: '0',
               right: '0',
               background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)',
-              border: '1px solid rgba(0, 99, 177, 0.15)',
+              border: '1px solid rgba(0, 40, 150, 0.15)',
               borderTop: `3px solid`,
               borderImage: `${categoryGradient} 1`,
               borderRadius: '0 0 20px 20px',
@@ -684,7 +684,7 @@ export default function CategoryClient() {
         background: 'rgba(255, 255, 255, 0.9)',
         borderRadius: '16px',
         backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(0, 99, 177, 0.1)',
+        border: '1px solid rgba(0, 40, 150, 0.1)',
         margin: '20px',
       }}>
         <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.6 }}>📂</div>
@@ -747,7 +747,7 @@ export default function CategoryClient() {
         .filter-button.product:hover {
           background: linear-gradient(135deg, #005299 0%, #004080 50%, #003366 100%) !important;
           transform: translateY(-4px) scale(1.08);
-          box-shadow: 0 10px 32px rgba(0, 99, 177, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15) inset, inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+          box-shadow: 0 10px 32px rgba(0, 40, 150, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.15) inset, inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
         }
 
         .filter-button.service:hover {
@@ -772,10 +772,10 @@ export default function CategoryClient() {
 
         @keyframes pulse-blue {
           0%, 100% {
-            box-shadow: 0 6px 20px rgba(0, 99, 177, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 20px rgba(0, 40, 150, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
           }
           50% {
-            box-shadow: 0 8px 28px rgba(0, 99, 177, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 28px rgba(0, 40, 150, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
           }
         }
 
@@ -811,7 +811,7 @@ export default function CategoryClient() {
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={(e) => {
               e.currentTarget.style.borderColor = '#0063b1';
-              e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 99, 177, 0.15)';
+              e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 40, 150, 0.15)';
               setIsSearchFocused(true);
             }}
             style={{
@@ -1002,8 +1002,8 @@ export default function CategoryClient() {
                   backgroundSize: '200% 200%',
                   color: 'white',
                   boxShadow: filterType === 'PRODUCT'
-                    ? '0 6px 24px rgba(0, 99, 177, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
-                    : '0 4px 16px rgba(0, 99, 177, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                    ? '0 6px 24px rgba(0, 40, 150, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
+                    : '0 4px 16px rgba(0, 40, 150, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
                   position: 'relative',
                   overflow: 'hidden',
                   textTransform: 'uppercase',
@@ -1104,7 +1104,7 @@ export default function CategoryClient() {
                        fontWeight: '600',
                        cursor: 'pointer',
                        transition: 'all 0.3s ease',
-                       boxShadow: activeTab === 'auctions' ? '0 4px 12px rgba(0,99,177,0.3)' : 'none'
+                       boxShadow: activeTab === 'auctions' ? '0 4px 12px rgba(0, 40, 150, 0.3)' : 'none'
                    }}
                 >
                    {t('common.auctions') || 'Enchères'} ({filteredAuctions.length})
@@ -1231,7 +1231,7 @@ export default function CategoryClient() {
                             </div>
                         ) : (
                              // Empty State for Auctions
-                             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(255,255,255,0.9)', borderRadius: '16px', border: '1px solid rgba(0,99,177,0.1)' }}>
+                             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(255,255,255,0.9)', borderRadius: '16px', border: '1px solid rgba(0, 40, 150, 0.1)' }}>
                                 <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.6 }}>🔍</div>
                                 <h3 style={{ color: '#0063b1', marginBottom: '10px', fontSize: '20px', fontWeight: '600' }}>{t('category.noAuctionsFound')}</h3>
                              </div>
@@ -1255,7 +1255,7 @@ export default function CategoryClient() {
                             </div>
                         ) : (
                             // Empty State for Tenders
-                             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(255,255,255,0.9)', borderRadius: '16px', border: '1px solid rgba(0,99,177,0.1)' }}>
+                             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(255,255,255,0.9)', borderRadius: '16px', border: '1px solid rgba(0, 40, 150, 0.1)' }}>
                                 <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.6 }}>📋</div>
                                 <h3 style={{ color: '#4f46e5', marginBottom: '10px', fontSize: '20px', fontWeight: '600' }}>{t('category.noTendersFound') || "No tenders found"}</h3>
                              </div>
@@ -1279,7 +1279,7 @@ export default function CategoryClient() {
                             </div>
                         ) : (
                             // Empty State for Direct Sales
-                             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(255,255,255,0.9)', borderRadius: '16px', border: '1px solid rgba(0,99,177,0.1)' }}>
+                             <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(255,255,255,0.9)', borderRadius: '16px', border: '1px solid rgba(0, 40, 150, 0.1)' }}>
                                 <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.6 }}>🏷️</div>
                                 <h3 style={{ color: '#059669', marginBottom: '10px', fontSize: '20px', fontWeight: '600' }}>{t('category.noDirectSalesFound') || "No direct sales found"}</h3>
                              </div>

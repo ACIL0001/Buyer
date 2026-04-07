@@ -150,24 +150,16 @@ const Home1LiveAuction = () => {
                         width: '295px', 
                         height: '410px',
                         cursor: 'pointer',
-                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                         position: 'relative',
                         zIndex: 1,
-                        borderRadius: '24px',
+                        borderRadius: '20px',
                         display: 'flex',
-                        flexDirection: 'column'
-                      }}
-                      onMouseOver={e => {
-                        e.currentTarget.style.transform = 'scale(1.03) translateY(-4px)';
-                        e.currentTarget.style.zIndex = '10';
-                      }}
-                      onMouseOut={e => {
-                        e.currentTarget.style.transform = 'scale(1) translateY(0)';
-                        e.currentTarget.style.zIndex = '1';
+                        flexDirection: 'column',
+                        overflow: 'hidden'
                       }}
                       onClick={() => router.push(`/auction-details/${auction.id}`)}
                     >
-                      <div style={{ width: '295px', height: '295px', borderRadius: '24px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                      <div style={{ width: '295px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                         <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                           <ShareButton 
                             type="auction" 
@@ -202,7 +194,9 @@ const Home1LiveAuction = () => {
                           margin: '0 0 6px 0', 
                           whiteSpace: 'nowrap', 
                           overflow: 'hidden', 
-                          textOverflow: 'ellipsis' 
+                          textOverflow: 'ellipsis',
+                          width: '114px',
+                          height: '23px'
                         }}>
                           {auction.title || 'Nom Produit'}
                         </h4>
@@ -233,7 +227,18 @@ const Home1LiveAuction = () => {
                             }}>DA</span>
                           </div>
                           <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontSize: '11px', color: '#002896', fontWeight: '700', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                            <span style={{ 
+                              fontFamily: 'Roboto, sans-serif',
+                              fontSize: '14px', 
+                              fontWeight: '400', 
+                              lineHeight: '100%',
+                              letterSpacing: '0px',
+                              verticalAlign: 'middle',
+                              color: '#002896', 
+                              whiteSpace: 'nowrap',
+                              width: '69px',
+                              height: '16px'
+                            }}>
                               {auction.participantsCount || 0} enchères
                             </span>
                             <span style={{ 
@@ -255,7 +260,18 @@ const Home1LiveAuction = () => {
                           </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: '11px', color: '#002896', fontWeight: '600' }}>
+                          <span style={{ 
+                            fontFamily: 'Roboto, sans-serif',
+                            fontSize: '14px', 
+                            fontWeight: '400', 
+                            lineHeight: '100%',
+                            letterSpacing: '0px',
+                            verticalAlign: 'middle',
+                            color: '#002896',
+                            width: '213px',
+                            height: '16px',
+                            whiteSpace: 'nowrap'
+                          }}>
                             {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j${timer.hours}h ${timer.formattedEnd})`}
                           </span>
                         </div>
@@ -266,8 +282,8 @@ const Home1LiveAuction = () => {
               })}
             </Swiper>
             
-            <div style={{ textAlign: 'center', marginTop: '60px' }}>
-              <Link href="/auction-sidebar" style={{ display: 'inline-block', padding: '10px 30px', color: '#002896', textDecoration: 'none', fontSize: '18px', fontWeight: '800', transition: 'all 0.3s ease' }}>
+            <div style={{ textAlign: 'center', marginTop: '60px', position: 'relative', zIndex: 10 }}>
+              <Link href="/auction-sidebar" style={{ display: 'inline-flex', width: '93px', height: '28px', alignItems: 'center', justifyContent: 'center', color: '#002896', textDecoration: 'none', fontSize: '24px', fontWeight: '700', fontFamily: 'Roboto, sans-serif', lineHeight: '100%', whiteSpace: 'nowrap', position: 'relative', zIndex: 20, cursor: 'pointer', transition: 'all 0.3s ease' }}>
                 Voir tout
               </Link>
             </div>

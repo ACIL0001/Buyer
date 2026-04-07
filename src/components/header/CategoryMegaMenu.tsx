@@ -115,7 +115,7 @@ export default function CategoryMegaMenu({ item, isActive, isMobile, setMenuOpen
           padding: isMobile ? '16px 20px' : '8px 16px',
           borderRadius: isMobile ? '0' : '100px',
           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          background: isOpen && !isMobile ? 'rgba(0, 99, 177, 0.08)' : 'transparent',
+          background: isOpen && !isMobile ? 'rgba(0, 40, 150, 0.08)' : 'transparent',
           justifyContent: isMobile ? 'space-between' : 'flex-start',
           width: '100%'
         }}
@@ -174,7 +174,7 @@ export default function CategoryMegaMenu({ item, isActive, isMobile, setMenuOpen
               display: 'flex',
               flexDirection: isMobile ? 'column' : 'row',
               overflow: 'hidden',
-              border: isMobile ? 'none' : '1px solid rgba(0, 99, 177, 0.1)',
+              border: isMobile ? 'none' : '1px solid rgba(0, 40, 150, 0.1)',
               minHeight: isMobile ? 'auto' : (hasSubcategories ? '400px' : 'auto'),
               borderTop: isMobile ? '1px solid #f1f5f9' : 'none'
             }}>
@@ -559,7 +559,7 @@ export default function CategoryMegaMenu({ item, isActive, isMobile, setMenuOpen
         .mega-menu-spinner {
           width: 32px;
           height: 32px;
-          border: 3px solid rgba(0, 99, 177, 0.1);
+          border: 3px solid rgba(0, 40, 150, 0.1);
           border-radius: 50%;
           border-top-color: #0063b1;
           animation: spin 1s ease-in-out infinite;
@@ -574,7 +574,7 @@ export default function CategoryMegaMenu({ item, isActive, isMobile, setMenuOpen
           border-color: #bfdbfe !important;
           color: #0063b1 !important;
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 99, 177, 0.08) !important;
+          box-shadow: 0 4px 12px rgba(0, 40, 150, 0.08) !important;
         }
 
         .mega-menu-scroll::-webkit-scrollbar {

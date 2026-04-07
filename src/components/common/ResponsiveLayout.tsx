@@ -135,7 +135,7 @@ export const TouchOptimizedLayout: React.FC<{
       style: { 
         minHeight: '44px',
         touchAction: 'manipulation',
-        WebkitTapHighlightColor: 'rgba(0, 99, 177, 0.1)'
+        WebkitTapHighlightColor: 'rgba(0, 40, 150, 0.1)'
       }
     }}
     iPhoneProps={{
@@ -143,7 +143,7 @@ export const TouchOptimizedLayout: React.FC<{
       style: { 
         minHeight: '44px',
         touchAction: 'manipulation',
-        WebkitTapHighlightColor: 'rgba(0, 99, 177, 0.1)',
+        WebkitTapHighlightColor: 'rgba(0, 40, 150, 0.1)',
         paddingTop: 'env(safe-area-inset-top)',
         paddingBottom: 'env(safe-area-inset-bottom)'
       }
@@ -153,7 +153,7 @@ export const TouchOptimizedLayout: React.FC<{
       style: { 
         minHeight: '44px',
         touchAction: 'manipulation',
-        WebkitTapHighlightColor: 'rgba(0, 99, 177, 0.1)'
+        WebkitTapHighlightColor: 'rgba(0, 40, 150, 0.1)'
       }
     }}
   >

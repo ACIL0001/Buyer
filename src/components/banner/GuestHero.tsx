@@ -43,7 +43,7 @@ const GuestHero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           style={{ 
-            color: '#002bc5', 
+            color: '#002896', 
             fontSize: 'clamp(40px, 6vw, 64px)', 
             fontWeight: '900', 
             marginBottom: '20px',
@@ -81,7 +81,7 @@ const GuestHero = () => {
           <button 
             onClick={() => window.location.href = 'http://localhost:3001/auth/register/'}
             style={{
-              background: 'linear-gradient(135deg, #002bc5 0%, #0ea5e9 100%)',
+              background: 'linear-gradient(135deg, #002896 0%, #0ea5e9 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '50px',
@@ -89,16 +89,16 @@ const GuestHero = () => {
               fontSize: '18px',
               fontWeight: '700',
               cursor: 'pointer',
-              boxShadow: '0 10px 25px rgba(0, 43, 197, 0.25)',
+              boxShadow: '0 10px 25px rgba(0, 40, 150, 0.25)',
               transition: 'all 0.3s ease'
             }}
             onMouseOver={(e) => {
               e.currentTarget.style.transform = 'translateY(-3px)';
-              e.currentTarget.style.boxShadow = '0 15px 35px rgba(0, 43, 197, 0.4)';
+              e.currentTarget.style.boxShadow = '0 15px 35px rgba(0, 40, 150, 0.4)';
             }}
             onMouseOut={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 10px 25px rgba(0, 43, 197, 0.25)';
+              e.currentTarget.style.boxShadow = '0 10px 25px rgba(0, 40, 150, 0.25)';
             }}
           >
             Commencez
@@ -108,8 +108,8 @@ const GuestHero = () => {
             onClick={() => router.push('/contact')}
             style={{
               background: '#ffffff',
-              color: '#002bc5',
-              border: '2px solid #002bc5',
+              color: '#002896',
+              border: '2px solid #002896',
               borderRadius: '50px',
               padding: '16px 50px',
               fontSize: '18px',
@@ -119,13 +119,13 @@ const GuestHero = () => {
               boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.background = '#002bc5';
+              e.currentTarget.style.background = '#002896';
               e.currentTarget.style.color = '#ffffff';
               e.currentTarget.style.transform = 'translateY(-3px)';
             }}
             onMouseOut={(e) => {
               e.currentTarget.style.background = '#ffffff';
-              e.currentTarget.style.color = '#002bc5';
+              e.currentTarget.style.color = '#002896';
               e.currentTarget.style.transform = 'translateY(0)';
             }}
           >

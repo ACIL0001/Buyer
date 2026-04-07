@@ -238,7 +238,7 @@ const AuctionWonModal: React.FC<AuctionWonModalProps> = ({
                   {/* Chat Button */}
                   {(chatId || sellerId) && (
                     <motion.button
-                      whileHover={{ y: -2, boxShadow: '0 12px 20px rgba(0, 99, 177, 0.3)' }}
+                      whileHover={{ y: -2, boxShadow: '0 12px 20px rgba(0, 40, 150, 0.3)' }}
                       whileTap={{ scale: 0.96 }}
                       onClick={handleChatClick}
                       style={{
@@ -254,7 +254,7 @@ const AuctionWonModal: React.FC<AuctionWonModalProps> = ({
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '10px',
-                        boxShadow: '0 8px 15px rgba(0, 99, 177, 0.2)',
+                        boxShadow: '0 8px 15px rgba(0, 40, 150, 0.2)',
                         transition: 'all 0.3s ease',
                         width: '100%'
                       }}

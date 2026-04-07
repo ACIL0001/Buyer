@@ -160,7 +160,7 @@ const MultipurposeDirectSaleSidebar = () => {
              <select 
                value={sortOrder} 
                onChange={(e) => setSortOrder(e.target.value)}
-               style={{ padding: '10px 15px', borderRadius: '12px', border: 'none', background: '#f8f9fb', outline: 'none', fontSize: '13px', color: '#002bc5', fontWeight: '800', cursor: 'pointer', minWidth: '150px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+               style={{ padding: '10px 15px', borderRadius: '12px', border: 'none', background: '#f8f9fb', outline: 'none', fontSize: '13px', color: '#002896', fontWeight: '800', cursor: 'pointer', minWidth: '150px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
              >
                <option value="NEWEST">Nouveau</option>
                <option value="OLDEST">Ancien</option>
@@ -189,17 +189,17 @@ const MultipurposeDirectSaleSidebar = () => {
               opacity: 1
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                <span style={{ fontSize: '16px', color: '#002bc5', fontWeight: '800' }}>Filtrer</span>
-                <span onClick={() => {setSelectedCategories([]); setPriceRange({min:'', max:''}); setSearchQuery(''); setTenderType('ALL'); setSelectedWilaya(''); setSortOrder('NEWEST');}} style={{fontSize: '11px', color:'#002bc5', cursor:'pointer', fontWeight:'700'}}>Réinitialiser</span>
+                <span style={{ fontSize: '16px', color: '#002896', fontWeight: '800' }}>Filtrer</span>
+                <span onClick={() => {setSelectedCategories([]); setPriceRange({min:'', max:''}); setSearchQuery(''); setTenderType('ALL'); setSelectedWilaya(''); setSortOrder('NEWEST');}} style={{fontSize: '11px', color:'#002896', cursor:'pointer', fontWeight:'700'}}>Réinitialiser</span>
               </div>
 
               {/* Type Filter in Sidebar */}
               <div style={{ marginBottom: '30px' }}>
-                <h4 style={{ fontSize: '14px', color: '#002bc5', fontWeight: '800', marginBottom: '15px' }}>Type</h4>
+                <h4 style={{ fontSize: '14px', color: '#002896', fontWeight: '800', marginBottom: '15px' }}>Type</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {['ALL', 'PRODUCT', 'SERVICE'].map(type => (
                     <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#666', cursor: 'pointer' }}>
-                      <input type="radio" name="tenderTypeSidebar" checked={tenderType === type} onChange={() => { setTenderType(type); setCurrentPage(1); }} style={{ accentColor: '#002bc5' }} />
+                      <input type="radio" name="tenderTypeSidebar" checked={tenderType === type} onChange={() => { setTenderType(type); setCurrentPage(1); }} style={{ accentColor: '#002896' }} />
                       {type === 'ALL' ? 'Tout' : type === 'PRODUCT' ? 'Produit' : 'Service'}
                     </label>
                   ))}
@@ -208,7 +208,7 @@ const MultipurposeDirectSaleSidebar = () => {
 
               {/* Price Filter - Min/Max inputs */}
               <div style={{ marginBottom: '30px' }}>
-                <h4 style={{ fontSize: '14px', color: '#002bc5', fontWeight: '800', marginBottom: '15px' }}>Prix (DA)</h4>
+                <h4 style={{ fontSize: '14px', color: '#002896', fontWeight: '800', marginBottom: '15px' }}>Prix (DA)</h4>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                   <input 
                     type="number" 
@@ -230,7 +230,7 @@ const MultipurposeDirectSaleSidebar = () => {
 
               {/* Wilaya Filter */}
               <div style={{ marginBottom: '30px' }}>
-                <h4 style={{ fontSize: '14px', color: '#002bc5', fontWeight: '800', marginBottom: '15px' }}>Wilaya</h4>
+                <h4 style={{ fontSize: '14px', color: '#002896', fontWeight: '800', marginBottom: '15px' }}>Wilaya</h4>
                 <select 
                   value={selectedWilaya} 
                   onChange={(e) => setSelectedWilaya(e.target.value)}
@@ -245,11 +245,11 @@ const MultipurposeDirectSaleSidebar = () => {
 
               {/* Categories Filter */}
               <div>
-                <h4 style={{ fontSize: '14px', color: '#002bc5', fontWeight: '800', marginBottom: '15px' }}>Catégories</h4>
+                <h4 style={{ fontSize: '14px', color: '#002896', fontWeight: '800', marginBottom: '15px' }}>Catégories</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '200px', overflowY: 'auto', paddingRight: '5px' }}>
                   {categories.map((cat: any) => (
                     <label key={cat._id} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#666', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={selectedCategories.includes(cat._id)} onChange={() => toggleCategory(cat._id)} style={{ accentColor: '#002bc5' }} />
+                      <input type="checkbox" checked={selectedCategories.includes(cat._id)} onChange={() => toggleCategory(cat._id)} style={{ accentColor: '#002896' }} />
                       {cat.name}
                     </label>
                   ))}
@@ -283,9 +283,9 @@ const MultipurposeDirectSaleSidebar = () => {
                       <img src={getDirectSaleImageUrl(sale)} alt={sale.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => e.currentTarget.src = DEFAULT_DIRECT_SALE_IMAGE} />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 5px' }}>
-                      <h3 style={{ fontSize: '18px', color: '#002bc5', fontWeight: '900', margin: 0 }}>{sale.title || 'Nom Produit'}</h3>
+                      <h3 style={{ fontSize: '18px', color: '#002896', fontWeight: '900', margin: 0 }}>{sale.title || 'Nom Produit'}</h3>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '18px', color: '#002bc5', fontWeight: '900' }}>{formatPrice(sale.price || 0)}</span>
+                        <span style={{ fontSize: '18px', color: '#002896', fontWeight: '900' }}>{formatPrice(sale.price || 0)}</span>
                         <span style={{ fontSize: '10px', color: '#666', fontWeight: '600' }}>{companyName}</span>
                       </div>
                       {sale.wilaya && <div style={{ fontSize: '11px', color: '#999', fontWeight: '600' }}>📍 {sale.wilaya}</div>}

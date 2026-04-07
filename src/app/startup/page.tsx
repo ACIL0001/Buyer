@@ -53,7 +53,7 @@ const StartupPage = () => {
           <div style={{
             position: 'absolute',
             top: 0, left: 0, right: 0, bottom: 0,
-            background: 'linear-gradient(90deg, rgba(0, 43, 197, 0.9) 0%, rgba(0, 92, 230, 0.7) 100%)',
+            background: 'linear-gradient(90deg, rgba(0, 40, 150, 0.9) 0%, rgba(0, 92, 230, 0.7) 100%)',
             zIndex: 1
           }}></div>
 
@@ -94,7 +94,7 @@ const StartupPage = () => {
         <section style={{ padding: '80px 20px', background: '#ffffff' }}>
           <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <h2 style={{ 
-              color: '#002bc5', 
+              color: '#002896', 
               fontSize: 'clamp(28px, 4vw, 42px)', 
               fontWeight: '800', 
               textAlign: 'center', 
@@ -160,19 +160,19 @@ const StartupPage = () => {
               alignItems: 'center',
               flexWrap: 'wrap',
               gap: '30px',
-              boxShadow: '0 10px 40px rgba(0, 43, 197, 0.08)'
+              boxShadow: '0 10px 40px rgba(0, 40, 150, 0.08)'
             }}>
               <div style={{ textAlign: 'center' }}>
-                <h3 style={{ color: '#002bc5', fontSize: '48px', fontWeight: '800', margin: '0 0 8px 0' }}>15</h3>
-                <p style={{ color: '#002bc5', fontSize: '16px', fontWeight: '600', margin: 0 }}>Membres de l'équipe</p>
+                <h3 style={{ color: '#002896', fontSize: '48px', fontWeight: '800', margin: '0 0 8px 0' }}>15</h3>
+                <p style={{ color: '#002896', fontSize: '16px', fontWeight: '600', margin: 0 }}>Membres de l'équipe</p>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <h3 style={{ color: '#002bc5', fontSize: '48px', fontWeight: '800', margin: '0 0 8px 0' }}>10</h3>
-                <p style={{ color: '#002bc5', fontSize: '16px', fontWeight: '600', margin: 0 }}>Fonctionnalités</p>
+                <h3 style={{ color: '#002896', fontSize: '48px', fontWeight: '800', margin: '0 0 8px 0' }}>10</h3>
+                <p style={{ color: '#002896', fontSize: '16px', fontWeight: '600', margin: 0 }}>Fonctionnalités</p>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <h3 style={{ color: '#002bc5', fontSize: '48px', fontWeight: '800', margin: '0 0 8px 0' }}>+10</h3>
-                <p style={{ color: '#002bc5', fontSize: '16px', fontWeight: '600', margin: 0 }}>Entreprises</p>
+                <h3 style={{ color: '#002896', fontSize: '48px', fontWeight: '800', margin: '0 0 8px 0' }}>+10</h3>
+                <p style={{ color: '#002896', fontSize: '16px', fontWeight: '600', margin: 0 }}>Entreprises</p>
               </div>
             </div>
           </div>
@@ -197,7 +197,7 @@ const StartupPage = () => {
               justifyContent: 'flex-end',
               padding: '60px',
               marginBottom: '40px',
-              boxShadow: '0 20px 40px rgba(0, 43, 197, 0.08)'
+              boxShadow: '0 20px 40px rgba(0, 40, 150, 0.08)'
             }}>
               {/* Overlay for text legibility */}
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.4) 100%)' }}></div>
@@ -236,7 +236,7 @@ const StartupPage = () => {
         {/* Global Styles */}
         <style jsx global>{`
           .btn-solid-blue {
-            background: #005ce6;
+            background: #002896;
             color: white;
             border: none;
             border-radius: 50px;
@@ -247,14 +247,14 @@ const StartupPage = () => {
             transition: all 0.3s ease;
           }
           .btn-solid-blue:hover {
-            background: #0044b3;
+            background: #002896;
             transform: translateY(-2px);
           }
 
           .btn-outline-blue {
             background: transparent;
-            color: #002bc5;
-            border: 1px solid #002bc5;
+            color: #002896;
+            border: 1px solid #002896;
             border-radius: 50px;
             padding: 14px 32px;
             font-weight: 600;
@@ -263,7 +263,7 @@ const StartupPage = () => {
             transition: all 0.3s ease;
           }
           .btn-outline-blue:hover {
-            background: rgba(0, 43, 197, 0.05);
+            background: rgba(0, 40, 150, 0.05);
             transform: translateY(-2px);
           }
 

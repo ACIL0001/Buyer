@@ -72,25 +72,26 @@ const CategoryItem = ({ cat, router }: { cat: any; router: any }) => {
   const subCategories = subData?.data || [];
 
   return (
-    <div style={{ borderBottom: '2px solid #002896' }}>
+    <div style={{ borderBottom: '2px solid #002896', width: '389px' }}>
       <motion.div 
         whileHover={{ x: 5 }}
         style={{ 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          padding: '20px 0',
+          padding: '0',
+          height: '72px',
           cursor: 'pointer'
         }}
       >
         <div 
           onClick={() => router.push(`/auction-sidebar?category=${cat._id}`)}
-          style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '22px', flex: 1 }}
         >
-          <div style={{ color: '#002896' }}>
+          <div style={{ color: '#002896', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {iconMap[cat.name] || <DefaultIcon />}
           </div>
-          <span style={{ color: '#002896', fontSize: '20px', fontWeight: '700' }}>
+          <span style={{ color: '#002896', fontSize: '20px', fontWeight: '700', fontFamily: 'Roboto, sans-serif' }}>
             {cat.name}
           </span>
         </div>
@@ -100,7 +101,7 @@ const CategoryItem = ({ cat, router }: { cat: any; router: any }) => {
             setIsExpanded(!isExpanded);
           }}
           style={{ 
-            color: '#002bc5', 
+            color: '#002896', 
             cursor: 'pointer',
             padding: '10px',
             transition: 'transform 0.3s ease',
@@ -128,7 +129,7 @@ const CategoryItem = ({ cat, router }: { cat: any; router: any }) => {
                   key={sub._id}
                   onClick={() => router.push(`/auction-sidebar?category=${sub._id}`)}
                   style={{ 
-                    color: '#002bc5', 
+                    color: '#002896', 
                     fontSize: '16px', 
                     fontWeight: '500',
                     cursor: 'pointer',
@@ -166,9 +167,9 @@ const CategoryGrid = () => {
     return (
       <div style={{ width: '100%', background: '#ffffff', padding: '80px 20px' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '40px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(389px, 1fr))', gap: '40px' }}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} style={{ height: '64px', background: '#f1f5f9', borderRadius: '8px', animation: 'pulse 1.5s infinite' }} />
+              <div key={i} style={{ height: '72px', background: '#f1f5f9', borderRadius: '8px', animation: 'pulse 1.5s infinite' }} />
             ))}
           </div>
         </div>
@@ -188,15 +189,25 @@ const CategoryGrid = () => {
 
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', 
-          columnGap: '60px',
+          gridTemplateColumns: 'repeat(3, 389px)', 
+          columnGap: '40px',
           rowGap: '20px',
-          padding: '0 20px'
-        }}>
+          justifyContent: 'center',
+          padding: '0 20px',
+          margin: '0 auto'
+        }} className="category-three-grid">
           {categories.slice(0, 9).map((cat: any) => (
             <CategoryItem key={cat._id} cat={cat} router={router} />
           ))}
         </div>
+        <style jsx>{`
+          @media (max-width: 1200px) {
+            .category-three-grid {
+              grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)) !important;
+              gap: 20px !important;
+            }
+          }
+        `}</style>
       </div>
     </div>
   );

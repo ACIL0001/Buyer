@@ -95,7 +95,7 @@ const LanguageSwitcher = () => {
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.borderColor = '#0063b1';
-          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 99, 177, 0.1)';
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 40, 150, 0.1)';
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.1)';

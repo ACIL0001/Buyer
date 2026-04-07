@@ -73,7 +73,7 @@ export default function Home() {
       <style jsx global>{`
         :root {
           --scrollbar-width: 6px;
-          --primary-color: #1e40af;
+          --primary-color: #002896;
           --text-color: #1f2937;
         }
         
@@ -82,8 +82,8 @@ export default function Home() {
         }
         
         html::-webkit-scrollbar { width: 6px; }
-        html::-webkit-scrollbar-track { background: rgba(0, 99, 177, 0.1); }
-        html::-webkit-scrollbar-thumb { background: rgba(0, 99, 177, 0.6); border-radius: 3px; }
+        html::-webkit-scrollbar-track { background: rgba(0, 40, 150, 0.1); }
+        html::-webkit-scrollbar-thumb { background: rgba(0, 40, 150, 0.6); border-radius: 3px; }
         
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -95,18 +95,17 @@ export default function Home() {
           overflow-x: hidden;
         }
         
-        /* 3D Pill Button Styles */
+        /* Flat Pill Button Styles */
         .btn-3d-blue {
-          background: linear-gradient(180deg, #005ce6 0%, #0044b3 100%);
+          background: linear-gradient(180deg, #1A71F6 0%, #0F4290 100%);
           color: white;
           border: none;
-          border-radius: 50px;
-          padding: 12px 0;
+          border-radius: 100px;
+          width: 132px;
+          height: 52px;
           font-weight: 700;
           font-size: 15px;
-          flex: 1;
           cursor: pointer;
-          box-shadow: 0 5px 0 #002b80, 0 10px 20px rgba(0, 68, 179, 0.3);
           transition: all 0.15s ease;
           display: flex;
           justify-content: center;
@@ -114,13 +113,11 @@ export default function Home() {
           text-decoration: none;
         }
         .btn-3d-blue:hover {
-          transform: translateY(2px);
-          box-shadow: 0 3px 0 #002b80, 0 6px 12px rgba(0, 68, 179, 0.3);
+          opacity: 0.9;
           color: white;
         }
         .btn-3d-blue:active {
-          transform: translateY(5px);
-          box-shadow: 0 0 0 #002b80, 0 0 0 rgba(0, 68, 179, 0.3);
+          opacity: 0.8;
         }
 
         /* Distinct Light Grey Glassmorphism Card Hover */
@@ -180,16 +177,16 @@ export default function Home() {
                     }}>
                       
                       {/* Ambient background blur blobs to make the glass effect visible */}
-                      <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(0, 99, 177, 0.1) 0%, transparent 70%)', filter: 'blur(40px)', zIndex: 0 }}></div>
+                      <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(0, 40, 150, 0.1) 0%, transparent 70%)', filter: 'blur(40px)', zIndex: 0 }}></div>
                       <div style={{ position: 'absolute', bottom: '-10%', right: '-5%', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 70%)', filter: 'blur(50px)', zIndex: 0 }}></div>
 
                       <div style={{ position: 'relative', zIndex: 2, maxWidth: '1200px', margin: '0 auto' }}>
                         {isLogged && (
                           <>
-                            <h2 style={{ color: '#002896', fontSize: '32px', fontWeight: '700', marginBottom: '15px' }}>
+                            <h2 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '36px', lineHeight: '46px', textAlign: 'center', marginBottom: '15px' }}>
                               Que voulez-vous faire ?
                             </h2>
-                            <p style={{ color: '#64748b', fontSize: '15px', marginBottom: '50px', maxWidth: '700px', margin: '0 auto 50px' }}>
+                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '18px', lineHeight: '30px', textAlign: 'center', maxWidth: '756px', margin: '0 auto 50px' }}>
                               Lorem ipsum dolor sit amet consectetur. Ultricies semper neque sed justo amet elit consectetur eget pellentesque. In eu fames non et orci elit.
                             </p>
                           </>
@@ -210,14 +207,14 @@ export default function Home() {
                             borderRadius: '24px', padding: '40px 24px', 
                             display: 'flex', flexDirection: 'column', alignItems: 'center'
                           }}>
-                            <div style={{ color: '#002bc5', marginBottom: '20px' }}>
+                            <div style={{ color: '#002896', marginBottom: '20px' }}>
                               <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M12 2v12m0-12l-4 4m4-4l4 4M20 21a4 4 0 00-4-4h-8a4 4 0 00-4 4"/>
                                 <circle cx="12" cy="11" r="3"/>
                               </svg>
                             </div>
-                            <h3 style={{ color: '#002bc5', fontSize: '22px', fontWeight: '700', marginBottom: '15px' }}>Enchères</h3>
-                            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '35px', minHeight: '40px', lineHeight: '1.5' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '15px' }}>Enchères</h3>
+                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', marginBottom: '35px', minHeight: '66px' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center' }}>
                               <button onClick={() => router.push('/dashboard/auctions/create')} className="btn-3d-blue">Enchérir</button>
                               <button onClick={() => router.push('/auction-sidebar')} className="btn-3d-blue">Poster</button>
@@ -233,14 +230,14 @@ export default function Home() {
                             borderRadius: '24px', padding: '40px 24px', 
                             display: 'flex', flexDirection: 'column', alignItems: 'center'
                           }}>
-                            <div style={{ color: '#002bc5', marginBottom: '20px' }}>
+                            <div style={{ color: '#002896', marginBottom: '20px' }}>
                               <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                                 <rect x="2" y="5" width="20" height="14" rx="2"/>
                                 <path d="M2 10h20M6 14h12"/>
                               </svg>
                             </div>
-                            <h3 style={{ color: '#002bc5', fontSize: '22px', fontWeight: '700', marginBottom: '15px' }}>Vente directe</h3>
-                            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '35px', minHeight: '40px', lineHeight: '1.5' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '15px' }}>Vente directe</h3>
+                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', marginBottom: '35px', minHeight: '66px' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center' }}>
                               <button onClick={() => router.push('/dashboard/direct-sales/create')} className="btn-3d-blue">Vendre</button>
                               <button onClick={() => router.push('/direct-sale')} className="btn-3d-blue">Acheter</button>
@@ -256,15 +253,15 @@ export default function Home() {
                             borderRadius: '24px', padding: '40px 24px', 
                             display: 'flex', flexDirection: 'column', alignItems: 'center'
                           }}>
-                            <div style={{ color: '#002bc5', marginBottom: '20px' }}>
+                            <div style={{ color: '#002896', marginBottom: '20px' }}>
                               <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                                 <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
                                 <path d="M2 13h4M2 17h4" strokeDasharray="2 2"/>
                               </svg>
                             </div>
-                            <h3 style={{ color: '#002bc5', fontSize: '20px', fontWeight: '700', marginBottom: '15px', lineHeight: 1.2 }}>Soumissions (Appels d’offres / Projets)</h3>
-                            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '35px', minHeight: '40px', lineHeight: '1.5' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '28px', lineHeight: '25px', textAlign: 'center', marginBottom: '15px' }}>Soumissions (Appels d’offres / Projets)</h3>
+                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', marginBottom: '35px', minHeight: '66px' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center' }}>
                               <button onClick={() => router.push('/dashboard/tenders/create')} className="btn-3d-blue">Publier</button>
                               <button onClick={() => router.push('/tenders')} className="btn-3d-blue">Postuler</button>

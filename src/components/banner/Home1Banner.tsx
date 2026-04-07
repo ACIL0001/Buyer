@@ -517,7 +517,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           background-size: 200% 200%;
           color: white;
           border-color: #0063b1;
-          box-shadow: 0 6px 24px rgba(0, 99, 177, 0.35), 
+          box-shadow: 0 6px 24px rgba(0, 40, 150, 0.35), 
                       0 0 0 1px rgba(255, 255, 255, 0.1) inset,
                       inset 0 1px 0 rgba(255, 255, 255, 0.25);
           animation: gradient-shift 3s ease infinite;
@@ -527,7 +527,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
           background: linear-gradient(135deg, #005299 0%, #004080 50%, #003366 100%);
           border-color: #004080;
           transform: translateY(-4px) scale(1.08);
-          box-shadow: 0 10px 32px rgba(0, 99, 177, 0.5), 
+          box-shadow: 0 10px 32px rgba(0, 40, 150, 0.5), 
                       0 0 0 1px rgba(255, 255, 255, 0.15) inset,
                       inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
@@ -578,10 +578,10 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
         @keyframes pulse-blue {
           0%, 100% {
-            box-shadow: 0 6px 20px rgba(0, 99, 177, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 20px rgba(0, 40, 150, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
           }
           50% {
-            box-shadow: 0 8px 28px rgba(0, 99, 177, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 28px rgba(0, 40, 150, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
           }
         }
 
@@ -1324,7 +1324,7 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                           color: searchFilter === option.value ? 'var(--primary-color)' : '#475569',
                           fontWeight: searchFilter === option.value ? '600' : '500',
                           fontSize: '13px',
-                          background: searchFilter === option.value ? 'rgba(0, 99, 177, 0.08)' : 'transparent',
+                          background: searchFilter === option.value ? 'rgba(0, 40, 150, 0.08)' : 'transparent',
                           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}
                         onMouseEnter={(e) => {

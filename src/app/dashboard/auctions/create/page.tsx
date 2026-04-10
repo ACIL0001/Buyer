@@ -104,7 +104,7 @@ export default function CreateAuctionPage() {
         wilaya: Yup.string().required(t('createAuction.errors.wilayaRequired')),
         quantity: Yup.string().required(t('createAuction.errors.quantityRequired')),
         reservePrice: Yup.number()
-            .when('startingPrice', (startingPrice, schema) => {
+            .when('startingPrice', ([startingPrice], schema) => {
                 return startingPrice ? schema.moreThan(startingPrice, "Le prix de réserve doit être supérieur au prix initial.") : schema;
             })
             .nullable()

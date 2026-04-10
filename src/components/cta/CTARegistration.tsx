@@ -37,20 +37,27 @@ const CTARegistration = () => {
         <div style={{ flex: '1', minWidth: '300px' }}>
           <h2 style={{ 
             color: '#002896', 
-            fontSize: 'clamp(28px, 4vw, 42px)', 
+            fontFamily: '"DM Sans", sans-serif',
+            fontSize: '36px', 
             fontWeight: '700', 
-            lineHeight: '1.2',
-            marginBottom: '20px'
+            lineHeight: '46px',
+            marginBottom: '20px',
+            opacity: 1,
+            transform: 'rotate(0deg)'
           }}>
             Ne ratez plus aucune opportunité ! <br/>
             Créez votre compte et rejoignez MazadClick en un clic.
           </h2>
           <p style={{ 
-            color: '#64748b', 
-            fontSize: '17px', 
-            lineHeight: '1.6',
+            color: '#757575', 
+            fontFamily: '"DM Sans", sans-serif',
+            fontSize: '18px', 
+            fontWeight: '400',
+            lineHeight: '30px',
             marginBottom: '40px',
-            maxWidth: '500px'
+            maxWidth: '500px',
+            opacity: 1,
+            transform: 'rotate(0deg)'
           }}>
             Enchérissez, achetez immédiatement ou
             soumissionnez en toute confiance. Accédez à
@@ -59,58 +66,73 @@ const CTARegistration = () => {
             meilleur choix.
           </p>
 
-          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginTop: '10px' }}>
             <button 
               onClick={() => window.location.href = 'http://localhost:3001/auth/register/'}
               style={{
-                background: 'linear-gradient(135deg, #002896 0%, #0ea5e9 100%)',
-                color: 'white',
+                minWidth: '181px',
+                height: '71px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                background: 'linear-gradient(88.88deg, #062C90 50.03%, #3F95DD 98.92%)',
                 border: 'none',
-                borderRadius: '50px',
-                padding: '16px 45px',
-                fontSize: '18px',
-                fontWeight: '700',
+                borderRadius: '40px',
+                padding: '24px 36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
                 cursor: 'pointer',
-                boxShadow: '0 10px 25px rgba(0, 40, 150, 0.25)',
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 15px 30px rgba(0, 40, 150, 0.35)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 10px 25px rgba(0, 40, 150, 0.25)';
+                boxShadow: 'inset 1px 1px 4px 0px #FFFFFF99, inset -1px -1px 1px 0px #FFFFFF40, inset 1px 1px 1px 0px #062C9066, inset -1px -1px 1px 0px #062C9066',
+                transition: 'transform 0.2s ease',
+                boxSizing: 'border-box'
               }}
             >
-              Inscrivez-vous
+              <span style={{
+                fontFamily: '"DM Sans", sans-serif',
+                fontWeight: '600',
+                fontSize: '18px',
+                lineHeight: '100%',
+                textAlign: 'center',
+                color: '#FFFFFF',
+                whiteSpace: 'nowrap'
+              }}>
+                Inscrivez-vous
+              </span>
             </button>
             
             <button 
               onClick={() => router.push('/contact')}
               style={{
+                minWidth: '112px',
+                height: '71px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
                 background: '#ffffff',
-                color: '#1e293b',
-                border: '2px solid #e2e8f0',
-                borderRadius: '50px',
-                padding: '16px 45px',
-                fontSize: '18px',
-                fontWeight: '700',
+                border: 'none',
+                borderRadius: '100px',
+                padding: '24px 36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
                 cursor: 'pointer',
+                boxShadow: 'inset 1px 1px 4px 0px #002896, inset -1px -1px 1px 0px #0096E3, inset -1px -1px 1px 0px #002896, inset 1px 1px 1px 0px #002896, 0px 4px 4px 0px #00000040',
                 transition: 'all 0.2s ease',
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.borderColor = '#002896';
-                e.currentTarget.style.color = '#002896';
-                e.currentTarget.style.background = 'rgba(0, 40, 150, 0.02)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.borderColor = '#e2e8f0';
-                e.currentTarget.style.color = '#1e293b';
-                e.currentTarget.style.background = '#ffffff';
+                boxSizing: 'border-box'
               }}
             >
-              Comment ça marche
+              <span style={{
+                fontFamily: '"DM Sans", sans-serif',
+                fontWeight: '600',
+                fontSize: '18px',
+                lineHeight: '100%',
+                textAlign: 'center',
+                color: '#002896',
+                whiteSpace: 'nowrap'
+              }}>
+                Comment ça marche
+              </span>
             </button>
           </div>
         </div>

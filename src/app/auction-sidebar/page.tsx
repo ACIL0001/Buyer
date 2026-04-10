@@ -205,7 +205,17 @@ const AuctionSidebarPage = () => {
           <RequestProvider>
             <AxiosInterceptor>
               <Header />
-              <main style={{ minHeight: '100vh', backgroundColor: '#f9f9f9', paddingTop: 'clamp(70px, 8vw, 100px)' }}>
+              <main style={{ 
+                width: '100%',
+                height: '2747px', 
+                backgroundColor: '#FFFFFF', 
+                paddingTop: 'clamp(70px, 8vw, 100px)',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                boxSizing: 'border-box',
+                overflowY: 'auto',
+                overflowX: 'hidden'
+              }}>
                 <section className="animate-fade-in">
                   <MultipurposeAuctionSidebar />
                 </section>

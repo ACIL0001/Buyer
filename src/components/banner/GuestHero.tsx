@@ -18,23 +18,25 @@ const GuestHero = () => {
       justifyContent: 'center',
       overflow: 'hidden'
     }}>
-      {/* Background Pattern: Vertical soft pillars/waves effect */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        background: `repeating-linear-gradient(
-          90deg,
-          #ffffff 0px,
-          #ffffff 80px,
-          #f1f5f9 100px,
-          #ffffff 120px
-        )`,
-        opacity: 0.6,
-        zIndex: 0
-      }}></div>
+      {/* Video Background */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: 0,
+          opacity: 0.8 // Slightly reduced opacity to ensure text readability if needed
+        }}
+      >
+        <source src="/assets/images/white-background-2026-01-28-04-31-25-utc.mp4" type="video/mp4" />
+      </video>
 
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '0 20px' }}>
@@ -44,10 +46,18 @@ const GuestHero = () => {
           transition={{ duration: 0.8 }}
           style={{ 
             color: '#002896', 
-            fontSize: 'clamp(40px, 6vw, 64px)', 
-            fontWeight: '900', 
-            marginBottom: '20px',
-            lineHeight: '1.1'
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: '56px', 
+            fontWeight: '700', 
+            lineHeight: '66px',
+            textAlign: 'center',
+            width: '400px',
+            height: '132px',
+            margin: '0 auto 20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            letterSpacing: '0px'
           }}
         >
           Bienvenue sur <br/>
@@ -59,12 +69,19 @@ const GuestHero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           style={{ 
-            color: '#0ea5e9', 
+            color: '#0096E3', 
+            fontFamily: "'Inter', sans-serif",
             fontSize: '18px', 
-            lineHeight: '1.6',
-            maxWidth: '700px',
+            fontWeight: '400',
+            lineHeight: '18px',
+            textAlign: 'center',
+            width: '579px',
+            height: '54px',
             margin: '0 auto 45px',
-            fontWeight: '500'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            letterSpacing: '0px'
           }}
         >
           Lorem ipsum dolor sit amet, consectetur adipiscing elit <br/>
@@ -81,24 +98,33 @@ const GuestHero = () => {
           <button 
             onClick={() => window.location.href = 'http://localhost:3001/auth/register/'}
             style={{
-              background: 'linear-gradient(135deg, #002896 0%, #0ea5e9 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '50px',
-              padding: '16px 50px',
+              width: '181px',
+              height: '71px',
+              borderRadius: '40px',
+              gap: '10px',
+              padding: '24px 36px',
+              background: 'linear-gradient(88.88deg, #062C90 50.03%, #3F95DD 98.92%)',
+              boxShadow: 'inset 1px 1px 4px 0px #FFFFFF99, inset -1px -1px 1px 0px #FFFFFF40, inset 1px 1px 1px 0px #062C9066, inset -1px -1px 1px 0px #062C9066',
+              color: '#FFFFFF',
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: '600',
               fontSize: '18px',
-              fontWeight: '700',
+              lineHeight: '1',
+              border: 'none',
               cursor: 'pointer',
-              boxShadow: '0 10px 25px rgba(0, 40, 150, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center',
               transition: 'all 0.3s ease'
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-3px)';
-              e.currentTarget.style.boxShadow = '0 15px 35px rgba(0, 40, 150, 0.4)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.filter = 'brightness(1.1)';
             }}
             onMouseOut={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 10px 25px rgba(0, 40, 150, 0.25)';
+              e.currentTarget.style.filter = 'brightness(1)';
             }}
           >
             Commencez
@@ -107,26 +133,33 @@ const GuestHero = () => {
           <button 
             onClick={() => router.push('/contact')}
             style={{
-              background: '#ffffff',
+              width: '112px',
+              height: '71px',
+              borderRadius: '100px',
+              padding: '24px 36px',
+              background: '#FFFFFF',
+              boxShadow: 'inset 1px 1px 4px 0px #002896, inset -1px -1px 1px 0px #0096E3, inset -1px -1px 1px 0px #002896, inset 1px 1px 1px 0px #002896, 0px 4px 4px 0px #00000040',
               color: '#002896',
-              border: '2px solid #002896',
-              borderRadius: '50px',
-              padding: '16px 50px',
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: '600',
               fontSize: '18px',
-              fontWeight: '700',
+              lineHeight: '1',
+              border: 'none',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center', // Centers the text visually within the button
+              textAlign: 'right',
+              gap: '10px',
+              transition: 'all 0.3s ease'
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.background = '#002896';
-              e.currentTarget.style.color = '#ffffff';
-              e.currentTarget.style.transform = 'translateY(-3px)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = 'inset 1px 1px 6px 0px #002896, inset -1px -1px 2px 0px #0096E3, 0px 6px 8px 0px #00000030';
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.background = '#ffffff';
-              e.currentTarget.style.color = '#002896';
               e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'inset 1px 1px 4px 0px #002896, inset -1px -1px 1px 0px #0096E3, inset -1px -1px 1px 0px #002896, inset 1px 1px 1px 0px #002896, 0px 4px 4px 0px #00000040';
             }}
           >
             Aide

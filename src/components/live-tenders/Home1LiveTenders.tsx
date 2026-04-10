@@ -183,62 +183,58 @@ const Home1LiveTenders = () => {
                         justifyContent: 'space-between'
                       }}>
                         <h4 style={{ 
+                          width: '114px',
+                          height: '23px',
                           fontFamily: 'Roboto, sans-serif',
                           fontWeight: '700', 
                           fontSize: '20px', 
                           lineHeight: '100%',
                           letterSpacing: '0px',
                           verticalAlign: 'middle',
-                          color: '#002896', 
+                          color: '#062C90', 
                           margin: '0 0 6px 0', 
                           whiteSpace: 'nowrap', 
                           overflow: 'hidden', 
                           textOverflow: 'ellipsis',
-                          width: '114px',
-                          height: '23px'
+                          opacity: 1
                         }}>
                           {tender.title || 'Nom Produit'}
                         </h4>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <span style={{ 
+                            minWidth: '46px',
+                            height: '29px',
                             fontFamily: 'Inter, sans-serif',
                             fontWeight: '700', 
                             fontSize: '24px', 
                             lineHeight: '100%',
-                            letterSpacing: '0px',
-                            verticalAlign: 'middle',
-                            color: '#002896' 
+                            color: '#062C90',
+                            verticalAlign: 'middle'
                           }}>
                             {(tender.budget || tender.maxBudget || tender.price) ? `${Number(tender.budget || tender.maxBudget || tender.price).toLocaleString()}` : "Offre"}
                           </span>
                           {(tender.budget || tender.maxBudget || tender.price) && (
                             <span style={{ 
-                              display: 'inline-flex', 
-                              alignItems: 'center', 
-                              justifyContent: 'center', 
-                              width: '46px', 
-                              height: '29px', 
-                              background: 'rgba(0, 40, 150, 0.08)', 
-                              color: '#002896', 
-                              borderRadius: '8px', 
-                              fontSize: '13px', 
-                              fontWeight: '800' 
+                              fontFamily: 'Inter, sans-serif',
+                              fontSize: '14px', 
+                              fontWeight: '700', 
+                              color: '#062C90',
+                              marginLeft: '2px'
                             }}>DA</span>
                           )}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: '8px' }}>
                           <span style={{ 
+                            width: '101px',
+                            height: '16px',
                             fontFamily: 'Roboto, sans-serif',
                             fontSize: '14px', 
                             fontWeight: '400', 
                             lineHeight: '100%',
-                            letterSpacing: '0px',
-                            verticalAlign: 'middle',
-                            color: '#002896', 
+                            color: '#062C90', 
                             whiteSpace: 'nowrap', 
                             overflow: 'hidden', 
                             textOverflow: 'ellipsis', 
-                            maxWidth: '101px', 
                             textAlign: 'right' 
                           }}>
                             {companyName}

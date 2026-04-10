@@ -149,13 +149,8 @@ const MultipurposeDirectSaleSidebar = () => {
           </h1>
         </div>
 
-        {/* Global Filter Bar */}
-        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 40px', display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '20px' }}>
-          <div /> {/* Left Spacer */}
-          <div style={{ position: 'relative', width: '350px' }}>
-             <input type="text" placeholder="Rechercher..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: '100%', padding: '12px 20px', borderRadius: '50px', border: '1px solid #f1f5f9', background: '#f8f9fb', outline: 'none', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }} />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'flex-end' }}>
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 40px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
              <span style={{ fontSize: '14px', color: '#666', fontWeight: '800' }}>Trier par:</span>
              <select 
                value={sortOrder} 
@@ -274,7 +269,7 @@ const MultipurposeDirectSaleSidebar = () => {
                       width: '295px',
                       height: '295px', 
                       marginBottom: '20px',
-                      boxShadow: '0px 10px 30px 0px #70D979CC', 
+                      boxShadow: 'none', 
                       background: '#eee',
                       transition: 'all 0.3s',
                       opacity: 1
@@ -282,13 +277,69 @@ const MultipurposeDirectSaleSidebar = () => {
                     >
                       <img src={getDirectSaleImageUrl(sale)} alt={sale.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => e.currentTarget.src = DEFAULT_DIRECT_SALE_IMAGE} />
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 5px' }}>
-                      <h3 style={{ fontSize: '18px', color: '#002896', fontWeight: '900', margin: 0 }}>{sale.title || 'Nom Produit'}</h3>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '18px', color: '#002896', fontWeight: '900' }}>{formatPrice(sale.price || 0)}</span>
-                        <span style={{ fontSize: '10px', color: '#666', fontWeight: '600' }}>{companyName}</span>
+                    <div style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <h3 style={{ 
+                        width: '114px',
+                        height: '23px',
+                        fontFamily: 'Roboto, sans-serif',
+                        fontWeight: '700', 
+                        fontSize: '20px', 
+                        lineHeight: '100%',
+                        letterSpacing: '0px',
+                        verticalAlign: 'middle',
+                        color: '#062C90', 
+                        margin: '0 0 6px 0', 
+                        whiteSpace: 'nowrap', 
+                        overflow: 'hidden', 
+                        textOverflow: 'ellipsis',
+                        opacity: 1
+                      }}>
+                        {sale.title || 'Nom Produit'}
+                      </h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ 
+                            width: 'auto',
+                            minWidth: '46px',
+                            height: '29px',
+                            fontFamily: 'Inter, sans-serif',
+                            fontWeight: '700', 
+                            fontSize: '24px', 
+                            lineHeight: '100%',
+                            letterSpacing: '0px',
+                            verticalAlign: 'middle',
+                            color: '#062C90',
+                            opacity: 1
+                          }}>
+                            {Number(sale.price || 0).toLocaleString()}
+                          </span>
+                          <span style={{ 
+                            fontFamily: 'Inter, sans-serif',
+                            fontSize: '14px', 
+                            fontWeight: '700', 
+                            color: '#062C90',
+                            marginLeft: '2px'
+                          }}>DA</span>
+                        </div>
+                        <span style={{ 
+                          width: '101px',
+                          height: '16px',
+                          fontFamily: 'Roboto, sans-serif',
+                          fontWeight: '400', 
+                          fontSize: '14px', 
+                          lineHeight: '100%',
+                          letterSpacing: '0px',
+                          verticalAlign: 'middle',
+                          color: '#062C90', 
+                          whiteSpace: 'nowrap', 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis', 
+                          textAlign: 'right',
+                          opacity: 1
+                        }}>
+                          {companyName}
+                        </span>
                       </div>
-                      {sale.wilaya && <div style={{ fontSize: '11px', color: '#999', fontWeight: '600' }}>📍 {sale.wilaya}</div>}
                     </div>
                   </div>
                 );

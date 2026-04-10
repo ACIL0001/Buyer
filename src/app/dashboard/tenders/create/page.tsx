@@ -207,48 +207,6 @@ export default function CreateTenderPage() {
                     pb: 10
                 }}>
                     
-                    {/* TOP SELECTORS - PREMIUM DROP LISTS */}
-                    <Box sx={{ ...cardStyle, mb: 1, py: 4, px: 6 }}>
-                        <Grid container spacing={4}>
-                            <Grid size={{ xs: 12, sm: 6 }}>
-                                <Typography variant="h6" sx={{ color: '#002795', fontWeight: 800, mb: 2 }}>
-                                    Méthode d'offre
-                                </Typography>
-                                <TextField
-                                    select
-                                    fullWidth
-                                    variant="outlined"
-                                    placeholder="Choisir une méthode"
-                                    {...formik.getFieldProps('evaluationType')}
-                                    sx={inputStyle}
-                                    SelectProps={{ displayEmpty: true }}
-                                >
-                                    <MenuItem value="" disabled>Choisir une méthode</MenuItem>
-                                    <MenuItem value="MOINS_DISANT">✨ Moins disant</MenuItem>
-                                    <MenuItem value="MIEUX_DISANT">🏆 Mieux disant</MenuItem>
-                                </TextField>
-                            </Grid>
-                            <Grid size={{ xs: 12, sm: 6 }}>
-                                <Typography variant="h6" sx={{ color: '#002795', fontWeight: 800, mb: 2 }}>
-                                    Type d'appel d'offre
-                                </Typography>
-                                <TextField
-                                    select
-                                    fullWidth
-                                    variant="outlined"
-                                    placeholder="Choisir un type"
-                                    {...formik.getFieldProps('auctionType')}
-                                    sx={inputStyle}
-                                    SelectProps={{ displayEmpty: true }}
-                                >
-                                    <MenuItem value="CLASSIC">⚖️ Appel d'offre Classique</MenuItem>
-                                    <MenuItem value="EXPRESS">⚡ Appel d'offre Express</MenuItem>
-                                </TextField>
-                            </Grid>
-                        </Grid>
-                    </Box>
-
-                    {formik.values.evaluationType ? (
                         <FormikProvider value={formik}>
                             <Grid container spacing={4}>
                                 {/* LEFT COLUMN */}
@@ -259,10 +217,65 @@ export default function CreateTenderPage() {
                                                 Détails de l'offre
                                             </Typography>
                                             <Typography variant="body2" sx={{ color: '#64748b', mb: 4 }}>
-                                                {formik.values.evaluationType === 'MOINS_DISANT' 
-                                                    ? "Appel d'offre basé sur le critère du prix." 
-                                                    : "Appel d'offre basé sur la qualité de l'expertise."}
+                                                {!formik.values.evaluationType 
+                                                    ? "Veuillez choisir une méthode et un type pour configurer votre offre."
+                                                    : formik.values.evaluationType === 'MOINS_DISANT' 
+                                                        ? "Appel d'offre basé sur le critère du prix." 
+                                                        : "Appel d'offre basé sur la qualité de l'expertise."}
                                             </Typography>
+
+                                            {/* MODERN INTEGRATED SELECTORS */}
+                                            <Box sx={{ display: 'flex', gap: 4, mb: 5, flexWrap: 'wrap' }}>
+                                                <Box>
+                                                    <Typography sx={{ color: '#002795', fontWeight: 700, fontSize: '0.9rem', mb: 1.5 }}>Méthode d'offre</Typography>
+                                                    <Box sx={{ display: 'flex', backgroundColor: '#F8FAFC', p: 0.75, borderRadius: '16px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
+                                                        {[
+                                                            { id: 'MOINS_DISANT', label: 'Moins disant', icon: '✨' },
+                                                            { id: 'MIEUX_DISANT', label: 'Mieux disant', icon: '🏆' }
+                                                        ].map((m) => (
+                                                            <Box
+                                                                key={m.id}
+                                                                onClick={() => formik.setFieldValue('evaluationType', m.id)}
+                                                                sx={{
+                                                                    px: 2.5, py: 1, borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1,
+                                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                                    backgroundColor: formik.values.evaluationType === m.id ? '#ffffff' : 'transparent',
+                                                                    color: formik.values.evaluationType === m.id ? '#002795' : '#64748b',
+                                                                    boxShadow: formik.values.evaluationType === m.id ? '0 4px 12px rgba(0,39,149,0.1)' : 'none',
+                                                                }}
+                                                            >
+                                                                <Typography sx={{ fontSize: '1rem' }}>{m.icon}</Typography>
+                                                                <Typography sx={{ fontSize: '0.85rem', fontWeight: formik.values.evaluationType === m.id ? 700 : 500 }}>{m.label}</Typography>
+                                                            </Box>
+                                                        ))}
+                                                    </Box>
+                                                </Box>
+
+                                                <Box>
+                                                    <Typography sx={{ color: '#002795', fontWeight: 700, fontSize: '0.9rem', mb: 1.5 }}>Type d'appel d'offre</Typography>
+                                                    <Box sx={{ display: 'flex', backgroundColor: '#F8FAFC', p: 0.75, borderRadius: '16px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
+                                                        {[
+                                                            { id: 'CLASSIC', label: 'Classique', icon: '⚖️' },
+                                                            { id: 'EXPRESS', label: 'Express', icon: '⚡' }
+                                                        ].map((t) => (
+                                                            <Box
+                                                                key={t.id}
+                                                                onClick={() => formik.setFieldValue('auctionType', t.id)}
+                                                                sx={{
+                                                                    px: 2.5, py: 1, borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1,
+                                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                                    backgroundColor: formik.values.auctionType === t.id ? '#ffffff' : 'transparent',
+                                                                    color: formik.values.auctionType === t.id ? '#002795' : '#64748b',
+                                                                    boxShadow: formik.values.auctionType === t.id ? '0 4px 12px rgba(0,39,149,0.1)' : 'none',
+                                                                }}
+                                                            >
+                                                                <Typography sx={{ fontSize: '1rem' }}>{t.icon}</Typography>
+                                                                <Typography sx={{ fontSize: '0.85rem', fontWeight: formik.values.auctionType === t.id ? 700 : 500 }}>{t.label}</Typography>
+                                                            </Box>
+                                                        ))}
+                                                    </Box>
+                                                </Box>
+                                            </Box>
 
                                             <Grid container spacing={3}>
                                                 <Grid size={{ xs: 12 }}>
@@ -347,10 +360,27 @@ export default function CreateTenderPage() {
                                             </Typography>
                                             <Grid container spacing={2}>
                                                 <Grid size={{ xs: 12 }}>
-                                                    <Stack spacing={1}>
-                                                        <FormControlLabel control={<Switch checked={formik.values.professionalOnly} {...formik.getFieldProps('professionalOnly')} />} label="Professionnels uniquement" />
-                                                        <FormControlLabel control={<Switch checked={formik.values.isPro} {...formik.getFieldProps('isPro')} />} label="Compte Professionnel" />
-                                                        <FormControlLabel control={<Switch checked={formik.values.hidden} {...formik.getFieldProps('hidden')} />} label="Masquer mon identité" />
+                                                    <Stack spacing={2}>
+                                                       <FormControlLabel
+                                                           control={<Switch checked={formik.values.hidden} onChange={formik.handleChange} name="hidden" />}
+                                                           label={
+                                                               <Box>
+                                                                   <Typography variant="body2" fontWeight="bold">Masquer l'utilisateur</Typography>
+                                                                   <Typography variant="caption" color="text.secondary">Publier anonymement</Typography>
+                                                               </Box>
+                                                           }
+                                                       />
+                                                       {auth.user?.type === 'PROFESSIONAL' && (
+                                                           <FormControlLabel
+                                                               control={<Switch checked={formik.values.professionalOnly} onChange={formik.handleChange} name="professionalOnly" />}
+                                                               label={
+                                                                   <Box>
+                                                                       <Typography variant="body2" fontWeight="bold">Professionnels uniquement</Typography>
+                                                                       <Typography variant="caption" color="text.secondary">Visible uniquement par les comptes professionnels</Typography>
+                                                                   </Box>
+                                                               }
+                                                           />
+                                                       )}
                                                     </Stack>
                                                 </Grid>
                                             </Grid>
@@ -442,13 +472,13 @@ export default function CreateTenderPage() {
                                         </Box>
 
                                         <Button
-                                            fullWidth variant="contained" size="large"
+                                            fullWidth variant="contained"
                                             onClick={() => formik.handleSubmit()}
                                             disabled={isSubmitting || !formik.isValid}
                                             sx={{
-                                                borderRadius: '16px', py: 2, fontWeight: 800, fontSize: '1.2rem',
+                                                borderRadius: '12px', textTransform: 'none', fontWeight: 700, py: 1.5, fontSize: '1rem',
                                                 backgroundColor: '#002795', '&:hover': { backgroundColor: '#001e75' },
-                                                boxShadow: '0 8px 30px rgba(0,39,149,0.3)', transition: 'all 0.3s ease'
+                                                boxShadow: '0 10px 20px -5px rgba(0,39,149,0.3)',
                                             }}
                                         >
                                             {isSubmitting ? 'Publication en cours...' : "Publier l'offre"}
@@ -457,13 +487,6 @@ export default function CreateTenderPage() {
                                 </Grid>
                             </Grid>
                         </FormikProvider>
-                    ) : (
-                        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
-                            <Typography sx={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '1.2rem' }}>
-                                Veuillez choisir une méthode d'évaluation pour continuer.
-                            </Typography>
-                        </Box>
-                    )}
                 </Container>
             </Box>
         </ThemeProvider>

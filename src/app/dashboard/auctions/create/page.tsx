@@ -103,7 +103,12 @@ export default function CreateAuctionPage() {
         place: Yup.string().required(t('createAuction.errors.placeRequired')),
         wilaya: Yup.string().required(t('createAuction.errors.wilayaRequired')),
         quantity: Yup.string().required(t('createAuction.errors.quantityRequired')),
-        reservePrice: Yup.number().min(0).optional(),
+        reservePrice: Yup.number()
+            .when('startingPrice', (startingPrice, schema) => {
+                return startingPrice ? schema.moreThan(startingPrice, "Le prix de réserve doit être supérieur au prix initial.") : schema;
+            })
+            .nullable()
+            .optional(),
         size: Yup.string().optional(),
         color: Yup.string().optional(),
     });
@@ -291,27 +296,6 @@ export default function CreateAuctionPage() {
                     gap: '16px',
                     pb: 10
                 }}>
-                    {/* TOP LEVEL AUCTION TYPE SELECTOR - PREMIUM DROP LIST */}
-                    <Box sx={{ ...cardStyle, mb: 1, py: 4, px: 6, textAlign: 'center' }}>
-                        <Typography variant="h5" sx={{ color: '#002795', fontWeight: 800, mb: 3 }}>
-                            Type d'enchère
-                        </Typography>
-                        <Box sx={{ maxWidth: '600px', mx: 'auto' }}>
-                            <TextField
-                                select
-                                fullWidth
-                                variant="outlined"
-                                placeholder="Choisir un type"
-                                {...formik.getFieldProps('auctionType')}
-                                sx={inputStyle}
-                                SelectProps={{ displayEmpty: true }}
-                            >
-                                <MenuItem value={AUCTION_TYPES.CLASSIC}>⚖️ Enchère Classique</MenuItem>
-                                <MenuItem value={AUCTION_TYPES.EXPRESS}>⚡ Enchère Express</MenuItem>
-                            </TextField>
-                        </Box>
-                    </Box>
-
                     <FormikProvider value={formik}>
                         <Grid container spacing={2.75}>
                             {/* LEFT COLUMN: INFORMATION */}
@@ -333,9 +317,57 @@ export default function CreateAuctionPage() {
                                         >
                                             Informations enchère
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: '#94a3b8', mb: 4 }}>
+                                        <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3 }}>
                                             Remplissez les détails ci-dessous pour publier votre enchère.
                                         </Typography>
+
+                                        {/* MODERN SEGMENTED SELECTOR */}
+                                        <Box sx={{ mb: 4 }}>
+                                            <Typography sx={{ ...fieldLabelStyle, mb: 1.5 }}>Type d'enchère</Typography>
+                                            <Box sx={{ 
+                                                display: 'flex', 
+                                                backgroundColor: '#F8FAFC', 
+                                                p: 0.75, 
+                                                borderRadius: '16px',
+                                                width: 'fit-content',
+                                                border: '1px solid #E2E8F0'
+                                            }}>
+                                                {[
+                                                    { id: 'CLASSIC', label: 'Enchère Classique', icon: '⚖️' },
+                                                    { id: 'EXPRESS', label: 'Enchère Express', icon: '⚡' }
+                                                ].map((type) => (
+                                                    <Box
+                                                        key={type.id}
+                                                        onClick={() => formik.setFieldValue('auctionType', type.id)}
+                                                        sx={{
+                                                            px: 3,
+                                                            py: 1.25,
+                                                            borderRadius: '12px',
+                                                            cursor: 'pointer',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 1.5,
+                                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                            backgroundColor: formik.values.auctionType === type.id ? '#ffffff' : 'transparent',
+                                                            color: formik.values.auctionType === type.id ? '#002795' : '#64748b',
+                                                            boxShadow: formik.values.auctionType === type.id ? '0 4px 12px rgba(0,39,149,0.1)' : 'none',
+                                                            '&:hover': {
+                                                                color: formik.values.auctionType === type.id ? '#002795' : '#002795'
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Typography sx={{ fontSize: '18px' }}>{type.icon}</Typography>
+                                                        <Typography sx={{ 
+                                                            fontSize: '0.95rem', 
+                                                            fontWeight: formik.values.auctionType === type.id ? 700 : 500,
+                                                            whiteSpace: 'nowrap'
+                                                        }}>
+                                                            {type.label}
+                                                        </Typography>
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        </Box>
 
                                         <Grid container spacing={2.5}>
                                             <Grid size={{ xs: 12 }}>
@@ -482,37 +514,43 @@ export default function CreateAuctionPage() {
                                             Paramètres avancés
                                         </Typography>
                                         <Grid container spacing={2}>
-
                                             <Grid size={{ xs: 12 }}>
                                                 <Typography sx={fieldLabelStyle}>Prix de réserve (DA)</Typography>
                                                 <TextField 
-                                                    fullWidth type="number" placeholder="Optionnel" variant="outlined" 
+                                                    fullWidth type="number" 
+                                                    placeholder="Optionnel" 
+                                                    variant="outlined" 
                                                     {...formik.getFieldProps('reservePrice')} 
+                                                    error={formik.touched.reservePrice && !!formik.errors.reservePrice}
+                                                    helperText={formik.touched.reservePrice && formik.errors.reservePrice}
                                                     sx={inputStyle} 
                                                 />
+                                                <Typography variant="caption" sx={{ color: '#94a3b8', mt: 0.5, display: 'block', lineHeight: 1.2 }}>
+                                                    <Typography component="span" sx={{ fontWeight: 700, color: '#002795' }}>Note :</Typography> L'enchère n'est conclue que si une offre atteint ou dépasse ce prix.
+                                                </Typography>
                                             </Grid>
                                             <Grid size={{ xs: 12 }}>
-                                                <Typography sx={fieldLabelStyle}>Numéro de contact</Typography>
-                                                <TextField 
-                                                    fullWidth placeholder="0XXXXXXXXX" variant="outlined" 
-                                                    {...formik.getFieldProps('contactNumber')} 
-                                                    sx={inputStyle} 
-                                                />
-                                            </Grid>
-                                            <Grid size={{ xs: 12 }}>
-                                                <Stack spacing={1}>
-                                                    <FormControlLabel
-                                                        control={<Switch checked={formik.values.professionalOnly} {...formik.getFieldProps('professionalOnly')} />}
-                                                        label="Professionnel uniquement"
-                                                    />
-                                                    <FormControlLabel
-                                                        control={<Switch checked={formik.values.isPro} {...formik.getFieldProps('isPro')} />}
-                                                        label="Compte Professionnel"
-                                                    />
-                                                    <FormControlLabel
-                                                        control={<Switch checked={formik.values.hidden} {...formik.getFieldProps('hidden')} />}
-                                                        label="Cacher de la recherche"
-                                                    />
+                                                <Stack spacing={2}>
+                                                   <FormControlLabel
+                                                       control={<Switch checked={formik.values.hidden} onChange={formik.handleChange} name="hidden" />}
+                                                       label={
+                                                           <Box>
+                                                               <Typography variant="body2" fontWeight="bold">Masquer l'utilisateur</Typography>
+                                                               <Typography variant="caption" color="text.secondary">Publier anonymement</Typography>
+                                                           </Box>
+                                                       }
+                                                   />
+                                                   {auth.user?.type === 'PROFESSIONAL' && (
+                                                       <FormControlLabel
+                                                           control={<Switch checked={formik.values.professionalOnly} onChange={formik.handleChange} name="professionalOnly" />}
+                                                           label={
+                                                               <Box>
+                                                                   <Typography variant="body2" fontWeight="bold">Professionnels uniquement</Typography>
+                                                                   <Typography variant="caption" color="text.secondary">Visible uniquement par les comptes professionnels</Typography>
+                                                               </Box>
+                                                           }
+                                                       />
+                                                   )}
                                                 </Stack>
                                             </Grid>
                                         </Grid>
@@ -604,7 +642,7 @@ export default function CreateAuctionPage() {
                                     </Box>
 
                                     <Button
-                                        fullWidth variant="contained" size="large"
+                                        fullWidth variant="contained"
                                         onClick={() => formik.handleSubmit()}
                                         disabled={isSubmitting || !formik.isValid}
                                         sx={{

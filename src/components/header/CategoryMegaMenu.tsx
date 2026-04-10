@@ -22,7 +22,21 @@ interface Category {
   children?: Category[];
 }
 
-export default function CategoryMegaMenu({ item, isActive, isMobile, setMenuOpen }: { item: any; isActive: boolean; isMobile?: boolean; setMenuOpen?: (val: boolean) => void }) {
+export default function CategoryMegaMenu({ 
+  item, 
+  isActive, 
+  isMobile, 
+  setMenuOpen,
+  triggerStyle,
+  chevronStyle
+}: { 
+  item: any; 
+  isActive: boolean; 
+  isMobile?: boolean; 
+  setMenuOpen?: (val: boolean) => void;
+  triggerStyle?: React.CSSProperties;
+  chevronStyle?: React.CSSProperties;
+}) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -117,27 +131,45 @@ export default function CategoryMegaMenu({ item, isActive, isMobile, setMenuOpen
           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
           background: isOpen && !isMobile ? 'rgba(0, 40, 150, 0.08)' : 'transparent',
           justifyContent: isMobile ? 'space-between' : 'flex-start',
-          width: '100%'
+          width: '100%',
+          ...triggerStyle
         }}
         onClick={(e) => {
           e.preventDefault();
           setIsOpen(!isOpen);
         }}
       >
-        {item.name}
+        <span style={{
+          width: '81px',
+          height: '16px',
+          fontFamily: '"DM Sans", sans-serif',
+          fontWeight: '400',
+          fontSize: '16px',
+          lineHeight: '16px',
+          color: '#062C90',
+          opacity: 1,
+          transform: 'rotate(0deg)',
+          display: 'inline-block'
+        }}>
+          {item.name}
+        </span>
         <svg 
-          width="14" 
-          height="14" 
+          width="24" 
+          height="24" 
           viewBox="0 0 24 24" 
           fill="none" 
-          stroke="currentColor" 
+          stroke={chevronStyle?.stroke || "#062C90"}
           strokeWidth="2.5" 
           strokeLinecap="round" 
           strokeLinejoin="round"
           style={{ 
-            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            width: '24px',
+            height: '24px',
+            opacity: 1,
+            transform: 'rotate(0deg)',
             transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            marginTop: '1px'
+            marginTop: '1px',
+            ...chevronStyle
           }}
         >
           <path d="M6 9l6 6 6-6"/>

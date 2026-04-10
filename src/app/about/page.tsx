@@ -46,13 +46,41 @@ const AboutPage = () => {
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              style={{ color: '#002896', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: '800', marginBottom: '20px' }}
+              style={{ 
+                color: '#002896', 
+                fontFamily: '"DM Sans", sans-serif',
+                fontSize: '56px', 
+                fontWeight: '700', 
+                lineHeight: '66px',
+                textAlign: 'center',
+                height: '132px',
+                marginBottom: '20px',
+                opacity: 1,
+                transform: 'rotate(0deg)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
             >
               Contactez notre équipe pour plus de renseignements
             </motion.h1>
-            <p style={{ color: '#0ea5e9', fontSize: '24px', fontWeight: '700', maxWidth: '800px', margin: '0 auto 60px', lineHeight: '1.4' }}>
-              MazadClick ne digitalise pas le marché : elle
-              l'organise.
+            <p style={{ 
+              color: '#0096E3', 
+              fontFamily: '"Inter", sans-serif',
+              fontSize: '18px', 
+              fontWeight: '400', 
+              lineHeight: '18px',
+              textAlign: 'center',
+              height: '54px',
+              maxWidth: '800px', 
+              margin: '0 auto 60px',
+              opacity: 1,
+              transform: 'rotate(0deg)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              MazadClick ne digitalise pas le marché : elle l'organise.
             </p>
 
             <div className="about-grid-container">
@@ -100,18 +128,31 @@ const AboutPage = () => {
           </div>
         </section>
 
-        {/* 2. Stats Bar - Grey Background Design from Image 6 */}
-        <section style={{ padding: '40px 20px' }}>
-          <div className="container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-            <div style={{ 
-              background: '#e5e7eb', // Explicit Grey Background
-              borderRadius: '24px', 
-              padding: '50px 40px', 
-              display: 'flex', 
-              justifyContent: 'space-around', 
-              textAlign: 'center',
-              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
-            }}>
+        {/* 2. Stats Bar - Advanced Glassmorphism Design */}
+        <section style={{ 
+          padding: '40px 20px',
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
+          <div style={{ 
+            width: '1282px',
+            height: '212px',
+            background: '#d8d8d8',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderRadius: '24px', 
+            border: '1px solid',
+            borderImageSource: 'linear-gradient(127.23deg, rgba(255, 255, 255, 0.42) 2.46%, rgba(255, 255, 255, 0.24) 97.36%)',
+            borderImageSlice: 1,
+            display: 'flex', 
+            justifyContent: 'space-around', 
+            alignItems: 'center',
+            textAlign: 'center',
+            boxShadow: '0px 20px 40px 0px #0000001A, 0px 4px 4px 0px #00000040',
+            opacity: 1,
+            transform: 'rotate(0deg)',
+            boxSizing: 'border-box'
+          }}>
               <div>
                 <h2 style={{ color: '#002896', fontSize: '48px', fontWeight: '800' }}>15</h2>
                 <p style={{ color: '#002896', fontSize: '14px', fontWeight: '600' }}>Membres de l'équipe</p>
@@ -125,13 +166,29 @@ const AboutPage = () => {
                 <p style={{ color: '#002896', fontSize: '14px', fontWeight: '600' }}>Entreprises</p>
               </div>
             </div>
-          </div>
         </section>
 
         {/* 3. Nos Valeurs Section */}
         <section style={{ padding: '100px 20px' }}>
-          <div className="container" style={{ maxWidth: '1100px', margin: '0 auto' }}>
-            <h2 style={{ color: '#002896', fontSize: '42px', fontWeight: '800', textAlign: 'center', marginBottom: '60px' }}>Nos valeurs</h2>
+          <div className="container" style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <h2 style={{ 
+              color: '#002896', 
+              fontFamily: '"DM Sans", sans-serif',
+              fontSize: '64px', 
+              fontWeight: '700', 
+              textAlign: 'center', 
+              width: '505px',
+              height: '104px',
+              lineHeight: '18px', // Following exact specification
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '60px',
+              opacity: 1,
+              transform: 'rotate(0deg)'
+            }}>
+              Nos valeurs
+            </h2>
             <div className="values-grid">
               {[
                 { title: "Clarté Totale", desc: "Des processus d'enchères et de soumissions traçables pour une confiance absolue." },
@@ -156,13 +213,41 @@ const AboutPage = () => {
         {/* 4. Contact CTA */}
         <section style={{ padding: '80px 20px', textAlign: 'center' }}>
           <div className="container" style={{ maxWidth: '700px', margin: '0 auto' }}>
-            <h2 style={{ color: '#002896', fontSize: '38px', fontWeight: '800', marginBottom: '25px' }}>
+            <h2 style={{ 
+              color: '#002896', 
+              fontFamily: '"DM Sans", sans-serif',
+              fontSize: '56px', 
+              fontWeight: '700', 
+              lineHeight: '66px',
+              textAlign: 'center',
+              height: '66px',
+              marginBottom: '40px',
+              whiteSpace: 'nowrap',
+              opacity: 1,
+              transform: 'rotate(0deg)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
               Besoin d’un accompagnement
             </h2>
-            <p style={{ color: '#002896', fontSize: '16px', lineHeight: '1.8', marginBottom: '45px', opacity: 0.8 }}>
-              Nos experts sont là pour vous aider à optimiser vos enchères ou finaliser
-              vos soumissions. Envoyez-nous un message et recevez une réponse
-              rapide.
+            <p style={{ 
+              color: '#002896', 
+              fontFamily: '"DM Sans", sans-serif',
+              fontSize: '24px', 
+              fontWeight: '400',
+              lineHeight: '26px', 
+              textAlign: 'center',
+              height: '78px',
+              maxWidth: '800px', 
+              margin: '0 auto 45px', 
+              opacity: 1,
+              transform: 'rotate(0deg)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              Nos experts sont là pour vous aider à optimiser vos enchères ou finaliser vos soumissions. Envoyez-nous un message et recevez une réponse rapide.
             </p>
             <button className="gradient-btn" onClick={() => router.push('/contact')}>
               Contacter un conseiller

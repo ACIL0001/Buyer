@@ -120,11 +120,15 @@ const MultipurposeAuctionSidebar = () => {
       filtered.sort((a, b) => (a.currentPrice || a.startingPrice || 0) - (b.currentPrice || b.startingPrice || 0));
     } else if (sortOrder === 'PRICE_DESC') {
       filtered.sort((a, b) => (b.currentPrice || b.startingPrice || 0) - (a.currentPrice || a.startingPrice || 0));
-    } else if (sortOrder === 'OLDEST') {
-      filtered.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
     } else if (sortOrder === 'NEWEST') {
       filtered.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     }
+
+    // Active Filter (Exclude Expired)
+    filtered = filtered.filter(a => {
+      if (!a.endingAt) return true;
+      return new Date(a.endingAt).getTime() > Date.now();
+    });
 
     return filtered;
   }, [allAuctionsResponse, auth.user, tenderType, priceRange, selectedCategories, selectedWilaya, searchQuery, sortOrder]);
@@ -179,13 +183,8 @@ const MultipurposeAuctionSidebar = () => {
           </h1>
         </div>
 
-        {/* Global Filter Bar */}
-        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 40px', display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '20px' }}>
-          <div /> {/* Left Spacer */}
-          <div style={{ position: 'relative', width: '350px' }}>
-             <input type="text" placeholder="Rechercher..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: '100%', padding: '12px 20px', borderRadius: '50px', border: '1px solid #f1f5f9', background: '#f8f9fb', outline: 'none', fontSize: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }} />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', justifyContent: 'flex-end' }}>
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 40px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
              <span style={{ fontSize: '14px', color: '#666', fontWeight: '800' }}>Trier par:</span>
              <select 
                value={sortOrder} 
@@ -305,7 +304,7 @@ const MultipurposeAuctionSidebar = () => {
                       width: '295px',
                       height: '295px', 
                       marginBottom: '20px',
-                      boxShadow: '0px 10px 30px 0px #C34B4ECC', 
+                      boxShadow: 'none', 
                       background: '#eee',
                       transition: 'all 0.3s',
                       opacity: 1
@@ -313,19 +312,85 @@ const MultipurposeAuctionSidebar = () => {
                     >
                       <img src={getAuctionImageUrl(auction)} alt={auction.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => e.currentTarget.src = DEFAULT_AUCTION_IMAGE} />
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '0 5px' }}>
-                      <h3 style={{ fontSize: '18px', color: '#002896', fontWeight: '900', margin: 0 }}>{auction.title || 'Nom Produit'}</h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <span style={{ fontSize: '18px', color: '#002896', fontWeight: '900' }}>{formatPrice(auction.currentPrice || auction.startingPrice || 0)}</span>
-                        <span style={{ fontSize: '11px', color: '#002896', fontWeight: '600' }}>{auction.participantsCount || 0} enchères</span>
+                    <div style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <h3 style={{ 
+                        width: '114px',
+                        height: '23px',
+                        fontFamily: 'Roboto, sans-serif',
+                        fontWeight: '700', 
+                        fontSize: '20px', 
+                        lineHeight: '100%',
+                        letterSpacing: '0px',
+                        verticalAlign: 'middle',
+                        color: '#062C90', 
+                        margin: '0 0 6px 0', 
+                        whiteSpace: 'nowrap', 
+                        overflow: 'hidden', 
+                        textOverflow: 'ellipsis',
+                        opacity: 1
+                      }}>
+                        {auction.title || 'Nom Produit'}
+                      </h3>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ 
+                            width: 'auto',
+                            minWidth: '46px',
+                            height: '29px',
+                            fontFamily: 'Inter, sans-serif',
+                            fontWeight: '700', 
+                            fontSize: '24px', 
+                            lineHeight: '100%',
+                            letterSpacing: '0px',
+                            verticalAlign: 'middle',
+                            color: '#062C90',
+                            opacity: 1
+                          }}>
+                            {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()}
+                          </span>
+                          <span style={{ 
+                            fontFamily: 'Inter, sans-serif',
+                            fontSize: '14px', 
+                            fontWeight: '700', 
+                            color: '#062C90',
+                            marginLeft: '2px'
+                          }}>DA</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ 
+                            fontFamily: 'Roboto, sans-serif',
+                            fontSize: '14px', 
+                            fontWeight: '400', 
+                            color: '#002896',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {auction.participantsCount || 0} enchères
+                          </span>
+                          <span style={{ 
+                            width: '101px',
+                            height: '16px',
+                            fontFamily: 'Roboto, sans-serif',
+                            fontWeight: '400', 
+                            fontSize: '14px',
+                            lineHeight: '100%',
+                            letterSpacing: '0px',
+                            verticalAlign: 'middle',
+                            color: '#062C90', 
+                            whiteSpace: 'nowrap', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            textAlign: 'right',
+                            opacity: 1
+                          }}>
+                            {companyName}
+                          </span>
+                        </div>
                       </div>
                       <div style={{ display: 'flex', justifyContent:'space-between', alignItems: 'center' }}>
-                         <div style={{ fontSize: '11px', color: '#666', fontWeight: '500' }}>
+                         <div style={{ fontFamily: 'Roboto, sans-serif', fontSize: '13px', color: '#002896', fontWeight: '400' }}>
                             Temps restant {timer.hasEnded ? 'Terminé' : `${timer.days}j${timer.hours}h`}
                          </div>
-                         <span style={{ fontSize: '10px', color: '#666', fontWeight: '600' }}>{companyName}</span>
                       </div>
-                      {auction.wilaya && <div style={{ fontSize: '11px', color: '#999', fontWeight: '600' }}>📍 {auction.wilaya}</div>}
                     </div>
                   </div>
                 );

@@ -26,13 +26,20 @@ export default function DirectSalePage() {
           <SnackbarProvider maxSnack={3}>
             <Header />
             <main className="direct-sale-page" style={{ 
+              width: '100%',
+              height: '2747px', 
+              background: '#FFFFFF',
               position: 'relative', 
               zIndex: 1, 
-              minHeight: '100vh', 
               paddingTop: 'clamp(80px, 10vw, 120px)', 
               paddingBottom: 'clamp(40px, 5vw, 80px)',
               fontFamily: '"DM Sans", sans-serif',
-              fontWeight: 700
+              fontWeight: 700,
+              opacity: 1,
+              transform: 'rotate(0deg)',
+              boxSizing: 'border-box',
+              overflowY: 'auto',
+              overflowX: 'hidden'
             }}>
               
               {/* Main Content - Sidebar/Grid Component */}

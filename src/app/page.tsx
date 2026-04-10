@@ -153,14 +153,22 @@ export default function Home() {
               <AxiosInterceptor>
                 <Header />
                 <main style={{ 
-                  minHeight: '100vh', 
-                  background: '#ffffff',
+                  width: '1440px',
+                  minHeight: '100vh',
+                  height: 'auto',
+                  margin: '0 auto',
+                  background: '#FFFFFF',
+                  opacity: 1,
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  borderColor: '#f0f2f5', // Added a subtle border color to make the 1px width visible
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
                   position: 'relative',
-                  width: '100%',
-                  maxWidth: '100vw',
                   paddingTop: `${headerHeight}px`,
                   paddingBottom: 'env(safe-area-inset-bottom)',
                   boxSizing: 'border-box',
+                  transform: 'rotate(0deg)',
                 }}>
                   
                   {/* Hero Section: Ads for logged users, Welcome for guests */}

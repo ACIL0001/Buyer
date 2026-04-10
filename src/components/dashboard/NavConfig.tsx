@@ -1,26 +1,16 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  MdDashboard, 
- 
-  MdGavel, 
-  MdEmail, 
-  MdStore, 
-  MdLocalShipping, 
- 
-  MdCategory, 
-  MdSettings, 
-  MdMessage, 
-  MdChat, 
-  MdNotifications, 
-  MdReport,
-  MdRateReview,
-
-  MdAddCircle,
-  MdList,
-  MdShoppingCart
-} from 'react-icons/md';
 import { Badge, Box } from '@mui/material';
+import { 
+  MdOutlineHome, 
+  MdOutlineTrendingUp, 
+  MdOutlineStorefront, 
+  MdOutlineLayers,
+  MdOutlineGroup,
+  MdOutlineDescription,
+  MdOutlineSettings,
+  MdOutlineHelpOutline
+} from 'react-icons/md';
 
 const getIcon = (IconComponent: React.ComponentType<any>, badgeContent?: number) => {
   const icon = <IconComponent size={22} />;
@@ -42,87 +32,80 @@ const getIcon = (IconComponent: React.ComponentType<any>, badgeContent?: number)
 
 const useNavConfig = () => {
   const { t } = useTranslation();
-  // const { totalUnreadCount: messageNotificationCount } = useMessageNotifications(); // Mocked for now
   const messageNotificationCount = 0;
 
   return [
     {
-      title: t('dashboard.navigation.dashboard', 'Dashboard'),
+      title: 'Dashboard',
       path: '/dashboard',
-      icon: getIcon(MdDashboard),
+      icon: getIcon(MdOutlineHome),
     },
-
     {
-      title: t('dashboard.navigation.auctions', 'Auctions'),
+      title: 'Enchère',
       path: '/dashboard/auctions',
-      icon: getIcon(MdGavel),
+      icon: getIcon(MdOutlineTrendingUp),
       children: [
         {
           title: t('dashboard.navigation.myAuctions', 'My Auctions'),
           path: '/dashboard/auctions',
-          icon: getIcon(MdList),
         },
         {
           title: t('dashboard.navigation.createAuction', 'Create Auction'),
           path: '/dashboard/auctions/create/',
-          icon: getIcon(MdAddCircle),
         },
         {
           title: t('dashboard.navigation.offers', 'Offers'),
           path: '/dashboard/offers',
-          icon: getIcon(MdLocalShipping), // Placeholder
         },
       ],
     },
     {
-      title: t('dashboard.navigation.tenders', 'Tenders'),
+      title: 'Appel d\'offres',
       path: '/dashboard/tenders',
-      icon: getIcon(MdEmail),
+      icon: getIcon(MdOutlineLayers),
       children: [
         {
           title: t('dashboard.navigation.myTenders', 'My Tenders'),
           path: '/dashboard/tenders',
-          icon: getIcon(MdList),
         },
         {
           title: t('dashboard.navigation.newTender', 'New Tender'),
           path: '/dashboard/tenders/create/',
-          icon: getIcon(MdAddCircle),
         },
         {
           title: t('dashboard.navigation.receivedBids', 'Received Bids'),
           path: '/dashboard/tender-bids',
-          icon: getIcon(MdEmail),
         },
       ],
     },
     {
-      title: t('dashboard.navigation.directSales', 'Direct Sales'),
+      title: 'Produit',
       path: '/dashboard/direct-sales',
-      icon: getIcon(MdStore),
+      icon: getIcon(MdOutlineStorefront),
       children: [
         {
           title: t('dashboard.navigation.mySales', 'My Sales'),
           path: '/dashboard/direct-sales',
-          icon: getIcon(MdStore),
         },
         {
           title: t('dashboard.navigation.createSale', 'Create Sale'),
           path: '/dashboard/direct-sales/create/',
-          icon: getIcon(MdAddCircle),
         },
         {
           title: t('dashboard.navigation.orders', 'Orders'),
           path: '/dashboard/direct-sales/orders',
-          icon: getIcon(MdShoppingCart),
         },
       ],
     },
-    // Skipping some administrative items for initial buyer dashboard
     {
-      title: t('dashboard.navigation.chat', 'Chat'),
-      path: '/dashboard/chat',
-      icon: getIcon(MdChat, messageNotificationCount),
+      title: 'Clients',
+      path: '/dashboard/clients',
+      icon: getIcon(MdOutlineGroup),
+    },
+    {
+      title: 'Transactions',
+      path: '/dashboard/transactions',
+      icon: getIcon(MdOutlineDescription),
     },
   ];
 };

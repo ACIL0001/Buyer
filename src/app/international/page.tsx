@@ -37,22 +37,41 @@ const InternationalPage = () => {
         position: 'relative',
       }}>
         
-        {/* 1. Hero Section with Gradient Overlay */}
+        {/* 1. Hero Section with Video Background */}
         <section style={{ 
           position: 'relative', 
           width: '100%', 
-          minHeight: '500px',
+          minHeight: '657px',
           display: 'flex',
           alignItems: 'center',
-          backgroundImage: 'url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80")', 
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          overflow: 'hidden',
+          background: '#002896'
         }}>
+          {/* Video element */}
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 0
+            }}
+          >
+            <source src="/assets/images/teamwork-in-creative-video-production-company-woma-2026-01-21-02-14-14-utc.mp4" type="video/mp4" />
+          </video>
+
           {/* Blue Glass Gradient Overlay from Image 1 */}
           <div style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(135deg, rgba(10, 50, 150, 0.9) 0%, rgba(20, 80, 200, 0.7) 100%)',
+            background: 'linear-gradient(135deg, rgba(10, 50, 150, 0.8) 0%, rgba(20, 80, 200, 0.6) 100%)',
             zIndex: 1
           }}></div>
 
@@ -157,11 +176,71 @@ const InternationalPage = () => {
         {/* 4. Contact Team (Light Blue Glass Section from Image 2) */}
         <section style={{ padding: '100px 20px' }}>
           <div className="container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-            <div className="contact-banner">
-              <h2>Contactez-nous et découvrez de nouvelles opportunités.</h2>
-              <p>Lorem ipsum dolor sit amet consectetur. Sed vestibulum mauris elit sagittis eu. Dui felis tristique consectetur sagittis faucibus non et fusce lacinia.</p>
-              <button className="pill-button" onClick={() => router.push('/contact')}>
-                Message
+            <div style={{
+              background: '#e6f0ff',
+              padding: '60px',
+              borderRadius: '0px',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
+            }}>
+              <h2 style={{ 
+                color: '#003399', 
+                fontFamily: '"DM Sans", sans-serif',
+                fontSize: '32px', 
+                fontWeight: '700', 
+                marginBottom: '20px' 
+              }}>
+                Contactez-nous et découvrez de nouvelles opportunités.
+              </h2>
+              <p style={{ 
+                color: '#003399', 
+                fontFamily: '"DM Sans", sans-serif',
+                maxWidth: '600px', 
+                margin: '0 auto 30px', 
+                opacity: 0.8,
+                fontSize: '18px',
+                lineHeight: '30px'
+              }}>
+                Lorem ipsum dolor sit amet consectetur. Sed vestibulum mauris elit sagittis eu. Dui felis tristique consectetur sagittis faucibus non et fusce lacinia.
+              </p>
+              <button 
+                onClick={() => router.push('/contact')}
+                style={{
+                  width: '314px',
+                  height: '71px',
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                  background: 'linear-gradient(88.88deg, #062C90 50.03%, #3F95DD 98.92%)',
+                  border: 'none',
+                  borderRadius: '40px',
+                  padding: '24px 36px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  cursor: 'pointer',
+                  boxShadow: 'inset 1px 1px 4px 0px #FFFFFF99, inset -1px -1px 1px 0px #FFFFFF40, inset 1px 1px 1px 0px #062C9066, inset -1px -1px 1px 0px #062C9066',
+                  transition: 'transform 0.2s ease',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <span style={{
+                  width: '77px',
+                  height: '23px',
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                  fontFamily: '"DM Sans", sans-serif',
+                  fontWeight: '600',
+                  fontSize: '18px',
+                  lineHeight: '100%',
+                  textAlign: 'center',
+                  color: '#FFFFFF',
+                  display: 'block'
+                }}>
+                  Message
+                </span>
               </button>
             </div>
           </div>

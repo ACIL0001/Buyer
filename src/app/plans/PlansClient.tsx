@@ -68,6 +68,7 @@ export default function PlansClient() {
           margin: '0 auto 24px', 
           width: '100%',
           maxWidth: '900px',
+          marginTop: '60px',
           color: '#002896'
         }}>
           Solutions & Abonnements MazadClick.

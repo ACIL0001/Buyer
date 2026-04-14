@@ -11,9 +11,11 @@ import { useTranslation } from 'react-i18next';
 interface ChatNotificationsProps {
   variant?: 'header' | 'sidebar';
   onOpenChange?: (isOpen: boolean) => void;
+  customIcon?: React.ReactNode;
+  customButtonStyles?: React.CSSProperties;
 }
 
-export default function ChatNotifications({ variant = 'header', onOpenChange }: ChatNotificationsProps) {
+export default function ChatNotifications({ variant = 'header', onOpenChange, customIcon, customButtonStyles }: ChatNotificationsProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(1024);
@@ -704,7 +706,7 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
         ref={buttonRef}
         type="button"
         onClick={toggleDropdown}
-        style={{
+        style={customButtonStyles ? customButtonStyles : {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -719,14 +721,14 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
           boxShadow: isOpen ? '0 4px 15px rgba(0,0,0,0.08)' : '0 2px 10px rgba(0,0,0,0.05)'
         }}
         onMouseOver={(e) => {
-          if (!isOpen) {
+          if (!isOpen && !customButtonStyles) {
             e.currentTarget.style.transform = 'translateY(-2px)';
             e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.08)';
             e.currentTarget.style.background = '#f1f1f1';
           }
         }}
         onMouseOut={(e) => {
-          if (!isOpen) {
+          if (!isOpen && !customButtonStyles) {
             e.currentTarget.style.transform = 'translateY(0)';
             e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.05)';
             e.currentTarget.style.background = '#f8f9fa';
@@ -734,7 +736,7 @@ export default function ChatNotifications({ variant = 'header', onOpenChange }: 
         }}
         title={t('chat.messages')}
       >
-        <BiMessage size={variant === 'header' ? 20 : 24} color={isOpen ? '#0063b1' : '#666'} />
+        {customIcon ? customIcon : <BiMessage size={variant === 'header' ? 20 : 24} color={isOpen ? '#0063b1' : '#666'} />}
         
         {totalUnread > 0 && (
           <span style={{

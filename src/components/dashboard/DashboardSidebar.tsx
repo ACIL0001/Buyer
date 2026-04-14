@@ -131,6 +131,8 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
               borderLeft: isRTL ? '1px solid #E6E6E6' : 'none',
               right: isRTL ? 0 : 'auto',
               left: isRTL ? 'auto' : 0,
+              top: '196px',
+              height: 'calc(100% - 196px)',
             },
           }}
         >

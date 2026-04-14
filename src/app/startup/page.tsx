@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Header from '@/components/header/Header';
 import Footer from '@/components/footer/FooterWithErrorBoundary';
 import { useRouter } from 'next/navigation';
@@ -11,99 +11,124 @@ import { motion } from 'framer-motion';
 const StartupPage = () => {
   const { t } = useTranslation();
   const router = useRouter();
-  const [headerHeight, setHeaderHeight] = useState(104);
 
-  useEffect(() => {
-    const checkHeaderHeight = () => {
-      const width = window.innerWidth;
-      let calculatedHeight = 104;
-      if (width <= 375) calculatedHeight = 62;
-      else if (width <= 768) calculatedHeight = 65;
-      else if (width <= 992) calculatedHeight = 70;
-      setHeaderHeight(calculatedHeight);
-    };
-    checkHeaderHeight();
-    window.addEventListener('resize', checkHeaderHeight);
-    return () => window.removeEventListener('resize', checkHeaderHeight);
-  }, []);
 
   return (
-    <>
+    <div style={{ backgroundColor: '#FFFFFF', width: '100vw', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
-      <main style={{ 
-        width: '1440px',
-        height: '4614px',
-        margin: '0 auto',
-        background: '#ffffff',
-        paddingTop: `${headerHeight}px`,
+      <main
+        style={{ 
+        width: '100%',
+        margin: '0',
+        background: '#FFFFFF',
+        paddingTop: '256px',
         position: 'relative',
-        overflow: 'hidden',
         opacity: 1,
-        transform: 'rotate(0deg)'
+        transform: 'rotate(0deg)',
+        boxSizing: 'border-box',
       }}>
         
         {/* 1. Hero Section */}
-        <section style={{ 
+        <section
+          className="startup-hero"
+          style={{ 
           position: 'relative', 
-          width: '1439px', 
+          width: '100%',
           height: '657px',
-          margin: '0 auto',
+          marginTop: '0px',
           display: 'flex',
           alignItems: 'center',
-          backgroundImage: 'url("/assets/images/startup banner.jpg")',
+          backgroundImage: 'linear-gradient(0deg, rgba(0, 40, 150, 0.63), rgba(0, 40, 150, 0.63)), url("/assets/images/startup banner.jpg")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           opacity: 1,
           transform: 'rotate(0deg)'
         }}>
-          {/* Blue Overlay */}
-          <div style={{
+          {/* Centered 1440px Figma Artboard for Absolute Positioning */}
+          <div style={{ position: 'relative', width: '1440px', height: '100%', margin: '0 auto' }}>
+            {/* Group 17 Container */}
+            <div style={{
             position: 'absolute',
-            top: 0, left: 0, right: 0, bottom: 0,
-            background: '#002896A1',
-            zIndex: 1
-          }}></div>
-
-          <div className="container" style={{ position: 'relative', zIndex: 2, maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+            width: '792.45px',
+            height: '443px',
+            left: '75.95px', /* 80.95px - 5px offset */
+            top: '107px',    /* 440px - 333px offset */
+            zIndex: 2,
+          }}>
+            {/* Title */}
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              style={{ color: '#ffffff', fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: '800', marginBottom: '16px', lineHeight: 1.1 }}
+              style={{
+                position: 'absolute',
+                width: '739.49px',
+                height: '201px',
+                left: 0,
+                top: 0,
+                fontFamily: '"DM Sans", sans-serif',
+                fontStyle: 'normal',
+                fontWeight: 700,
+                fontSize: '56px',
+                lineHeight: '66px',
+                color: '#FFFFFF',
+                margin: 0
+              }}
             >
               Mazadclick Startups<br />
               Lorem Ipsum
             </motion.h1>
+
+            {/* Subtitle */}
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              style={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: '18px', maxWidth: '600px', marginBottom: '40px', lineHeight: 1.6 }}
+              style={{
+                position: 'absolute',
+                width: '792.45px',
+                height: '36px',
+                left: 0,
+                top: '246px', /* 686px - 440px */
+                fontFamily: '"Inter", sans-serif',
+                fontStyle: 'normal',
+                fontWeight: 400,
+                fontSize: '18px',
+                lineHeight: '18px',
+                color: '#FCFEFF',
+                margin: 0
+              }}
             >
               Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam
             </motion.p>
+
+            {/* Button */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
+              style={{
+                position: 'absolute',
+                left: 0,      /* relative to group */
+                top: '372px', /* 812px - 440px */
+              }}
             >
               <button 
                 onClick={() => router.push('/plans')}
                 style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '24px 36px',
+                  gap: '10px',
                   width: '315px',
                   height: '71px',
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
                   background: 'linear-gradient(88.88deg, #062C90 50.03%, #3F95DD 98.92%)',
-                  border: 'none',
+                  boxShadow: 'inset -1px -1px 1px rgba(6, 44, 144, 0.4), inset 1px 1px 1px rgba(6, 44, 144, 0.4), inset -1px -1px 1px rgba(255, 255, 255, 0.25), inset 1px 1px 4px rgba(255, 255, 255, 0.6)',
                   borderRadius: '40px',
-                  padding: '24px 36px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px',
+                  border: 'none',
                   cursor: 'pointer',
-                  boxShadow: 'inset 1px 1px 4px 0px #FFFFFF99, inset -1px -1px 1px 0px #FFFFFF40, inset 1px 1px 1px 0px #062C9066, inset -1px -1px 1px 0px #062C9066',
                   transition: 'transform 0.2s ease',
                   boxSizing: 'border-box'
                 }}
@@ -111,14 +136,16 @@ const StartupPage = () => {
                 <span style={{
                   width: '179px',
                   height: '23px',
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
                   fontFamily: '"DM Sans", sans-serif',
-                  fontWeight: '600',
+                  fontStyle: 'normal',
+                  fontWeight: 600,
                   fontSize: '18px',
-                  lineHeight: '100%',
+                  lineHeight: '23px',
                   textAlign: 'center',
                   color: '#FFFFFF',
+                  flex: 'none',
+                  order: 0,
+                  flexGrow: 0,
                   display: 'block',
                   whiteSpace: 'nowrap'
                 }}>
@@ -126,6 +153,7 @@ const StartupPage = () => {
                 </span>
               </button>
             </motion.div>
+          </div>
           </div>
         </section>
 
@@ -144,38 +172,144 @@ const StartupPage = () => {
               Devenez le moteur de la transformation économique.
             </h2>
 
-            {/* Row 1 */}
-            <div className="feature-row">
-              <div className="feature-text">
-                <p><strong>Valorisez votre savoir-faire stratégique</strong><br/><br/>Au-delà d’un produit, vous apportez une vision. MazadClick permet aux startups de mettre en avant leur expertise technique et leur réflexion stratégique. Nous transformons votre agilité en un atout pour les entreprises et institutions en quête de solutions innovantes.</p>
+            {/* Row 1 - Figma Absolute Layout */}
+            <div style={{
+              position: 'relative',
+              width: '1440px',
+              height: '440px', /* Image height determines block height */
+              margin: '0 auto',
+              marginBottom: '80px',
+              left: '50%',
+              transform: 'translateX(-50%)'
+            }}>
+              {/* Text Block */}
+              <div style={{
+                position: 'absolute',
+                width: '520px',
+                height: '126px',
+                left: '91px',
+                top: '166px', /* 1360px - 1194px */
+                fontFamily: '"DM Sans", sans-serif',
+                fontWeight: 400,
+                fontSize: '24px',
+                lineHeight: '18px',
+                color: '#757575',
+              }}>
+                <p style={{ margin: 0 }}>
+                  <strong>Valorisez votre savoir-faire stratégique</strong><br/><br/>
+                  Au-delà d’un produit, vous apportez une vision. MazadClick permet aux startups de mettre en avant leur expertise technique et leur réflexion stratégique. Nous transformons votre agilité en un atout pour les entreprises et institutions en quête de solutions innovantes.
+                </p>
               </div>
-              <div className="feature-image">
-                <img src="/assets/images/startup01.png" alt="Valorisez votre savoir-faire" />
+
+              {/* Image Block */}
+              <img 
+                src="/assets/images/startup01.png" 
+                alt="Valorisez votre savoir-faire"
+                style={{
+                  position: 'absolute',
+                  width: '554px',
+                  height: '440px',
+                  left: '827px',
+                  top: '0px', /* 1194px - 1194px */
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                  objectFit: 'cover'
+                }}
+              />
+            </div>
+
+            {/* Row 2 - Figma Absolute Layout */}
+            <div style={{
+              position: 'relative',
+              width: '1440px',
+              height: '440px', /* Image height */
+              margin: '0 auto',
+              marginBottom: '80px',
+              left: '50%',
+              transform: 'translateX(-50%)'
+            }}>
+              {/* Image Block */}
+              <img 
+                src="/assets/images/startup02.png" 
+                alt="Accédez aux opportunités"
+                style={{
+                  position: 'absolute',
+                  width: '521px',
+                  height: '440px',
+                  left: '75px',
+                  top: '0px', /* 1637px - 1637px */
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                  objectFit: 'cover'
+                }}
+              />
+              {/* Text Block */}
+              <div style={{
+                position: 'absolute',
+                width: '520px',
+                height: '126px',
+                left: '827px', /* Mirrored offset */
+                top: '166px', /* Mirrored offset */
+                fontFamily: '"DM Sans", sans-serif',
+                fontWeight: 400,
+                fontSize: '24px',
+                lineHeight: '18px',
+                color: '#757575',
+              }}>
+                <p style={{ margin: 0 }}>
+                  <strong>Accédez à des opportunités de haut niveau</strong><br/><br/>
+                  Brisez les barrières de l’informel et des réseaux fermés. Notre plateforme structure les mises en relation pour vous offrir un accès direct aux décideurs. Vous gagnez en visibilité professionnelle et assurez que vos solutions atteignent les bons interlocuteurs.
+                </p>
               </div>
             </div>
 
-            {/* Row 2 */}
-            <div className="feature-row reverse">
-              <div className="feature-text">
-                <p><strong>Accédez à des opportunités de haut niveau</strong><br/><br/>Brisez les barrières de l’informel et des réseaux fermés. Notre plateforme structure les mises en relation pour vous offrir un accès direct aux décideurs. Vous gagnez en visibilité professionnelle et assurez que vos solutions atteignent les bons interlocuteurs.</p>
+            {/* Row 3 - Figma Absolute Layout */}
+            <div style={{
+              position: 'relative',
+              width: '1440px',
+              height: '440px', /* Image height */
+              margin: '0 auto',
+              marginBottom: '40px', /* Gap before button */
+              left: '50%',
+              transform: 'translateX(-50%)'
+            }}>
+              {/* Text Block */}
+              <div style={{
+                position: 'absolute',
+                width: '520px',
+                height: '126px',
+                left: '91px', /* Mirrored offset */
+                top: '166px', /* Mirrored offset */
+                fontFamily: '"DM Sans", sans-serif',
+                fontWeight: 400,
+                fontSize: '24px',
+                lineHeight: '18px',
+                color: '#757575',
+              }}>
+                <p style={{ margin: 0 }}>
+                  <strong>Sécurisez et accélérez votre collaboration</strong><br/><br/>
+                  Le plus MazadClick ? La confiance et la traçabilité. Notre infrastructure digitale crédibilise votre démarche en centralisant échanges et opportunités. Résultat : des décisions plus rapides et un passage accéléré de la prise de contact à la réalisation.
+                </p>
               </div>
-              <div className="feature-image">
-                <img src="/assets/images/startup02.png" alt="Accédez aux opportunités" />
-              </div>
-            </div>
-
-            {/* Row 3 */}
-            <div className="feature-row">
-              <div className="feature-text">
-                <p><strong>Sécurisez et accélérez votre collaboration</strong><br/><br/>Le plus MazadClick ? La confiance et la traçabilité. Notre infrastructure digitale crédibilise votre démarche en centralisant échanges et opportunités. Résultat : des décisions plus rapides et un passage accéléré de la prise de contact à la réalisation.</p>
-              </div>
-              <div className="feature-image">
-                <img src="/assets/images/startup03.png" alt="Sécurisez votre collaboration" />
-              </div>
+              {/* Image Block */}
+              <img 
+                src="/assets/images/startup03.png" 
+                alt="Sécurisez votre collaboration"
+                style={{
+                  position: 'absolute',
+                  width: '530px',
+                  height: '440px',
+                  left: '844px',
+                  top: '0px', /* 2074px - 2074px */
+                  opacity: 1,
+                  transform: 'rotate(0deg)',
+                  objectFit: 'cover'
+                }}
+              />
             </div>
             
-            {/* Added CTA Button */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
+            {/* CTA Button */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '80px' }}>
               <button 
                 onClick={(e) => e.preventDefault()}
                 className="btn-solid-blue"
@@ -187,182 +321,268 @@ const StartupPage = () => {
           </div>
         </section>
 
-        {/* 3. Statistics Banner */}
+        {/* 3. Statistics Banner Figma Absolute */}
         <section style={{ 
-          padding: '20px 20px 60px',
-          display: 'flex',
-          justifyContent: 'center'
+          position: 'relative',
+          width: '1440px',
+          height: '211px',
+          margin: '0 auto 60px',
         }}>
+          {/* Banner Background Tool */}
           <div style={{
+            position: 'absolute',
             width: '1288px',
             height: '211px',
-            background: '#d8d8d8',
+            top: '0px', /* 2628px - 2628px */
+            left: '85px',
+            background: 'linear-gradient(127.45deg, rgba(230, 230, 230, 0.7) 2.15%, rgba(195, 201, 215, 0.14) 63.05%)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             borderRadius: '24px',
             border: '1px solid',
             borderImageSource: 'linear-gradient(127.23deg, rgba(255, 255, 255, 0.42) 2.46%, rgba(255, 255, 255, 0.24) 97.36%)',
             borderImageSlice: 1,
-            display: 'flex',
-            justifyContent: 'space-around',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '30px',
-            boxShadow: '0px 20px 40px 0px #0000001A, 0px 4px 4px 0px #00000040',
+            boxShadow: '0px 20px 40px 0px rgba(0, 0, 0, 0.1), 0px 4px 4px 0px rgba(0, 0, 0, 0.25)',
             opacity: 1,
-            transform: 'rotate(0deg)',
             boxSizing: 'border-box'
+          }}></div>
+
+          {/* 15 Text */}
+          <div style={{
+            position: 'absolute',
+            width: '138px',
+            height: '33px',
+            top: '72px', /* 2700px - 2628px */
+            left: '276px',
+            fontFamily: '"Inter", sans-serif',
+            fontWeight: 700,
+            fontSize: '64px',
+            lineHeight: '18px',
+            textAlign: 'center',
+            color: '#002896',
           }}>
-              <div style={{ textAlign: 'center' }}>
-                <h3 style={{ color: '#002896', fontSize: '48px', fontWeight: '800', margin: '0 0 8px 0' }}>15</h3>
-                <p style={{ color: '#002896', fontSize: '16px', fontWeight: '600', margin: 0 }}>Membres de l'équipe</p>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <h3 style={{ color: '#002896', fontSize: '48px', fontWeight: '800', margin: '0 0 8px 0' }}>10</h3>
-                <p style={{ color: '#002896', fontSize: '16px', fontWeight: '600', margin: 0 }}>Fonctionnalités</p>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <h3 style={{ color: '#002896', fontSize: '48px', fontWeight: '800', margin: '0 0 8px 0' }}>+10</h3>
-                <p style={{ color: '#002896', fontSize: '16px', fontWeight: '600', margin: 0 }}>Entreprises</p>
-              </div>
-            </div>
+            15
+          </div>
+          {/* Membres Text */}
+          <div style={{
+            position: 'absolute',
+            width: '241px',
+            height: '46px',
+            top: '129px', /* 2757px - 2628px */
+            left: '233px',
+            fontFamily: '"DM Sans", sans-serif',
+            fontWeight: 500,
+            fontSize: '20px',
+            lineHeight: '18px',
+            textAlign: 'center',
+            color: '#002896',
+          }}>
+            Membres de l'équipe
+          </div>
+
+          {/* 10 Text */}
+          <div style={{
+            position: 'absolute',
+            width: '137px',
+            height: '69px',
+            top: '69px', /* 2697px - 2628px */
+            left: '686px',
+            fontFamily: '"Inter", sans-serif',
+            fontWeight: 700,
+            fontSize: '64px',
+            lineHeight: '18px',
+            textAlign: 'center',
+            color: '#002896',
+          }}>
+            10
+          </div>
+          {/* Fonctionnalités Text */}
+          <div style={{
+            position: 'absolute',
+            width: '241px',
+            height: '46px',
+            top: '129px', /* 2757px - 2628px */
+            left: '645px',
+            fontFamily: '"DM Sans", sans-serif',
+            fontWeight: 500,
+            fontSize: '20px',
+            lineHeight: '18px',
+            textAlign: 'center',
+            color: '#002896',
+          }}>
+            Fonctionnalités
+          </div>
+
+          {/* +10 Text */}
+          <div style={{
+            position: 'absolute',
+            width: '138px',
+            height: '69px',
+            top: '71px', /* 2699px - 2628px */
+            left: '1057px',
+            fontFamily: '"Inter", sans-serif',
+            fontWeight: 700,
+            fontSize: '64px',
+            lineHeight: '18px',
+            textAlign: 'center',
+            color: '#002896',
+          }}>
+            +10
+          </div>
+          {/* Entreprises Text */}
+          <div style={{
+            position: 'absolute',
+            width: '241px',
+            height: '46px',
+            top: '129px', /* 2757px - 2628px */
+            left: '1020px',
+            fontFamily: '"DM Sans", sans-serif',
+            fontWeight: 500,
+            fontSize: '20px',
+            lineHeight: '18px',
+            textAlign: 'center',
+            color: '#002896',
+          }}>
+            Entreprises
+          </div>
         </section>
 
-        {/* 4. Final CTA Section */}
-        <section style={{ padding: '0 20px 80px' }}>
-          <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            
-            {/* Image Banner */}
-            <div style={{
-              position: 'relative',
-              width: '1290px',
-              height: '609px',
-              backgroundImage: 'url("/assets/images/startup01.png")', 
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              borderRadius: '24px',
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              padding: '60px',
-              marginBottom: '40px',
-              boxShadow: '0 20px 40px rgba(0, 40, 150, 0.08)',
-              opacity: 1,
-              transform: 'rotate(0deg)',
-              margin: '0 auto 40px'
-            }}>
-              {/* Overlay for text legibility (adjusted for blue text) */}
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 100%)' }}></div>
-              
-              <div style={{ position: 'relative', zIndex: 2, width: '751px', textAlign: 'right' }}>
-                <h2 style={{ 
-                  color: '#002896', 
-                  fontFamily: '"DM Sans", sans-serif',
-                  fontWeight: '700',
-                  fontSize: '56px', 
-                  lineHeight: '66px',
-                  marginBottom: '16px',
-                  opacity: 1,
-                  transform: 'rotate(0deg)'
-                }}>
-                  Prets a lancer votre startup au niveau seconaire ?
-                </h2>
-                <p style={{ 
-                  color: '#002896', 
-                  fontFamily: '"DM Sans", sans-serif',
-                  fontWeight: '400',
-                  fontSize: '24px', 
-                  lineHeight: '26px',
-                  textAlign: 'right',
-                  opacity: 0.9,
-                  margin: 0
-                }}>
-                  Échangez, innovez et transformez votre vision en réussite économique.
-                </p>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '82px', flexWrap: 'wrap' }}>
-              <button 
-                onClick={() => router.push('/auth/login')}
-                style={{
-                  width: '264px',
-                  height: '71px',
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
-                  background: 'linear-gradient(88.88deg, #062C90 50.03%, #3F95DD 98.92%)',
-                  border: 'none',
-                  borderRadius: '40px',
-                  padding: '24px 36px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px',
-                  cursor: 'pointer',
-                  boxShadow: 'inset 1px 1px 4px 0px #FFFFFF99, inset -1px -1px 1px 0px #FFFFFF40, inset 1px 1px 1px 0px #062C9066, inset -1px -1px 1px 0px #062C9066',
-                  transition: 'transform 0.2s ease',
-                  boxSizing: 'border-box'
-                }}
-              >
-                <span style={{
-                  width: '81px',
-                  height: '23px',
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
-                  fontFamily: '"DM Sans", sans-serif',
-                  fontWeight: '600',
-                  fontSize: '18px',
-                  lineHeight: '100%',
-                  textAlign: 'center',
-                  color: '#FFFFFF',
-                  display: 'block'
-                }}>
-                  S'inscrire
-                </span>
-              </button>
-
-              <button 
-                onClick={() => router.push('/contact')}
-                style={{
-                  width: '260px',
-                  height: '71px',
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
-                  background: 'linear-gradient(0deg, #FFFFFF, #FFFFFF)',
-                  border: 'none',
-                  borderRadius: '40px',
-                  padding: '24px 36px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px',
-                  cursor: 'pointer',
-                  boxShadow: 'inset 1px 1px 4px 0px #FFFFFF99, inset -1px -1px 1px 0px #FFFFFF40, inset 1px 1px 1px 0px #062C9066, inset -1px -1px 1px 0px #062C9066',
-                  transition: 'transform 0.2s ease',
-                  boxSizing: 'border-box'
-                }}
-              >
-                <span style={{
-                  width: '135px',
-                  height: '23px',
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
-                  fontFamily: '"DM Sans", sans-serif',
-                  fontWeight: '600',
-                  fontSize: '18px',
-                  lineHeight: '100%',
-                  textAlign: 'center',
-                  color: '#062C90',
-                  display: 'block'
-                }}>
-                  Nous contacter
-                </span>
-              </button>
-            </div>
-
+        {/* 4. Final CTA Section Figma Absolute */}
+        <section style={{ 
+          position: 'relative',
+          width: '1440px',
+          height: '609px',
+          margin: '0 auto',
+        }}>
+          {/* Image Rect 48 */}
+          <div style={{
+            position: 'absolute',
+            width: '1290px',
+            height: '496px',
+            top: '0px', /* 2934 - 2934 */
+            left: '84px',
+            backgroundImage: 'url("/assets/images/startup01.png")', /* Fallback to existing image to avoid missing asset errors */
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            borderRadius: '24px'
+          }}>
+            {/* Keeping overlay from previous design so blue text remains readable if image is light */}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 100%)', borderRadius: '24px' }}></div>
           </div>
+
+          {/* Title */}
+          <div style={{
+            position: 'absolute',
+            width: '751px',
+            height: '230px',
+            right: '115px', /* Figma spec exact */
+            top: '207px', /* 3141 - 2934 */
+            fontFamily: '"DM Sans", sans-serif',
+            fontWeight: 700,
+            fontSize: '56px',
+            lineHeight: '66px',
+            textAlign: 'right',
+            color: '#002896',
+          }}>
+            Prets a lancer votre startup au niveau seconaire ?
+          </div>
+
+          {/* Subtitle */}
+          <div style={{
+            position: 'absolute',
+            width: '623px',
+            height: '56px',
+            left: '687px',
+            top: '365px', /* 3299 - 2934 */
+            fontFamily: '"DM Sans", sans-serif',
+            fontWeight: 400,
+            fontSize: '24px',
+            lineHeight: '26px',
+            textAlign: 'right',
+            color: '#002896',
+          }}>
+            Échangez, innovez et transformez votre vision en réussite économique.
+          </div>
+
+          {/* Action Button 1 (Primary) */}
+          <button 
+            onClick={() => router.push('/auth/login')}
+            style={{
+              position: 'absolute',
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '24px 36px',
+              gap: '10px',
+              width: '264px',
+              height: '71px',
+              left: '415px',
+              top: '538px', /* 3472 - 2934 */
+              background: 'linear-gradient(88.88deg, #062C90 50.03%, #3F95DD 98.92%)',
+              boxShadow: 'inset -1px -1px 1px rgba(6, 44, 144, 0.4), inset 1px 1px 1px rgba(6, 44, 144, 0.4), inset -1px -1px 1px rgba(255, 255, 255, 0.25), inset 1px 1px 4px rgba(255, 255, 255, 0.6)',
+              borderRadius: '40px',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <span style={{
+              width: '81px',
+              height: '23px',
+              fontFamily: '"DM Sans", sans-serif',
+              fontWeight: 600,
+              fontSize: '18px',
+              lineHeight: '23px',
+              textAlign: 'center',
+              color: '#FFFFFF',
+              flex: 'none',
+              order: 0,
+              flexGrow: 0,
+              whiteSpace: 'nowrap'
+            }}>
+              S'inscrire
+            </span>
+          </button>
+
+          {/* Action Button 2 (Secondary) */}
+          <button 
+            onClick={() => router.push('/contact')}
+            style={{
+              position: 'absolute',
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '24px 36px',
+              gap: '10px',
+              width: '260px',
+              height: '71px',
+              left: '761px',
+              top: '538px', /* 3472 - 2934 */
+              background: 'linear-gradient(0deg, #FFFFFF, #FFFFFF)',
+              boxShadow: 'inset -1px -1px 1px rgba(6, 44, 144, 0.4), inset 1px 1px 1px rgba(6, 44, 144, 0.4), inset -1px -1px 1px rgba(255, 255, 255, 0.25), inset 1px 1px 4px rgba(255, 255, 255, 0.6)',
+              borderRadius: '40px',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <span style={{
+              width: '135px',
+              height: '23px',
+              fontFamily: '"DM Sans", sans-serif',
+              fontWeight: 600,
+              fontSize: '18px',
+              lineHeight: '23px',
+              textAlign: 'center',
+              color: '#062C90',
+              flex: 'none',
+              order: 0,
+              flexGrow: 0,
+              whiteSpace: 'nowrap'
+            }}>
+              Nous contacter
+            </span>
+          </button>
         </section>
 
         {/* Global Styles */}
@@ -445,7 +665,7 @@ const StartupPage = () => {
       </main>
       <Footer />
       <DynamicScrollToTop colorSchema="gradient" />
-    </>
+    </div>
   );
 };
 

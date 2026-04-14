@@ -138,7 +138,8 @@ const TendersPage = () => {
       <Header />
       <div style={{ 
         width: '100%',
-        height: '2747px',
+        minHeight: '100vh',
+        height: 'auto',
         background: '#ffffff', 
         padding: '140px 0 80px 0', 
         fontFamily: '"DM Sans", sans-serif',

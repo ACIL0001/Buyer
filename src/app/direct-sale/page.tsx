@@ -27,7 +27,8 @@ export default function DirectSalePage() {
             <Header />
             <main className="direct-sale-page" style={{ 
               width: '100%',
-              height: '2747px', 
+              minHeight: '100vh',
+              height: 'auto', 
               background: '#FFFFFF',
               position: 'relative', 
               zIndex: 1, 

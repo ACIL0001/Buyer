@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import DashboardNavbar from './DashboardNavbar';
+import { Header } from '../header/Header';
 import DashboardSidebar from './DashboardSidebar';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const APP_BAR_MOBILE = 64;
-const APP_BAR_DESKTOP = 92;
+const APP_BAR_DESKTOP = 196;
 const DRAWER_WIDTH = 280;
 
 interface MainStyleProps {
@@ -25,7 +25,7 @@ const MainStyle = styled('main', {
   paddingBottom: theme.spacing(10),
   backgroundColor: theme.palette.background.default,
   [theme.breakpoints.up('lg')]: {
-    paddingTop: APP_BAR_DESKTOP + 24,
+    paddingTop: APP_BAR_DESKTOP,
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
   },
@@ -36,12 +36,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { isRTL } = useLanguage();
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', overflow: 'hidden' }}>
-      <DashboardNavbar onOpenSidebar={() => setOpen(true)} />
-      <DashboardSidebar isOpenSidebar={open} onCloseSidebar={() => setOpen(false)} />
-      <MainStyle isRTL={isRTL}>
-        {children}
-      </MainStyle>
+    <Box sx={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
+      <Header />
+      <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
+        <DashboardSidebar isOpenSidebar={open} onCloseSidebar={() => setOpen(false)} />
+        <MainStyle isRTL={isRTL}>
+          {children}
+        </MainStyle>
+      </Box>
     </Box>
   );
 }

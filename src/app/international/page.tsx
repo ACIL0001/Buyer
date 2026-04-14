@@ -11,12 +11,12 @@ import { motion } from 'framer-motion';
 const InternationalPage = () => {
   const { t } = useTranslation();
   const router = useRouter();
-  const [headerHeight, setHeaderHeight] = useState(104);
+  const [headerHeight, setHeaderHeight] = useState(196);
 
   useEffect(() => {
     const checkHeaderHeight = () => {
       const width = window.innerWidth;
-      let calculatedHeight = 104;
+      let calculatedHeight = 196;
       if (width <= 375) calculatedHeight = 62;
       else if (width <= 768) calculatedHeight = 65;
       else if (width <= 992) calculatedHeight = 70;
@@ -33,7 +33,7 @@ const InternationalPage = () => {
       <main style={{ 
         minHeight: '100vh', 
         background: '#ffffff',
-        paddingTop: `${headerHeight}px`,
+        paddingTop: `${headerHeight + 60}px`,
         position: 'relative',
       }}>
         
@@ -42,6 +42,7 @@ const InternationalPage = () => {
           position: 'relative', 
           width: '100%', 
           minHeight: '657px',
+          marginTop: '0px',
           display: 'flex',
           alignItems: 'center',
           overflow: 'hidden',
@@ -177,7 +178,7 @@ const InternationalPage = () => {
         <section style={{ padding: '100px 20px' }}>
           <div className="container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{
-              background: '#e6f0ff',
+              background: '#ffffff',
               padding: '60px',
               borderRadius: '0px',
               textAlign: 'center',

@@ -7,22 +7,28 @@ const Footer = () => {
 
   const headingStyle = {
     position: 'absolute',
-    fontFamily: '"DM Sans", sans-serif',
+    fontFamily: '"Inter", "DM Sans", sans-serif',
     fontStyle: 'normal',
-    fontWeight: 700,
+    fontWeight: 'normal',
+    WebkitFontSmoothing: 'antialiased',
+    MozOsxFontSmoothing: 'grayscale',
     fontSize: '20px',
     lineHeight: '20px',
-    color: '#002896'
+    color: '#002896',
+    opacity: 0.9
   };
 
   const linkStyle = {
     position: 'absolute',
-    fontFamily: '"DM Sans", sans-serif',
+    fontFamily: '"Inter", "DM Sans", sans-serif',
     fontStyle: 'normal',
-    fontWeight: 400,
+    fontWeight: 'normal',
+    WebkitFontSmoothing: 'antialiased',
+    MozOsxFontSmoothing: 'grayscale',
     fontSize: '18px',
     lineHeight: '18px',
     color: '#757575',
+    opacity: 0.85,
     textDecoration: 'none',
     textAlign: 'center',
     whiteSpace: 'nowrap'
@@ -59,12 +65,15 @@ const Footer = () => {
           height: '90px',
           left: '109.2px',
           top: '194.35px',
-          fontFamily: '"DM Sans", sans-serif',
+          fontFamily: '"Inter", "DM Sans", sans-serif',
           fontStyle: 'normal',
-          fontWeight: 400,
+          fontWeight: 'normal',
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale',
           fontSize: '18px',
           lineHeight: '30px',
           color: '#757575',
+          opacity: 0.85,
           margin: 0
         }}>
           Lorem ipsum dolor sit amet consectetur. Ultrices velit eget mattis eu enim volutpat.
@@ -111,13 +120,16 @@ const Footer = () => {
           height: '30px',
           left: '207px',
           top: '506px',
-          fontFamily: '"DM Sans", sans-serif',
+          fontFamily: '"Inter", "DM Sans", sans-serif',
           fontStyle: 'normal',
-          fontWeight: 400,
+          fontWeight: 'normal',
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale',
           fontSize: '18px',
           lineHeight: '30px',
           textAlign: 'center',
           color: '#757575',
+          opacity: 0.85,
           margin: 0
         }}>
           Copyright © 2026 Mazadclick | Touts droits réservés | <Link href="/terms-condition" style={{ color: '#757575', textDecoration: 'none' }}>Termes et conditions</Link> | <Link href="/privacy-policy" style={{ color: '#757575', textDecoration: 'none' }}>Politique de confidentialité</Link>

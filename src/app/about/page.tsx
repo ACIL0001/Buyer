@@ -9,12 +9,12 @@ import DynamicScrollToTop from "@/components/common/DynamicScrollToTop";
 
 const AboutPage = () => {
   const router = useRouter();
-  const [headerHeight, setHeaderHeight] = useState(104);
+  const [headerHeight, setHeaderHeight] = useState(196);
 
   useEffect(() => {
     const checkHeaderHeight = () => {
       const width = window.innerWidth;
-      let calculatedHeight = width <= 375 ? 62 : width <= 768 ? 65 : width <= 992 ? 70 : 104;
+      let calculatedHeight = width <= 375 ? 62 : width <= 768 ? 65 : width <= 992 ? 70 : 196;
       setHeaderHeight(calculatedHeight);
     };
     checkHeaderHeight();
@@ -24,7 +24,7 @@ const AboutPage = () => {
 
   // Updated glass style with a light grey base instead of white
   const glassStyleGrey = {
-    background: 'rgba(240, 242, 245, 0.7)', // Soft grey base
+    background: 'rgba(255, 255, 255, 0.7)', // White base
     backdropFilter: 'blur(12px)',
     WebkitBackdropFilter: 'blur(12px)',
     border: '1px solid rgba(255, 255, 255, 0.4)',
@@ -54,6 +54,7 @@ const AboutPage = () => {
                 lineHeight: '66px',
                 textAlign: 'center',
                 height: '132px',
+                marginTop: '60px',
                 marginBottom: '20px',
                 opacity: 1,
                 transform: 'rotate(0deg)',

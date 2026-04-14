@@ -41,11 +41,11 @@ export default function Home() {
     const checkMobile = () => {
       const width = window.innerWidth;
       
-      let calculatedHeight = 104; 
+      let calculatedHeight = 196; // matches the actual header inner wrapper height (1440px design)
       if (width <= 375) calculatedHeight = 62;
       else if (width <= 768) calculatedHeight = 65;
       else if (width <= 992) calculatedHeight = 70;
-      else calculatedHeight = 104;
+      else calculatedHeight = 196;
       
       const safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-top)') || '0', 10) || 0;
       setHeaderHeight(calculatedHeight + safeAreaTop);
@@ -97,20 +97,29 @@ export default function Home() {
         
         /* Flat Pill Button Styles */
         .btn-3d-blue {
+          background: #E6E6E6;
           background: linear-gradient(180deg, #1A71F6 0%, #0F4290 100%);
           color: white;
           border: none;
           border-radius: 100px;
           width: 132px;
           height: 52px;
-          font-weight: 700;
-          font-size: 15px;
+          font-weight: 900;
+          font-size: 20px;
+          line-height: 20px;
+          letter-spacing: -0.1px;
           cursor: pointer;
           transition: all 0.15s ease;
           display: flex;
           justify-content: center;
           align-items: center;
           text-decoration: none;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          box-shadow: 
+            0px 1px 8px 0px #0000001A, 
+            0px 0px 2px 0px #0000001A, 
+            0px 0px 1px 1px #999999 inset;
         }
         .btn-3d-blue:hover {
           opacity: 0.9;
@@ -122,16 +131,22 @@ export default function Home() {
 
         /* Distinct Light Grey Glassmorphism Card Hover */
         .grey-glass-card {
-          width: 100%;
-          max-width: 388px;
+          width: 388px;
           height: 356px;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          border: 1px solid;
-          border-image-source: linear-gradient(127.23deg, rgba(255, 255, 255, 0.42) 2.46%, rgba(255, 255, 255, 0.24) 97.36%);
-          border-image-slice: 1;
-          box-shadow: 0px 4px 4px 0px #00000040;
           border-radius: 24px;
+          padding: 40px 24px;
+          background: 
+            linear-gradient(127.45deg, rgba(220, 225, 235, 0.78) 2.15%, rgba(190, 195, 210, 0.28) 63.05%) padding-box,
+            linear-gradient(127.23deg, rgba(255, 255, 255, 0.45) 2.46%, rgba(255, 255, 255, 0.25) 97.36%) border-box;
+          border: 1px solid transparent;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          box-shadow: 0px 20px 40px 0px #0000001A, 0px 4px 4px 0px #00000040;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
           overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
         }
         .grey-glass-card:hover {
           transform: translateY(-5px);
@@ -153,15 +168,14 @@ export default function Home() {
               <AxiosInterceptor>
                 <Header />
                 <main style={{ 
-                  width: '1440px',
+                  width: '100%',
                   minHeight: '100vh',
                   height: 'auto',
-                  margin: '0 auto',
                   background: '#FFFFFF',
                   opacity: 1,
                   borderWidth: '1px',
                   borderStyle: 'solid',
-                  borderColor: '#f0f2f5', // Added a subtle border color to make the 1px width visible
+                  borderColor: '#f0f2f5',
                   overflowY: 'auto',
                   overflowX: 'hidden',
                   position: 'relative',
@@ -185,8 +199,7 @@ export default function Home() {
                     }}>
                       
                       {/* Ambient background blur blobs to make the glass effect visible */}
-                      <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(0, 40, 150, 0.1) 0%, transparent 70%)', filter: 'blur(40px)', zIndex: 0 }}></div>
-                      <div style={{ position: 'absolute', bottom: '-10%', right: '-5%', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 70%)', filter: 'blur(50px)', zIndex: 0 }}></div>
+
 
                       <div style={{ position: 'relative', zIndex: 2, maxWidth: '1200px', margin: '0 auto' }}>
                         {isLogged && (
@@ -207,21 +220,14 @@ export default function Home() {
                         }}>
                           
                           {/* CARD 1: Enchérir */}
-                          <div className="grey-glass-card" style={{ 
-                            /* Using a more distinct light grey gradient here */
-                            background: 'linear-gradient(135deg, rgba(226, 232, 240, 0.9) 0%, rgba(233, 236, 239, 0.7) 100%)',
-                            backdropFilter: 'blur(16px)',
-                            WebkitBackdropFilter: 'blur(16px)',
-                            borderRadius: '24px', padding: '40px 24px', 
-                            display: 'flex', flexDirection: 'column', alignItems: 'center'
-                          }}>
+                          <div className="grey-glass-card">
                             <div style={{ color: '#002896', marginBottom: '20px' }}>
                               <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M12 2v12m0-12l-4 4m4-4l4 4M20 21a4 4 0 00-4-4h-8a4 4 0 00-4 4"/>
                                 <circle cx="12" cy="11" r="3"/>
                               </svg>
                             </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '15px' }}>Enchères</h3>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '15px' }}>Enchérir</h3>
                             <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', marginBottom: '35px', minHeight: '66px' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center' }}>
                               <button onClick={() => router.push('/dashboard/auctions/create')} className="btn-3d-blue">Enchérir</button>
@@ -230,14 +236,7 @@ export default function Home() {
                           </div>
 
                           {/* CARD 2: Vente directe */}
-                          <div className="grey-glass-card" style={{ 
-                            /* Using a more distinct light grey gradient here */
-                            background: 'linear-gradient(135deg, rgba(226, 232, 240, 0.9) 0%, rgba(233, 236, 239, 0.7) 100%)',
-                            backdropFilter: 'blur(16px)',
-                            WebkitBackdropFilter: 'blur(16px)',
-                            borderRadius: '24px', padding: '40px 24px', 
-                            display: 'flex', flexDirection: 'column', alignItems: 'center'
-                          }}>
+                          <div className="grey-glass-card">
                             <div style={{ color: '#002896', marginBottom: '20px' }}>
                               <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                                 <rect x="2" y="5" width="20" height="14" rx="2"/>
@@ -253,14 +252,7 @@ export default function Home() {
                           </div>
 
                           {/* CARD 3: Soumission d'offre */}
-                          <div className="grey-glass-card" style={{ 
-                            /* Using a more distinct light grey gradient here */
-                            background: 'linear-gradient(135deg, rgba(226, 232, 240, 0.9) 0%, rgba(233, 236, 239, 0.7) 100%)',
-                            backdropFilter: 'blur(16px)',
-                            WebkitBackdropFilter: 'blur(16px)',
-                            borderRadius: '24px', padding: '40px 24px', 
-                            display: 'flex', flexDirection: 'column', alignItems: 'center'
-                          }}>
+                          <div className="grey-glass-card">
                             <div style={{ color: '#002896', marginBottom: '20px' }}>
                               <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>

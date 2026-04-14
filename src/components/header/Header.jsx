@@ -12,6 +12,7 @@ import { getSellerUrl, getFrontendUrl } from '@/config';
 import app from '@/config';
 import CategoryMegaMenu from './CategoryMegaMenu';
 import { useSettingsStore } from "@/contexts/settingsStore";
+import { FaRegBell } from 'react-icons/fa';
 import { normalizeImageUrl } from '@/utils/url';
 import { useQuery } from '@tanstack/react-query';
 import Fuse from 'fuse.js';
@@ -274,9 +275,8 @@ export const Header = () => {
       <div 
         className="header-content-wrapper"
         style={{
-          width: '1438px',
+          width: '1440px',
           height: '196px',
-          left: '2px',
           position: 'relative',
           background: '#FFFFFF',
           opacity: 1,
@@ -432,8 +432,8 @@ export const Header = () => {
                   position: 'absolute',
                   width: '84px',
                   height: '18px',
-                  top: '74px',
-                  left: '1065px',
+                  top: '72px',
+                  left: '1050px',
                   opacity: 1,
                   transform: 'rotate(0deg)',
                   fontFamily: '"Inter", sans-serif',
@@ -453,8 +453,8 @@ export const Header = () => {
                   position: 'absolute',
                   width: '133px',
                   height: '18px',
-                  top: '75px',
-                  left: '1141px',
+                  top: '73px',
+                  left: '1126px',
                   opacity: 1,
                   transform: 'rotate(0deg)',
                   fontFamily: '"Inter", sans-serif',
@@ -475,17 +475,35 @@ export const Header = () => {
         {isClient && isReady && (
           <div ref={accountDropdownRef}>
             {isLogged ? (
-              <div style={{ position: 'absolute', top: '42px', right: '42px', display: 'flex', alignItems: 'center', gap: '15px', pointerEvents: 'auto' }}>
-                <NotificationBellStable variant="header" />
-                <ChatNotifications variant="header" />
-                <button 
-                  onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
-                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
-                >
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: '2px solid #002896' }}>
-                    <img src={getAvatarUrl() || '/assets/img/avatar.png'} alt="user" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                </button>
+              <>
+                <NotificationBellStable 
+                  variant="header" 
+                  customIcon={
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16ZM16 17H8V11C8 8.52 9.51 6.5 12 6.5C14.49 6.5 16 8.52 16 11V17Z" fill="#002896"/>
+                    </svg>
+                  }
+                  customButtonStyles={{ position: 'absolute', width: '30px', height: '30px', left: '1272px', top: '68px', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', zIndex: 100, pointerEvents: 'auto' }}
+                />
+                <ChatNotifications 
+                  variant="header" 
+                  customIcon={
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="2" y="3" width="20" height="18" stroke="#002896" strokeWidth="2" strokeLinejoin="miter"/>
+                      <path d="M2 6L12 13L22 6" stroke="#002896" strokeWidth="2" strokeLinejoin="miter"/>
+                    </svg>
+                  }
+                  customButtonStyles={{ position: 'absolute', width: '26px', height: '26px', left: '1325px', top: '70px', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', zIndex: 100, pointerEvents: 'auto' }}
+                />
+                <div style={{ position: 'absolute', width: '32px', height: '32px', left: '1373px', top: '67px', zIndex: 100, pointerEvents: 'auto' }}>
+                  <button 
+                    onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
+                    style={{ width: '100%', height: '100%', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
+                  >
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 5C13.66 5 15 6.34 15 8C15 9.66 13.66 11 12 11C10.34 11 9 9.66 9 8C9 6.34 10.34 5 12 5ZM12 19.2C9.5 19.2 7.29 17.92 6 15.98C6.03 13.99 10 12.9 12 12.9C13.99 12.9 17.97 13.99 18 15.98C16.71 17.92 14.5 19.2 12 19.2Z" fill="#002896"/>
+                    </svg>
+                  </button>
 
                 {isAccountDropdownOpen && (
                   <div style={{ position: 'absolute', top: 'calc(100% + 15px)', right: 0, background: 'white', borderRadius: '20px', boxShadow: '0 10px 40px rgba(0,0,0,0.12)', width: '260px', zIndex: 9999, border: '1px solid #f0f2f5', overflow: 'hidden', padding: '10px' }}>
@@ -498,7 +516,8 @@ export const Header = () => {
                     <button onClick={handleLogout} style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: 'transparent', border: 'none', color: '#ef4444', fontSize: '14px', cursor: 'pointer', borderRadius: '12px', marginTop: '4px' }} onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Déconnexion</button>
                   </div>
                 )}
-              </div>
+                </div>
+              </>
             ) : (
               <button 
                 onClick={() => router.push('/auth/login')}

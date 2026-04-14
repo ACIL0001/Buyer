@@ -323,18 +323,15 @@ export default function CreateTenderPage() {
                                                     </TextField>
                                                 </Grid>
                                                 <Grid size={{ xs: 12, sm: 6 }}>
-                                                    {formik.values.evaluationType === 'MOINS_DISANT' ? (
-                                                        <>
-                                                            <Typography sx={fieldLabelStyle}>Budget (DA)</Typography>
-                                                            <TextField fullWidth type="number" placeholder="Optionnel" {...formik.getFieldProps('price')} sx={inputStyle} />
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Typography sx={fieldLabelStyle}>Quantité</Typography>
-                                                            <TextField fullWidth placeholder="Ex: 100 unités / 5 lots" {...formik.getFieldProps('quantity')} sx={inputStyle} />
-                                                        </>
-                                                    )}
+                                                    <Typography sx={fieldLabelStyle}>Quantité</Typography>
+                                                    <TextField fullWidth placeholder="Ex: 100 unités / 5 lots" {...formik.getFieldProps('quantity')} sx={inputStyle} />
                                                 </Grid>
+                                                {formik.values.evaluationType === 'MOINS_DISANT' && (
+                                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                                        <Typography sx={fieldLabelStyle}>Budget (DA)</Typography>
+                                                        <TextField fullWidth type="number" placeholder="Optionnel" {...formik.getFieldProps('price')} sx={inputStyle} />
+                                                    </Grid>
+                                                )}
                                                 <Grid size={{ xs: 12, sm: 6 }}>
                                                     <Typography sx={fieldLabelStyle}>Wilaya</Typography>
                                                     <TextField select fullWidth {...formik.getFieldProps('wilaya')} sx={inputStyle} SelectProps={{ displayEmpty: true }}>

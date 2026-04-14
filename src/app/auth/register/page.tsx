@@ -3,8 +3,6 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Typography, Box, Link } from '@mui/material';
-import { useTranslation } from 'react-i18next';
-import { useSettingsStore } from "@/contexts/settingsStore";
 import NextLink from 'next/link';
 import RegisterForm from '../../../sections/auth/register/RegisterForm';
 import useAuth from '../../../hooks/useAuth';
@@ -12,8 +10,6 @@ import useAuth from '../../../hooks/useAuth';
 // ----------------------------------------------------------------------
 
 export default function Register() {
-  const { t } = useTranslation();
-  const { logoUrl } = useSettingsStore();
   const { isLogged } = useAuth();
   const router = useRouter();
 
@@ -28,218 +24,253 @@ export default function Register() {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        width: '100%',
-        position: 'relative',
+        width: '100vw',
+        height: '100vh',
         display: 'flex',
-        alignItems: 'center',
+        flexDirection: 'row',
+        backgroundColor: '#FFFFFF',
         overflow: 'hidden',
-        backgroundColor: '#020b1a',
+        position: 'relative',
       }}
     >
-      {/* ── Geometric Polygon Background ── */}
+      {/* ── Left: Background Image Panel (701px) ── */}
       <Box
-        component="svg"
-        viewBox="0 0 1440 900"
-        xmlns="http://www.w3.org/2000/svg"
-        preserveAspectRatio="xMidYMid slice"
         sx={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
+          width: '701px',
+          minWidth: '701px',
           height: '100%',
-          zIndex: 0,
+          position: 'relative',
+          overflow: 'hidden',
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
-        <defs>
-          <radialGradient id="glow1" cx="30%" cy="50%" r="60%">
-            <stop offset="0%" stopColor="#0a3a8a" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#020b1a" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="glow2" cx="75%" cy="35%" r="40%">
-            <stop offset="0%" stopColor="#1565c0" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#020b1a" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-        <rect width="1440" height="900" fill="#020b1a" />
-        <rect width="1440" height="900" fill="url(#glow1)" />
-        <rect width="1440" height="900" fill="url(#glow2)" />
+        {/* Background image — Figma: width 701, height 848, angle 0 deg, opacity 1 */}
+        <Box
+          component="img"
+          src="/assets/images/login background.jpg"
+          alt="Background"
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%) rotate(0deg)',
+            width: '701px',
+            height: '848px',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            opacity: 1,
+            display: 'block',
+          }}
+        />
+        {/* Subtle shadow under text for legibility */}
+        <Box
+          sx={{
+            position: 'absolute',
+            left: '137px',
+            top: '250px',
+            width: '548px',
+            height: '320px',
+            background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.32) 0%, transparent 75%)',
+            zIndex: 1,
+            pointerEvents: 'none',
+          }}
+        />
 
-        <polygon points="0,0 260,0 120,180" fill="#071428" opacity="0.9"/>
-        <polygon points="260,0 500,0 380,220 120,180" fill="#0a1e3d" opacity="0.85"/>
-        <polygon points="500,0 740,0 620,260 380,220" fill="#061225" opacity="0.9"/>
-        <polygon points="740,0 980,0 900,200 620,260" fill="#0c1f40" opacity="0.8"/>
-        <polygon points="980,0 1200,0 1100,160 900,200" fill="#071530" opacity="0.9"/>
-        <polygon points="1200,0 1440,0 1440,200 1100,160" fill="#0a1c38" opacity="0.85"/>
-        <polygon points="0,0 120,180 0,320" fill="#040f22" opacity="0.95"/>
-        <polygon points="0,320 120,180 280,380 100,520" fill="#071428" opacity="0.8"/>
-        <polygon points="120,180 380,220 320,400 280,380" fill="#0d2248" opacity="0.75"/>
-        <polygon points="380,220 620,260 560,440 320,400" fill="#061225" opacity="0.85"/>
-        <polygon points="620,260 900,200 860,420 560,440" fill="#091a38" opacity="0.8"/>
-        <polygon points="900,200 1100,160 1060,380 860,420" fill="#0b2040" opacity="0.75"/>
-        <polygon points="1100,160 1440,200 1440,400 1060,380" fill="#071530" opacity="0.85"/>
-        <polygon points="0,320 100,520 0,600" fill="#040d1f" opacity="0.9"/>
-        <polygon points="100,520 280,380 360,560 200,680" fill="#071428" opacity="0.8"/>
-        <polygon points="280,380 560,440 500,620 360,560" fill="#0a1e3d" opacity="0.85"/>
-        <polygon points="560,440 860,420 800,600 500,620" fill="#061530" opacity="0.8"/>
-        <polygon points="860,420 1060,380 1020,560 800,600" fill="#0c2244" opacity="0.75"/>
-        <polygon points="1060,380 1440,400 1440,580 1020,560" fill="#071428" opacity="0.85"/>
-        <polygon points="0,600 200,680 160,800 0,900" fill="#040f22" opacity="0.9"/>
-        <polygon points="200,680 360,560 480,720 320,900" fill="#071428" opacity="0.8"/>
-        <polygon points="360,560 500,620 440,800 320,900" fill="#0a1c38" opacity="0.85"/>
-        <polygon points="500,620 800,600 740,800 440,800" fill="#061225" opacity="0.9"/>
-        <polygon points="800,600 1020,560 960,760 740,800" fill="#091a38" opacity="0.8"/>
-        <polygon points="1020,560 1440,580 1440,900 960,760" fill="#071428" opacity="0.85"/>
-        <polygon points="0,900 160,800 320,900" fill="#040d1f" opacity="0.9"/>
-        <polygon points="320,900 440,800 740,800 600,900" fill="#061225" opacity="0.85"/>
-        <polygon points="600,900 740,800 960,760 1440,900" fill="#071428" opacity="0.8"/>
+        {/* Welcome Text — Figma: position absolute, width 508px, height 280px, left 157px, top 270px */}
+        <Typography
+          sx={{
+            position: 'absolute',
+            width: '508px',
+            height: '280px',
+            left: '157px',
+            top: '270px',
+            zIndex: 2,
+            fontFamily: '"DM Sans", sans-serif',
+            fontStyle: 'normal',
+            fontWeight: 400,
+            fontSize: '40px',
+            lineHeight: '140%',
+            letterSpacing: '-0.02em',
+            color: '#FFFFFF',
+            whiteSpace: 'pre-line',
+          }}
+        >
+          {`Bienvenue\nCreez votre compte\nMazadclick\net commencez a\nvendre en toute simplicité`}
+        </Typography>
       </Box>
 
-      {/* ── Left: Welcome Text ── */}
+      {/* ── Right: White Form Area ── */}
       <Box
         sx={{
           flex: 1,
-          display: { xs: 'none', lg: 'flex' },
+          height: '100%',
+          backgroundColor: '#FFFFFF',
+          display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          pl: { lg: 10, xl: 14 },
-          pr: 4,
-          zIndex: 1,
-        }}
-      >
-        <Typography
-          sx={{
-            color: '#ffffff',
-            fontSize: { lg: '2rem', xl: '2.6rem' },
-            fontWeight: 300,
-            lineHeight: 1.5,
-            fontFamily: "'Inter', 'DM Sans', sans-serif",
-          }}
-        >
-          Bienvenue{'\n'}
-          Creez votre compte{' '}
-          <Box component="span" sx={{ fontWeight: 800 }}>Mazadclick</Box>
-          {'\n'}et commencez a{'\n'}vendre en toute simplicité
-        </Typography>
-      </Box>
-
-      {/* ── Right: Glass Form Card ── */}
-      <Box
-        sx={{
-          width: { xs: '100%', sm: '580px', md: '640px', lg: '680px' },
-          mx: { xs: 1.5, sm: 'auto', lg: 0 },
-          mr: { lg: 6, xl: 10 },
-          my: { xs: 2, sm: 3 },
-          zIndex: 2,
-          backgroundColor: 'rgba(10, 25, 58, 0.65)',
-          backdropFilter: 'blur(28px)',
-          WebkitBackdropFilter: 'blur(28px)',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: '20px',
-          p: { xs: 2.5, sm: 3.5 },
-          boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
+          alignItems: 'flex-start',
+          position: 'relative',
           overflowY: 'auto',
-          maxHeight: { xs: '95vh', sm: '96vh' },
+          px: 0,
         }}
       >
-        {/* Logo */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2.5 }}>
-          <NextLink href="/" passHref>
-            <Box component="img"
-              src={logoUrl || "/assets/img/logo.png"}
-              alt="MazadClick"
-              sx={{ height: '36px', objectFit: 'contain', filter: 'brightness(0) invert(1)', opacity: 0.9 }}
-            />
-          </NextLink>
-        </Box>
-
-        {/* Title */}
-        <Typography sx={{ color: '#ffffff', fontWeight: 700, fontSize: '1.5rem', mb: 0.4, fontFamily: "'Inter', sans-serif" }}>
-          Creer un compte
-        </Typography>
-        <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem', mb: 3 }}>
-          Entreprise ou indépendant
-        </Typography>
-
-        {/* Form override to dark theme */}
+        {/* Inner container anchored from left edge of right panel */}
+        {/* Figma: form group left: 839px from page edge → 839 - 701 = 138px from right panel edge */}
         <Box
           sx={{
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: 'rgba(255,255,255,0.06)',
-              borderRadius: '10px',
-              color: '#fff',
-              '& fieldset': { borderColor: 'rgba(255,255,255,0.15)' },
-              '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.35)' },
-              '&.Mui-focused fieldset': { borderColor: '#1a6ef6', borderWidth: '1.5px' },
-            },
-            '& .MuiInputLabel-root': { color: 'rgba(255,255,255,0.5)' },
-            '& .MuiInputLabel-root.Mui-focused': { color: '#6fa8ff' },
-            '& .MuiInputBase-input': { color: '#fff' },
-            '& .MuiInputBase-input::placeholder': { color: 'rgba(255,255,255,0.3)' },
-            '& .MuiInputAdornment-root svg': { color: 'rgba(255,255,255,0.4)' },
-            '& .MuiIconButton-root': { color: 'rgba(255,255,255,0.5)' },
-            '& .MuiFormHelperText-root': { color: '#ff8a80' },
-            '& .MuiTypography-root:not(.MuiAlert-message)': { color: 'rgba(255,255,255,0.75)' },
-            '& .MuiTypography-subtitle2': { color: 'rgba(255,255,255,0.45)' },
-            '& .MuiCheckbox-root': { color: 'rgba(255,255,255,0.4)' },
-            '& .MuiCheckbox-root.Mui-checked': { color: '#1a6ef6' },
-            '& .MuiFormControlLabel-label .MuiTypography-root': { color: 'rgba(255,255,255,0.6)' },
-            '& .MuiAlert-root': {
-              backgroundColor: 'rgba(211,47,47,0.15)',
-              color: '#ff8a80',
-              border: '1px solid rgba(211,47,47,0.3)',
-              borderRadius: '10px',
-            },
-            '& .MuiAvatar-root': {
-              backgroundColor: 'rgba(26,110,246,0.2)',
-              border: '2px dashed rgba(255,255,255,0.2)',
-            },
-            '& .MuiAutocomplete-tag': {
-              backgroundColor: 'rgba(26,110,246,0.25)',
-              color: '#fff',
-            },
-            '& .MuiAutocomplete-endAdornment .MuiSvgIcon-root': { color: 'rgba(255,255,255,0.4)' },
-            // Terms box
-            '& > .MuiBox-root > .MuiStack-root > .MuiBox-root:has(.MuiFormControlLabel-root)': {
-              border: '1px solid rgba(255,255,255,0.1)',
-              backgroundColor: 'rgba(255,255,255,0.04)',
-              borderRadius: '10px',
-            },
-            '& .MuiLoadingButton-root': {
-              background: 'linear-gradient(135deg, #1a6ef6 0%, #0d47a1 100%)',
-              borderRadius: '10px',
-              fontSize: '1rem',
-              fontWeight: 700,
-              py: 1.4,
-              textTransform: 'none',
-              boxShadow: '0 8px 24px rgba(26,110,246,0.35)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #2979ff 0%, #1565c0 100%)',
-                boxShadow: '0 12px 32px rgba(26,110,246,0.5)',
-                transform: 'translateY(-1px)',
-              },
-            },
-            '& .MuiLink-root': { color: '#5b9eff' },
+            width: '527.79px',
+            ml: '138px',
+            py: '20px',
           }}
         >
-          <RegisterForm />
-        </Box>
-
-        {/* Footer link */}
-        <Typography
-          variant="body2"
-          align="center"
-          sx={{ mt: 2.5, color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem' }}
-        >
-          Vous avez déjà un compte ?{' '}
-          <Link
-            component={NextLink}
-            href="/auth/login"
-            sx={{ color: '#5b9eff', fontWeight: 600, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+          {/* Title Group — top: 157px from page → top of right section */}
+          <Box
+            sx={{
+              width: '164px',
+              mt: '24px',
+              mb: '32px', // gap between title and first field row (245.91 - 157 - 47.64 ≈ 41px)
+            }}
           >
-            Se connecter
-          </Link>
-        </Typography>
+            <Typography
+              sx={{
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 600,
+                fontSize: '19.7568px',
+                lineHeight: '140%',
+                letterSpacing: '-0.02em',
+                color: '#757575',
+                width: '164px',
+                mb: '5.64px',
+              }}
+            >
+              Creer un compte
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 400,
+                fontSize: '9.87838px',
+                lineHeight: '140%',
+                letterSpacing: '-0.02em',
+                color: '#757575',
+                width: '126px',
+              }}
+            >
+              Entreprise ou indépendant
+            </Typography>
+          </Box>
+
+          {/* RegisterForm — all logic/validation/API preserved */}
+          <Box
+            sx={{
+              width: '527.79px',
+              // Override MUI defaults to match the Figma white-bg style
+              '& .MuiOutlinedInput-root': {
+                height: '33.87px',
+                borderRadius: '3.52799px',
+                backgroundColor: '#FFFFFF',
+                '& fieldset': {
+                  border: '0.705598px solid #757575',
+                  borderRadius: '3.52799px',
+                },
+                '&:hover fieldset': { borderColor: '#002896' },
+                '&.Mui-focused fieldset': { borderColor: '#002896', borderWidth: '0.705598px' },
+              },
+              '& .MuiInputBase-input': {
+                fontFamily: '"Poppins", sans-serif',
+                fontSize: '9.87838px',
+                color: '#2D3748',
+                padding: '0 12px',
+              },
+              '& .MuiInputBase-input::placeholder': { color: '#757575', opacity: 1 },
+              '& .MuiInputLabel-root': {
+                fontFamily: '"Poppins", sans-serif',
+                fontSize: '9.87838px',
+                color: '#757575',
+                lineHeight: '140%',
+                letterSpacing: '-0.02em',
+              },
+              '& .MuiInputLabel-root.Mui-focused': { color: '#002896' },
+              '& .MuiFormHelperText-root': { fontSize: '8px', color: '#d32f2f' },
+              '& .MuiLoadingButton-root': {
+                width: '252.6px',
+                height: '33.87px',
+                borderRadius: '3.52799px',
+                background: '#002896',
+                color: '#FFFFFF',
+                textTransform: 'none',
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 600,
+                fontSize: '9.87838px',
+                lineHeight: '15px',
+                letterSpacing: '-0.02em',
+                boxShadow: 'none',
+                '&:hover': { background: '#001b69', boxShadow: 'none' },
+              },
+              '& .MuiCheckbox-root': { p: 0, color: '#757575' },
+              '& .MuiFormControlLabel-label': {
+                fontFamily: '"Poppins", sans-serif',
+                fontSize: '9.87838px',
+                color: '#757575',
+                letterSpacing: '-0.02em',
+              },
+              '& .MuiLink-root': {
+                fontFamily: '"Poppins", sans-serif',
+                fontSize: '9.87838px',
+                color: '#007AFF',
+                letterSpacing: '-0.02em',
+              },
+              '& .MuiAlert-root': {
+                borderRadius: '3.52799px',
+                fontSize: '9px',
+              },
+
+            }}
+          >
+            <RegisterForm />
+          </Box>
+
+          {/* Footer: "Vous avez déjà un compte ?" */}
+          {/* Figma: left: 1030.92px from page → 1030.92 - 701 = 329.92px from right panel left edge */}
+          {/* Simplified: centered under the form */}
+          <Typography
+            sx={{
+              mt: '28px',
+              width: '202px',
+              height: '14px',
+              fontFamily: '"Poppins", sans-serif',
+              fontWeight: 400,
+              fontSize: '9.87838px',
+              lineHeight: '140%',
+              letterSpacing: '-0.02em',
+              color: '#757575',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              ml: '191.92px', // 1030.92 - 839 = 191.92px from form left
+            }}
+          >
+            Vous avez déjà un compte ?{' '}
+            <Link
+              component={NextLink}
+              href="/auth/login"
+              sx={{
+                color: '#007AFF',
+                fontWeight: 400,
+                textDecoration: 'none',
+                fontSize: '9.87838px',
+                fontFamily: '"Poppins", sans-serif',
+                letterSpacing: '-0.02em',
+                '&:hover': { textDecoration: 'underline' },
+              }}
+            >
+              Se connecter
+            </Link>
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );

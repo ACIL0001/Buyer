@@ -10,7 +10,7 @@
     "Fira Mono", "Droid Sans Mono", "Courier New", monospace;
 
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
+  --background-start-rgb: 255, 255, 255;
   --background-end-rgb: 255, 255, 255;
 
   --primary-glow: conic-gradient(from 180deg at 50% 50%,
@@ -736,6 +736,13 @@ footer {
   width: 100% !important;
 }
 
+/* ── Fixed Figma Canvas ── */
+.desktop {
+  width: 1440px !important;
+  min-width: 1440px !important;
+  max-width: 1440px !important;
+}
+
 /* Fix any potential issues with positioned elements */
 .absolute,
 .fixed,
@@ -860,3 +867,21 @@ select {
 .highlight-comment {
   animation: highlight-fade 3s ease-out forwards;
 }
+
+/* Specific Page Spacing & Width Fixes */
+.jsx-6c0afad7b29c488f {
+  margin-top: 60px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.jsx-3cfa9929b7101d34 {
+  margin-top: 60px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+

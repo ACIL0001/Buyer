@@ -114,18 +114,23 @@ const Home1LiveTenders = () => {
         textAlign: 'center',
         overflow: 'visible' /* Prevent clipping */
       }}>
-        <motion.div 
-          animate={{ rotate: [0, 360] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          style={{ position: 'absolute', top: '0%', left: '10%', width: '800px', height: '600px', background: 'radial-gradient(circle, rgba(0, 40, 150, 0.04) 0%, transparent 80%)', filter: 'blur(120px)', zIndex: 0 }}
-        />
+
         <div style={{ position: 'relative', zIndex: 1, display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
           <motion.h2 
             initial={{ opacity: 0, scale: 1.1 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ type: "spring", stiffness: 100 }}
-            style={{ color: '#002896', fontSize: 'clamp(26px, 4.5vw, 38px)', fontWeight: '900', margin: 0, letterSpacing: '-1px', background: 'linear-gradient(135deg, #002896 0%, #2b65f0 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+            style={{ 
+              color: '#002896', 
+              fontFamily: '"Inter", sans-serif',
+              fontSize: '40px', 
+              fontWeight: '800', 
+              margin: 0, 
+              letterSpacing: '0px', 
+              lineHeight: '100%',
+              textAlign: 'center'
+            }}
           >
             Consultez les projets et soumissionnez
           </motion.h2>
@@ -200,30 +205,30 @@ const Home1LiveTenders = () => {
                         }}>
                           {tender.title || 'Nom Produit'}
                         </h4>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ 
-                            minWidth: '46px',
-                            height: '29px',
-                            fontFamily: 'Inter, sans-serif',
-                            fontWeight: '700', 
-                            fontSize: '24px', 
-                            lineHeight: '100%',
-                            color: '#062C90',
-                            verticalAlign: 'middle'
-                          }}>
-                            {(tender.budget || tender.maxBudget || tender.price) ? `${Number(tender.budget || tender.maxBudget || tender.price).toLocaleString()}` : "Offre"}
-                          </span>
-                          {(tender.budget || tender.maxBudget || tender.price) && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span style={{ 
+                              minWidth: '46px',
+                              height: '29px',
                               fontFamily: 'Inter, sans-serif',
-                              fontSize: '14px', 
                               fontWeight: '700', 
+                              fontSize: '24px', 
+                              lineHeight: '100%',
                               color: '#062C90',
-                              marginLeft: '2px'
-                            }}>DA</span>
-                          )}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: '8px' }}>
+                              verticalAlign: 'middle'
+                            }}>
+                              {(tender.budget || tender.maxBudget || tender.price) ? `${Number(tender.budget || tender.maxBudget || tender.price).toLocaleString()}` : "Offre"}
+                            </span>
+                            {(tender.budget || tender.maxBudget || tender.price) && (
+                              <span style={{ 
+                                fontFamily: 'Inter, sans-serif',
+                                fontSize: '14px', 
+                                fontWeight: '700', 
+                                color: '#062C90',
+                                marginLeft: '2px'
+                              }}>DA</span>
+                            )}
+                          </div>
                           <span style={{ 
                             width: '101px',
                             height: '16px',

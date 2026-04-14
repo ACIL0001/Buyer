@@ -162,26 +162,33 @@ const AdsSlider: React.FC = () => {
           max-width: 100vw;
           position: relative;
           overflow: hidden;
+          margin-top: 68px;
+          opacity: 1;
         }
 
         .ads-swiper {
           width: 100%;
-          height: ${isMobile ? '280px' : '500px'};
+          height: ${isMobile ? '280px' : '640px'};
         }
 
         .ad-slide {
           width: 100%;
-          height: 100%;
+          height: 640px;
           position: relative;
           cursor: pointer;
           overflow: hidden;
         }
 
         .ad-image {
+          position: absolute;
+          top: 0;
+          left: 0;
           width: 100%;
-          height: 100%;
+          height: 640px;
           object-fit: cover;
           object-position: center;
+          opacity: 1;
+          transform: rotate(0deg);
           transition: transform 0.6s ease;
         }
 
@@ -287,7 +294,7 @@ const AdsSlider: React.FC = () => {
           speed={700}
           keyboard={{ enabled: true, onlyInViewport: true }}
           className="ads-swiper"
-          style={{ height: isMobile ? '280px' : '640px' }}
+          style={{ width: '100%', height: isMobile ? '280px' : '640px', opacity: 1 }}
         >
           {ads.map((ad) => (
             <SwiperSlide key={ad._id} onClick={() => handleAdClick(ad)}>

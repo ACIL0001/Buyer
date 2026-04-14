@@ -85,17 +85,22 @@ const Home1LiveDirectSales = () => {
         textAlign: 'center',
         overflow: 'visible' /* Prevent scale clipping */
       }}>
-        <motion.div 
-          animate={{ scale: [1, 1.1, 1], x: [0, 20, 0] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          style={{ position: 'absolute', top: '10%', right: '20%', width: '600px', height: '400px', background: 'radial-gradient(circle, rgba(14, 165, 233, 0.06) 0%, transparent 70%)', filter: 'blur(100px)', zIndex: 0 }}
-        />
+
         <div style={{ position: 'relative', zIndex: 1, display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
           <motion.h2 
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            style={{ color: '#002896', fontSize: 'clamp(26px, 4.5vw, 38px)', fontWeight: '900', margin: 0, letterSpacing: '-1.5px', background: 'linear-gradient(135deg, #002896 0%, #0ea5e9 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+            style={{ 
+              color: '#002896', 
+              fontFamily: '"Inter", sans-serif',
+              fontSize: '40px', 
+              fontWeight: '800', 
+              margin: 0, 
+              letterSpacing: '0px', 
+              lineHeight: '100%',
+              textAlign: 'center'
+            }}
           >
             Marchés et ventes en cours
           </motion.h2>
@@ -170,28 +175,28 @@ const Home1LiveDirectSales = () => {
                         }}>
                           {sale.title || 'Nom Produit'}
                         </h4>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ 
-                            minWidth: '46px',
-                            height: '29px',
-                            fontFamily: 'Inter, sans-serif',
-                            fontWeight: '700', 
-                            fontSize: '24px', 
-                            lineHeight: '100%',
-                            color: '#062C90',
-                            verticalAlign: 'middle'
-                          }}>
-                           {Number(sale.price || 0).toLocaleString()}
-                          </span>
-                          <span style={{ 
-                            fontFamily: 'Inter, sans-serif',
-                            fontSize: '14px', 
-                            fontWeight: '700', 
-                            color: '#062C90',
-                            marginLeft: '2px'
-                          }}>DA</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ 
+                              minWidth: '46px',
+                              height: '29px',
+                              fontFamily: 'Inter, sans-serif',
+                              fontWeight: '700', 
+                              fontSize: '24px', 
+                              lineHeight: '100%',
+                              color: '#062C90',
+                              verticalAlign: 'middle'
+                            }}>
+                             {Number(sale.price || 0).toLocaleString()}
+                            </span>
+                            <span style={{ 
+                              fontFamily: 'Inter, sans-serif',
+                              fontSize: '14px', 
+                              fontWeight: '700', 
+                              color: '#062C90',
+                              marginLeft: '2px'
+                            }}>DA</span>
+                          </div>
                           <span style={{ 
                             width: '101px',
                             height: '16px',

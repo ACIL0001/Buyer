@@ -116,17 +116,22 @@ const Home1LiveAuction = () => {
         textAlign: 'center',
         overflow: 'visible' /* Changed to visible to prevent pulse clipping */
       }}>
-        <motion.div 
-          animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          style={{ position: 'absolute', top: '20%', left: '30%', width: '600px', height: '400px', background: 'radial-gradient(circle, rgba(0, 40, 150, 0.08) 0%, transparent 70%)', filter: 'blur(100px)', zIndex: 0 }}
-        />
+
         <div style={{ position: 'relative', zIndex: 1, display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
           <motion.h2 
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            style={{ color: '#002896', fontSize: 'clamp(26px, 4.5vw, 38px)', fontWeight: '900', margin: 0, letterSpacing: '-1.5px', lineHeight: 1, background: 'linear-gradient(135deg, #002896 0%, #0ea5e9 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+            style={{ 
+              color: '#002896', 
+              fontFamily: '"Inter", sans-serif',
+              fontSize: '40px', 
+              fontWeight: '800', 
+              margin: 0, 
+              letterSpacing: '0px', 
+              lineHeight: '100%',
+              textAlign: 'center'
+            }}
           >
             Enchères à la une
           </motion.h2>

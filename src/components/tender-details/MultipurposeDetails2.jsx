@@ -649,7 +649,7 @@ const MultipurposeDetails2 = () => {
       )}
 
       <style jsx>{`
-        .redesign-v2-container { max-width: 1440px; margin: 0 auto; padding: 120px 20px 100px; }
+        .redesign-v2-container { max-width: 1440px; margin: 0 auto; padding: 236px 20px 100px; }
         .product-hero-section { 
           display: grid; 
           grid-template-columns: 96px 632px 400px; 

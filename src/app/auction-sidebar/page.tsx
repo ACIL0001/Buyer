@@ -207,7 +207,8 @@ const AuctionSidebarPage = () => {
               <Header />
               <main style={{ 
                 width: '100%',
-                height: '2747px', 
+                minHeight: '100vh',
+                height: 'auto', 
                 backgroundColor: '#FFFFFF', 
                 paddingTop: 'clamp(70px, 8vw, 100px)',
                 opacity: 1,

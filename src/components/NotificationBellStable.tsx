@@ -19,9 +19,11 @@ import FeedbackModal from '@/components/notifications/FeedbackModal';
 interface NotificationBellStableProps {
   variant?: 'header' | 'sidebar';
   onOpenChange?: (isOpen: boolean) => void;
+  customIcon?: React.ReactNode;
+  customButtonStyles?: React.CSSProperties;
 }
 
-const NotificationBellStable = memo(function NotificationBellStable({ variant = 'header', onOpenChange }: NotificationBellStableProps) {
+const NotificationBellStable = memo(function NotificationBellStable({ variant = 'header', onOpenChange, customIcon, customButtonStyles }: NotificationBellStableProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(1024);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
@@ -644,7 +646,7 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
       <button
         ref={buttonRef}
         onClick={toggleDropdown}
-        style={{
+        style={customButtonStyles ? customButtonStyles : {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: isOpen ? '#f1f1f1' : '#f8f9fa',
           border: 'none', borderRadius: '50%',
@@ -655,7 +657,7 @@ const NotificationBellStable = memo(function NotificationBellStable({ variant = 
         }}
         title="Notifications"
       >
-        <BsBell size={variant === 'header' ? 20 : 24} color={isOpen ? '#0063b1' : '#666'} />
+        {customIcon ? customIcon : <BsBell size={variant === 'header' ? 20 : 24} color={isOpen ? '#0063b1' : '#666'} />}
         {totalUnreadCount > 0 && (
           <span style={{
             position: 'absolute', top: '-8px', right: '-8px',

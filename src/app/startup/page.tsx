@@ -186,13 +186,13 @@ const StartupPage = () => {
               <div style={{
                 position: 'absolute',
                 width: '520px',
-                height: '126px',
+                height: 'auto',
                 left: '91px',
                 top: '166px', /* 1360px - 1194px */
                 fontFamily: '"DM Sans", sans-serif',
                 fontWeight: 400,
                 fontSize: '24px',
-                lineHeight: '18px',
+                lineHeight: '28px',
                 color: '#757575',
               }}>
                 <p style={{ margin: 0 }}>
@@ -247,13 +247,13 @@ const StartupPage = () => {
               <div style={{
                 position: 'absolute',
                 width: '520px',
-                height: '126px',
+                height: 'auto',
                 left: '827px', /* Mirrored offset */
                 top: '166px', /* Mirrored offset */
                 fontFamily: '"DM Sans", sans-serif',
                 fontWeight: 400,
                 fontSize: '24px',
-                lineHeight: '18px',
+                lineHeight: '28px',
                 color: '#757575',
               }}>
                 <p style={{ margin: 0 }}>
@@ -277,13 +277,13 @@ const StartupPage = () => {
               <div style={{
                 position: 'absolute',
                 width: '520px',
-                height: '126px',
+                height: 'auto',
                 left: '91px', /* Mirrored offset */
                 top: '166px', /* Mirrored offset */
                 fontFamily: '"DM Sans", sans-serif',
                 fontWeight: 400,
                 fontSize: '24px',
-                lineHeight: '18px',
+                lineHeight: '28px',
                 color: '#757575',
               }}>
                 <p style={{ margin: 0 }}>

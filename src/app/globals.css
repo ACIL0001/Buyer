@@ -879,9 +879,5 @@ select {
   padding-right: 0 !important;
 }
 
-.jsx-3cfa9929b7101d34 {
-  margin-top: 60px !important;
-  width: 100% !important;
-  max-width: 100% !important;
-}
+/* Removed conflicting global rule to allow specific element positioning */
 

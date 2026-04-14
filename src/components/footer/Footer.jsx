@@ -9,7 +9,7 @@ const Footer = () => {
     position: 'absolute',
     fontFamily: '"Inter", "DM Sans", sans-serif',
     fontStyle: 'normal',
-    fontWeight: 'normal',
+    fontWeight: 700,
     WebkitFontSmoothing: 'antialiased',
     MozOsxFontSmoothing: 'grayscale',
     fontSize: '20px',

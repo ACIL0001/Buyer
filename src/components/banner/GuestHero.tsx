@@ -13,6 +13,7 @@ const GuestHero = () => {
       height: '640px',
       position: 'relative',
       background: '#f8f9fb',
+      marginTop: '60px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',

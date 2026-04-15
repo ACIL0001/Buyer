@@ -105,7 +105,7 @@ const Home1LiveTenders = () => {
       prevEl: '.tender-prev',
     },
     breakpoints: {
-      0: { slidesPerView: "auto" }
+      0: { slidesPerView: "auto" as const }
     },
   }), []);
 

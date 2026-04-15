@@ -74,7 +74,7 @@ const Home1LiveDirectSales = () => {
       prevEl: '.direct-sale-prev',
     },
     breakpoints: {
-      0: { slidesPerView: "auto" }
+      0: { slidesPerView: "auto" as const }
     },
   }), []);
 

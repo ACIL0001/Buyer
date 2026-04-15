@@ -107,7 +107,7 @@ const Home1LiveAuction = () => {
       prevEl: '.auction-prev',
     },
     breakpoints: {
-      0: { slidesPerView: "auto" }
+      0: { slidesPerView: "auto" as const }
     },
   }), []);
 

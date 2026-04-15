@@ -659,18 +659,7 @@ export default function CreateDirectSalePage() {
                                         >
                                             {isSubmitting ? 'En cours...' : t('createDirectSale.publishSale', 'Publier Produit')}
                                         </Button>
-                                        <Button
-                                            fullWidth
-                                            variant="contained"
-                                            size="large"
-                                            sx={{
-                                                ...actionButtonStyle,
-                                                backgroundColor: '#001e75', 
-                                                '&:hover': { backgroundColor: '#001450', transform: 'translateY(-2px)' },
-                                            }}
-                                        >
-                                            {t('createDirectSale.saveDraft', 'Enregistrer produit')}
-                                        </Button>
+
                                     </Stack>
                                 </Stack>
                             </Grid>

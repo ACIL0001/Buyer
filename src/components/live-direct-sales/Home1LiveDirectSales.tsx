@@ -65,9 +65,16 @@ const Home1LiveDirectSales = () => {
   }, [allDirectSales]);
 
   const settings = useMemo(() => ({
-    slidesPerView: "auto" as const, speed: 800, spaceBetween: 20,
+    slidesPerView: "auto" as const, 
+    speed: 800, 
+    spaceBetween: 20,
+    loop: true,
+    navigation: {
+      nextEl: '.direct-sale-next',
+      prevEl: '.direct-sale-prev',
+    },
     breakpoints: {
-      280: { slidesPerView: 1 }, 576: { slidesPerView: 2 }, 992: { slidesPerView: 3 }, 1200: { slidesPerView: 4 }
+      0: { slidesPerView: "auto" }
     },
   }), []);
 
@@ -111,114 +118,164 @@ const Home1LiveDirectSales = () => {
       <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1400px', margin: '0 auto', padding: '0 20px', overflow: 'visible' }}>
         {directSales.length > 0 ? (
           <div className="direct-sale-carousel-container" style={{ position: 'relative', overflow: 'visible' }}>
-            <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper direct-sale-slider" style={{ padding: '30px 10px', margin: '-30px -10px', overflow: 'visible' }}>
-              {directSales.map((sale: any) => {
-                const companyName = sale.owner?.entreprise || sale.owner?.companyName || sale.owner?.firstName || 'Nom Entreprise';
-                const availableQuantity = sale.quantity > 0 ? (sale.quantity - (sale.soldQuantity || 0)) : 'Illimité';
-                
-                return (
-                  <SwiperSlide key={sale.id} style={{ overflow: 'visible' }}>
-                    <div 
-                      key={sale.id}
-                      style={{ 
-                        width: '295px', 
-                        height: '383px',
-                        cursor: 'pointer',
-                        position: 'relative',
-                        zIndex: 1,
-                        borderRadius: '20px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        overflow: 'hidden'
-                      }}
-                      onClick={() => router.push(`/direct-sale/${sale.id}`)}
-                    >
-                      <div style={{ width: '295px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
-                        <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
-                          <ShareButton 
-                            type="directSale" 
-                            id={sale.id} 
-                            title={sale.title} 
-                            description={sale.description} 
-                            imageUrl={getDirectSaleImageUrl(sale)} 
+            <div style={{ position: 'relative' }}>
+              <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper direct-sale-slider" style={{ padding: '30px 10px', margin: '-30px -10px', overflow: 'visible' }}>
+                {directSales.map((sale: any) => {
+                  const companyName = sale.owner?.entreprise || sale.owner?.companyName || sale.owner?.firstName || 'Nom Entreprise';
+                  const availableQuantity = sale.quantity > 0 ? (sale.quantity - (sale.soldQuantity || 0)) : 'Illimité';
+                  
+                  return (
+                    <SwiperSlide key={sale.id} style={{ overflow: 'visible', width: '295px', minWidth: '295px', maxWidth: '295px' }}>
+                      <div 
+                        key={sale.id}
+                        style={{ 
+                          width: '295px',
+                          minWidth: '295px',
+                          maxWidth: '295px',
+                          height: '383px',
+                          minHeight: '383px',
+                          maxHeight: '383px',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          zIndex: 1,
+                          borderRadius: '20px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          overflow: 'hidden'
+                        }}
+                        onClick={() => router.push(`/direct-sale/${sale.id}`)}
+                      >
+                        <div style={{ width: '295px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                          <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
+                            <ShareButton 
+                              type="directSale" 
+                              id={sale.id} 
+                              title={sale.title} 
+                              description={sale.description} 
+                              imageUrl={getDirectSaleImageUrl(sale)} 
+                            />
+                          </div>
+                          <img 
+                            src={getDirectSaleImageUrl(sale)} 
+                            alt={sale.title} 
+                            style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
+                            onError={(e) => (e.currentTarget.src = DEFAULT_DIRECT_SALE_IMAGE)} 
                           />
                         </div>
-                        <img 
-                          src={getDirectSaleImageUrl(sale)} 
-                          alt={sale.title} 
-                          style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
-                          onError={(e) => (e.currentTarget.src = DEFAULT_DIRECT_SALE_IMAGE)} 
-                        />
-                      </div>
-                      <div style={{ 
-                        padding: '12px 10px', 
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between'
-                      }}>
-                        <h4 style={{ 
-                          width: '114px',
-                          height: '23px',
-                          fontFamily: 'Roboto, sans-serif',
-                          fontWeight: '700', 
-                          fontSize: '20px', 
-                          lineHeight: '100%',
-                          letterSpacing: '0px',
-                          verticalAlign: 'middle',
-                          color: '#062C90', 
-                          margin: '0 0 6px 0', 
-                          whiteSpace: 'nowrap', 
-                          overflow: 'hidden', 
-                          textOverflow: 'ellipsis',
-                          opacity: 1
+                        <div style={{ 
+                          padding: '12px 10px', 
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between'
                         }}>
-                          {sale.title || 'Nom Produit'}
-                        </h4>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <span style={{ 
-                              minWidth: '46px',
-                              height: '29px',
-                              fontFamily: 'Inter, sans-serif',
-                              fontWeight: '700', 
-                              fontSize: '24px', 
-                              lineHeight: '100%',
-                              color: '#062C90',
-                              verticalAlign: 'middle'
-                            }}>
-                             {Number(sale.price || 0).toLocaleString()}
-                            </span>
-                            <span style={{ 
-                              fontFamily: 'Inter, sans-serif',
-                              fontSize: '14px', 
-                              fontWeight: '700', 
-                              color: '#062C90',
-                              marginLeft: '2px'
-                            }}>DA</span>
-                          </div>
-                          <span style={{ 
-                            width: '101px',
-                            height: '16px',
+                          <h4 style={{ 
+                            width: '114px',
+                            height: '23px',
                             fontFamily: 'Roboto, sans-serif',
-                            fontSize: '14px', 
-                            fontWeight: '400', 
+                            fontWeight: '700', 
+                            fontSize: '20px', 
                             lineHeight: '100%',
+                            letterSpacing: '0px',
+                            verticalAlign: 'middle',
                             color: '#062C90', 
+                            margin: '0 0 6px 0', 
                             whiteSpace: 'nowrap', 
                             overflow: 'hidden', 
-                            textOverflow: 'ellipsis', 
-                            textAlign: 'right' 
+                            textOverflow: 'ellipsis',
+                            opacity: 1
                           }}>
-                            {companyName}
-                          </span>
+                            {sale.title || 'Nom Produit'}
+                          </h4>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{ 
+                                minWidth: '46px',
+                                height: '29px',
+                                fontFamily: 'Inter, sans-serif',
+                                fontWeight: '700', 
+                                fontSize: '24px', 
+                                lineHeight: '100%',
+                                color: '#062C90',
+                                verticalAlign: 'middle'
+                              }}>
+                               {Number(sale.price || 0).toLocaleString()}
+                              </span>
+                              <span style={{ 
+                                fontFamily: 'Inter, sans-serif',
+                                fontSize: '14px', 
+                                fontWeight: '700', 
+                                color: '#062C90',
+                                marginLeft: '2px'
+                              }}>DA</span>
+                            </div>
+                            <span style={{ 
+                              width: '101px',
+                              height: '16px',
+                              fontFamily: 'Roboto, sans-serif',
+                              fontSize: '14px', 
+                              fontWeight: '400', 
+                              lineHeight: '100%',
+                              color: '#062C90', 
+                              whiteSpace: 'nowrap', 
+                              overflow: 'hidden', 
+                              textOverflow: 'ellipsis', 
+                              textAlign: 'right' 
+                            }}>
+                              {companyName}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </SwiperSlide>
-                );
-              })}
-            </Swiper>
+                    </SwiperSlide>
+                  );
+                })}
+              </Swiper>
+  
+              {/* Custom Navigation Buttons - Oval Style */}
+              <div className="direct-sale-prev" style={{
+                position: 'absolute',
+                top: '180px',
+                left: '-40px',
+                transform: 'translateY(-50%)',
+                width: '60px',
+                height: '40px',
+                backgroundColor: 'white',
+                borderRadius: '25px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                cursor: 'pointer',
+                zIndex: 100,
+                color: '#002896',
+                border: '1px solid #f0f0f0',
+                transition: 'all 0.3s ease'
+              }}>
+                <i className="bi bi-chevron-left" style={{ fontSize: '20px' }}></i>
+              </div>
+              <div className="direct-sale-next" style={{
+                position: 'absolute',
+                top: '180px',
+                right: '-40px',
+                transform: 'translateY(-50%)',
+                width: '60px',
+                height: '40px',
+                backgroundColor: 'white',
+                borderRadius: '25px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                cursor: 'pointer',
+                zIndex: 100,
+                color: '#002896',
+                border: '1px solid #f0f0f0',
+                transition: 'all 0.3s ease'
+              }}>
+                <i className="bi bi-chevron-right" style={{ fontSize: '20px' }}></i>
+              </div>
+            </div>
             
             <div style={{ textAlign: 'center', marginTop: '60px', position: 'relative', zIndex: 10 }}>
               <Link href="/direct-sale" style={{ display: 'inline-flex', width: '93px', height: '28px', alignItems: 'center', justifyContent: 'center', color: '#002896', textDecoration: 'none', fontSize: '24px', fontWeight: '700', fontFamily: 'Roboto, sans-serif', lineHeight: '100%', whiteSpace: 'nowrap', position: 'relative', zIndex: 20, cursor: 'pointer', transition: 'all 0.3s ease' }}>

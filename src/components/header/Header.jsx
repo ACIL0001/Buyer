@@ -602,12 +602,12 @@ export const Header = () => {
             {/* Nav Links */}
             <nav>
               {[
-                { name: t('navigation.home') || 'Accueil', path: '/', left: '449px', width: '55px' },
-                { name: t('navigation.howToBid') || 'Comment ça marche', path: '/how-to-bid', left: '519px', width: '157px' },
-                { name: 'Startup', path: '/startup', left: '691px', width: '57px' },
-                { name: 'International', path: '/international', left: '763px', width: '95px' },
-                { name: 'Nos plans', path: '/plans', left: '873px', width: '75px' },
-                { name: 'A propos', path: '/about', left: '963px', width: '68px' },
+                { name: t('navigation.home') || 'Accueil', path: '/', left: '449px' },
+                { name: t('navigation.howToBid') || 'Comment ça marche', path: '/how-to-bid', left: '519px' },
+                { name: 'Startup', path: '/startup', left: '691px' },
+                { name: 'International', path: '/international', left: '763px' },
+                { name: 'Nos plans', path: '/plans', left: '873px' },
+                { name: 'A propos', path: '/about', left: '963px' },
               ].map((item, index) => (
                 <Link 
                   key={index} href={item.path} 
@@ -615,8 +615,9 @@ export const Header = () => {
                     position: 'absolute', 
                     top: '152px', 
                     left: item.left, 
-                    width: item.width, 
-                    height: '18px', 
+                    width: 'auto', 
+                    height: 'auto', 
+                    whiteSpace: 'nowrap',
                     opacity: 1,
                     transform: 'rotate(0deg)',
                     fontFamily: '"Inter", sans-serif', 

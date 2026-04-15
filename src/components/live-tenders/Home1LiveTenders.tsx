@@ -96,9 +96,16 @@ const Home1LiveTenders = () => {
   }, [liveTenders]);
 
   const settings = useMemo(() => ({
-    slidesPerView: "auto" as const, speed: 800, spaceBetween: 20,
+    slidesPerView: "auto" as const, 
+    speed: 800, 
+    spaceBetween: 20,
+    loop: true,
+    navigation: {
+      nextEl: '.tender-next',
+      prevEl: '.tender-prev',
+    },
     breakpoints: {
-      280: { slidesPerView: 1 }, 576: { slidesPerView: 2 }, 992: { slidesPerView: 3 }, 1200: { slidesPerView: 4 }
+      0: { slidesPerView: "auto" }
     },
   }), []);
 
@@ -141,131 +148,180 @@ const Home1LiveTenders = () => {
       <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1400px', margin: '0 auto', padding: '0 20px', overflow: 'visible' }}>
         {liveTenders.length > 0 ? (
           <div className="tender-carousel-container" style={{ position: 'relative', overflow: 'visible' }}>
-            <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper tender-slider" style={{ padding: '30px 10px', margin: '-30px -10px', overflow: 'visible' }}>
-              {liveTenders.map((tender: any) => {
-                const timer = timers[tender.id] || { days: "0", hours: "0", minutes: "0", formattedEnd: "", hasEnded: false };
-                const companyName = tender.hidden ? 'Anonyme' : (tender.owner?.entreprise || tender.owner?.companyName || tender.owner?.firstName || 'Nom annonceur');
-                
-                return (
-                  <SwiperSlide key={tender.id} style={{ overflow: 'visible' }}>
-                    <div 
-                      key={tender.id}
-                      style={{ 
-                        width: '295px', 
-                        height: '383px',
-                        cursor: 'pointer',
-                        position: 'relative',
-                        zIndex: 1,
-                        borderRadius: '20px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        overflow: 'hidden'
-                      }}
-                      onClick={() => router.push(`/tender-details/${tender.id}`)}
-                    >
-                      <div style={{ width: '295px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
-                        <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
-                          <ShareButton 
-                            type="tender" 
-                            id={tender.id} 
-                            title={tender.title} 
-                            description={tender.description} 
-                            imageUrl={getTenderImageUrl(tender)} 
+            <div style={{ position: 'relative' }}>
+              <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper tender-slider" style={{ padding: '30px 10px', margin: '-30px -10px', overflow: 'visible' }}>
+                {liveTenders.map((tender: any) => {
+                  const timer = timers[tender.id] || { days: "0", hours: "0", minutes: "0", formattedEnd: "", hasEnded: false };
+                  const companyName = tender.hidden ? 'Anonyme' : (tender.owner?.entreprise || tender.owner?.companyName || tender.owner?.firstName || 'Nom annonceur');
+                  
+                  return (
+                    <SwiperSlide key={tender.id} style={{ overflow: 'visible', width: '295px', minWidth: '295px', maxWidth: '295px' }}>
+                      <div 
+                        key={tender.id}
+                        style={{ 
+                          width: '295px',
+                          minWidth: '295px',
+                          maxWidth: '295px',
+                          height: '383px',
+                          minHeight: '383px',
+                          maxHeight: '383px',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          zIndex: 1,
+                          borderRadius: '20px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          overflow: 'hidden'
+                        }}
+                        onClick={() => router.push(`/tender-details/${tender.id}`)}
+                      >
+                        <div style={{ width: '295px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                          <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
+                            <ShareButton 
+                              type="tender" 
+                              id={tender.id} 
+                              title={tender.title} 
+                              description={tender.description} 
+                              imageUrl={getTenderImageUrl(tender)} 
+                            />
+                          </div>
+                          <img 
+                            src={getTenderImageUrl(tender)} 
+                            alt={tender.title} 
+                            style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
+                            onError={(e) => (e.currentTarget.src = DEFAULT_TENDER_IMAGE)} 
                           />
                         </div>
-                        <img 
-                          src={getTenderImageUrl(tender)} 
-                          alt={tender.title} 
-                          style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
-                          onError={(e) => (e.currentTarget.src = DEFAULT_TENDER_IMAGE)} 
-                        />
-                      </div>
-                      <div style={{ 
-                        padding: '12px 10px', 
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between'
-                      }}>
-                        <h4 style={{ 
-                          width: '114px',
-                          height: '23px',
-                          fontFamily: 'Roboto, sans-serif',
-                          fontWeight: '700', 
-                          fontSize: '20px', 
-                          lineHeight: '100%',
-                          letterSpacing: '0px',
-                          verticalAlign: 'middle',
-                          color: '#062C90', 
-                          margin: '0 0 6px 0', 
-                          whiteSpace: 'nowrap', 
-                          overflow: 'hidden', 
-                          textOverflow: 'ellipsis',
-                          opacity: 1
+                        <div style={{ 
+                          padding: '8px 10px', 
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between'
                         }}>
-                          {tender.title || 'Nom Produit'}
-                        </h4>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <span style={{ 
-                              minWidth: '46px',
-                              height: '29px',
-                              fontFamily: 'Inter, sans-serif',
-                              fontWeight: '700', 
-                              fontSize: '24px', 
-                              lineHeight: '100%',
-                              color: '#062C90',
-                              verticalAlign: 'middle'
-                            }}>
-                              {(tender.budget || tender.maxBudget || tender.price) ? `${Number(tender.budget || tender.maxBudget || tender.price).toLocaleString()}` : "Offre"}
-                            </span>
-                            {(tender.budget || tender.maxBudget || tender.price) && (
-                              <span style={{ 
-                                fontFamily: 'Inter, sans-serif',
-                                fontSize: '14px', 
-                                fontWeight: '700', 
-                                color: '#062C90',
-                                marginLeft: '2px'
-                              }}>DA</span>
-                            )}
-                          </div>
-                          <span style={{ 
-                            width: '101px',
-                            height: '16px',
+                          <h4 style={{ 
+                            width: '114px',
+                            height: '23px',
                             fontFamily: 'Roboto, sans-serif',
-                            fontSize: '14px', 
-                            fontWeight: '400', 
-                            lineHeight: '100%',
-                            color: '#062C90', 
-                            whiteSpace: 'nowrap', 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis', 
-                            textAlign: 'right' 
-                          }}>
-                            {companyName}
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ 
-                            fontFamily: 'Roboto, sans-serif',
-                            fontSize: '14px', 
-                            fontWeight: '400', 
+                            fontWeight: '700', 
+                            fontSize: '20px', 
                             lineHeight: '100%',
                             letterSpacing: '0px',
                             verticalAlign: 'middle',
-                            color: '#002896',
-                            width: '213px',
-                            height: '16px'
+                            color: '#062C90', 
+                            margin: '0 0 4px 0', 
+                            whiteSpace: 'nowrap', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis',
+                            opacity: 1
                           }}>
-                            {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j${timer.hours}h ${timer.formattedEnd})`}
-                          </span>
+                            {tender.title || 'Nom Produit'}
+                          </h4>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{ 
+                                minWidth: '46px',
+                                height: '29px',
+                                fontFamily: 'Inter, sans-serif',
+                                fontWeight: '700', 
+                                fontSize: '24px', 
+                                lineHeight: '100%',
+                                color: '#062C90',
+                                verticalAlign: 'middle'
+                              }}>
+                                {(tender.budget || tender.maxBudget || tender.price) ? `${Number(tender.budget || tender.maxBudget || tender.price).toLocaleString()}` : "Offre"}
+                              </span>
+                              {(tender.budget || tender.maxBudget || tender.price) && (
+                                <span style={{ 
+                                  fontFamily: 'Inter, sans-serif',
+                                  fontSize: '14px', 
+                                  fontWeight: '700', 
+                                  color: '#062C90',
+                                  marginLeft: '2px'
+                                }}>DA</span>
+                              )}
+                            </div>
+                            <span style={{ 
+                              width: '101px',
+                              height: '16px',
+                              fontFamily: 'Roboto, sans-serif',
+                              fontSize: '14px', 
+                              fontWeight: '400', 
+                              lineHeight: '100%',
+                              color: '#062C90', 
+                              whiteSpace: 'nowrap', 
+                              overflow: 'hidden', 
+                              textOverflow: 'ellipsis', 
+                              textAlign: 'right' 
+                            }}>
+                              {companyName}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ 
+                              fontFamily: 'Roboto, sans-serif',
+                              fontSize: '14px', 
+                              fontWeight: '400', 
+                              lineHeight: '1.2',
+                              letterSpacing: '0px',
+                              verticalAlign: 'middle',
+                              color: '#002896',
+                              width: '100%'
+                            }}>
+                              {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j${timer.hours}h (${timer.formattedEnd})`}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </SwiperSlide>
-                );
-              })}
-            </Swiper>
+                    </SwiperSlide>
+                  );
+                })}
+              </Swiper>
+  
+              {/* Custom Navigation Buttons - Oval Style */}
+              <div className="tender-prev" style={{
+                position: 'absolute',
+                top: '180px',
+                left: '-40px',
+                transform: 'translateY(-50%)',
+                width: '60px',
+                height: '40px',
+                backgroundColor: 'white',
+                borderRadius: '25px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                cursor: 'pointer',
+                zIndex: 100,
+                color: '#002896',
+                border: '1px solid #f0f0f0',
+                transition: 'all 0.3s ease'
+              }}>
+                <i className="bi bi-chevron-left" style={{ fontSize: '20px' }}></i>
+              </div>
+              <div className="tender-next" style={{
+                position: 'absolute',
+                top: '180px',
+                right: '-40px',
+                transform: 'translateY(-50%)',
+                width: '60px',
+                height: '40px',
+                backgroundColor: 'white',
+                borderRadius: '25px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                cursor: 'pointer',
+                zIndex: 100,
+                color: '#002896',
+                border: '1px solid #f0f0f0',
+                transition: 'all 0.3s ease'
+              }}>
+                <i className="bi bi-chevron-right" style={{ fontSize: '20px' }}></i>
+              </div>
+            </div>
             
             <div style={{ textAlign: 'center', marginTop: '60px' }}>
               <Link href="/tenders" style={{ display: 'inline-flex', width: '93px', height: '28px', alignItems: 'center', justifyContent: 'center', color: '#002896', textDecoration: 'none', fontSize: '24px', fontWeight: '700', fontFamily: 'Roboto, sans-serif', lineHeight: '100%', whiteSpace: 'nowrap', transition: 'all 0.3s ease' }}>

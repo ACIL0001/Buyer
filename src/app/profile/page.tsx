@@ -1960,6 +1960,24 @@ function ProfilePage() {
                                                         </div>
 
                                                         <div className="modern-form-field">
+                                                            <label htmlFor="email">{t("profile.personalInfo.email") || "Email"}</label>
+                                                            <div className="input-with-icon">
+                                                                <input
+                                                                    type="email"
+                                                                    id="email"
+                                                                    name="email"
+                                                                    value={formData.email}
+                                                                    onChange={handleInputChange}
+                                                                    disabled={!isEditing}
+                                                                    required
+                                                                />
+                                                                <div className="modern-input-icon">
+                                                                    <i className="bi bi-envelope"></i>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="modern-form-field">
                                                             <label htmlFor="wilaya">{t("profile.wilaya") || "Wilaya"}</label>
                                                             <div className="input-with-icon">
                                                                 <select

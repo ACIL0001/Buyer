@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query'
 import PageSkeleton from '@/components/skeletons/PageSkeleton'
 import Header from '@/components/header/Header';
 import Footer from '@/components/footer/FooterWithErrorBoundary';
+import ShareButton from "@/components/common/ShareButton";
 
 const DEFAULT_DIRECT_SALE_IMAGE = "/assets/images/logo-white.png";
 
@@ -165,7 +166,7 @@ const MultipurposeDirectSaleSidebar = () => {
           </div>
         </div>
 
-        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', display: 'flex', gap: '60px' }}>
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', display: 'flex', gap: '40px' }}>
           
           {/* Sidebar Filter - Glassmorphism Restyle */}
           <aside style={{ width: '231px', flexShrink: 0 }}>
@@ -255,92 +256,123 @@ const MultipurposeDirectSaleSidebar = () => {
 
           {/* Grid Content */}
           <div style={{ flex: 1 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px', rowGap: '60px', justifyItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 284px)', gap: '25px', rowGap: '40px', justifyContent: 'center' }}>
               {currentData.length > 0 ? currentData.map((sale: any, i) => {
                 const companyName = sale.owner?.entreprise || sale.owner?.firstName || 'Nom entreprise';
                 const type = (sale.type || sale.tenderType)?.toUpperCase();
                 const isProd = type === 'PRODUCT';
 
                 return (
-                  <div key={sale.id || i} style={{ cursor: 'pointer', width: '295px', margin: '0 auto', transition: 'transform 0.3s' }} onClick={() => sale.id && router.push(`/direct-sale/${sale.id}`)} onMouseOver={e => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}>
-                    <div style={{ 
-                      borderRadius: '20px', 
-                      overflow: 'hidden', 
-                      width: '295px',
-                      height: '295px', 
-                      marginBottom: '20px',
-                      boxShadow: 'none', 
-                      background: '#eee',
-                      transition: 'all 0.3s',
-                      opacity: 1
+                  <div 
+                    key={sale.id || i}
+                    style={{ 
+                      width: '284px',
+                      minWidth: '284px',
+                      maxWidth: '284px',
+                      height: '383px',
+                      minHeight: '383px',
+                      maxHeight: '383px',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      zIndex: 1,
+                      borderRadius: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      overflow: 'hidden',
+                      transition: 'transform 0.3s'
                     }}
-                    >
-                      <img src={getDirectSaleImageUrl(sale)} alt={sale.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => e.currentTarget.src = DEFAULT_DIRECT_SALE_IMAGE} />
+                    onMouseOver={e => e.currentTarget.style.transform = 'translateY(-10px)'} 
+                    onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+                    onClick={() => sale.id && router.push(`/direct-sale/${sale.id}`)}
+                  >
+                    <div style={{ width: '284px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
+                        <ShareButton 
+                          type="directSale" 
+                          id={sale.id} 
+                          title={sale.title} 
+                          description={sale.description} 
+                          imageUrl={getDirectSaleImageUrl(sale)} 
+                        />
+                      </div>
+                      <img 
+                        src={getDirectSaleImageUrl(sale)} 
+                        alt={sale.title} 
+                        style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
+                        onError={(e) => (e.currentTarget.src = DEFAULT_DIRECT_SALE_IMAGE)} 
+                      />
                     </div>
-                    <div style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <h3 style={{ 
-                        width: '114px',
-                        height: '23px',
-                        fontFamily: 'Roboto, sans-serif',
-                        fontWeight: '700', 
-                        fontSize: '20px', 
-                        lineHeight: '100%',
-                        letterSpacing: '0px',
-                        verticalAlign: 'middle',
-                        color: '#062C90', 
-                        margin: '0 0 6px 0', 
-                        whiteSpace: 'nowrap', 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis',
-                        opacity: 1
-                      }}>
-                        {sale.title || 'Nom Produit'}
-                      </h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ 
-                            width: 'auto',
-                            minWidth: '46px',
-                            height: '29px',
-                            fontFamily: 'Inter, sans-serif',
+                        <div style={{ 
+                          padding: '12px 10px', 
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          position: 'relative'
+                        }}>
+                          <h4 style={{ 
+                            width: '281px',
+                            height: '23px',
+                            fontFamily: 'Roboto, sans-serif',
                             fontWeight: '700', 
-                            fontSize: '24px', 
+                            fontSize: '20px', 
                             lineHeight: '100%',
                             letterSpacing: '0px',
                             verticalAlign: 'middle',
-                            color: '#062C90',
+                            color: '#002896', 
+                            margin: '0 0 6px 0', 
+                            whiteSpace: 'nowrap', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis',
                             opacity: 1
                           }}>
-                            {Number(sale.price || 0).toLocaleString()}
-                          </span>
-                          <span style={{ 
-                            fontFamily: 'Inter, sans-serif',
-                            fontSize: '14px', 
-                            fontWeight: '700', 
-                            color: '#062C90',
-                            marginLeft: '2px'
-                          }}>DA</span>
+                            {sale.title || 'Nom Produit'}
+                          </h4>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{ 
+                                width: 'auto',
+                                height: '29px',
+                                fontFamily: 'Inter, sans-serif',
+                                fontWeight: '700', 
+                                fontSize: '24px', 
+                                lineHeight: '29px',
+                                color: '#002896',
+                                display: 'flex',
+                                alignItems: 'center'
+                              }}>
+                               {Number(sale.price || 0).toLocaleString()}
+                              </span>
+                              <span style={{ 
+                                fontFamily: 'Inter, sans-serif',
+                                fontSize: '14px', 
+                                fontWeight: '700', 
+                                color: '#002896',
+                                marginLeft: '2px',
+                                display: 'flex',
+                                alignItems: 'center'
+                              }}>DA</span>
+                            </div>
+                            <span style={{ 
+                              width: '101px',
+                              height: '16px',
+                              fontFamily: 'Roboto, sans-serif',
+                              fontSize: '14px', 
+                              fontWeight: '400', 
+                              lineHeight: '16px',
+                              color: '#002896', 
+                              display: 'flex',
+                              alignItems: 'center',
+                              whiteSpace: 'nowrap', 
+                              overflow: 'hidden', 
+                              textOverflow: 'ellipsis', 
+                              textAlign: 'right',
+                              justifyContent: 'flex-end'
+                            }}>
+                              {companyName}
+                            </span>
+                          </div>
                         </div>
-                        <span style={{ 
-                          width: '101px',
-                          height: '16px',
-                          fontFamily: 'Roboto, sans-serif',
-                          fontWeight: '400', 
-                          fontSize: '14px', 
-                          lineHeight: '100%',
-                          letterSpacing: '0px',
-                          verticalAlign: 'middle',
-                          color: '#062C90', 
-                          whiteSpace: 'nowrap', 
-                          overflow: 'hidden', 
-                          textOverflow: 'ellipsis', 
-                          textAlign: 'right',
-                          opacity: 1
-                        }}>
-                          {companyName}
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 );
               }) : (

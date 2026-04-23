@@ -3,7 +3,6 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Typography, Box, Link } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
 import NextLink from 'next/link';
 import LoginForm from '../../../sections/auth/login/LoginForm';
 import useAuth from '../../../hooks/useAuth';
@@ -31,163 +30,167 @@ export default function Login() {
   return (
     <Box
       sx={{
-        width: '100%',
-        minHeight: '100vh',
+        width: '100vw',
+        height: '100vh',
         display: 'flex',
-        flexDirection: { xs: 'column', md: 'row' },
+        flexDirection: 'row',
         backgroundColor: '#FFFFFF',
+        overflow: 'hidden',
+        position: 'relative',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
       }}
     >
-      {/* ── Left Section: Background Image ── */}
-      <Box
-        sx={{
-          flex: 1,
-          display: { xs: 'none', md: 'flex' },
-          position: 'relative',
-          backgroundImage: 'url("/assets/images/login background.jpg")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          alignItems: 'center',
-          justifyContent: 'center',
-          p: 4
-        }}
-      >
-        <Typography
+      <Box sx={{ position: 'relative', width: '1438px', height: '848px', backgroundColor: '#FFFFFF', display: 'flex', flexDirection: 'row' }}>
+        
+        {/* ── Left Section: Background Image (701px) ── */}
+        <Box
           sx={{
-            width: '100%',
-            maxWidth: '508px',
-            fontFamily: '"DM Sans", sans-serif',
-            fontWeight: 400,
-            fontSize: { md: '32px', lg: '40px' },
-            lineHeight: '140%',
-            letterSpacing: '-0.02em',
-            color: '#FFFFFF',
-            textAlign: 'left',
-            zIndex: 1,
-          }}
-        >
-          Content de vous retrouver !
-        </Typography>
-      </Box>
-
-      {/* ── Right Section: Login Form area ── */}
-      <Box 
-        sx={{ 
-          flex: 1,
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          backgroundColor: '#FFFFFF',
-          px: { xs: 3, md: 4 },
-          // Use height-based logic for all screen widths
-          justifyContent: 'flex-start',
-          pt: '244px', 
-          
-          '@media (max-height: 830px)': {
-            pt: '140px'
-          },
-          '@media (max-height: 700px)': {
-            pt: '40px',
-            justifyContent: 'center'
-          },
-          overflowY: 'auto',
-          minHeight: '100vh'
-        }}
-      >
-        {/* Form Group container */}
-        <Box 
-          sx={{ 
-            width: '100%',
-            maxWidth: '400px', // Responsive best practice
+            width: '701px',
+            minWidth: '701px',
+            height: '100%',
+            position: 'relative',
+            overflow: 'hidden',
+            flexShrink: 0,
             display: 'flex',
-            flexDirection: 'column'
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          {/* Heading Group */}
-          <Box sx={{ mb: '32px' }}>
+          <Box
+            component="img"
+            src="/assets/images/login background.jpg"
+            alt="Background"
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%) rotate(0deg)',
+              width: '701px',
+              height: '848px',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              opacity: 1,
+              display: 'block',
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              left: '137px',
+              top: '250px',
+              width: '548px',
+              height: '320px',
+              background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.32) 0%, transparent 75%)',
+              zIndex: 1,
+              pointerEvents: 'none',
+            }}
+          />
+          <Typography
+            sx={{
+              position: 'absolute',
+              width: '508px',
+              height: '56px',
+              left: '97px',
+              top: '398px',
+              zIndex: 2,
+              fontFamily: '"Poppins", sans-serif',
+              fontStyle: 'normal',
+              fontWeight: 400,
+              fontSize: '40px',
+              lineHeight: '140%',
+              letterSpacing: '-0.02em', // Equivalent to -2%
+              color: '#FFFFFF',
+              opacity: 1,
+            }}
+          >
+            Content de vous retrouver !
+          </Typography>
+        </Box>
+
+        {/* ── Right Section: Absolute Form Box ── */}
+        <Box sx={{ flex: 1, position: 'relative', backgroundColor: '#FFFFFF' }}>
+          
+          {/* Header Texts */}
+          <Box sx={{ position: 'absolute', left: '230px', top: '198px', width: '178px', height: '70px' }}>
             <Typography 
-              sx={{ 
-                width: '128px',
-                height: '28px',
-                color: 'rgba(117, 117, 117, 1)', 
-                fontWeight: 600, 
-                fontSize: '19.76px', 
-                fontFamily: '"Poppins", sans-serif',
-                lineHeight: '140%',
-                letterSpacing: '-0.02em',
-                mb: '5.64px'
-              }}
+               sx={{ 
+                 position: 'absolute',
+                 left: '0%',
+                 top: '0%',
+                 fontFamily: '"Poppins", sans-serif',
+                 fontWeight: 600,
+                 fontSize: '24px',
+                 lineHeight: '140%',
+                 letterSpacing: '-0.02em',
+                 color: '#757575',
+               }}
             >
               Se connecter
             </Typography>
             <Typography 
-              sx={{ 
-                width: '125px',
-                height: '14px',
-                color: 'rgba(117, 117, 117, 1)', 
-                fontSize: '9.88px', 
-                fontWeight: 400,
-                fontFamily: '"Poppins", sans-serif',
-                lineHeight: '140%',
-                letterSpacing: '-0.02em',
-              }}
+               sx={{ 
+                 position: 'absolute',
+                 left: '0%',
+                 bottom: '0%',
+                 fontFamily: '"Poppins", sans-serif',
+                 fontWeight: 400,
+                 fontSize: '14px',
+                 lineHeight: '140%',
+                 letterSpacing: '-0.02em',
+                 color: '#757575',
+               }}
             >
               Heureux de vous retrouver
             </Typography>
           </Box>
 
           {/* Form */}
-          <Box sx={{ width: '100%' }}>
+          <Box sx={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}>
             <LoginForm />
           </Box>
 
-          {/* Footer Link */}
+          {/* Footer Texts */}
           <Typography
             sx={{
-              mt: { 
-                xs: '32px', 
-                md: '287px' // 621 (link top) - 334 (form top) = 287px
-              }, 
-              '@media (max-height: 800px)': {
-                mt: '40px' // Pull up on shorter screens
-              },
-              width: { xs: 'auto', md: '202px' },
-              height: '14px',
-              fontSize: '9.88px',
+              position: 'absolute',
+              width: '170px',
+              height: '17px',
+              left: '246px',
+              top: '620px',
               fontFamily: '"Poppins", sans-serif',
               fontWeight: 400,
-              color: '#757575',
+              fontSize: '12px',
               lineHeight: '140%',
-              letterSpacing: '-0.02em', // -2%
-              textAlign: 'left',
-              ml: { md: '46px' }, // 979 (link left) - 933 (form container left) = 46px
-              opacity: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: { xs: 'center', md: 'flex-start' },
+              letterSpacing: '-0.02em',
+              color: '#757575',
               whiteSpace: 'nowrap'
             }}
           >
-            Pas encore de compte ?{' '}
-            <Link 
-              component={NextLink} 
-              href="/auth/register" 
-              sx={{ 
-                fontWeight: 600, 
-                color: '#007AFF', 
-                fontSize: '9.88px',
-                fontFamily: '"Poppins", sans-serif',
-                lineHeight: '140%',
-                letterSpacing: '-0.02em',
-                ml: 0.5,
-                textDecoration: 'none',
-                '&:hover': { textDecoration: 'underline' }
-              }}
-            >
-              Créer un compte
-            </Link>
+            Vous n’avez pas de compte ?
           </Typography>
+          <Link
+            component={NextLink}
+            href="/auth/register"
+            sx={{
+              position: 'absolute',
+              width: '52px',
+              height: '17px',
+              left: '428px',
+              top: '620px',
+              fontFamily: '"Poppins", sans-serif',
+              fontWeight: 400,
+              fontSize: '12px',
+              lineHeight: '140%',
+              letterSpacing: '-0.02em',
+              color: '#007AFF',
+              textDecoration: 'none',
+              '&:hover': { textDecoration: 'underline' }
+            }}
+          >
+            S’inscrire
+          </Link>
+
         </Box>
       </Box>
     </Box>

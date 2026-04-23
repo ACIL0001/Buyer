@@ -11,6 +11,27 @@ import { useQuery } from '@tanstack/react-query';
 import PageSkeleton from '@/components/skeletons/PageSkeleton';
 import Header from '@/components/header/Header';
 import Footer from '@/components/footer/FooterWithErrorBoundary';
+import ShareButton from "@/components/common/ShareButton";
+
+function calculateTimeRemaining(endDate) {
+  const total = Date.parse(endDate) - Date.now();
+  if (total <= 0) return { days: "0", hours: "0", minutes: "0", seconds: "0", hasEnded: true };
+  const d = Math.floor(total / (1000 * 60 * 60 * 24));
+  const h = Math.floor((total / (1000 * 60 * 60)) % 24);
+  const m = Math.floor((total / 1000 / 60) % 60);
+  
+  const endObj = new Date(endDate);
+  const daysArr = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+  const formattedEnd = `${endObj.getDate()}${daysArr[endObj.getDay()]} ${endObj.getHours()}h${endObj.getMinutes().toString().padStart(2, '0')}`;
+
+  return {
+    days: d.toString(),
+    hours: h.toString(),
+    minutes: m.toString(),
+    formattedEnd,
+    hasEnded: false
+  };
+}
 
 const DEFAULT_TENDER_IMAGE = "/assets/images/logo-white.png";
 
@@ -119,6 +140,21 @@ const TendersPage = () => {
     return transformed;
   }, [allTendersResponse, auth.user, tenderType, priceRange, selectedCategories, selectedWilaya, searchQuery, sortOrder]);
 
+  const [timers, setTimers] = useState({});
+  React.useEffect(() => {
+    if (allTenders.length === 0) return;
+    const updateTimers = () => {
+      const newTimers = {};
+      allTenders.forEach(tender => {
+        if (tender.id && tender.endingAt) newTimers[tender.id] = calculateTimeRemaining(tender.endingAt);
+      });
+      setTimers(newTimers);
+    };
+    updateTimers();
+    const interval = setInterval(updateTimers, 60000);
+    return () => clearInterval(interval);
+  }, [allTenders]);
+
   const itemsPerPage = 9;
   const totalPages = Math.max(1, Math.ceil(allTenders.length / itemsPerPage));
   const currentData = allTenders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -182,7 +218,7 @@ const TendersPage = () => {
           </div>
         </div>
 
-        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', display: 'flex', gap: '60px' }}>
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', display: 'flex', gap: '40px' }}>
           
           {/* Sidebar Filter - Restyled with Glassmorphism and 3D Grey */}
           <aside style={{ width: '231px', flexShrink: 0 }}>
@@ -272,94 +308,146 @@ const TendersPage = () => {
 
           {/* Grid Content */}
           <div style={{ flex: 1 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px', rowGap: '60px', justifyItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 288px)', gap: '25px', rowGap: '40px', justifyContent: 'center' }}>
               {currentData.length > 0 ? currentData.map((tender, i) => {
                 const companyName = tender.hidden ? 'Anonyme' : (tender.owner?.entreprise || tender.owner?.firstName || 'Nom Annonceur');
                 const type = (tender.tenderType || tender.type)?.toUpperCase();
                 const isProd = type === 'PRODUCT';
 
+                const timer = timers[tender.id] || { days: "0", hours: "0", minutes: "0", formattedEnd: "", hasEnded: false };
                 return (
-                  <div key={tender.id || i} style={{ cursor: 'pointer', width: '295px', margin: '0 auto', transition: 'transform 0.3s' }} onClick={() => tender.id && router.push(`/tender-details/${tender.id}`)} onMouseOver={e => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}>
-                    <div style={{ 
-                      borderRadius: '20px', 
-                      overflow: 'hidden', 
-                      width: '295px',
-                      height: '295px', 
-                      marginBottom: '20px',
-                      boxShadow: 'none', 
-                      background: '#eee',
-                      transition: 'all 0.3s',
-                      opacity: 1
+                  <div 
+                    key={tender.id || i}
+                    style={{ 
+                      width: '288px',
+                      minWidth: '288px',
+                      maxWidth: '288px',
+                      height: '383px',
+                      minHeight: '383px',
+                      maxHeight: '383px',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      zIndex: 1,
+                      borderRadius: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      overflow: 'hidden',
+                      transition: 'transform 0.3s'
                     }}
-                    >
-                      <img src={getTenderImageUrl(tender)} alt={tender.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => e.currentTarget.src = DEFAULT_TENDER_IMAGE} />
+                    onMouseOver={e => e.currentTarget.style.transform = 'translateY(-10px)'} 
+                    onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+                    onClick={() => tender.id && router.push(`/tender-details/${tender.id}`)}
+                  >
+                    <div style={{ width: '288px', height: '280px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
+                        <ShareButton 
+                          type="tender" 
+                          id={tender.id} 
+                          title={tender.title} 
+                          description={tender.description} 
+                          imageUrl={getTenderImageUrl(tender)} 
+                        />
+                      </div>
+                      <img 
+                        src={getTenderImageUrl(tender)} 
+                        alt={tender.title} 
+                        style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
+                        onError={(e) => (e.currentTarget.src = DEFAULT_TENDER_IMAGE)} 
+                      />
                     </div>
-                    <div style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <h3 style={{ 
-                        width: '114px',
-                        height: '23px',
-                        fontFamily: 'Roboto, sans-serif',
-                        fontWeight: '700', 
-                        fontSize: '20px', 
-                        lineHeight: '100%',
-                        letterSpacing: '0px',
-                        verticalAlign: 'middle',
-                        color: '#062C90', 
-                        margin: '0 0 6px 0', 
-                        whiteSpace: 'nowrap', 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis',
-                        opacity: 1
-                      }}>
-                        {tender.title || 'Titre'}
-                      </h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ 
-                            width: 'auto',
-                            minWidth: '46px',
-                            height: '29px',
-                            fontFamily: 'Inter, sans-serif',
+                        <div style={{ 
+                          padding: '10px 10px', 
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          position: 'relative'
+                        }}>
+                          <h4 style={{ 
+                            width: '281px',
+                            height: '23px',
+                            fontFamily: 'Roboto, sans-serif',
                             fontWeight: '700', 
-                            fontSize: '24px', 
+                            fontSize: '20px', 
                             lineHeight: '100%',
                             letterSpacing: '0px',
                             verticalAlign: 'middle',
-                            color: '#062C90',
+                            color: '#002896', 
+                            margin: '0 0 5px 0', 
+                            whiteSpace: 'nowrap', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis',
                             opacity: 1
                           }}>
-                            {tender.budget ? Number(tender.budget).toLocaleString() : "Offre"}
-                          </span>
-                          {tender.budget && (
+                            {tender.title || 'Nom Produit'}
+                          </h4>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{ 
+                                width: 'auto',
+                                height: '29px',
+                                fontFamily: 'Inter, sans-serif',
+                                fontWeight: '700', 
+                                fontSize: '24px', 
+                                lineHeight: '29px',
+                                color: '#002896',
+                                display: 'flex',
+                                alignItems: 'center'
+                              }}>
+                                {tender.budget ? `${Number(tender.budget).toLocaleString()}` : "Offre"}
+                              </span>
+                              {tender.budget && (
+                                <span style={{ 
+                                  fontFamily: 'Inter, sans-serif',
+                                  fontSize: '14px', 
+                                  fontWeight: '700', 
+                                  color: '#002896',
+                                  marginLeft: '2px',
+                                  display: 'flex',
+                                  alignItems: 'center'
+                                }}>DA</span>
+                              )}
+                            </div>
                             <span style={{ 
-                              fontFamily: 'Inter, sans-serif',
+                              width: '101px',
+                              height: '16px',
+                              fontFamily: 'Roboto, sans-serif',
                               fontSize: '14px', 
-                              fontWeight: '700', 
-                              color: '#062C90',
-                              marginLeft: '2px'
-                            }}>DA</span>
-                          )}
+                              fontWeight: '400', 
+                              lineHeight: '16px',
+                              color: '#002896', 
+                              display: 'flex',
+                              alignItems: 'center',
+                              whiteSpace: 'nowrap', 
+                              overflow: 'hidden', 
+                              textOverflow: 'ellipsis', 
+                              textAlign: 'right',
+                              justifyContent: 'flex-end'
+                            }}>
+                              {companyName}
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', marginTop: 'auto' }}>
+                            <span style={{ 
+                              width: '100%',
+                              height: '16px',
+                              fontFamily: 'Roboto, sans-serif',
+                              fontSize: '14px', 
+                              fontWeight: '400', 
+                              lineHeight: '100%',
+                              color: '#002896',
+                              display: 'flex',
+                              alignItems: 'center',
+                              letterSpacing: '-0.3px',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              verticalAlign: 'middle',
+                              opacity: 1
+                            }}>
+                              {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j ${timer.hours}h (${timer.formattedEnd})`}
+                            </span>
+                          </div>
                         </div>
-                        <span style={{ 
-                          width: '101px',
-                          height: '16px',
-                          fontFamily: 'Roboto, sans-serif',
-                          fontWeight: '400', 
-                          fontSize: '14px', 
-                          lineHeight: '100%',
-                          letterSpacing: '0px',
-                          verticalAlign: 'middle',
-                          color: '#062C90', 
-                          whiteSpace: 'nowrap', 
-                          overflow: 'hidden', 
-                          textOverflow: 'ellipsis', 
-                          textAlign: 'right',
-                          opacity: 1
-                        }}>
-                          {companyName}
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 );
               }) : (

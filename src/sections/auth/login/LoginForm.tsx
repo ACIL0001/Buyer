@@ -3,7 +3,6 @@ import { useFormik, Form, FormikProvider } from 'formik';
 import { useRouter } from 'next/navigation';
 import * as Yup from 'yup';
 import {
-  Stack,
   TextField,
   IconButton,
   InputAdornment,
@@ -17,7 +16,6 @@ import { LoadingButton } from '@mui/lab';
 import Iconify from '../../../components/Iconify';
 import { AuthAPI } from '../../../app/api/auth';
 import { authStore } from '../../../contexts/authStore';
-import app from '../../../config';
 
 // ---------------------------------------------------------------------- 
 
@@ -160,32 +158,48 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     }
   };
 
-  const exactWidth = '252.6px';
-  const exactHeight = '33.87px';
-  const exactBorderRadius = '3.53px';
+  const offsetX = 701;
 
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onKeyPress={handleKeyPress}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', width: exactWidth }}>
+        <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
           
           {loginError && (
-            <Alert severity="error" sx={{ width: exactWidth, mb: 2 }}>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                position: 'absolute', 
+                left: 931 - offsetX, 
+                top: 220, 
+                width: 252.6, 
+                fontSize: '10px' 
+              }}
+            >
               {loginError}
             </Alert>
           )}
 
           {/* Email Container */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', mb: '16.98px' }}>
+          <Box 
+             sx={{ 
+               position: 'absolute', 
+               left: 932 - offsetX, 
+               top: 290, 
+               width: 252.6, 
+               height: 50.69, 
+               display: 'flex', 
+               flexDirection: 'column', 
+               alignItems: 'flex-start',
+               gap: '2.82px' 
+             }}
+          >
             <Typography 
               sx={{ 
-                width: 'auto',
-                height: '14px',
-                fontSize: '9.88px', 
-                color: '#757575', 
-                mb: '2.82px', 
-                fontFamily: '"Poppins", sans-serif',
+                fontFamily: '"Inter", sans-serif',
                 fontWeight: 400,
+                fontSize: '9.87838px', 
+                color: '#454545', 
                 lineHeight: '140%',
                 letterSpacing: '-0.02em',
                 whiteSpace: 'nowrap'
@@ -202,32 +216,44 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
               error={Boolean(touched.login && errors.login)}
               InputProps={{
                 sx: { 
-                  width: exactWidth, 
-                  height: exactHeight, 
-                  borderRadius: exactBorderRadius,
-                  border: '0.71px solid #757575',
+                  width: 252.6, 
+                  height: 33.87, 
+                  borderRadius: '25px',
+                  border: '0.705598px solid #757575',
                   backgroundColor: '#FFFFFF',
                   fieldset: { border: 'none' },
-                  fontFamily: '"DM Sans", sans-serif',
-                  fontSize: '12px'
+                  fontFamily: '"Poppins", sans-serif',
+                  fontSize: '9.87838px',
+                  color: '#2D3748',
+                  px: 1,
+                  boxSizing: 'border-box'
                 }
               }}
             />
           </Box>
 
           {/* Password Container */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', mb: '5.57px' }}>
+          <Box 
+             sx={{ 
+               position: 'absolute', 
+               left: 932 - offsetX, 
+               top: 363, 
+               width: 252.6, 
+               height: 50.69, 
+               display: 'flex', 
+               flexDirection: 'column', 
+               alignItems: 'flex-start',
+               gap: '2.82px' 
+             }}
+          >
             <Typography 
               sx={{ 
-                width: '65px',
-                height: '14px',
-                fontSize: '9.88px', 
-                color: '#757575', 
-                mb: '2.82px', 
-                fontFamily: '"Poppins", sans-serif',
+                fontFamily: '"Inter", sans-serif',
                 fontWeight: 400,
+                fontSize: '9.87838px', 
+                color: '#454545', 
                 lineHeight: '140%',
-                letterSpacing: '-0.02em'
+                letterSpacing: '-0.02em',
               }}
             >
               Mot de passe
@@ -236,74 +262,62 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
               fullWidth
               autoComplete="current-password"
               type={showPassword ? 'text' : 'password'}
+              placeholder="****************"
               {...getFieldProps('password')}
               error={Boolean(touched.password && errors.password)}
               InputProps={{
                 sx: { 
-                  width: exactWidth, 
-                  height: exactHeight, 
-                  borderRadius: exactBorderRadius,
-                  border: '0.71px solid #757575',
+                  width: 252.6, 
+                  height: 33.87, 
+                  borderRadius: '25px',
+                  border: '0.705598px solid #757575',
                   backgroundColor: '#FFFFFF',
                   fieldset: { border: 'none' },
-                  fontFamily: '"DM Sans", sans-serif',
-                  fontSize: '12px'
+                  fontFamily: '"Poppins", sans-serif',
+                  fontSize: '9.87838px',
+                  color: '#2D3748',
+                  px: 1,
+                  boxSizing: 'border-box'
                 },
+                endAdornment: (
+                  <InputAdornment position="end" sx={{ mr: 0.5 }}>
+                    <IconButton 
+                      onClick={() => setShowPassword(!showPassword)} 
+                      sx={{ p: 0.5 }}
+                      disableRipple
+                    >
+                      <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} sx={{ width: 14, height: 14, color: '#757575' }} />
+                    </IconButton>
+                  </InputAdornment>
+                ),
               }}
             />
           </Box>
 
-          {/* Links Section */}
-          <Link 
-            component="button" 
-            variant="body2" 
-            underline="none"
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              router.push('/auth/forgot-password');
-            }}
-            sx={{ 
-              width: '104px',
-              height: '14px',
-              fontSize: '9.88px',
-              fontFamily: '"Poppins", sans-serif',
-              fontWeight: 400,
-              color: '#007AFF',
-              lineHeight: '140%',
-              letterSpacing: '-0.02em',
-              textAlign: 'right',
-              mb: '13px',
-              p: 0,
-              justifyContent: 'flex-start',
-              display: 'flex'
-            }}
-          >
-            Mot de passe oublié ?
-          </Link>
-
-          {/* Checkbox Section */}
+          {/* Remember me */}
           <Box 
             sx={{ 
+              position: 'absolute',
+              left: 938 - offsetX,
+              top: 438,
+              width: 100.58,
+              height: 14.11,
               display: 'flex', 
               alignItems: 'center',
-              width: '100.58px',
-              height: '14.11px',
-              color: '#757575',
-              mb: '32.96px' // Gap before login button
             }}
           >
             <Box 
               sx={{
-                width: '14.11px',
-                height: '14.11px',
-                border: '0.71px solid #757575',
-                borderRadius: '1.41px',
+                width: 14.11,
+                height: 14.11,
+                border: '0.705598px solid #757575',
+                borderRadius: '1.4112px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 mr: 1,
-                position: 'relative'
+                position: 'relative',
+                boxSizing: 'border-box'
               }}
             >
               <Checkbox 
@@ -325,36 +339,69 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             </Box>
             <Typography 
               sx={{ 
-                height: '14px',
-                fontSize: '9.88px', 
                 fontFamily: '"Poppins", sans-serif', 
                 fontWeight: 400,
+                fontSize: '9.87838px', 
                 color: '#757575', 
                 lineHeight: '140%', 
-                letterSpacing: '-0.02em' 
+                letterSpacing: '-0.02em',
+                whiteSpace: 'nowrap'
               }}
             >
               Rester connecté
             </Typography>
           </Box>
 
+          {/* Links Section: Mot de passe oublié ? */}
+          <Link 
+            component="button" 
+            variant="body2" 
+            underline="none"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              router.push('/auth/forgot-password');
+            }}
+            sx={{ 
+              position: 'absolute',
+              // 938+100.58=1038 approx for left, the image places it symmetrically. 
+              // Left side of input is 932. Width is 252.6. Right side is 1184.6. 
+              // The text is text-align: right. Let's just pin it to the right edge.
+              right: 1438 - 1184.6, // Wait, since parent is absolute, we can just use left mathematically.
+              left: 1080 - offsetX, // roughly calculated to line up with the right edge
+              top: 438,
+              fontSize: '9.87838px',
+              fontFamily: '"Poppins", sans-serif',
+              fontWeight: 400,
+              color: '#007AFF',
+              lineHeight: '140%',
+              letterSpacing: '-0.02em',
+              textAlign: 'right',
+            }}
+          >
+            Mot de passe oublié ?
+          </Link>
+
+          {/* Login Button */}
           <LoadingButton
-            fullWidth
             type="submit"
             variant="contained"
             loading={isSubmitting}
             sx={{ 
-              width: exactWidth,
-              height: exactHeight,
-              borderRadius: exactBorderRadius,
+              position: 'absolute',
+              left: 931 - offsetX,
+              top: 500,
+              width: 252.6,
+              height: 33.87,
+              borderRadius: '3.52799px',
               background: '#002896',
               color: '#FFFFFF',
               textTransform: 'none',
-              fontSize: '9.88px', // Mapped from Figma 'Create account' specs
-              lineHeight: '15px',
-              fontWeight: 600,
-              letterSpacing: '-0.02em',
+              fontSize: '9.87838px',
               fontFamily: '"Poppins", sans-serif',
+              fontWeight: 600,
+              lineHeight: '15px',
+              letterSpacing: '-0.02em',
               boxShadow: 'none',
               '&:hover': {
                 background: '#001b69',
@@ -364,6 +411,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           >
             Se connecter
           </LoadingButton>
+
         </Box>
       </Form>
     </FormikProvider>

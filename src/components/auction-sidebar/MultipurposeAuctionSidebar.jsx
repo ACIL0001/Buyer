@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import PageSkeleton from '@/components/skeletons/PageSkeleton';
 import Header from '@/components/header/Header';
 import Footer from '@/components/footer/FooterWithErrorBoundary';
+import ShareButton from "@/components/common/ShareButton";
 
 const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-white.png";
 
@@ -199,7 +200,7 @@ const MultipurposeAuctionSidebar = () => {
           </div>
         </div>
 
-        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', display: 'flex', gap: '60px' }}>
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', display: 'flex', gap: '40px' }}>
           
           {/* Sidebar Filter - Glassmorphism Restyle */}
           <aside style={{ width: '231px', flexShrink: 0 }}>
@@ -289,7 +290,7 @@ const MultipurposeAuctionSidebar = () => {
 
           {/* Grid Content */}
           <div style={{ flex: 1 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px', rowGap: '60px', justifyItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 284px)', gap: '25px', rowGap: '40px', justifyContent: 'center' }}>
               {currentData.length > 0 ? currentData.map((auction, i) => {
                 const timer = timers[auction.id] || { days: "0", hours: "0", minutes: "0", hasEnded: false };
                 const companyName = auction.owner?.entreprise || auction.owner?.firstName || 'Nom Entreprise';
@@ -297,24 +298,54 @@ const MultipurposeAuctionSidebar = () => {
                 const isProd = type !== 'SERVICE';
 
                 return (
-                  <div key={auction.id || i} style={{ cursor: 'pointer', width: '295px', margin: '0 auto', transition: 'transform 0.3s' }} onClick={() => auction.id && router.push(`/auction-details/${auction.id}`)} onMouseOver={e => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}>
-                    <div style={{ 
-                      borderRadius: '20px', 
-                      overflow: 'hidden', 
-                      width: '295px',
-                      height: '295px', 
-                      marginBottom: '20px',
-                      boxShadow: 'none', 
-                      background: '#eee',
-                      transition: 'all 0.3s',
-                      opacity: 1
+                  <div 
+                    key={auction.id || i}
+                    style={{ 
+                      width: '284px',
+                      minWidth: '284px',
+                      maxWidth: '284px',
+                      height: '464px',
+                      minHeight: '464px',
+                      maxHeight: '464px',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      zIndex: 1,
+                      borderRadius: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      overflow: 'hidden',
+                      transition: 'transform 0.3s'
                     }}
-                    >
-                      <img src={getAuctionImageUrl(auction)} alt={auction.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => e.currentTarget.src = DEFAULT_AUCTION_IMAGE} />
+                    onMouseOver={e => e.currentTarget.style.transform = 'translateY(-10px)'} 
+                    onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+                    onClick={() => auction.id && router.push(`/auction-details/${auction.id}`)}
+                  >
+                    <div style={{ width: '284px', height: '280px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                      <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
+                        <ShareButton 
+                          type="auction" 
+                          id={auction.id} 
+                          title={auction.title} 
+                          description={auction.description} 
+                          imageUrl={getAuctionImageUrl(auction)} 
+                        />
+                      </div>
+                      <img 
+                        src={getAuctionImageUrl(auction)} 
+                        alt={auction.title} 
+                        style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
+                        onError={(e) => (e.currentTarget.src = DEFAULT_AUCTION_IMAGE)} 
+                      />
                     </div>
-                    <div style={{ padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <h3 style={{ 
-                        width: '114px',
+                          <div style={{ 
+                      padding: '10px 10px', 
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      position: 'relative'
+                    }}>
+                      <h4 style={{ 
+                        width: '281px',
                         height: '23px',
                         fontFamily: 'Roboto, sans-serif',
                         fontWeight: '700', 
@@ -322,77 +353,126 @@ const MultipurposeAuctionSidebar = () => {
                         lineHeight: '100%',
                         letterSpacing: '0px',
                         verticalAlign: 'middle',
-                        color: '#062C90', 
-                        margin: '0 0 6px 0', 
+                        color: '#002896', 
+                        margin: '0 0 5px 0', 
                         whiteSpace: 'nowrap', 
                         overflow: 'hidden', 
                         textOverflow: 'ellipsis',
                         opacity: 1
                       }}>
                         {auction.title || 'Nom Produit'}
-                      </h3>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '4px' }}>
+                      </h4>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <span style={{ 
                             width: 'auto',
-                            minWidth: '46px',
                             height: '29px',
                             fontFamily: 'Inter, sans-serif',
                             fontWeight: '700', 
                             fontSize: '24px', 
-                            lineHeight: '100%',
-                            letterSpacing: '0px',
-                            verticalAlign: 'middle',
-                            color: '#062C90',
-                            opacity: 1
+                            lineHeight: '29px',
+                            color: '#002896',
+                            display: 'flex',
+                            alignItems: 'center'
                           }}>
-                            {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()}
+                            {Number(auction.price || 0).toLocaleString()}
                           </span>
                           <span style={{ 
                             fontFamily: 'Inter, sans-serif',
                             fontSize: '14px', 
                             fontWeight: '700', 
-                            color: '#062C90',
-                            marginLeft: '2px'
+                            color: '#002896',
+                            marginLeft: '2px',
+                            display: 'flex',
+                            alignItems: 'center'
                           }}>DA</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span style={{ 
-                            fontFamily: 'Roboto, sans-serif',
-                            fontSize: '14px', 
-                            fontWeight: '400', 
-                            color: '#002896',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {auction.participantsCount || 0} enchères
-                          </span>
-                          <span style={{ 
-                            width: '101px',
-                            height: '16px',
-                            fontFamily: 'Roboto, sans-serif',
-                            fontWeight: '400', 
-                            fontSize: '14px',
-                            lineHeight: '100%',
-                            letterSpacing: '0px',
-                            verticalAlign: 'middle',
-                            color: '#062C90', 
-                            whiteSpace: 'nowrap', 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis', 
-                            textAlign: 'right',
-                            opacity: 1
-                          }}>
-                            {companyName}
-                          </span>
-                        </div>
+                        <span style={{ 
+                          width: '101px',
+                          height: '16px',
+                          fontFamily: 'Roboto, sans-serif',
+                          fontSize: '14px', 
+                          fontWeight: '400', 
+                          lineHeight: '16px',
+                          color: '#002896', 
+                          display: 'flex',
+                          alignItems: 'center',
+                          whiteSpace: 'nowrap', 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis', 
+                          textAlign: 'right',
+                          justifyContent: 'flex-end'
+                        }}>
+                          {companyName}
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent:'space-between', alignItems: 'center' }}>
-                         <div style={{ fontFamily: 'Roboto, sans-serif', fontSize: '13px', color: '#002896', fontWeight: '400' }}>
-                            Temps restant {timer.hasEnded ? 'Terminé' : `${timer.days}j${timer.hours}h`}
-                         </div>
+                      <div style={{ display: 'flex', alignItems: 'center', marginTop: 'auto' }}>
+                        <span style={{ 
+                          width: '100%',
+                          height: '16px',
+                          fontFamily: 'Roboto, sans-serif',
+                          fontSize: '12px', 
+                          fontWeight: '400', 
+                          lineHeight: '16px',
+                          color: '#002896',
+                          display: 'flex',
+                          alignItems: 'center',
+                          whiteSpace: 'nowrap',
+                          letterSpacing: '-0.2px'
+                        }}>
+                          {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j ${timer.hours}h`}
+                        </span>
+                      </div>
+                      
+                      {/* Action Buttons */}
+                      <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); router.push(`/auction-details/${auction.id}`); }}
+                          style={{
+                            flex: 1,
+                            height: '25px',
+                            background: '#002896',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.3s'
+                          }}
+                          onMouseOver={e => e.currentTarget.style.background = '#001c6a'}
+                          onMouseOut={e => e.currentTarget.style.background = '#002896'}
+                        >
+                          Enchérir
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); router.push(`/auction-details/${auction.id}`); }}
+                          style={{
+                            flex: 1,
+                            height: '25px',
+                            background: 'white',
+                            color: '#002896',
+                            border: '1px solid #002896',
+                            borderRadius: '5px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.3s'
+                          }}
+                          onMouseOver={e => e.currentTarget.style.background = '#f0f4ff'}
+                          onMouseOut={e => e.currentTarget.style.background = 'white'}
+                        >
+                          Détails
+                        </button>
                       </div>
                     </div>
-                  </div>
+                 </div>
                 );
               }) : (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '100px', color: '#666', fontWeight:'800' }}>Aucune enchère ne correspond à vos recherches.</div>

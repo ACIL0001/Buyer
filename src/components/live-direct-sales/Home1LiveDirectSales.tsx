@@ -58,10 +58,13 @@ const Home1LiveDirectSales = () => {
   }, [socket, queryClient]);
 
   const directSales = useMemo(() => {
-    return allDirectSales.filter(sale => {
-      const availableQuantity = sale.quantity === 0 ? 999 : sale.quantity - (sale.soldQuantity || 0);
-      return sale.status !== 'SOLD_OUT' && sale.status !== 'SOLD' && !(sale.quantity > 0 && availableQuantity <= 0);
-    }).slice(0, 8);
+    return allDirectSales
+      .filter(sale => {
+        const availableQuantity = sale.quantity === 0 ? 999 : sale.quantity - (sale.soldQuantity || 0);
+        return sale.status !== 'SOLD_OUT' && sale.status !== 'SOLD' && !(sale.quantity > 0 && availableQuantity <= 0);
+      })
+      .sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+      .slice(0, 8);
   }, [allDirectSales]);
 
   const settings = useMemo(() => ({
@@ -84,34 +87,59 @@ const Home1LiveDirectSales = () => {
 
   return (
     <div style={{ background: 'transparent', width: '100%', paddingBottom: '0px' }}>
+    <div className="direct-sales-section-wrapper" style={{ width: '100%', position: 'relative', overflow: 'visible' }}>
       {/* SECTION HEADER - REMOVED OVERFLOW HIDDEN */}
       <div style={{ 
         width: '100%', 
+        maxWidth: '1400px', 
+        margin: '0 auto',
         position: 'relative', 
-        padding: '60px 0 40px', 
-        textAlign: 'center',
-        overflow: 'visible' /* Prevent scale clipping */
+        padding: '60px 20px 40px', 
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'visible'
       }}>
-
-        <div style={{ position: 'relative', zIndex: 1, display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <motion.h2 
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             style={{ 
               color: '#002896', 
-              fontFamily: '"Inter", sans-serif',
-              fontSize: '40px', 
-              fontWeight: '800', 
+              fontFamily: '"DM Sans", sans-serif',
+              fontSize: '48px', 
+              fontWeight: '700', 
               margin: 0, 
               letterSpacing: '0px', 
               lineHeight: '100%',
               textAlign: 'center'
             }}
           >
-            Marchés et ventes en cours
+            Ventes en cours
           </motion.h2>
           <motion.div initial={{ width: 0 }} whileInView={{ width: '100px' }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 1 }} style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #002896, transparent)', marginTop: '15px', borderRadius: '10px' }} />
+        </div>
+
+        <div style={{ position: 'absolute', right: '35px', top: '75px' }}>
+          <Link href="/direct-sale" style={{ 
+            display: 'inline-flex', 
+            width: '93px', 
+            height: '28px', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            color: '#002896', 
+            textDecoration: 'none', 
+            fontSize: '20px', 
+            fontWeight: '700', 
+            fontFamily: 'Roboto, sans-serif', 
+            lineHeight: '100%', 
+            whiteSpace: 'nowrap', 
+            cursor: 'pointer', 
+            transition: 'all 0.3s ease' 
+          }}>
+            Voir tout
+          </Link>
         </div>
       </div>
 
@@ -125,13 +153,13 @@ const Home1LiveDirectSales = () => {
                   const availableQuantity = sale.quantity > 0 ? (sale.quantity - (sale.soldQuantity || 0)) : 'Illimité';
                   
                   return (
-                    <SwiperSlide key={sale.id} style={{ overflow: 'visible', width: '295px', minWidth: '295px', maxWidth: '295px' }}>
+                    <SwiperSlide key={sale.id} style={{ overflow: 'visible', width: '284px', minWidth: '284px', maxWidth: '284px' }}>
                       <div 
                         key={sale.id}
                         style={{ 
-                          width: '295px',
-                          minWidth: '295px',
-                          maxWidth: '295px',
+                          width: '284px',
+                          minWidth: '284px',
+                          maxWidth: '284px',
                           height: '383px',
                           minHeight: '383px',
                           maxHeight: '383px',
@@ -145,7 +173,7 @@ const Home1LiveDirectSales = () => {
                         }}
                         onClick={() => router.push(`/direct-sale/${sale.id}`)}
                       >
-                        <div style={{ width: '295px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                        <div style={{ width: '284px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                           <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                             <ShareButton 
                               type="directSale" 
@@ -277,16 +305,13 @@ const Home1LiveDirectSales = () => {
               </div>
             </div>
             
-            <div style={{ textAlign: 'center', marginTop: '60px', position: 'relative', zIndex: 10 }}>
-              <Link href="/direct-sale" style={{ display: 'inline-flex', width: '93px', height: '28px', alignItems: 'center', justifyContent: 'center', color: '#002896', textDecoration: 'none', fontSize: '24px', fontWeight: '700', fontFamily: 'Roboto, sans-serif', lineHeight: '100%', whiteSpace: 'nowrap', position: 'relative', zIndex: 20, cursor: 'pointer', transition: 'all 0.3s ease' }}>
-                Voir tout
-              </Link>
-            </div>
+            <div style={{ height: '40px' }} />
           </div>
         ) : (
           <div style={{ color: '#002896', textAlign: 'center', padding: '40px', fontWeight: 'bold' }}>Aucune vente en cours</div>
         )}
       </div>
+    </div>
     </div>
   );
 };

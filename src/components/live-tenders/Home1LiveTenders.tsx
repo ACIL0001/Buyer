@@ -77,7 +77,10 @@ const Home1LiveTenders = () => {
   }, [socket, queryClient]);
 
   const liveTenders = useMemo(() => {
-    return allTenders.filter((tender: any) => tender.endingAt && new Date(tender.endingAt) > new Date()).slice(0, 8);
+    return allTenders
+      .filter((tender: any) => tender.endingAt && new Date(tender.endingAt) > new Date())
+      .sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+      .slice(0, 8);
   }, [allTenders]);
 
   const [timers, setTimers] = useState<{ [key: string]: any }>({});
@@ -113,16 +116,20 @@ const Home1LiveTenders = () => {
 
   return (
     <div style={{ background: 'transparent', width: '100%', paddingBottom: '0px' }}>
-      {/* SECTION HEADER - REMOVED OVERFLOW HIDDEN */}
+    <div className="tenders-section-wrapper" style={{ width: '100%', position: 'relative', overflow: 'visible' }}>
+      {/* SECTION HEADER */}
       <div style={{ 
         width: '100%', 
+        maxWidth: '1400px', 
+        margin: '0 auto',
         position: 'relative', 
-        padding: '60px 0 40px', 
-        textAlign: 'center',
-        overflow: 'visible' /* Prevent clipping */
+        padding: '60px 20px 40px', 
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'visible'
       }}>
-
-        <div style={{ position: 'relative', zIndex: 1, display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <motion.h2 
             initial={{ opacity: 0, scale: 1.1 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -130,18 +137,39 @@ const Home1LiveTenders = () => {
             transition={{ type: "spring", stiffness: 100 }}
             style={{ 
               color: '#002896', 
-              fontFamily: '"Inter", sans-serif',
-              fontSize: '40px', 
-              fontWeight: '800', 
+              fontFamily: '"DM Sans", sans-serif',
+              fontSize: '48px', 
+              fontWeight: '700', 
               margin: 0, 
               letterSpacing: '0px', 
               lineHeight: '100%',
               textAlign: 'center'
             }}
           >
-            Consultez les projets et soumissionnez
+            Projets en cours
           </motion.h2>
           <motion.div initial={{ width: 0 }} whileInView={{ width: '100px' }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 1 }} style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #002896, transparent)', marginTop: '15px', borderRadius: '10px' }} />
+        </div>
+
+        <div style={{ position: 'absolute', right: '35px', top: '75px' }}>
+          <Link href="/tenders" style={{ 
+            display: 'inline-flex', 
+            width: '93px', 
+            height: '28px', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            color: '#002896', 
+            textDecoration: 'none', 
+            fontSize: '20px', 
+            fontWeight: '700', 
+            fontFamily: 'Roboto, sans-serif', 
+            lineHeight: '100%', 
+            whiteSpace: 'nowrap', 
+            cursor: 'pointer', 
+            transition: 'all 0.3s ease' 
+          }}>
+            Voir tout
+          </Link>
         </div>
       </div>
 
@@ -155,13 +183,13 @@ const Home1LiveTenders = () => {
                   const companyName = tender.hidden ? 'Anonyme' : (tender.owner?.entreprise || tender.owner?.companyName || tender.owner?.firstName || 'Nom annonceur');
                   
                   return (
-                    <SwiperSlide key={tender.id} style={{ overflow: 'visible', width: '295px', minWidth: '295px', maxWidth: '295px' }}>
+                    <SwiperSlide key={tender.id} style={{ overflow: 'visible', width: '288px', minWidth: '288px', maxWidth: '288px' }}>
                       <div 
                         key={tender.id}
                         style={{ 
-                          width: '295px',
-                          minWidth: '295px',
-                          maxWidth: '295px',
+                          width: '288px',
+                          minWidth: '288px',
+                          maxWidth: '288px',
                           height: '383px',
                           minHeight: '383px',
                           maxHeight: '383px',
@@ -175,7 +203,7 @@ const Home1LiveTenders = () => {
                         }}
                         onClick={() => router.push(`/tender-details/${tender.id}`)}
                       >
-                        <div style={{ width: '295px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                        <div style={{ width: '288px', height: '280px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                           <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                             <ShareButton 
                               type="tender" 
@@ -193,14 +221,14 @@ const Home1LiveTenders = () => {
                           />
                         </div>
                         <div style={{ 
-                          padding: '8px 10px', 
+                          padding: '10px 10px', 
                           flex: 1,
                           display: 'flex',
                           flexDirection: 'column',
-                          justifyContent: 'space-between'
+                          position: 'relative'
                         }}>
                           <h4 style={{ 
-                            width: '114px',
+                            width: '281px',
                             height: '23px',
                             fontFamily: 'Roboto, sans-serif',
                             fontWeight: '700', 
@@ -208,8 +236,8 @@ const Home1LiveTenders = () => {
                             lineHeight: '100%',
                             letterSpacing: '0px',
                             verticalAlign: 'middle',
-                            color: '#062C90', 
-                            margin: '0 0 4px 0', 
+                            color: '#002896', 
+                            margin: '0 0 5px 0', 
                             whiteSpace: 'nowrap', 
                             overflow: 'hidden', 
                             textOverflow: 'ellipsis',
@@ -217,17 +245,18 @@ const Home1LiveTenders = () => {
                           }}>
                             {tender.title || 'Nom Produit'}
                           </h4>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <span style={{ 
-                                minWidth: '46px',
+                                width: 'auto',
                                 height: '29px',
                                 fontFamily: 'Inter, sans-serif',
                                 fontWeight: '700', 
                                 fontSize: '24px', 
-                                lineHeight: '100%',
-                                color: '#062C90',
-                                verticalAlign: 'middle'
+                                lineHeight: '29px',
+                                color: '#002896',
+                                display: 'flex',
+                                alignItems: 'center'
                               }}>
                                 {(tender.budget || tender.maxBudget || tender.price) ? `${Number(tender.budget || tender.maxBudget || tender.price).toLocaleString()}` : "Offre"}
                               </span>
@@ -236,8 +265,10 @@ const Home1LiveTenders = () => {
                                   fontFamily: 'Inter, sans-serif',
                                   fontSize: '14px', 
                                   fontWeight: '700', 
-                                  color: '#062C90',
-                                  marginLeft: '2px'
+                                  color: '#002896',
+                                  marginLeft: '2px',
+                                  display: 'flex',
+                                  alignItems: 'center'
                                 }}>DA</span>
                               )}
                             </div>
@@ -247,28 +278,38 @@ const Home1LiveTenders = () => {
                               fontFamily: 'Roboto, sans-serif',
                               fontSize: '14px', 
                               fontWeight: '400', 
-                              lineHeight: '100%',
-                              color: '#062C90', 
+                              lineHeight: '16px',
+                              color: '#002896', 
+                              display: 'flex',
+                              alignItems: 'center',
                               whiteSpace: 'nowrap', 
                               overflow: 'hidden', 
                               textOverflow: 'ellipsis', 
-                              textAlign: 'right' 
+                              textAlign: 'right',
+                              justifyContent: 'flex-end'
                             }}>
                               {companyName}
                             </span>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', marginTop: 'auto' }}>
                             <span style={{ 
+                              width: '100%',
+                              height: '16px',
                               fontFamily: 'Roboto, sans-serif',
                               fontSize: '14px', 
                               fontWeight: '400', 
-                              lineHeight: '1.2',
-                              letterSpacing: '0px',
-                              verticalAlign: 'middle',
+                              lineHeight: '100%',
                               color: '#002896',
-                              width: '100%'
+                              display: 'flex',
+                              alignItems: 'center',
+                              letterSpacing: '-0.3px',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              verticalAlign: 'middle',
+                              opacity: 1
                             }}>
-                              {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j${timer.hours}h (${timer.formattedEnd})`}
+                              {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j ${timer.hours}h (${timer.formattedEnd})`}
                             </span>
                           </div>
                         </div>
@@ -323,16 +364,13 @@ const Home1LiveTenders = () => {
               </div>
             </div>
             
-            <div style={{ textAlign: 'center', marginTop: '60px' }}>
-              <Link href="/tenders" style={{ display: 'inline-flex', width: '93px', height: '28px', alignItems: 'center', justifyContent: 'center', color: '#002896', textDecoration: 'none', fontSize: '24px', fontWeight: '700', fontFamily: 'Roboto, sans-serif', lineHeight: '100%', whiteSpace: 'nowrap', transition: 'all 0.3s ease' }}>
-                Voir tout
-              </Link>
-            </div>
+            <div style={{ height: '40px' }} />
           </div>
         ) : (
           <div style={{ color: '#002896', textAlign: 'center', padding: '40px', fontWeight: 'bold' }}>Aucune offre en cours</div>
         )}
       </div>
+    </div>
     </div>
   );
 };

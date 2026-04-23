@@ -261,19 +261,22 @@ const COL_GAP = '22.59px';
 const fieldSx = {
   '& .MuiOutlinedInput-root': {
     height: FIELD_HEIGHT,
-    borderRadius: '3.52799px',
+    borderRadius: '25px',
     backgroundColor: '#FFFFFF',
-    '& fieldset': { border: '0.705598px solid #757575', borderRadius: '3.52799px' },
+    '& fieldset': { border: '0.71px solid #757575', borderRadius: '25px' },
     '&:hover fieldset': { borderColor: '#002896' },
-    '&.Mui-focused fieldset': { borderColor: '#002896', borderWidth: '0.705598px' },
+    '&.Mui-focused fieldset': { borderColor: '#002896', borderWidth: '0.71px' },
   },
-  '& .MuiInputBase-input': {
+  '& .MuiOutlinedInput-input': {
     fontFamily: '"Poppins", sans-serif',
     fontSize: '9.87838px',
     color: '#2D3748',
-    padding: '0 10px',
+    py: 0,
   },
-  '& .MuiInputBase-input::placeholder': { color: '#757575', opacity: 1 },
+  '& .MuiOutlinedInput-input::placeholder': {
+    color: '#999999',
+    opacity: 1,
+  },
   '& .MuiFormHelperText-root': {
     fontFamily: '"Poppins", sans-serif',
     fontSize: '8px',
@@ -303,11 +306,17 @@ function EntryField({
   width?: string;
   children: React.ReactNode;
 }) {
+  const parts = label.split(' *');
+  const hasAsterisk = label.includes(' *');
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2.82px', width }}>
-      <Typography component="label" sx={labelSx}>
-        {label}
-      </Typography>
+      {label && (
+        <Typography component="label" sx={{ ...labelSx, color: '#454545' }}>
+          {parts[0]}
+          {hasAsterisk && <span style={{ color: '#d32f2f', marginLeft: '2px', fontSize: '16px' }}>*</span>}
+        </Typography>
+      )}
       <Box>{children}</Box>
     </Box>
   );
@@ -321,6 +330,7 @@ function FigmaField({
   error,
   helperText,
   endAdornment,
+  sx,
 }: {
   fieldProps: any;
   placeholder?: string;
@@ -328,6 +338,7 @@ function FigmaField({
   error?: boolean;
   helperText?: any;
   endAdornment?: React.ReactNode;
+  sx?: any;
 }) {
   return (
     <TextField
@@ -339,7 +350,7 @@ function FigmaField({
       error={error}
       helperText={helperText}
       InputProps={{ endAdornment }}
-      sx={fieldSx}
+      sx={{ ...fieldSx, ...sx }}
     />
   );
 }
@@ -386,7 +397,7 @@ function FigmaCheckbox({
 }
 
 /* ─────────────────────────────────────────── */
-export default function RegisterForm() {
+export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYPE }) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -403,22 +414,26 @@ export default function RegisterForm() {
 
   /* ── Validation schema ── */
   const RegisterSchema = Yup.object().shape({
-    firstName: Yup.string()
-      .required('Le prénom est requis')
-      .min(2, 'Le prénom doit contenir au moins 2 caractères'),
-    lastName: Yup.string()
-      .required('Le nom est requis')
-      .min(2, 'Le nom doit contenir au moins 2 caractères'),
+    firstName: profileType === CLIENT_TYPE.CLIENT 
+      ? Yup.string().required('Le prénom est requis').min(2, 'Le prénom doit contenir au moins 2 caractères')
+      : Yup.string().nullable(),
+    lastName: profileType === CLIENT_TYPE.CLIENT 
+      ? Yup.string().required('Le nom est requis').min(2, 'Le nom doit contenir au moins 2 caractères')
+      : Yup.string().nullable(),
     email: Yup.string()
       .email("Format d'email invalide")
       .required("L'email est requis"),
     phone: Yup.string().required('Le numéro de téléphone est requis'),
-    birthDate: Yup.date()
-      .required('La date de naissance est requise')
-      .max(new Date(), 'La date doit être dans le passé'),
+    birthDate: profileType === CLIENT_TYPE.CLIENT 
+      ? Yup.date().required('La date de naissance est requise').max(new Date(), 'La date doit être dans le passé')
+      : Yup.date().nullable(),
     wilaya: Yup.string().required('La wilaya est requise'),
-    socialReason: Yup.string().nullable(),
-    activitySector: Yup.array().of(Yup.string()).nullable(),
+    socialReason: profileType === CLIENT_TYPE.PROFESSIONAL 
+      ? Yup.string().required('La designation entreprise est requise')
+      : Yup.string().nullable(),
+    activitySector: profileType === CLIENT_TYPE.PROFESSIONAL
+      ? Yup.array().of(Yup.string()).min(1, 'Veuillez choisir au moins un secteur').required('Le secteur d\'activité est requis')
+      : Yup.array().of(Yup.string()).nullable(),
     jobTitle: Yup.string().nullable(),
     promoCode: Yup.string().nullable(),
     password: Yup.string()
@@ -444,7 +459,7 @@ export default function RegisterForm() {
       promoCode: '',
       password: '',
       confirmPassword: '',
-      type: CLIENT_TYPE.CLIENT,
+      type: profileType || CLIENT_TYPE.CLIENT,
     },
     validationSchema: RegisterSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
@@ -558,6 +573,20 @@ export default function RegisterForm() {
     },
   };
 
+  const figmaRadius25Sx = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '25px',
+      '& fieldset': {
+        borderRadius: '25px',
+      },
+    },
+  };
+
+  const figmaAutoSxRadius25 = {
+    ...figmaAutoSx,
+    ...figmaRadius25Sx,
+  };
+
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
@@ -568,150 +597,242 @@ export default function RegisterForm() {
           </Typography>
         )}
 
-        {/* ── Row 0: Code Promo — full width, alone, optional ── */}
-        <Box sx={{ mb: '16px' }}>
-          <EntryField label="Code Promo (Optionnel)" width="100%">
-            <FigmaField
-              fieldProps={getFieldProps('promoCode')}
-              placeholder="Code Promo (Optionnel)"
-              error={Boolean(touched.promoCode && errors.promoCode)}
-              helperText={touched.promoCode && errors.promoCode}
-            />
-          </EntryField>
-        </Box>
-
-        {/* ── Row 1: Nom | Prénom ── */}
-        <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
-          <EntryField label="Nom">
-            <FigmaField
-              fieldProps={getFieldProps('lastName')}
-              placeholder="Votre nom"
-              error={Boolean(touched.lastName && errors.lastName)}
-              helperText={touched.lastName && errors.lastName}
-            />
-          </EntryField>
-          <EntryField label="Prénom">
-            <FigmaField
-              fieldProps={getFieldProps('firstName')}
-              placeholder="Votre prénom"
-              error={Boolean(touched.firstName && errors.firstName)}
-              helperText={touched.firstName && errors.firstName}
-            />
-          </EntryField>
-        </Box>
-
-        {/* ── Row 2: E-mail | Numéro de téléphone ── */}
-        <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
-          <EntryField label="E-mail">
-            <FigmaField
-              fieldProps={getFieldProps('email')}
-              placeholder="E-mail"
-              type="email"
-              error={Boolean(touched.email && errors.email)}
-              helperText={touched.email && errors.email}
-            />
-          </EntryField>
-          <EntryField label="Numéro de téléphone">
-            <FigmaField
-              fieldProps={getFieldProps('phone')}
-              placeholder="Numéro de téléphone"
-              error={Boolean(touched.phone && errors.phone)}
-              helperText={touched.phone && errors.phone}
-            />
-          </EntryField>
-        </Box>
-
-        {/* ── Row 3: Date de naissance | Wilaya ── */}
-        <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
-          <EntryField label="Date de naissance">
-            <TextField
-              fullWidth
-              size="small"
-              type="date"
-              InputLabelProps={{ shrink: true }}
-              {...getFieldProps('birthDate')}
-              error={Boolean(touched.birthDate && errors.birthDate)}
-              helperText={touched.birthDate && errors.birthDate}
-              sx={{
-                ...fieldSx,
-                '& input[type="date"]': {
-                  fontFamily: '"Poppins", sans-serif',
-                  fontSize: '9.87838px',
-                  color: '#2D3748',
-                },
-              }}
-            />
-          </EntryField>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2.82px', width: COL_WIDTH }}>
-            <Typography component="label" sx={labelSx}>Wilaya</Typography>
-            <Autocomplete
-              options={WILAYAS}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  size="small"
-                  placeholder="Wilaya"
-                  error={Boolean(touched.wilaya && errors.wilaya)}
-                  helperText={touched.wilaya && errors.wilaya}
-                  sx={figmaAutoSx}
+        {profileType === CLIENT_TYPE.PROFESSIONAL ? (
+          /* ─── ENTERPRISE LAYOUT ─── */
+          <>
+            {/* Row 1: Designation entreprise | Secteur d'activité */}
+            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+              <EntryField label="Designation entreprise *">
+                <FigmaField
+                  fieldProps={getFieldProps('socialReason')}
+                  placeholder="Nom de votre entreprise"
+                  error={Boolean(touched.socialReason && errors.socialReason)}
+                  helperText={touched.socialReason && errors.socialReason}
+                  sx={figmaRadius25Sx}
                 />
-              )}
-              onChange={(_, value) => setFieldValue('wilaya', value)}
-            />
-          </Box>
-        </Box>
-
-        {/* ── Professional info (optional) ── */}
-        <Box sx={{ mb: '16px' }}>
-          <Typography sx={{ ...labelSx, color: '#999999', mb: '8px' }}>
-            Informations Professionnelles (Pour Entreprises)
-          </Typography>
-          <Box sx={{ display: 'flex', gap: COL_GAP, mb: '10px' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2.82px', width: COL_WIDTH }}>
-              <Typography component="label" sx={labelSx}>Secteur d'activité</Typography>
-              <Autocomplete
-                multiple
-                options={categories.map((c) => c.name)}
-                loading={loadingCategories}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    size="small"
-                    placeholder="Secteur d'activité"
-                    InputProps={{
-                      ...params.InputProps,
-                      endAdornment: (
-                        <>
-                          {loadingCategories ? <CircularProgress color="inherit" size={14} /> : null}
-                          {params.InputProps.endAdornment}
-                        </>
-                      ),
-                    }}
-                    sx={figmaAutoSx}
-                  />
-                )}
-                onChange={(_, value) => setFieldValue('activitySector', value)}
-                value={values.activitySector || []}
-                filterSelectedOptions
-              />
+              </EntryField>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2.82px', width: COL_WIDTH }}>
+                <Typography component="label" sx={{ ...labelSx, color: '#454545' }}>
+                  Secteur d'activité <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
+                </Typography>
+                <Autocomplete
+                  multiple
+                  size="small"
+                  options={categories.map((c) => c.name)}
+                  loading={loadingCategories}
+                  componentsProps={{
+                    paper: {
+                      sx: {
+                        '& .MuiAutocomplete-option': {
+                          fontSize: '9.88px',
+                          fontFamily: '"Poppins", sans-serif',
+                          padding: '4px 8px',
+                          minHeight: 'auto',
+                        }
+                      }
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      size="small"
+                      placeholder="Secteur d'activité"
+                      error={Boolean(touched.activitySector && errors.activitySector)}
+                      helperText={touched.activitySector && (errors.activitySector as string)}
+                      sx={figmaAutoSxRadius25}
+                    />
+                  )}
+                  onChange={(_, value) => setFieldValue('activitySector', value)}
+                  value={values.activitySector || []}
+                />
+              </Box>
             </Box>
-            <EntryField label="Nom d'entreprise">
-              <FigmaField
-                fieldProps={getFieldProps('socialReason')}
-                placeholder="Nom d'entreprise"
-              />
-            </EntryField>
-          </Box>
-          <Box sx={{ width: COL_WIDTH }}>
-            <EntryField label="Poste">
-              <FigmaField fieldProps={getFieldProps('jobTitle')} placeholder="Poste" />
-            </EntryField>
-          </Box>
-        </Box>
 
-        {/* ── Row last-1: Mot de passe | Confirmer le mot de passe ── */}
+            {/* Row 2: E-mail professionnel | Numéro de téléphone Professionnel */}
+            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+              <EntryField label="E-mail professionnel *">
+                <FigmaField
+                  fieldProps={getFieldProps('email')}
+                  placeholder="Entrez votre adresse e-mail professionnel"
+                  type="email"
+                  error={Boolean(touched.email && errors.email)}
+                  helperText={touched.email && errors.email}
+                />
+              </EntryField>
+              <EntryField label="Numéro de téléphone Professionnel *">
+                <FigmaField
+                  fieldProps={getFieldProps('phone')}
+                  placeholder="Numéro de téléphone pro"
+                  error={Boolean(touched.phone && errors.phone)}
+                  helperText={touched.phone && errors.phone}
+                />
+              </EntryField>
+            </Box>
+
+            {/* Row 3: Wilaya | Code promo (optionnel) */}
+            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2.82px', width: COL_WIDTH }}>
+                <Typography component="label" sx={{ ...labelSx, color: '#454545' }}>
+                  Wilaya <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
+                </Typography>
+                <Autocomplete
+                  options={WILAYAS}
+                  size="small"
+                  componentsProps={{
+                    paper: {
+                      sx: {
+                        '& .MuiAutocomplete-option': {
+                          fontSize: '9.88px',
+                          fontFamily: '"Poppins", sans-serif',
+                          padding: '4px 8px',
+                          minHeight: 'auto',
+                        }
+                      }
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      size="small"
+                      placeholder="Ou résidez-vous ?"
+                      error={Boolean(touched.wilaya && errors.wilaya)}
+                      helperText={touched.wilaya && errors.wilaya}
+                      sx={figmaAutoSx}
+                    />
+                  )}
+                  onChange={(_, value) => setFieldValue('wilaya', value)}
+                />
+              </Box>
+              <EntryField label="Code promo (optionnel)">
+                <FigmaField
+                  fieldProps={getFieldProps('promoCode')}
+                  placeholder="Entrez un code promo"
+                />
+              </EntryField>
+            </Box>
+          </>
+        ) : (
+          /* ─── PARTICULAR LAYOUT ─── */
+          <>
+            {/* Row 1: Nom | Prénom */}
+            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+              <EntryField label="Nom *">
+                <FigmaField
+                  fieldProps={getFieldProps('lastName')}
+                  placeholder="Votre nom"
+                  error={Boolean(touched.lastName && errors.lastName)}
+                  helperText={touched.lastName && errors.lastName}
+                  sx={figmaRadius25Sx}
+                />
+              </EntryField>
+              <EntryField label="Prénom *">
+                <FigmaField
+                  fieldProps={getFieldProps('firstName')}
+                  placeholder="Votre prénom"
+                  error={Boolean(touched.firstName && errors.firstName)}
+                  helperText={touched.firstName && errors.firstName}
+                  sx={figmaRadius25Sx}
+                />
+              </EntryField>
+            </Box>
+
+            {/* Row 2: Date de naissance | E-mail professionnel */}
+            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+              <EntryField label="Date de naissance *">
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  {...getFieldProps('birthDate')}
+                  error={Boolean(touched.birthDate && errors.birthDate)}
+                  helperText={touched.birthDate && errors.birthDate}
+                  sx={{
+                    ...fieldSx,
+                    '& input[type="date"]': {
+                      fontFamily: '"Poppins", sans-serif',
+                      fontSize: '9.87838px',
+                      color: '#2D3748',
+                    },
+                  }}
+                />
+              </EntryField>
+              <EntryField label="E-mail professionnel *">
+                <FigmaField
+                  fieldProps={getFieldProps('email')}
+                  placeholder="Entrez votre e-mail"
+                  type="email"
+                  error={Boolean(touched.email && errors.email)}
+                  helperText={touched.email && errors.email}
+                />
+              </EntryField>
+            </Box>
+
+            {/* Row 3: Numéro de téléphone | Wilaya de résidence */}
+            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+              <EntryField label="Numéro de téléphone *">
+                <FigmaField
+                  fieldProps={getFieldProps('phone')}
+                  placeholder="Votre numéro de téléphone"
+                  error={Boolean(touched.phone && errors.phone)}
+                  helperText={touched.phone && errors.phone}
+                />
+              </EntryField>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2.82px', width: COL_WIDTH }}>
+                <Typography component="label" sx={{ ...labelSx, color: '#454545' }}>
+                  Wilaya de résidence <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
+                </Typography>
+                <Autocomplete
+                  options={WILAYAS}
+                  size="small"
+                  componentsProps={{
+                    paper: {
+                      sx: {
+                        '& .MuiAutocomplete-option': {
+                          fontSize: '9.88px',
+                          fontFamily: '"Poppins", sans-serif',
+                          padding: '4px 8px',
+                          minHeight: 'auto',
+                        }
+                      }
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      size="small"
+                      placeholder="Où résidez-vous ?"
+                      error={Boolean(touched.wilaya && errors.wilaya)}
+                      helperText={touched.wilaya && errors.wilaya}
+                      sx={figmaAutoSx}
+                    />
+                  )}
+                  onChange={(_, value) => setFieldValue('wilaya', value)}
+                />
+              </Box>
+            </Box>
+
+            {/* Row 4: Poste | Code promo (optionnel) */}
+            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+              <EntryField label="Poste">
+                <FigmaField
+                  fieldProps={getFieldProps('jobTitle')}
+                  placeholder="Quel poste occupez-vous ?"
+                />
+              </EntryField>
+              <EntryField label="Code promo (optionnel)">
+                <FigmaField
+                  fieldProps={getFieldProps('promoCode')}
+                  placeholder="Entrez un code promo"
+                />
+              </EntryField>
+            </Box>
+          </>
+        )}
+
+        {/* Row Last: Mot de passe | Confirmer le mot de passe (Shared by both) */}
         <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
-          <EntryField label="Mot de passe">
+          <EntryField label="Mot de passe *">
             <FigmaField
               fieldProps={getFieldProps('password')}
               placeholder="***************"
@@ -721,7 +842,7 @@ export default function RegisterForm() {
               endAdornment={eyeAdornment(showPassword, () => setShowPassword(!showPassword))}
             />
           </EntryField>
-          <EntryField label="Confirmer le mot de passe">
+          <EntryField label="Confirmer mot de passe *">
             <FigmaField
               fieldProps={getFieldProps('confirmPassword')}
               placeholder="***************"
@@ -753,12 +874,12 @@ export default function RegisterForm() {
           />
           <Typography
             sx={{
-              fontFamily: '"Poppins", sans-serif',
+              fontFamily: '"Inter", sans-serif',
               fontWeight: 400,
               fontSize: '9.87838px',
               lineHeight: '140%',
               letterSpacing: '-0.02em',
-              color: '#757575',
+              color: '#454545',
               whiteSpace: 'nowrap',
             }}
           >
@@ -784,12 +905,12 @@ export default function RegisterForm() {
           />
           <Typography
             sx={{
-              fontFamily: '"Poppins", sans-serif',
+              fontFamily: '"Inter", sans-serif',
               fontWeight: 400,
               fontSize: '9.87838px',
               lineHeight: '140%',
               letterSpacing: '-0.02em',
-              color: '#757575',
+              color: '#454545',
               width: '252px',
             }}
           >
@@ -802,7 +923,7 @@ export default function RegisterForm() {
                 handleOpenTerms();
               }}
               sx={{
-                fontFamily: '"Poppins", sans-serif',
+                fontFamily: '"Inter", sans-serif',
                 fontSize: '9.87838px',
                 color: '#007AFF',
                 letterSpacing: '-0.02em',
@@ -826,7 +947,7 @@ export default function RegisterForm() {
             sx={{
               width: COL_WIDTH,
               height: FIELD_HEIGHT,
-              borderRadius: '3.52799px',
+              borderRadius: '25px',
               background: '#002896',
               color: '#FFFFFF',
               textTransform: 'none',

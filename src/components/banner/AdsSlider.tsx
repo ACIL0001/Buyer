@@ -85,7 +85,7 @@ const AdsSlider: React.FC = () => {
         background: 'linear-gradient(135deg, #0f1c2e 0%, #1a3050 40%, #1e3a5f 70%, #2b5496 100%)',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'flex-end',
+        justifyContent: 'center',
         position: 'relative',
         overflow: 'hidden',
       }}>
@@ -96,17 +96,22 @@ const AdsSlider: React.FC = () => {
           animation: 'shimmerAds 1.5s infinite',
         }} />
         <div style={{
-          padding: isMobile ? '20px' : '40px 60px',
-          textAlign: 'right',
+          padding: '20px',
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
           zIndex: 2,
         }}>
           <div style={{
             width: '200px', height: '12px', borderRadius: '6px',
-            background: 'rgba(255,255,255,0.15)', marginBottom: '12px', marginLeft: 'auto',
+            background: 'rgba(255,255,255,0.15)', marginBottom: '12px',
           }} />
           <div style={{
             width: '140px', height: '8px', borderRadius: '4px',
-            background: 'rgba(255,255,255,0.1)', marginLeft: 'auto',
+            background: 'rgba(255,255,255,0.1)',
           }} />
         </div>
         <style jsx>{`
@@ -159,21 +164,23 @@ const AdsSlider: React.FC = () => {
       <style jsx>{`
         .ads-slider-container {
           width: 100%;
-          max-width: 100vw;
+          max-width: 100%;
+          height: ${isMobile ? '280px' : '315px'};
           position: relative;
           overflow: hidden;
-          margin-top: 68px;
+          margin: 70px 0 0; /* aligned with GuestHero top margin */
           opacity: 1;
+          border-radius: 0px;
         }
 
         .ads-swiper {
           width: 100%;
-          height: ${isMobile ? '280px' : '640px'};
+          height: 100%;
         }
 
         .ad-slide {
           width: 100%;
-          height: 640px;
+          height: 100%;
           position: relative;
           cursor: pointer;
           overflow: hidden;
@@ -184,7 +191,7 @@ const AdsSlider: React.FC = () => {
           top: 0;
           left: 0;
           width: 100%;
-          height: 640px;
+          height: 100%;
           object-fit: cover;
           object-position: center;
           opacity: 1;
@@ -210,7 +217,7 @@ const AdsSlider: React.FC = () => {
           inset: 0;
           display: flex;
           align-items: center;
-          justify-content: flex-end;
+          justify-content: center;
           padding: ${isMobile ? '20px 24px' : '40px 60px'};
           z-index: 2;
           pointer-events: none;
@@ -221,7 +228,7 @@ const AdsSlider: React.FC = () => {
           font-size: ${isMobile ? 'clamp(20px, 5.5vw, 28px)' : 'clamp(30px, 3.8vw, 46px)'};
           font-weight: 700;
           font-family: 'DM Sans', sans-serif;
-          text-align: right;
+          text-align: center;
           text-shadow: 0 2px 20px rgba(0,0,0,0.6);
           margin: 0;
           letter-spacing: -0.5px;
@@ -294,7 +301,7 @@ const AdsSlider: React.FC = () => {
           speed={700}
           keyboard={{ enabled: true, onlyInViewport: true }}
           className="ads-swiper"
-          style={{ width: '100%', height: isMobile ? '280px' : '640px', opacity: 1 }}
+          style={{ width: '100%', height: '100%', opacity: 1 }}
         >
           {ads.map((ad) => (
             <SwiperSlide key={ad._id} onClick={() => handleAdClick(ad)}>

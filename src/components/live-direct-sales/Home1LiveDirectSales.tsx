@@ -116,7 +116,7 @@ const Home1LiveDirectSales = () => {
               textAlign: 'center'
             }}
           >
-            Ventes en cours
+            Marchés et ventes en cours
           </motion.h2>
           <motion.div initial={{ width: 0 }} whileInView={{ width: '100px' }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 1 }} style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #002896, transparent)', marginTop: '15px', borderRadius: '10px' }} />
         </div>
@@ -173,7 +173,7 @@ const Home1LiveDirectSales = () => {
                         }}
                         onClick={() => router.push(`/direct-sale/${sale.id}`)}
                       >
-                        <div style={{ width: '284px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                        <div style={{ width: '284px', height: '280px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                           <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                             <ShareButton 
                               type="directSale" 
@@ -191,14 +191,14 @@ const Home1LiveDirectSales = () => {
                           />
                         </div>
                         <div style={{ 
-                          padding: '12px 10px', 
+                          padding: '10px 10px', 
                           flex: 1,
                           display: 'flex',
                           flexDirection: 'column',
-                          justifyContent: 'space-between'
+                          position: 'relative'
                         }}>
                           <h4 style={{ 
-                            width: '114px',
+                            width: '281px',
                             height: '23px',
                             fontFamily: 'Roboto, sans-serif',
                             fontWeight: '700', 
@@ -206,7 +206,7 @@ const Home1LiveDirectSales = () => {
                             lineHeight: '100%',
                             letterSpacing: '0px',
                             verticalAlign: 'middle',
-                            color: '#062C90', 
+                            color: '#002896', 
                             margin: '0 0 6px 0', 
                             whiteSpace: 'nowrap', 
                             overflow: 'hidden', 
@@ -215,17 +215,18 @@ const Home1LiveDirectSales = () => {
                           }}>
                             {sale.title || 'Nom Produit'}
                           </h4>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                               <span style={{ 
-                                minWidth: '46px',
+                                width: 'auto',
                                 height: '29px',
                                 fontFamily: 'Inter, sans-serif',
                                 fontWeight: '700', 
                                 fontSize: '24px', 
-                                lineHeight: '100%',
-                                color: '#062C90',
-                                verticalAlign: 'middle'
+                                lineHeight: '29px',
+                                color: '#002896',
+                                display: 'flex',
+                                alignItems: 'center'
                               }}>
                                {Number(sale.price || 0).toLocaleString()}
                               </span>
@@ -233,8 +234,10 @@ const Home1LiveDirectSales = () => {
                                 fontFamily: 'Inter, sans-serif',
                                 fontSize: '14px', 
                                 fontWeight: '700', 
-                                color: '#062C90',
-                                marginLeft: '2px'
+                                color: '#002896',
+                                marginLeft: '2px',
+                                display: 'flex',
+                                alignItems: 'center'
                               }}>DA</span>
                             </div>
                             <span style={{ 
@@ -243,12 +246,15 @@ const Home1LiveDirectSales = () => {
                               fontFamily: 'Roboto, sans-serif',
                               fontSize: '14px', 
                               fontWeight: '400', 
-                              lineHeight: '100%',
-                              color: '#062C90', 
+                              lineHeight: '16px',
+                              color: '#002896', 
+                              display: 'flex',
+                              alignItems: 'center',
                               whiteSpace: 'nowrap', 
                               overflow: 'hidden', 
                               textOverflow: 'ellipsis', 
-                              textAlign: 'right' 
+                              textAlign: 'right',
+                              justifyContent: 'flex-end'
                             }}>
                               {companyName}
                             </span>

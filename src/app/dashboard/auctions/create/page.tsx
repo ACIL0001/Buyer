@@ -107,8 +107,7 @@ export default function CreateAuctionPage() {
             .when('startingPrice', ([startingPrice], schema) => {
                 return startingPrice ? schema.moreThan(startingPrice, "Le prix de réserve doit être supérieur au prix initial.") : schema;
             })
-            .nullable()
-            .optional(),
+            .required('Le prix de réserve est requis'),
         size: Yup.string().optional(),
         color: Yup.string().optional(),
     });
@@ -518,7 +517,7 @@ export default function CreateAuctionPage() {
                                                 <Typography sx={fieldLabelStyle}>Prix de réserve (DA)</Typography>
                                                 <TextField 
                                                     fullWidth type="number" 
-                                                    placeholder="Optionnel" 
+                                                    placeholder="Entrer le prix de réserve" 
                                                     variant="outlined" 
                                                     {...formik.getFieldProps('reservePrice')} 
                                                     error={formik.touched.reservePrice && !!formik.errors.reservePrice}

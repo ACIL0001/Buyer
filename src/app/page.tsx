@@ -227,11 +227,11 @@ export default function Home() {
                                 <circle cx="12" cy="11" r="3"/>
                               </svg>
                             </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '15px' }}>Enchérir</h3>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '15px' }}>Enchères</h3>
                             <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', marginBottom: '35px', minHeight: '66px' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center' }}>
-                              <button onClick={() => router.push('/dashboard/auctions/create')} className="btn-3d-blue">Enchérir</button>
-                              <button onClick={() => router.push('/auction-sidebar')} className="btn-3d-blue">Poster</button>
+                              <button onClick={() => router.push('/auction-sidebar')} className="btn-3d-blue">Enchérir</button>
+                              <button onClick={() => router.push('/dashboard/auctions/create')} className="btn-3d-blue">Poster</button>
                             </div>
                           </div>
 

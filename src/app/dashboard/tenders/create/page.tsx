@@ -85,6 +85,9 @@ export default function CreateTenderPage() {
         evaluationType: Yup.string().required(t('createTender.errors.selectionRequired')),
         wilaya: Yup.string().required(t('createTender.errors.wilayaRequired')),
         location: Yup.string().required(t('createTender.errors.locationRequired')),
+        price: Yup.number().when('evaluationType', ([type], schema) => {
+            return type === 'MOINS_DISANT' ? schema.required('Le budget est requis pour le moins disant') : schema.optional();
+        }),
     });
 
     const formik = useFormik({
@@ -329,7 +332,14 @@ export default function CreateTenderPage() {
                                                 {formik.values.evaluationType === 'MOINS_DISANT' && (
                                                     <Grid size={{ xs: 12, sm: 6 }}>
                                                         <Typography sx={fieldLabelStyle}>Budget (DA)</Typography>
-                                                        <TextField fullWidth type="number" placeholder="Optionnel" {...formik.getFieldProps('price')} sx={inputStyle} />
+                                                        <TextField 
+                                                            fullWidth type="number" 
+                                                            placeholder="Entrer le budget" 
+                                                            {...formik.getFieldProps('price')} 
+                                                            error={formik.touched.price && !!formik.errors.price}
+                                                            helperText={formik.touched.price && formik.errors.price}
+                                                            sx={inputStyle} 
+                                                        />
                                                     </Grid>
                                                 )}
                                                 <Grid size={{ xs: 12, sm: 6 }}>

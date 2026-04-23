@@ -22,7 +22,7 @@ const Footer = () => {
     position: 'absolute',
     fontFamily: '"Inter", "DM Sans", sans-serif',
     fontStyle: 'normal',
-    fontWeight: 'normal',
+    fontWeight: 300,
     WebkitFontSmoothing: 'antialiased',
     MozOsxFontSmoothing: 'grayscale',
     fontSize: '18px',
@@ -67,7 +67,7 @@ const Footer = () => {
           top: '194.35px',
           fontFamily: '"Inter", "DM Sans", sans-serif',
           fontStyle: 'normal',
-          fontWeight: 'normal',
+          fontWeight: 300,
           WebkitFontSmoothing: 'antialiased',
           MozOsxFontSmoothing: 'grayscale',
           fontSize: '18px',
@@ -116,13 +116,13 @@ const Footer = () => {
         {/* Copyright Section */}
         <p style={{ 
           position: 'absolute',
-          width: '862px',
+          width: '100%',
           height: '30px',
-          left: '207px',
+          left: '0',
           top: '506px',
           fontFamily: '"Inter", "DM Sans", sans-serif',
           fontStyle: 'normal',
-          fontWeight: 'normal',
+          fontWeight: 300,
           WebkitFontSmoothing: 'antialiased',
           MozOsxFontSmoothing: 'grayscale',
           fontSize: '18px',
@@ -130,7 +130,8 @@ const Footer = () => {
           textAlign: 'center',
           color: '#757575',
           opacity: 0.85,
-          margin: 0
+          margin: 0,
+          whiteSpace: 'nowrap'
         }}>
           Copyright © 2026 Mazadclick | Touts droits réservés | <Link href="/terms-condition" style={{ color: '#757575', textDecoration: 'none' }}>Termes et conditions</Link> | <Link href="/privacy-policy" style={{ color: '#757575', textDecoration: 'none' }}>Politique de confidentialité</Link>
         </p>

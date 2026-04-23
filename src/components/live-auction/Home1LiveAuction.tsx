@@ -149,7 +149,7 @@ const Home1LiveAuction = () => {
               textAlign: 'center'
             }}
           >
-            Enchères en cours
+            Enchères à la une
           </motion.h2>
           <motion.div initial={{ width: 0 }} whileInView={{ width: '100px' }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 1 }} style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #002896, transparent)', marginTop: '15px', borderRadius: '10px' }} />
         </div>

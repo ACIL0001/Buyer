@@ -35,6 +35,11 @@ export default function Head() {
       <link rel="stylesheet" href="/assets/css/bootstrap.min.css" precedence="default" />
       <link rel="stylesheet" href="/assets/css/style.css" precedence="default" />
 
+      {/* Google Fonts */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;700&family=DM+Sans:wght@100;200;300;400;700&display=swap" rel="stylesheet" />
+
       {/* Defer non-critical CSS */}
       <link rel="stylesheet" href="/assets/css/animate.min.css" media="print" onLoad={(e: any) => { (e.target as any).media = 'all' }} />
       <link rel="stylesheet" href="/assets/css/slick.css" media="print" onLoad={(e: any) => { (e.target as any).media = 'all' }} />

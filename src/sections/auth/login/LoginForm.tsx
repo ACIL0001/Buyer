@@ -158,51 +158,48 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     }
   };
 
-  const offsetX = 701;
+  const inputSx = {
+    '& .MuiOutlinedInput-root': {
+      height: '40px',
+      borderRadius: '25px',
+      backgroundColor: '#FFFFFF',
+      '& fieldset': {
+        border: '0.71px solid #757575',
+        borderRadius: '25px',
+      },
+      '&:hover fieldset': { borderColor: '#002896' },
+      '&.Mui-focused fieldset': { borderColor: '#002896', borderWidth: '0.71px' },
+    },
+    '& .MuiInputBase-input': {
+      fontFamily: '"Poppins", sans-serif',
+      fontSize: '12px',
+      color: '#2D3748',
+      padding: '0 12px',
+    },
+    '& .MuiInputBase-input::placeholder': { color: '#757575', opacity: 1 },
+  };
 
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onKeyPress={handleKeyPress}>
-        <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
+        <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
           {loginError && (
-            <Alert 
-              severity="error" 
-              sx={{ 
-                position: 'absolute', 
-                left: 931 - offsetX, 
-                top: 220, 
-                width: 252.6, 
-                fontSize: '10px' 
-              }}
-            >
+            <Alert severity="error" sx={{ fontSize: '11px', borderRadius: '8px' }}>
               {loginError}
             </Alert>
           )}
 
-          {/* Email Container */}
-          <Box 
-             sx={{ 
-               position: 'absolute', 
-               left: 932 - offsetX, 
-               top: 290, 
-               width: 252.6, 
-               height: 50.69, 
-               display: 'flex', 
-               flexDirection: 'column', 
-               alignItems: 'flex-start',
-               gap: '2.82px' 
-             }}
-          >
+          {/* Email Field */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <Typography 
               sx={{ 
                 fontFamily: '"Inter", sans-serif',
                 fontWeight: 400,
-                fontSize: '9.87838px', 
+                fontSize: '12px', 
                 color: '#454545', 
                 lineHeight: '140%',
                 letterSpacing: '-0.02em',
-                whiteSpace: 'nowrap'
               }}
             >
               Email ou numéro de téléphone
@@ -214,43 +211,17 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
               placeholder="Email ou numéro de téléphone"
               {...getFieldProps('login')}
               error={Boolean(touched.login && errors.login)}
-              InputProps={{
-                sx: { 
-                  width: 252.6, 
-                  height: 33.87, 
-                  borderRadius: '25px',
-                  border: '0.705598px solid #757575',
-                  backgroundColor: '#FFFFFF',
-                  fieldset: { border: 'none' },
-                  fontFamily: '"Poppins", sans-serif',
-                  fontSize: '9.87838px',
-                  color: '#2D3748',
-                  px: 1,
-                  boxSizing: 'border-box'
-                }
-              }}
+              sx={inputSx}
             />
           </Box>
 
-          {/* Password Container */}
-          <Box 
-             sx={{ 
-               position: 'absolute', 
-               left: 932 - offsetX, 
-               top: 363, 
-               width: 252.6, 
-               height: 50.69, 
-               display: 'flex', 
-               flexDirection: 'column', 
-               alignItems: 'flex-start',
-               gap: '2.82px' 
-             }}
-          >
+          {/* Password Field */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <Typography 
               sx={{ 
                 fontFamily: '"Inter", sans-serif',
                 fontWeight: 400,
-                fontSize: '9.87838px', 
+                fontSize: '12px', 
                 color: '#454545', 
                 lineHeight: '140%',
                 letterSpacing: '-0.02em',
@@ -265,20 +236,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
               placeholder="****************"
               {...getFieldProps('password')}
               error={Boolean(touched.password && errors.password)}
+              sx={inputSx}
               InputProps={{
-                sx: { 
-                  width: 252.6, 
-                  height: 33.87, 
-                  borderRadius: '25px',
-                  border: '0.705598px solid #757575',
-                  backgroundColor: '#FFFFFF',
-                  fieldset: { border: 'none' },
-                  fontFamily: '"Poppins", sans-serif',
-                  fontSize: '9.87838px',
-                  color: '#2D3748',
-                  px: 1,
-                  boxSizing: 'border-box'
-                },
                 endAdornment: (
                   <InputAdornment position="end" sx={{ mr: 0.5 }}>
                     <IconButton 
@@ -286,7 +245,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
                       sx={{ p: 0.5 }}
                       disableRipple
                     >
-                      <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} sx={{ width: 14, height: 14, color: '#757575' }} />
+                      <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} sx={{ width: 16, height: 16, color: '#757575' }} />
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -294,93 +253,77 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             />
           </Box>
 
-          {/* Remember me */}
-          <Box 
-            sx={{ 
-              position: 'absolute',
-              left: 938 - offsetX,
-              top: 438,
-              width: 100.58,
-              height: 14.11,
-              display: 'flex', 
-              alignItems: 'center',
-            }}
-          >
-            <Box 
-              sx={{
-                width: 14.11,
-                height: 14.11,
-                border: '0.705598px solid #757575',
-                borderRadius: '1.4112px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mr: 1,
-                position: 'relative',
-                boxSizing: 'border-box'
-              }}
-            >
-              <Checkbox 
-                size="small" 
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
+          {/* Remember me + Forgot Password Row */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box 
+                sx={{
+                  width: 16,
+                  height: 16,
+                  border: '0.71px solid #757575',
+                  borderRadius: '2px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mr: 1,
+                  position: 'relative',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <Checkbox 
+                  size="small" 
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  sx={{ 
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    p: 0,
+                    opacity: 0, 
+                    zIndex: 1,
+                  }} 
+                />
+                {rememberMe && (
+                  <Iconify icon="eva:checkmark-fill" sx={{ width: 12, height: 12, color: '#757575' }} />
+                )}
+              </Box>
+              <Typography 
                 sx={{ 
-                  position: 'absolute',
-                  width: '100%',
-                  height: '100%',
-                  p: 0,
-                  opacity: 0, 
-                  zIndex: 1
-                }} 
-              />
-              {rememberMe && (
-                <Iconify icon="eva:checkmark-fill" sx={{ width: 10, height: 10, color: '#757575' }} />
-              )}
+                  fontFamily: '"Poppins", sans-serif', 
+                  fontWeight: 400,
+                  fontSize: '12px', 
+                  color: '#757575', 
+                  lineHeight: '140%', 
+                  letterSpacing: '-0.02em',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Rester connecté
+              </Typography>
             </Box>
-            <Typography 
+
+            <Link 
+              component="button" 
+              variant="body2" 
+              underline="none"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                router.push('/auth/forgot-password');
+              }}
               sx={{ 
-                fontFamily: '"Poppins", sans-serif', 
+                fontSize: '12px',
+                fontFamily: '"Poppins", sans-serif',
                 fontWeight: 400,
-                fontSize: '9.87838px', 
-                color: '#757575', 
-                lineHeight: '140%', 
+                color: '#007AFF',
+                lineHeight: '140%',
                 letterSpacing: '-0.02em',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
               }}
             >
-              Rester connecté
-            </Typography>
+              Mot de passe oublié ?
+            </Link>
           </Box>
-
-          {/* Links Section: Mot de passe oublié ? */}
-          <Link 
-            component="button" 
-            variant="body2" 
-            underline="none"
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              router.push('/auth/forgot-password');
-            }}
-            sx={{ 
-              position: 'absolute',
-              // 938+100.58=1038 approx for left, the image places it symmetrically. 
-              // Left side of input is 932. Width is 252.6. Right side is 1184.6. 
-              // The text is text-align: right. Let's just pin it to the right edge.
-              right: 1438 - 1184.6, // Wait, since parent is absolute, we can just use left mathematically.
-              left: 1080 - offsetX, // roughly calculated to line up with the right edge
-              top: 438,
-              fontSize: '9.87838px',
-              fontFamily: '"Poppins", sans-serif',
-              fontWeight: 400,
-              color: '#007AFF',
-              lineHeight: '140%',
-              letterSpacing: '-0.02em',
-              textAlign: 'right',
-            }}
-          >
-            Mot de passe oublié ?
-          </Link>
 
           {/* Login Button */}
           <LoadingButton
@@ -388,21 +331,19 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             variant="contained"
             loading={isSubmitting}
             sx={{ 
-              position: 'absolute',
-              left: 931 - offsetX,
-              top: 500,
-              width: 252.6,
-              height: 33.87,
-              borderRadius: '3.52799px',
+              width: '100%',
+              height: '40px',
+              borderRadius: '4px',
               background: '#002896',
               color: '#FFFFFF',
               textTransform: 'none',
-              fontSize: '9.87838px',
+              fontSize: '12px',
               fontFamily: '"Poppins", sans-serif',
               fontWeight: 600,
               lineHeight: '15px',
               letterSpacing: '-0.02em',
               boxShadow: 'none',
+              mt: 1,
               '&:hover': {
                 background: '#001b69',
                 boxShadow: 'none',

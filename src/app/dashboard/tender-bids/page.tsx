@@ -171,9 +171,6 @@ export default function TenderBidsPage() {
         <div style={tableStyles.toolbar}>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <span style={{ color: '#64748b', fontSize: '0.85rem' }}>{filtered.length} offre{filtered.length !== 1 ? 's' : ''}</span>
-            <button onClick={() => refetch()} disabled={isLoading} style={{ padding: '6px 12px', borderRadius: '8px', border: '1.5px solid #e2e8f0', background: '#fff', color: '#475569', fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer' }}>
-              🔄 Actualiser
-            </button>
           </div>
           <div style={tableStyles.searchWrap}>
             <span style={tableStyles.searchIcon}>🔍</span>

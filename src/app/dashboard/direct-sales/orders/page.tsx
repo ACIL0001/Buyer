@@ -142,11 +142,6 @@ export default function OrdersPage() {
         icon="📦"
         accentColor="var(--primary-ds-color)"
         stats={stats}
-        headerActions={
-          <button onClick={() => refetch()} disabled={isLoading} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'rgba(255,255,255,0.2)', color: '#fff', borderRadius: '10px', fontWeight: 700, fontSize: '0.85rem', border: '1.5px solid rgba(255,255,255,0.35)', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1 }}>
-            🔄 Actualiser
-          </button>
-        }
       >
         {/* Tabs */}
         <div style={{ padding: '16px 20px 0' }}>

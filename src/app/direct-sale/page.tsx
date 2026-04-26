@@ -32,7 +32,7 @@ export default function DirectSalePage() {
               background: '#FFFFFF',
               position: 'relative', 
               zIndex: 1, 
-              paddingTop: 'clamp(80px, 10vw, 120px)', 
+              paddingTop: '200px', 
               paddingBottom: 'clamp(40px, 5vw, 80px)',
               fontFamily: '"DM Sans", sans-serif',
               fontWeight: 700,

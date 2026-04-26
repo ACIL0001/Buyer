@@ -22,7 +22,6 @@ enum BID_STATUS {
   OPEN = 'OPEN',
   ON_AUCTION = 'ON_AUCTION',
   CLOSED = 'CLOSED',
-  ARCHIVED = 'ARCHIVED',
 }
 interface Auction {
   _id: string;
@@ -45,7 +44,6 @@ function statusConfig(status: BID_STATUS) {
     OPEN:       { label: 'Ouvert',     color: '#0284c7', bg: '#e0f2fe', dot: true },
     ON_AUCTION: { label: 'En cours',   color: '#16a34a', bg: '#dcfce7', dot: true },
     CLOSED:     { label: 'Fermé',      color: '#dc2626', bg: '#fee2e2' },
-    ARCHIVED:   { label: 'Archivé',    color: '#64748b', bg: '#f1f5f9' },
   };
   return map[status] || { label: status, color: '#64748b', bg: '#f1f5f9' };
 }
@@ -122,7 +120,6 @@ export default function AuctionsPage() {
     { label: 'Total', value: auctions.length, color: 'var(--primary-auction-color)', icon: '📋' },
     { label: 'Actives', value: active.length, color: '#10b981', icon: '✅' },
     { label: 'Terminées', value: finished.length, color: '#f59e0b', icon: '⏳' },
-    { label: 'Archivées', value: auctions.filter(a => a.status === BID_STATUS.ARCHIVED).length, color: '#64748b', icon: '🗄️' },
   ];
 
   if (isLoading) return <ListPageSkeleton accentColor="var(--primary-auction-color)" />;

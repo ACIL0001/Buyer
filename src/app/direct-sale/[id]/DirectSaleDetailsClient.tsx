@@ -303,10 +303,6 @@ function DirectSaleDetailContent() {
                 <span className="info-text-mini">{directSale.saleType === 'SERVICE' ? '🛠️ Service' : '📦 Produit'}</span>
               </div>
               <div className="info-item-mini">
-                <span className="info-label-mini">MODE:</span>
-                <span className="info-text-mini">🤝 Vente directe</span>
-              </div>
-              <div className="info-item-mini">
                 <span className="info-label-mini">STATUT:</span>
                 <span className="info-text-mini" style={{ color: isSoldOut ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>
                   {isSoldOut ? 'Sold Out' : 'En Stock'}

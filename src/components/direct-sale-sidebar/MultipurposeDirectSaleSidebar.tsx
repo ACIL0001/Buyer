@@ -12,6 +12,8 @@ import PageSkeleton from '@/components/skeletons/PageSkeleton'
 import Header from '@/components/header/Header';
 import Footer from '@/components/footer/FooterWithErrorBoundary';
 import ShareButton from "@/components/common/ShareButton";
+import { motion } from 'framer-motion';
+import FilterPopup from '../common/FilterPopup';
 
 const DEFAULT_DIRECT_SALE_IMAGE = "/assets/images/logo-white.png";
 
@@ -27,8 +29,13 @@ const WILAYAS = [
     "Touggourt", "Djanet", "El M'Ghair", "El Meniaa"
 ];
 
-const getDirectSaleImageUrl = (sale: any) => {
-  if (sale.thumbs && sale.thumbs.length > 0 && sale.thumbs[0].url) return normalizeImageUrl(sale.thumbs[0].url);
+const getDirectSaleImageUrl = (directSale: any, index: number = 0) => {
+  const images = directSale.thumbs || directSale.images || [];
+  if (images.length > 0 && images[index]) {
+    const imgObj = images[index];
+    const url = typeof imgObj === 'string' ? imgObj : (imgObj.url || imgObj.fullUrl || imgObj);
+    return normalizeImageUrl(url);
+  }
   return DEFAULT_DIRECT_SALE_IMAGE;
 };
 
@@ -42,9 +49,14 @@ const MultipurposeDirectSaleSidebar = () => {
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedWilaya, setSelectedWilaya] = useState('');
-  const [tenderType, setTenderType] = useState('ALL'); // 'ALL', 'PRODUCT', 'SERVICE'
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]); // Added multi-type state
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState('NEWEST'); // 'NEWEST', 'OLDEST', 'PRICE_ASC', 'PRICE_DESC'
+  const [flippedId, setFlippedId] = useState<string | null>(null);
+  const [cardImageIndexes, setCardImageIndexes] = useState<{ [key: string]: number }>({});
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [availability, setAvailability] = useState({ inStock: false, recentlyPublished: false });
+  const [rating, setRating] = useState<number | null>(null);
 
   const { data: categoriesData } = useQuery({
     queryKey: ['categories', 'all'],
@@ -70,11 +82,11 @@ const MultipurposeDirectSaleSidebar = () => {
     // Auth & Basic Filter
     let filtered = activeSales.filter((sale: any) => sale.verifiedOnly === true ? isUserVerified : true);
 
-    // Type Filter (Product/Service) - Corrected logic
-    if (tenderType !== 'ALL') {
+    // Type Filter (Product/Service)
+    if (selectedTypes.length > 0) {
       filtered = filtered.filter(s => {
-        const type = s.saleType || s.type || s.tenderType;
-        return type?.toUpperCase() === tenderType;
+        const type = (s.saleType || s.type || s.tenderType || '').toUpperCase();
+        return selectedTypes.includes(type);
       });
     }
 
@@ -113,9 +125,9 @@ const MultipurposeDirectSaleSidebar = () => {
     }
 
     return filtered;
-  }, [allDirectSalesResponse, auth.user, tenderType, priceRange, selectedCategories, selectedWilaya, searchQuery, sortOrder]);
+  }, [allDirectSalesResponse, auth.user, selectedTypes, priceRange, selectedCategories, selectedWilaya, searchQuery, sortOrder]);
 
-  const itemsPerPage = 9;
+  const itemsPerPage = 12;
   const totalPages = Math.max(1, Math.ceil(allDirectSales.length / itemsPerPage));
   const currentData = allDirectSales.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -150,7 +162,26 @@ const MultipurposeDirectSaleSidebar = () => {
           </h1>
         </div>
 
-        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 40px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button 
+            onClick={() => setIsFilterOpen(true)}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px', 
+              padding: '12px 25px', 
+              borderRadius: '12px', 
+              border: 'none', 
+              background: '#f8f9fb', 
+              color: '#002896', 
+              fontWeight: '800', 
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+            }}
+          >
+            <i className="bi bi-funnel-fill"></i>
+            Filtre
+          </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
              <span style={{ fontSize: '14px', color: '#666', fontWeight: '800' }}>Trier par:</span>
              <select 
@@ -166,214 +197,399 @@ const MultipurposeDirectSaleSidebar = () => {
           </div>
         </div>
 
-        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', display: 'flex', gap: '40px' }}>
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'center' }}>
           
-          {/* Sidebar Filter - Glassmorphism Restyle */}
-          <aside style={{ width: '231px', flexShrink: 0 }}>
-            <div style={{ 
-              width: '231px',
-              background: 'linear-gradient(127.45deg, rgba(230, 230, 230, 0.7) 2.15%, rgba(195, 201, 215, 0.14) 63.05%)', 
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              borderRadius: '24px', 
-              padding: '24px', 
-              boxShadow: '0px 20px 40px 0px #0000001A, 0px 4px 4px 0px #00000040', 
-              position: 'sticky', 
-              top: '140px',
-              border: '1px solid',
-              borderImageSource: 'linear-gradient(127.23deg, rgba(255, 255, 255, 0.42) 2.46%, rgba(255, 255, 255, 0.24) 97.36%)',
-              opacity: 1
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                <span style={{ fontSize: '16px', color: '#002896', fontWeight: '800' }}>Filtrer</span>
-                <span onClick={() => {setSelectedCategories([]); setPriceRange({min:'', max:''}); setSearchQuery(''); setTenderType('ALL'); setSelectedWilaya(''); setSortOrder('NEWEST');}} style={{fontSize: '11px', color:'#002896', cursor:'pointer', fontWeight:'700'}}>Réinitialiser</span>
-              </div>
-
-              {/* Type Filter in Sidebar */}
-              <div style={{ marginBottom: '30px' }}>
-                <h4 style={{ fontSize: '14px', color: '#002896', fontWeight: '800', marginBottom: '15px' }}>Type</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {['ALL', 'PRODUCT', 'SERVICE'].map(type => (
-                    <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#666', cursor: 'pointer' }}>
-                      <input type="radio" name="tenderTypeSidebar" checked={tenderType === type} onChange={() => { setTenderType(type); setCurrentPage(1); }} style={{ accentColor: '#002896' }} />
-                      {type === 'ALL' ? 'Tout' : type === 'PRODUCT' ? 'Produit' : 'Service'}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Price Filter - Min/Max inputs */}
-              <div style={{ marginBottom: '30px' }}>
-                <h4 style={{ fontSize: '14px', color: '#002896', fontWeight: '800', marginBottom: '15px' }}>Prix (DA)</h4>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <input 
-                    type="number" 
-                    placeholder="Min" 
-                    value={priceRange.min} 
-                    onChange={(e) => setPriceRange(prev => ({...prev, min: e.target.value}))} 
-                    style={{ width: '100%', padding: '10px', borderRadius: '12px', border: 'none', background: 'rgba(255,255,255,0.6)', fontSize: '12px', outline: 'none', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}
-                  />
-                  <span style={{color:'#666'}}>-</span>
-                  <input 
-                    type="number" 
-                    placeholder="Max" 
-                    value={priceRange.max} 
-                    onChange={(e) => setPriceRange(prev => ({...prev, max: e.target.value}))} 
-                    style={{ width: '100%', padding: '10px', borderRadius: '12px', border: 'none', background: 'rgba(255,255,255,0.6)', fontSize: '12px', outline: 'none', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}
-                  />
-                </div>
-              </div>
-
-              {/* Wilaya Filter */}
-              <div style={{ marginBottom: '30px' }}>
-                <h4 style={{ fontSize: '14px', color: '#002896', fontWeight: '800', marginBottom: '15px' }}>Wilaya</h4>
-                <select 
-                  value={selectedWilaya} 
-                  onChange={(e) => setSelectedWilaya(e.target.value)}
-                  style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'rgba(255,255,255,0.6)', color: '#666', fontSize: '13px', outline: 'none', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer' }}
-                >
-                  <option value="">Toutes les wilayas</option>
-                  {WILAYAS.map(w => (
-                    <option key={w} value={w}>{w}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Categories Filter */}
-              <div>
-                <h4 style={{ fontSize: '14px', color: '#002896', fontWeight: '800', marginBottom: '15px' }}>Catégories</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '200px', overflowY: 'auto', paddingRight: '5px' }}>
-                  {categories.map((cat: any) => (
-                    <label key={cat._id} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#666', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={selectedCategories.includes(cat._id)} onChange={() => toggleCategory(cat._id)} style={{ accentColor: '#002896' }} />
-                      {cat.name}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </aside>
-
           {/* Grid Content */}
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 284px)', gap: '25px', rowGap: '40px', justifyContent: 'center' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 284px)', gap: '25px', rowGap: '40px', justifyContent: 'center' }}>
               {currentData.length > 0 ? currentData.map((sale: any, i) => {
                 const companyName = sale.owner?.entreprise || sale.owner?.firstName || 'Nom entreprise';
                 const type = (sale.type || sale.tenderType)?.toUpperCase();
                 const isProd = type === 'PRODUCT';
 
                 return (
-                  <div 
+                  <motion.div 
                     key={sale.id || i}
+                    initial={false}
+                    animate={{ rotateY: flippedId === sale.id ? 180 : 0 }}
+                    transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
                     style={{ 
                       width: '284px',
                       minWidth: '284px',
                       maxWidth: '284px',
-                      height: '383px',
-                      minHeight: '383px',
-                      maxHeight: '383px',
-                      cursor: 'pointer',
+                      height: '464px',
+                      minHeight: '464px',
+                      maxHeight: '464px',
                       position: 'relative',
                       zIndex: 1,
-                      borderRadius: '20px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      overflow: 'hidden',
-                      transition: 'transform 0.3s'
+                      transformStyle: 'preserve-3d'
                     }}
-                    onMouseOver={e => e.currentTarget.style.transform = 'translateY(-10px)'} 
-                    onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
-                    onClick={() => sale.id && router.push(`/direct-sale/${sale.id}`)}
                   >
-                    <div style={{ width: '284px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                    {/* FRONT SIDE */}
+                    <div 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        position: 'absolute',
+                        backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                        backgroundColor: 'transparent',
+                        cursor: 'pointer',
+                        boxShadow: 'none',
+                        border: 'none'
+                      }}
+                      onClick={() => !flippedId && router.push(`/direct-sale/${sale.id}`)}
+                    >
+                    <div style={{ width: '284px', height: '280px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                       <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                         <ShareButton 
                           type="directSale" 
                           id={sale.id} 
                           title={sale.title} 
                           description={sale.description} 
-                          imageUrl={getDirectSaleImageUrl(sale)} 
+                          imageUrl={getDirectSaleImageUrl(sale, cardImageIndexes[sale.id] || 0)} 
                         />
                       </div>
                       <img 
-                        src={getDirectSaleImageUrl(sale)} 
+                        src={getDirectSaleImageUrl(sale, cardImageIndexes[sale.id] || 0)} 
                         alt={sale.title} 
                         style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
                         onError={(e) => (e.currentTarget.src = DEFAULT_DIRECT_SALE_IMAGE)} 
                       />
-                    </div>
-                        <div style={{ 
-                          padding: '12px 10px', 
-                          flex: 1,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
-                          position: 'relative'
-                        }}>
-                          <h4 style={{ 
-                            width: '281px',
-                            height: '23px',
-                            fontFamily: 'Roboto, sans-serif',
-                            fontWeight: '700', 
-                            fontSize: '20px', 
-                            lineHeight: '100%',
-                            letterSpacing: '0px',
-                            verticalAlign: 'middle',
-                            color: '#002896', 
-                            margin: '0 0 6px 0', 
-                            whiteSpace: 'nowrap', 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis',
-                            opacity: 1
-                          }}>
-                            {sale.title || 'Nom Produit'}
-                          </h4>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <span style={{ 
-                                width: 'auto',
-                                height: '29px',
-                                fontFamily: 'Inter, sans-serif',
-                                fontWeight: '700', 
-                                fontSize: '24px', 
-                                lineHeight: '29px',
-                                color: '#002896',
-                                display: 'flex',
-                                alignItems: 'center'
-                              }}>
-                               {Number(sale.price || 0).toLocaleString()}
-                              </span>
-                              <span style={{ 
-                                fontFamily: 'Inter, sans-serif',
-                                fontSize: '14px', 
-                                fontWeight: '700', 
-                                color: '#002896',
-                                marginLeft: '2px',
-                                display: 'flex',
-                                alignItems: 'center'
-                              }}>DA</span>
-                            </div>
-                            <span style={{ 
-                              width: '101px',
-                              height: '16px',
-                              fontFamily: 'Roboto, sans-serif',
-                              fontSize: '14px', 
-                              fontWeight: '400', 
-                              lineHeight: '16px',
-                              color: '#002896', 
+
+                      {/* Image Navigation Arrows */}
+                      {(sale.thumbs?.length > 1 || sale.images?.length > 1) && (
+                        <>
+                          <div 
+                            className="image-nav-arrow"
+                            style={{
+                              position: 'absolute',
+                              top: '45%',
+                              left: '8px',
+                              transform: 'translateY(-50%)',
+                              width: '26px',
+                              height: '26px',
+                              borderRadius: '50%',
+                              backgroundColor: 'rgba(255,255,255,0.9)',
                               display: 'flex',
                               alignItems: 'center',
-                              whiteSpace: 'nowrap', 
-                              overflow: 'hidden', 
-                              textOverflow: 'ellipsis', 
-                              textAlign: 'right',
-                              justifyContent: 'flex-end'
-                            }}>
-                              {companyName}
-                            </span>
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              zIndex: 25,
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                              border: 'none',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const total = (sale.thumbs?.length || sale.images?.length || 1);
+                              const current = cardImageIndexes[sale.id] || 0;
+                              setCardImageIndexes({ ...cardImageIndexes, [sale.id]: (current - 1 + total) % total });
+                            }}
+                          >
+                            <i className="bi bi-chevron-left" style={{ color: '#002896', fontSize: '12px' }}></i>
                           </div>
+                          <div 
+                            className="image-nav-arrow"
+                            style={{
+                              position: 'absolute',
+                              top: '45%',
+                              right: '8px',
+                              transform: 'translateY(-50%)',
+                              width: '26px',
+                              height: '26px',
+                              borderRadius: '50%',
+                              backgroundColor: 'rgba(255,255,255,0.9)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              zIndex: 25,
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                              border: 'none',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const total = (sale.thumbs?.length || sale.images?.length || 1);
+                              const currentIdx = cardImageIndexes[sale.id] || 0;
+                              setCardImageIndexes({ ...cardImageIndexes, [sale.id]: (currentIdx + 1) % total });
+                            }}
+                          >
+                            <i className="bi bi-chevron-right" style={{ color: '#002896', fontSize: '12px' }}></i>
+                          </div>
+                          
+                          {/* Dots indicator */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '10px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            display: 'flex',
+                            gap: '4px',
+                            zIndex: 25
+                          }}>
+                            {(sale.thumbs || sale.images).map((_: any, i: number) => (
+                              <div key={i} style={{
+                                width: '6px',
+                                height: '6px',
+                                borderRadius: '50%',
+                                backgroundColor: (cardImageIndexes[sale.id] || 0) === i ? '#002896' : 'rgba(255,255,255,0.6)',
+                                transition: 'all 0.3s ease'
+                              }} />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                      
+                      <div 
+                        style={{ 
+                          position: 'absolute', 
+                          bottom: '10px', 
+                          right: '10px', 
+                          zIndex: 30,
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          padding: '3px 8px',
+                          borderRadius: '15px',
+                          boxShadow: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          transition: 'all 0.3s ease',
+                          border: 'none'
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setFlippedId(flippedId === sale.id ? null : sale.id);
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.backgroundColor = '#fff';
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                      >
+                        <span style={{ 
+                          fontSize: '11px', 
+                          fontWeight: '600', 
+                          color: '#002896',
+                          fontFamily: 'Inter, sans-serif'
+                        }}>Plus de détails</span>
+                        <i className="bi bi-info-circle" style={{ color: '#002896', fontSize: '12px' }}></i>
+                      </div>
+                    </div>
+                    <div style={{ 
+                      padding: '10px 10px', 
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      position: 'relative'
+                    }}>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <h4 style={{ 
+                          width: '264px',
+                          height: '23px',
+                          fontFamily: 'Roboto, sans-serif',
+                          fontWeight: '700', 
+                          fontSize: '20px', 
+                          lineHeight: '100%',
+                          letterSpacing: '0px',
+                          verticalAlign: 'middle',
+                          color: '#002896', 
+                          margin: '0 0 6px 0', 
+                          whiteSpace: 'nowrap', 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis',
+                          opacity: 1
+                        }}>
+                          {sale.title || 'Nom Produit'}
+                        </h4>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                            <span style={{ 
+                              width: 'auto',
+                              height: '29px',
+                              fontFamily: 'Inter, sans-serif',
+                              fontWeight: '700', 
+                              fontSize: Number(sale.price || 0).toLocaleString().length > 10 ? '16px' : 
+                                        Number(sale.price || 0).toLocaleString().length > 8 ? '20px' : '24px', 
+                              lineHeight: '29px',
+                              color: '#002896',
+                              transition: 'font-size 0.2s ease'
+                            }}>
+                             {Number(sale.price || 0).toLocaleString()}
+                            </span>
+                            <span style={{ 
+                              fontFamily: 'Inter, sans-serif',
+                              fontSize: '14px', 
+                              fontWeight: '700', 
+                              color: '#002896',
+                              marginLeft: '1px'
+                            }}>DA</span>
+                          </div>
+                          <span style={{ 
+                            width: '101px',
+                            height: '16px',
+                            fontFamily: 'Roboto, sans-serif',
+                            fontSize: '14px', 
+                            fontWeight: '400', 
+                            lineHeight: '16px',
+                            color: '#002896', 
+                            display: 'flex',
+                            alignItems: 'center',
+                            whiteSpace: 'nowrap', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            textAlign: 'right',
+                            justifyContent: 'flex-end'
+                          }}>
+                            {companyName}
+                          </span>
                         </div>
+
+                        <button 
+                          style={{
+                            width: '264px',
+                            height: '39px',
+                            backgroundColor: '#EB4545',
+                            borderRadius: '10px',
+                            padding: '10px',
+                            border: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            gap: '10px',
+                            marginTop: '12px',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/direct-sale/${sale.id}`);
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.filter = 'brightness(1.1)';
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.filter = 'brightness(1)';
+                          }}
+                        >
+                          <span style={{
+                            fontFamily: 'Inter, sans-serif',
+                            fontWeight: '500',
+                            fontSize: '16px',
+                            lineHeight: '100%',
+                            color: '#FFFFFF',
+                            textAlign: 'center'
+                          }}>
+                            Acheter rapide
+                          </span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
+
+                    {/* BACK SIDE */}
+                    <div 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                        backgroundColor: 'transparent',
+                        color: '#333',
+                        transform: 'rotateY(180deg)',
+                        padding: '18px',
+                        boxSizing: 'border-box',
+                        border: 'none',
+                        boxShadow: 'none'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', fontFamily: 'Roboto, sans-serif', color: '#002896', textTransform: 'uppercase' }}>Fiche Technique</h4>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFlippedId(null);
+                          }}
+                          style={{ backgroundColor: 'transparent', border: 'none', color: '#999', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
+                        >
+                          <i className="bi bi-x-lg" style={{ fontSize: '16px' }}></i>
+                        </button>
+                      </div>
+
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                        {/* Databook rows */}
+                         {[
+                          { label: 'Désignation', value: sale.title },
+                          { label: 'Prix Unitaire', value: `${Number(sale.price || 0).toLocaleString()} DA` },
+                          { label: 'Disponible', value: sale.quantity > 0 ? (sale.quantity - (sale.soldQuantity || 0)) : 'Illimité' },
+                          { label: 'Type', value: (sale.bidType === 'SERVICE' || sale.saleType === 'SERVICE') ? '🛠️ Service' : '📦 Produit' },
+                          { label: 'Catégorie', value: sale.category?.name || sale.productSubCategory?.name || sale.productCategory?.name || sale.categoryName || 'Général' },
+                          { label: 'Localisation', value: `${sale.wilaya || ''}${sale.place ? ', ' + sale.place : ''}` || 'Algérie' },
+                          { label: 'Vendeur', value: companyName },
+                        ].map((row, idx) => (
+                          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #eee', paddingBottom: '1px', alignItems: 'flex-start' }}>
+                            <span style={{ fontSize: '10px', fontWeight: '600', color: '#888', flexShrink: 0 }}>{row.label}</span>
+                            <span style={{ fontSize: '10px', fontWeight: '700', color: '#333', textAlign: 'right', marginLeft: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>{row.value}</span>
+                          </div>
+                        ))}
+
+                        <div style={{ marginTop: '5px' }}>
+                          <p style={{ fontSize: '12px', fontWeight: '600', color: '#888', margin: '0 0 3px 0' }}>Description</p>
+                          <p style={{ 
+                            fontSize: '12px', 
+                            color: '#555', 
+                            margin: 0, 
+                            lineHeight: '1.4', 
+                            fontFamily: 'Inter, sans-serif',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 4,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                          }}>
+                            {sale.description || 'Aucune description disponible.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button 
+                        style={{
+                          width: '100%',
+                          height: '40px',
+                          backgroundColor: '#EB4545',
+                          color: '#fff',
+                          borderRadius: '8px',
+                          border: 'none',
+                          marginTop: '12px',
+                          fontWeight: '700',
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onClick={() => router.push(`/direct-sale/${sale.id}`)}
+                      >
+                        Consulter le produit
+                      </button>
+                    </div>
+                  </motion.div>
                 );
               }) : (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '100px', color: '#666', fontWeight:'800' }}>Aucune vente directe disponible pour ces critères.</div>
@@ -455,6 +671,37 @@ const MultipurposeDirectSaleSidebar = () => {
             )}
           </div>
         </div>
+
+        <FilterPopup 
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          categories={categories}
+          selectedCategories={selectedCategories}
+          onToggleCategory={(id: string) => setSelectedCategories(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])}
+          priceRange={priceRange}
+          onPriceChange={(key: string, val: string) => setPriceRange(prev => ({ ...prev, [key]: val }))}
+          wilayas={WILAYAS}
+          selectedWilaya={selectedWilaya}
+          onWilayaChange={setSelectedWilaya}
+          selectedTypes={selectedTypes}
+          onToggleType={(type: string) => setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])}
+          availability={availability}
+          onToggleAvailability={(key: string) => { const k = key as 'inStock' | 'recentlyPublished'; setAvailability(prev => ({ ...prev, [k]: !prev[k] })); }}
+          rating={rating}
+          onToggleRating={(r: number) => setRating(prev => prev === r ? null : r)}
+          onClear={() => {
+            setPriceRange({ min: '', max: '' });
+            setSelectedCategories([]);
+            setSelectedWilaya('');
+            setSelectedTypes([]);
+            setAvailability({ inStock: false, recentlyPublished: false });
+            setRating(null);
+          }}
+          onApply={() => {
+            setIsFilterOpen(false);
+            setCurrentPage(1);
+          }}
+        />
       </div>
     </>
   );

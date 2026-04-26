@@ -1284,18 +1284,12 @@ const MultipurposeDetails1 = () => {
                   </span>
                 </div>
                 <div className="info-item-mini">
-                  <span className="info-label-mini">MODE:</span>
-                  <span className="info-text-mini">
-                    {auctionData?.auctionType?.toLowerCase() === 'express' ? '⚡ Express' : '🤝 Classique'}
-                  </span>
-                </div>
-                <div className="info-item-mini">
                   <span className="info-label-mini">STATUT:</span>
                   <span className="info-text-mini" style={{ color: auctionData?.status === 'ACTIVE' ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>
                     {auctionData?.status === 'ACTIVE' ? 'Actif' : (auctionData?.status || 'Terminé')}
                   </span>
                 </div>
-                <div className="info-item-mini" style={{ gridColumn: 'span 2' }}>
+                <div className="info-item-mini">
                   <span className="info-label-mini">CATÉGORIE:</span>
                   <span className="info-text-mini">{auctionData?.category?.name || auctionData?.categoryName || auctionData?.productSubCategory?.name || auctionData?.productCategory?.name || 'Non spécifiée'}</span>
                 </div>

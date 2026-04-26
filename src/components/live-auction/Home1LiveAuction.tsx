@@ -40,14 +40,13 @@ export function calculateTimeRemaining(endDate: string) {
   };
 }
 
-const getAuctionImageUrl = (auction: any) => {
-  const possibleImageSources = [
-    auction.thumbs?.[0]?.url, auction.thumbs?.[0]?.fullUrl, auction.images?.[0], 
-    auction.image, auction.thumbnail, auction.photo, auction.picture, 
-    auction.icon, auction.logo, auction.coverImage, auction.mainImage
-  ].filter(Boolean);
-  
-  if (possibleImageSources.length > 0) return normalizeImageUrl(possibleImageSources[0]);
+const getAuctionImageUrl = (auction: any, index: number = 0) => {
+  const images = auction.thumbs || auction.images || [];
+  if (images.length > 0 && images[index]) {
+    const imgObj = images[index];
+    const url = typeof imgObj === 'string' ? imgObj : (imgObj.url || imgObj.fullUrl || imgObj);
+    return normalizeImageUrl(url);
+  }
   return DEFAULT_AUCTION_IMAGE;
 };
 
@@ -87,6 +86,8 @@ const Home1LiveAuction = () => {
   }, [allAuctions]);
 
   const [timers, setTimers] = useState<{ [key: string]: any }>({});
+  const [flippedId, setFlippedId] = useState<string | null>(null);
+  const [cardImageIndexes, setCardImageIndexes] = useState<{ [key: string]: number }>({});
   
   useEffect(() => {
     if (liveAuctions.length === 0) return;
@@ -186,9 +187,12 @@ const Home1LiveAuction = () => {
                   const companyName = auction.owner?.entreprise || auction.owner?.firstName || 'Nom Entreprise';
                   
                   return (
-                    <SwiperSlide key={auction.id} style={{ overflow: 'visible', width: '284px', minWidth: '284px', maxWidth: '284px' }}>
-                      <div 
+                    <SwiperSlide key={auction.id} style={{ overflow: 'visible', width: '284px', minWidth: '284px', maxWidth: '284px', perspective: '1000px' }}>
+                      <motion.div 
                         key={auction.id}
+                        initial={false}
+                        animate={{ rotateY: flippedId === auction.id ? 180 : 0 }}
+                        transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
                         style={{ 
                           width: '284px',
                           minWidth: '284px',
@@ -196,16 +200,30 @@ const Home1LiveAuction = () => {
                           height: '464px',
                           minHeight: '464px',
                           maxHeight: '464px',
-                          cursor: 'pointer',
                           position: 'relative',
                           zIndex: 1,
-                          borderRadius: '20px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          overflow: 'hidden'
+                          transformStyle: 'preserve-3d'
                         }}
-                        onClick={() => router.push(`/auction-details/${auction.id}`)}
                       >
+                        {/* FRONT SIDE */}
+                        <div 
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            position: 'absolute',
+                            backfaceVisibility: 'hidden',
+                            WebkitBackfaceVisibility: 'hidden',
+                            borderRadius: '20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
+                            backgroundColor: 'transparent',
+                            cursor: 'pointer',
+                            boxShadow: 'none',
+                            border: 'none'
+                          }}
+                          onClick={() => router.push(`/auction-details/${auction.id}`)}
+                        >
                         <div style={{ width: '284px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                           <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                             <ShareButton 
@@ -213,15 +231,139 @@ const Home1LiveAuction = () => {
                               id={auction.id} 
                               title={auction.title} 
                               description={auction.description} 
-                              imageUrl={getAuctionImageUrl(auction)} 
+                              imageUrl={getAuctionImageUrl(auction, cardImageIndexes[auction.id] || 0)} 
                             />
                           </div>
                           <img 
-                            src={getAuctionImageUrl(auction)} 
+                            src={getAuctionImageUrl(auction, cardImageIndexes[auction.id] || 0)} 
                             alt={auction.title} 
                             style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
                             onError={(e) => (e.currentTarget.src = DEFAULT_AUCTION_IMAGE)} 
                           />
+
+                          {/* Image Navigation Arrows */}
+                          {(auction.thumbs?.length > 1 || auction.images?.length > 1) && (
+                            <>
+                              <div 
+                                className="image-nav-arrow"
+                                style={{
+                                  position: 'absolute',
+                                  top: '45%',
+                                  left: '8px',
+                                  transform: 'translateY(-50%)',
+                                  width: '26px',
+                                  height: '26px',
+                                  borderRadius: '50%',
+                                  backgroundColor: 'rgba(255,255,255,0.9)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  cursor: 'pointer',
+                                  zIndex: 25,
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                  border: 'none',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const total = (auction.thumbs?.length || auction.images?.length || 1);
+                                  const current = cardImageIndexes[auction.id] || 0;
+                                  setCardImageIndexes({ ...cardImageIndexes, [auction.id]: (current - 1 + total) % total });
+                                }}
+                              >
+                                <i className="bi bi-chevron-left" style={{ color: '#002896', fontSize: '12px' }}></i>
+                              </div>
+                              <div 
+                                className="image-nav-arrow"
+                                style={{
+                                  position: 'absolute',
+                                  top: '45%',
+                                  right: '8px',
+                                  transform: 'translateY(-50%)',
+                                  width: '26px',
+                                  height: '26px',
+                                  borderRadius: '50%',
+                                  backgroundColor: 'rgba(255,255,255,0.9)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  cursor: 'pointer',
+                                  zIndex: 25,
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                  border: 'none',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const total = (auction.thumbs?.length || auction.images?.length || 1);
+                                  const currentIdx = cardImageIndexes[auction.id] || 0;
+                                  setCardImageIndexes({ ...cardImageIndexes, [auction.id]: (currentIdx + 1) % total });
+                                }}
+                              >
+                                <i className="bi bi-chevron-right" style={{ color: '#002896', fontSize: '12px' }}></i>
+                              </div>
+                              
+                              {/* Dots indicator */}
+                              <div style={{
+                                position: 'absolute',
+                                bottom: '10px',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                display: 'flex',
+                                gap: '4px',
+                                zIndex: 25
+                              }}>
+                                {(auction.thumbs || auction.images).map((_: any, i: number) => (
+                                  <div key={i} style={{
+                                    width: '6px',
+                                    height: '6px',
+                                    borderRadius: '50%',
+                                    backgroundColor: (cardImageIndexes[auction.id] || 0) === i ? '#002896' : 'rgba(255,255,255,0.6)',
+                                    transition: 'all 0.3s ease'
+                                  }} />
+                                ))}
+                              </div>
+                            </>
+                          )}
+                          
+                          <div 
+                            style={{ 
+                              position: 'absolute', 
+                              bottom: '10px', 
+                              right: '10px', 
+                              zIndex: 30,
+                              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                              padding: '3px 8px',
+                              borderRadius: '15px',
+                              boxShadow: 'none',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              transition: 'all 0.3s ease',
+                              border: 'none'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setFlippedId(flippedId === auction.id ? null : auction.id);
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.backgroundColor = '#fff';
+                              e.currentTarget.style.transform = 'scale(1.05)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                              e.currentTarget.style.transform = 'scale(1)';
+                            }}
+                          >
+                            <span style={{ 
+                              fontSize: '11px', 
+                              fontWeight: '600', 
+                              color: '#002896',
+                              fontFamily: 'Inter, sans-serif'
+                            }}>Plus de détails</span>
+                            <i className="bi bi-info-circle" style={{ color: '#002896', fontSize: '12px' }}></i>
+                          </div>
                         </div>
                         <div style={{ 
                           padding: '8px 10px', 
@@ -249,16 +391,18 @@ const Home1LiveAuction = () => {
                             {auction.title || 'Nom Produit'}
                           </h4>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'nowrap', justifyContent: 'space-between' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
                               <span style={{ 
-                                minWidth: '46px',
+                                width: 'auto',
                                 height: '29px',
                                 fontFamily: 'Inter, sans-serif',
                                 fontWeight: '700', 
-                                fontSize: '24px', 
+                                fontSize: Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString().length > 10 ? '16px' : 
+                                          Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString().length > 8 ? '20px' : '24px', 
                                 lineHeight: '100%',
                                 color: '#062C90',
-                                verticalAlign: 'middle'
+                                verticalAlign: 'middle',
+                                transition: 'font-size 0.2s ease'
                               }}>
                                {Number(auction.currentPrice || auction.startingPrice || 0).toLocaleString()}
                               </span>
@@ -267,7 +411,7 @@ const Home1LiveAuction = () => {
                                 fontSize: '14px', 
                                 fontWeight: '700', 
                                 color: '#062C90',
-                                marginLeft: '2px'
+                                marginLeft: '1px'
                               }}>DA</span>
                             </div>
                             <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center', gap: '10px' }}>
@@ -309,7 +453,8 @@ const Home1LiveAuction = () => {
                               letterSpacing: '0px',
                               verticalAlign: 'middle',
                               color: '#002896',
-                              width: '213px',
+                              width: '100%',
+                              whiteSpace: 'nowrap',
                               height: '16px'
                             }}>
                               {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j${timer.hours}h (${timer.formattedEnd})`}
@@ -319,7 +464,7 @@ const Home1LiveAuction = () => {
                           <button 
                             disabled={timer.hasEnded}
                             style={{
-                              width: '280px',
+                              width: '264px',
                               height: '39px',
                               backgroundColor: '#EB4545',
                               borderRadius: '10px',
@@ -365,6 +510,99 @@ const Home1LiveAuction = () => {
                           </button>
                         </div>
                       </div>
+
+                        {/* BACK SIDE */}
+                        <div 
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            backfaceVisibility: 'hidden',
+                            WebkitBackfaceVisibility: 'hidden',
+                            borderRadius: '20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
+                            backgroundColor: 'transparent',
+                            color: '#333',
+                            transform: 'rotateY(180deg)',
+                            padding: '18px',
+                            boxSizing: 'border-box',
+                            border: 'none',
+                            boxShadow: 'none'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                            <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', fontFamily: 'Roboto, sans-serif', color: '#002896', textTransform: 'uppercase' }}>Fiche Technique</h4>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setFlippedId(null);
+                              }}
+                              style={{ backgroundColor: 'transparent', border: 'none', color: '#999', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
+                            >
+                              <i className="bi bi-x-lg" style={{ fontSize: '16px' }}></i>
+                            </button>
+                          </div>
+
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {/* Databook rows */}
+                            {[
+                              { label: 'Désignation', value: auction.title },
+                              { label: 'Mise à prix', value: `${Number(auction.startingPrice || 0).toLocaleString()} DA` },
+                              { label: 'Participation', value: `${auction.participantsCount || 0} inscrits` },
+                              { label: 'Type', value: (auction.bidType === 'SERVICE' || auction.type === 'SERVICE') ? '🛠️ Service' : '📦 Produit' },
+                              { label: 'Catégorie', value: auction.category?.name || auction.productSubCategory?.name || auction.productCategory?.name || auction.categoryName || 'Général' },
+                              { label: 'Localisation', value: `${auction.wilaya || ''}${auction.place ? ', ' + auction.place : ''}` || 'Algérie' },
+                              { label: 'Annonceur', value: companyName },
+                              { label: 'Terminaison', value: timer.hasEnded ? 'Terminé' : `${timer.days}j ${timer.hours}h` },
+                            ].map((row, idx) => (
+                              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #eee', paddingBottom: '1px', alignItems: 'flex-start' }}>
+                                <span style={{ fontSize: '10px', fontWeight: '600', color: '#888', flexShrink: 0 }}>{row.label}</span>
+                                <span style={{ fontSize: '10px', fontWeight: '700', color: '#333', textAlign: 'right', marginLeft: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>{row.value}</span>
+                              </div>
+                            ))}
+
+                            <div style={{ marginTop: '3px' }}>
+                              <p style={{ fontSize: '11px', fontWeight: '600', color: '#888', margin: '0 0 2px 0' }}>Description</p>
+                              <p style={{ 
+                                fontSize: '11px', 
+                                color: '#555', 
+                                margin: 0, 
+                                lineHeight: '1.3', 
+                                fontFamily: 'Inter, sans-serif',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 3,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden'
+                              }}>
+                                {auction.description || 'Aucune description disponible.'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button 
+                            style={{
+                              width: '100%',
+                              height: '40px',
+                              backgroundColor: '#EB4545',
+                              color: '#fff',
+                              borderRadius: '8px',
+                              border: 'none',
+                              marginTop: '12px',
+                              fontWeight: '700',
+                              fontSize: '13px',
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease'
+                            }}
+                            onClick={() => router.push(`/auction-details/${auction.id}`)}
+                          >
+                            Consulter l'annonce
+                          </button>
+                        </div>
+                      </motion.div>
                     </SwiperSlide>
                   );
                 })}
@@ -373,7 +611,7 @@ const Home1LiveAuction = () => {
               {/* Custom Navigation Buttons - Oval Style */}
               <div className="auction-prev" style={{
                 position: 'absolute',
-                top: '180px',
+                top: '232px',
                 left: '-40px',
                 transform: 'translateY(-50%)',
                 width: '60px',
@@ -394,7 +632,7 @@ const Home1LiveAuction = () => {
               </div>
               <div className="auction-next" style={{
                 position: 'absolute',
-                top: '180px',
+                top: '232px',
                 right: '-40px',
                 transform: 'translateY(-50%)',
                 width: '60px',

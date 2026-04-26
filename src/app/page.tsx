@@ -144,6 +144,7 @@ export default function Home() {
           box-shadow: 0px 20px 40px 0px #0000001A, 0px 4px 4px 0px #00000040;
           transition: transform 0.3s ease, box-shadow 0.3s ease;
           overflow: hidden;
+          position: relative;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -219,13 +220,10 @@ export default function Home() {
                           gap: '25px', justifyContent: 'center' 
                         }}>
                           
-                          {/* CARD 1: Enchérir */}
+                          {/* CARD 1: Enchères */}
                           <div className="grey-glass-card">
-                            <div style={{ color: '#002896', marginBottom: '20px' }}>
-                              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 2v12m0-12l-4 4m4-4l4 4M20 21a4 4 0 00-4-4h-8a4 4 0 00-4 4"/>
-                                <circle cx="12" cy="11" r="3"/>
-                              </svg>
+                            <div style={{ width: '150px', height: '145px', marginBottom: '55px' }}>
+                              <img src="/assets/images/icon 1.png" alt="Enchères" style={{ position: 'absolute', top: '0px', left: '119px', width: '150px', height: '145px', opacity: 1 }} />
                             </div>
                             <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '15px' }}>Enchères</h3>
                             <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', marginBottom: '35px', minHeight: '66px' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
@@ -237,11 +235,8 @@ export default function Home() {
 
                           {/* CARD 2: Vente directe */}
                           <div className="grey-glass-card">
-                            <div style={{ color: '#002896', marginBottom: '20px' }}>
-                              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="2" y="5" width="20" height="14" rx="2"/>
-                                <path d="M2 10h20M6 14h12"/>
-                              </svg>
+                            <div style={{ width: '160px', height: '132px', marginBottom: '55px' }}>
+                              <img src="/assets/images/icon 2.png" alt="Vente directe" style={{ position: 'absolute', top: '0px', left: '114px', width: '160px', height: '132px', opacity: 1 }} />
                             </div>
                             <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '15px' }}>Vente directe</h3>
                             <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', marginBottom: '35px', minHeight: '66px' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
@@ -253,14 +248,10 @@ export default function Home() {
 
                           {/* CARD 3: Soumission d'offre */}
                           <div className="grey-glass-card">
-                            <div style={{ color: '#002896', marginBottom: '20px' }}>
-                              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
-                                <path d="M2 13h4M2 17h4" strokeDasharray="2 2"/>
-                              </svg>
+                            <div style={{ width: '140px', height: '114px', marginBottom: '55px' }}>
+                              <img src="/assets/images/icon 3.png" alt="Soumission" style={{ position: 'absolute', top: '0px', left: '124px', width: '140px', height: '114px', opacity: 1 }} />
                             </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '28px', lineHeight: '25px', textAlign: 'center', marginBottom: '15px' }}>Soumissions (Appels d’offres / Projets)</h3>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '28px', lineHeight: '25px', textAlign: 'center', marginBottom: '15px' }}>Consultez les projets et soumissionnez</h3>
                             <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', marginBottom: '35px', minHeight: '66px' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center' }}>
                               <button onClick={() => router.push('/dashboard/tenders/create')} className="btn-3d-blue">Publier</button>

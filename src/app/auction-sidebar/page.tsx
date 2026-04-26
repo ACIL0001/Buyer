@@ -210,7 +210,7 @@ const AuctionSidebarPage = () => {
                 minHeight: '100vh',
                 height: 'auto', 
                 backgroundColor: '#FFFFFF', 
-                paddingTop: 'clamp(70px, 8vw, 100px)',
+                paddingTop: '200px',
                 opacity: 1,
                 transform: 'rotate(0deg)',
                 boxSizing: 'border-box',

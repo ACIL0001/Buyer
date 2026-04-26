@@ -159,7 +159,8 @@ const InternationalPage = () => {
               onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
             >
               <span style={{
-                width: '143px',
+                width: 'auto',
+                whiteSpace: 'nowrap',
                 height: '23px',
                 fontFamily: '"DM Sans", sans-serif',
                 fontStyle: 'normal',

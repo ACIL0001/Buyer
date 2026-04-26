@@ -79,7 +79,7 @@ const useNavConfig = () => {
       ],
     },
     {
-      title: 'Produit',
+      title: 'Vente directe',
       path: '/dashboard/direct-sales',
       icon: getIcon(MdOutlineStorefront),
       children: [

@@ -40,9 +40,12 @@ export function calculateTimeRemaining(endDate: string) {
   };
 }
 
-const getTenderImageUrl = (tender: any) => {
-  if (tender.attachments && tender.attachments.length > 0 && tender.attachments[0].url) {
-    return normalizeImageUrl(tender.attachments[0].url);
+const getTenderImageUrl = (tender: any, index: number = 0) => {
+  const images = tender.attachments || tender.images || [];
+  if (images.length > 0 && images[index]) {
+    const imgObj = images[index];
+    const url = typeof imgObj === 'string' ? imgObj : (imgObj.url || imgObj.fullUrl || imgObj);
+    return normalizeImageUrl(url);
   }
   return DEFAULT_TENDER_IMAGE;
 };
@@ -56,6 +59,8 @@ const Home1LiveTenders = () => {
     queryFn: () => TendersAPI.getActiveTenders(),
   });
 
+  const [flippedId, setFlippedId] = useState<string | null>(null);
+  const [cardImageIndexes, setCardImageIndexes] = useState<{ [key: string]: number }>({});
   const allTenders = useMemo(() => {
     const data = allTendersResponse?.data || allTendersResponse || [];
     const transformed = (Array.isArray(data) ? data : []).map((tender: any) => ({
@@ -183,26 +188,43 @@ const Home1LiveTenders = () => {
                   const companyName = tender.hidden ? 'Anonyme' : (tender.owner?.entreprise || tender.owner?.companyName || tender.owner?.firstName || 'Nom annonceur');
                   
                   return (
-                    <SwiperSlide key={tender.id} style={{ overflow: 'visible', width: '288px', minWidth: '288px', maxWidth: '288px' }}>
-                      <div 
+                    <SwiperSlide key={tender.id} style={{ overflow: 'visible', width: '284px', minWidth: '284px', maxWidth: '284px', perspective: '1000px' }}>
+                      <motion.div 
                         key={tender.id}
+                        initial={false}
+                        animate={{ rotateY: flippedId === tender.id ? 180 : 0 }}
+                        transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
                         style={{ 
-                          width: '288px',
-                          minWidth: '288px',
-                          maxWidth: '288px',
-                          height: '383px',
-                          minHeight: '383px',
-                          maxHeight: '383px',
-                          cursor: 'pointer',
+                          width: '284px',
+                          minWidth: '284px',
+                          maxWidth: '284px',
+                          height: '464px',
+                          minHeight: '464px',
+                          maxHeight: '464px',
                           position: 'relative',
                           zIndex: 1,
-                          borderRadius: '20px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          overflow: 'hidden'
+                          transformStyle: 'preserve-3d'
                         }}
-                        onClick={() => router.push(`/tender-details/${tender.id}`)}
                       >
+                        {/* FRONT SIDE */}
+                        <div 
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            position: 'absolute',
+                            backfaceVisibility: 'hidden',
+                            WebkitBackfaceVisibility: 'hidden',
+                            borderRadius: '20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
+                            backgroundColor: 'transparent',
+                            cursor: 'pointer',
+                            boxShadow: 'none',
+                            border: 'none'
+                          }}
+                          onClick={() => router.push(`/tender-details/${tender.id}`)}
+                        >
                         <div style={{ width: '288px', height: '280px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                           <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                             <ShareButton 
@@ -210,110 +232,374 @@ const Home1LiveTenders = () => {
                               id={tender.id} 
                               title={tender.title} 
                               description={tender.description} 
-                              imageUrl={getTenderImageUrl(tender)} 
+                              imageUrl={getTenderImageUrl(tender, cardImageIndexes[tender.id] || 0)} 
                             />
                           </div>
                           <img 
-                            src={getTenderImageUrl(tender)} 
+                            src={getTenderImageUrl(tender, cardImageIndexes[tender.id] || 0)} 
                             alt={tender.title} 
                             style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
                             onError={(e) => (e.currentTarget.src = DEFAULT_TENDER_IMAGE)} 
                           />
+
+                          {/* Image Navigation Arrows */}
+                          {(tender.attachments?.length > 1 || tender.images?.length > 1) && (
+                            <>
+                              <div 
+                                className="image-nav-arrow"
+                                style={{
+                                  position: 'absolute',
+                                  top: '45%',
+                                  left: '8px',
+                                  transform: 'translateY(-50%)',
+                                  width: '26px',
+                                  height: '26px',
+                                  borderRadius: '50%',
+                                  backgroundColor: 'rgba(255,255,255,0.9)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  cursor: 'pointer',
+                                  zIndex: 25,
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                  border: 'none',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const total = (tender.attachments?.length || tender.images?.length || 1);
+                                  const current = cardImageIndexes[tender.id] || 0;
+                                  setCardImageIndexes({ ...cardImageIndexes, [tender.id]: (current - 1 + total) % total });
+                                }}
+                              >
+                                <i className="bi bi-chevron-left" style={{ color: '#002896', fontSize: '12px' }}></i>
+                              </div>
+                              <div 
+                                className="image-nav-arrow"
+                                style={{
+                                  position: 'absolute',
+                                  top: '45%',
+                                  right: '8px',
+                                  transform: 'translateY(-50%)',
+                                  width: '26px',
+                                  height: '26px',
+                                  borderRadius: '50%',
+                                  backgroundColor: 'rgba(255,255,255,0.9)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  cursor: 'pointer',
+                                  zIndex: 25,
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                  border: 'none',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const total = (tender.attachments?.length || tender.images?.length || 1);
+                                  const current = cardImageIndexes[tender.id] || 0;
+                                  setCardImageIndexes({ ...cardImageIndexes, [tender.id]: (current + 1) % total });
+                                }}
+                              >
+                                <i className="bi bi-chevron-right" style={{ color: '#002896', fontSize: '12px' }}></i>
+                              </div>
+                              
+                              {/* Dots indicator */}
+                              <div style={{
+                                position: 'absolute',
+                                bottom: '10px',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                display: 'flex',
+                                gap: '4px',
+                                zIndex: 25
+                              }}>
+                                {(tender.attachments || tender.images).map((_: any, i: number) => (
+                                  <div key={i} style={{
+                                    width: '6px',
+                                    height: '6px',
+                                    borderRadius: '50%',
+                                    backgroundColor: (cardImageIndexes[tender.id] || 0) === i ? '#002896' : 'rgba(255,255,255,0.6)',
+                                    transition: 'all 0.3s ease'
+                                  }} />
+                                ))}
+                              </div>
+                            </>
+                          )}
+                          
+                          <div 
+                            style={{ 
+                              position: 'absolute', 
+                              bottom: '10px', 
+                              right: '10px', 
+                              zIndex: 30,
+                              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                              padding: '3px 8px',
+                              borderRadius: '15px',
+                              boxShadow: 'none',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              transition: 'all 0.3s ease',
+                              border: 'none'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setFlippedId(flippedId === tender.id ? null : tender.id);
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.backgroundColor = '#fff';
+                              e.currentTarget.style.transform = 'scale(1.05)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                              e.currentTarget.style.transform = 'scale(1)';
+                            }}
+                          >
+                            <span style={{ 
+                              fontSize: '11px', 
+                              fontWeight: '600', 
+                              color: '#002896',
+                              fontFamily: 'Inter, sans-serif'
+                            }}>Plus de détails</span>
+                            <i className="bi bi-info-circle" style={{ color: '#002896', fontSize: '12px' }}></i>
+                          </div>
                         </div>
                         <div style={{ 
                           padding: '10px 10px', 
                           flex: 1,
                           display: 'flex',
                           flexDirection: 'column',
+                          justifyContent: 'space-between',
                           position: 'relative'
                         }}>
-                          <h4 style={{ 
-                            width: '281px',
-                            height: '23px',
-                            fontFamily: 'Roboto, sans-serif',
-                            fontWeight: '700', 
-                            fontSize: '20px', 
-                            lineHeight: '100%',
-                            letterSpacing: '0px',
-                            verticalAlign: 'middle',
-                            color: '#002896', 
-                            margin: '0 0 5px 0', 
-                            whiteSpace: 'nowrap', 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis',
-                            opacity: 1
-                          }}>
-                            {tender.title || 'Nom Produit'}
-                          </h4>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <span style={{ 
-                                width: 'auto',
-                                height: '29px',
-                                fontFamily: 'Inter, sans-serif',
-                                fontWeight: '700', 
-                                fontSize: '24px', 
-                                lineHeight: '29px',
-                                color: '#002896',
-                                display: 'flex',
-                                alignItems: 'center'
-                              }}>
-                                {(tender.budget || tender.maxBudget || tender.price) ? `${Number(tender.budget || tender.maxBudget || tender.price).toLocaleString()}` : "Offre"}
-                              </span>
-                              {(tender.budget || tender.maxBudget || tender.price) && (
-                                <span style={{ 
-                                  fontFamily: 'Inter, sans-serif',
-                                  fontSize: '14px', 
-                                  fontWeight: '700', 
-                                  color: '#002896',
-                                  marginLeft: '2px',
-                                  display: 'flex',
-                                  alignItems: 'center'
-                                }}>DA</span>
-                              )}
-                            </div>
-                            <span style={{ 
-                              width: '101px',
-                              height: '16px',
+                          <div>
+                            <h4 style={{ 
+                              width: '281px',
+                              height: '23px',
                               fontFamily: 'Roboto, sans-serif',
-                              fontSize: '14px', 
-                              fontWeight: '400', 
-                              lineHeight: '16px',
+                              fontWeight: '700', 
+                              fontSize: '20px', 
+                              lineHeight: '100%',
+                              letterSpacing: '0px',
+                              verticalAlign: 'middle',
                               color: '#002896', 
-                              display: 'flex',
-                              alignItems: 'center',
+                              margin: '0 0 5px 0', 
                               whiteSpace: 'nowrap', 
                               overflow: 'hidden', 
-                              textOverflow: 'ellipsis', 
-                              textAlign: 'right',
-                              justifyContent: 'flex-end'
-                            }}>
-                              {companyName}
-                            </span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', marginTop: 'auto' }}>
-                            <span style={{ 
-                              width: '100%',
-                              height: '16px',
-                              fontFamily: 'Roboto, sans-serif',
-                              fontSize: '14px', 
-                              fontWeight: '400', 
-                              lineHeight: '100%',
-                              color: '#002896',
-                              display: 'flex',
-                              alignItems: 'center',
-                              letterSpacing: '-0.3px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
                               textOverflow: 'ellipsis',
-                              verticalAlign: 'middle',
                               opacity: 1
                             }}>
-                              {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j ${timer.hours}h (${timer.formattedEnd})`}
-                            </span>
+                              {tender.title || 'Nom Produit'}
+                            </h4>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                                <span style={{ 
+                                  width: 'auto',
+                                  height: '29px',
+                                  fontFamily: 'Inter, sans-serif',
+                                  fontWeight: '700', 
+                                  fontSize: Number(tender.budget || tender.maxBudget || tender.price || 0).toLocaleString().length > 10 ? '16px' : 
+                                            Number(tender.budget || tender.maxBudget || tender.price || 0).toLocaleString().length > 8 ? '20px' : '24px', 
+                                  lineHeight: '29px',
+                                  color: '#002896',
+                                  transition: 'font-size 0.2s ease'
+                                }}>
+                                  {(tender.budget || tender.maxBudget || tender.price) ? `${Number(tender.budget || tender.maxBudget || tender.price).toLocaleString()}` : "Offre"}
+                                </span>
+                                {(tender.budget || tender.maxBudget || tender.price) && (
+                                  <span style={{ 
+                                    fontFamily: 'Inter, sans-serif',
+                                    fontSize: '14px', 
+                                    fontWeight: '700', 
+                                    color: '#002896',
+                                    marginLeft: '1px'
+                                  }}>DA</span>
+                                )}
+                              </div>
+                              <span style={{ 
+                                width: '101px',
+                                height: '16px',
+                                fontFamily: 'Roboto, sans-serif',
+                                fontSize: '14px', 
+                                fontWeight: '400', 
+                                lineHeight: '16px',
+                                color: '#002896', 
+                                display: 'flex',
+                                alignItems: 'center',
+                                whiteSpace: 'nowrap', 
+                                overflow: 'hidden', 
+                                textOverflow: 'ellipsis', 
+                                textAlign: 'right',
+                                justifyContent: 'flex-end'
+                              }}>
+                                {companyName}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                              <span style={{ 
+                                width: '100%',
+                                height: '16px',
+                                fontFamily: 'Roboto, sans-serif',
+                                fontSize: '14px', 
+                                fontWeight: '400', 
+                                lineHeight: '100%',
+                                color: '#002896',
+                                display: 'flex',
+                                alignItems: 'center',
+                                letterSpacing: '-0.3px',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                verticalAlign: 'middle',
+                                opacity: 1
+                              }}>
+                                {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j ${timer.hours}h (${timer.formattedEnd})`}
+                              </span>
+                            </div>
                           </div>
+
+                          <button 
+                            disabled={timer.hasEnded}
+                            style={{
+                              width: '268px',
+                              height: '39px',
+                              backgroundColor: '#EB4545',
+                              borderRadius: '10px',
+                              padding: '10px',
+                              border: 'none',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: timer.hasEnded ? 'default' : 'pointer',
+                              gap: '10px',
+                              opacity: timer.hasEnded ? 0.6 : 1,
+                              transition: 'all 0.3s ease'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!timer.hasEnded) router.push(`/tender-details/${tender.id}`);
+                            }}
+                            onMouseOver={(e) => {
+                              if (!timer.hasEnded) {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.filter = 'brightness(1.1)';
+                              }
+                            }}
+                            onMouseOut={(e) => {
+                              if (!timer.hasEnded) {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.filter = 'brightness(1)';
+                              }
+                            }}
+                          >
+                            <span style={{
+                              fontFamily: 'Inter, sans-serif',
+                              fontWeight: '500',
+                              fontSize: '16px',
+                              lineHeight: '100%',
+                              color: '#FFFFFF',
+                              textAlign: 'center'
+                            }}>
+                              Soumission rapide
+                            </span>
+                          </button>
                         </div>
                       </div>
+
+                        {/* BACK SIDE */}
+                        <div 
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            backfaceVisibility: 'hidden',
+                            WebkitBackfaceVisibility: 'hidden',
+                            borderRadius: '20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
+                            backgroundColor: 'transparent',
+                            color: '#333',
+                            transform: 'rotateY(180deg)',
+                            padding: '18px',
+                            boxSizing: 'border-box',
+                            border: 'none',
+                            boxShadow: 'none'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                            <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', fontFamily: 'Roboto, sans-serif', color: '#002896', textTransform: 'uppercase' }}>Fiche Technique</h4>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setFlippedId(null);
+                              }}
+                              style={{ backgroundColor: 'transparent', border: 'none', color: '#999', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
+                            >
+                              <i className="bi bi-x-lg" style={{ fontSize: '16px' }}></i>
+                            </button>
+                          </div>
+
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {/* Databook rows */}
+                            {[
+                              { label: 'Désignation', value: tender.title },
+                              { label: 'Budget', value: (tender.budget || tender.maxBudget || tender.price) ? `${Number(tender.budget || tender.maxBudget || tender.price).toLocaleString()} DA` : "Offre" },
+                              { label: 'Quantité', value: tender.quantity || 'N/A' },
+                              { label: 'Type', value: (tender.bidType === 'SERVICE' || tender.tenderType === 'SERVICE') ? '🛠️ Service' : '📦 Produit' },
+                              { label: 'Catégorie', value: tender.category?.name || tender.productSubCategory?.name || tender.productCategory?.name || tender.categoryName || 'Général' },
+                              { label: 'Localisation', value: `${tender.wilaya || ''}${tender.location ? ', ' + tender.location : ''}` || 'Algérie' },
+                              { label: 'Annonceur', value: companyName },
+                              { label: 'Terminaison', value: timer.hasEnded ? 'Terminé' : `${timer.days}j ${timer.hours}h` },
+                            ].map((row, idx) => (
+                              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #eee', paddingBottom: '1px', alignItems: 'flex-start' }}>
+                                <span style={{ fontSize: '10px', fontWeight: '600', color: '#888', flexShrink: 0 }}>{row.label}</span>
+                                <span style={{ fontSize: '10px', fontWeight: '700', color: '#333', textAlign: 'right', marginLeft: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>{row.value}</span>
+                              </div>
+                            ))}
+
+                            <div style={{ marginTop: '3px' }}>
+                              <p style={{ fontSize: '11px', fontWeight: '600', color: '#888', margin: '0 0 2px 0' }}>Description du projet</p>
+                              <p style={{ 
+                                fontSize: '11px', 
+                                color: '#555', 
+                                margin: 0, 
+                                lineHeight: '1.3', 
+                                fontFamily: 'Inter, sans-serif',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 3,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden'
+                              }}>
+                                {tender.description || 'Aucune description disponible.'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button 
+                            style={{
+                              width: '100%',
+                              height: '40px',
+                              backgroundColor: '#EB4545',
+                              color: '#fff',
+                              borderRadius: '8px',
+                              border: 'none',
+                              marginTop: '12px',
+                              fontWeight: '700',
+                              fontSize: '13px',
+                              cursor: 'pointer',
+                              transition: 'all 0.3s ease'
+                            }}
+                            onClick={() => router.push(`/tender-details/${tender.id}`)}
+                          >
+                            Consulter l'offre
+                          </button>
+                        </div>
+                      </motion.div>
                     </SwiperSlide>
                   );
                 })}
@@ -322,7 +608,7 @@ const Home1LiveTenders = () => {
               {/* Custom Navigation Buttons - Oval Style */}
               <div className="tender-prev" style={{
                 position: 'absolute',
-                top: '180px',
+                top: '232px',
                 left: '-40px',
                 transform: 'translateY(-50%)',
                 width: '60px',
@@ -343,7 +629,7 @@ const Home1LiveTenders = () => {
               </div>
               <div className="tender-next" style={{
                 position: 'absolute',
-                top: '180px',
+                top: '232px',
                 right: '-40px',
                 transform: 'translateY(-50%)',
                 width: '60px',

@@ -12,6 +12,8 @@ import PageSkeleton from '@/components/skeletons/PageSkeleton';
 import Header from '@/components/header/Header';
 import Footer from '@/components/footer/FooterWithErrorBoundary';
 import ShareButton from "@/components/common/ShareButton";
+import { motion } from 'framer-motion';
+import FilterPopup from '@/components/common/FilterPopup';
 
 function calculateTimeRemaining(endDate) {
   const total = Date.parse(endDate) - Date.now();
@@ -47,8 +49,13 @@ const WILAYAS = [
     "Touggourt", "Djanet", "El M'Ghair", "El Meniaa"
 ];
 
-const getTenderImageUrl = (tender) => {
-  if (tender.attachments && tender.attachments.length > 0 && tender.attachments[0].url) return normalizeImageUrl(tender.attachments[0].url);
+const getTenderImageUrl = (tender, index = 0) => {
+  const images = tender.attachments || tender.images || [];
+  if (images.length > 0 && images[index]) {
+    const imgObj = images[index];
+    const url = typeof imgObj === 'string' ? imgObj : (imgObj.url || imgObj.fullUrl || imgObj);
+    return normalizeImageUrl(url);
+  }
   return DEFAULT_TENDER_IMAGE;
 };
 
@@ -62,9 +69,12 @@ const TendersPage = () => {
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedWilaya, setSelectedWilaya] = useState('');
-  const [tenderType, setTenderType] = useState('ALL'); // 'ALL', 'PRODUCT', 'SERVICE'
+  const [selectedTypes, setSelectedTypes] = useState([]); // Added multi-type state
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState('NEWEST'); // 'NEWEST', 'OLDEST', 'PRICE_ASC', 'PRICE_DESC'
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [availability, setAvailability] = useState({ inStock: false, recentlyPublished: false });
+  const [rating, setRating] = useState(null);
 
   const { data: categoriesData } = useQuery({
     queryKey: ['categories', 'all'],
@@ -89,11 +99,11 @@ const TendersPage = () => {
     // Auth verification filter
     transformed = transformed.filter(tender => tender.verifiedOnly === true ? isUserVerified : true);
 
-    // Filter by Tender Type (Corrected logic)
-    if (tenderType !== 'ALL') {
+    // Filter by Type (Product/Service)
+    if (selectedTypes.length > 0) {
       transformed = transformed.filter(t => {
-        const type = t.tenderType || t.type || t.saleType;
-        return type?.toUpperCase() === tenderType;
+        const type = (t.tenderType || t.type || t.saleType || '').toUpperCase();
+        return selectedTypes.includes(type);
       });
     }
 
@@ -138,9 +148,11 @@ const TendersPage = () => {
     });
 
     return transformed;
-  }, [allTendersResponse, auth.user, tenderType, priceRange, selectedCategories, selectedWilaya, searchQuery, sortOrder]);
+  }, [allTendersResponse, auth.user, selectedTypes, priceRange, selectedCategories, selectedWilaya, searchQuery, sortOrder]);
 
   const [timers, setTimers] = useState({});
+  const [flippedId, setFlippedId] = useState(null);
+  const [cardImageIndexes, setCardImageIndexes] = useState({});
   React.useEffect(() => {
     if (allTenders.length === 0) return;
     const updateTimers = () => {
@@ -155,7 +167,7 @@ const TendersPage = () => {
     return () => clearInterval(interval);
   }, [allTenders]);
 
-  const itemsPerPage = 9;
+  const itemsPerPage = 12;
   const totalPages = Math.max(1, Math.ceil(allTenders.length / itemsPerPage));
   const currentData = allTenders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -177,7 +189,7 @@ const TendersPage = () => {
         minHeight: '100vh',
         height: 'auto',
         background: '#ffffff', 
-        padding: '140px 0 80px 0', 
+        padding: '200px 0 80px 0', 
         fontFamily: '"DM Sans", sans-serif',
         opacity: 1,
         transform: 'rotate(0deg)',
@@ -198,11 +210,30 @@ const TendersPage = () => {
             margin: '80px auto 0 auto', 
             letterSpacing: '0px'
           }}>
-            Soumissions (Appels d’offres / Projets)
+            Consultez les projets et soumissionnez
           </h1>
         </div>
 
-        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 40px', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button 
+            onClick={() => setIsFilterOpen(true)}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px', 
+              padding: '12px 25px', 
+              borderRadius: '12px', 
+              border: 'none', 
+              background: '#f8f9fb', 
+              color: '#002896', 
+              fontWeight: '800', 
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+            }}
+          >
+            <i className="bi bi-funnel-fill"></i>
+            Filtre
+          </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
              <span style={{ fontSize: '14px', color: '#666', fontWeight: '800' }}>Trier par:</span>
              <select 
@@ -218,97 +249,11 @@ const TendersPage = () => {
           </div>
         </div>
 
-        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', display: 'flex', gap: '40px' }}>
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'center' }}>
           
-          {/* Sidebar Filter - Restyled with Glassmorphism and 3D Grey */}
-          <aside style={{ width: '231px', flexShrink: 0 }}>
-            <div style={{ 
-              width: '231px',
-              background: 'linear-gradient(127.45deg, rgba(230, 230, 230, 0.7) 2.15%, rgba(195, 201, 215, 0.14) 63.05%)', 
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              borderRadius: '24px', 
-              padding: '24px', 
-              boxShadow: '0px 20px 40px 0px #0000001A, 0px 4px 4px 0px #00000040', 
-              position: 'sticky', 
-              top: '140px',
-              border: '1px solid',
-              borderImageSource: 'linear-gradient(127.23deg, rgba(255, 255, 255, 0.42) 2.46%, rgba(255, 255, 255, 0.24) 97.36%)',
-              opacity: 1
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                <span style={{ fontSize: '16px', color: '#002896', fontWeight: '700' }}>Filtrer</span>
-                <span onClick={() => {setSelectedCategories([]); setPriceRange({min:'', max:''}); setSearchQuery(''); setTenderType('ALL'); setSelectedWilaya(''); setSortOrder('NEWEST');}} style={{fontSize: '11px', color:'#002896', cursor:'pointer', fontWeight:'700'}}>Réinitialiser</span>
-              </div>
-
-              {/* Type Filter in Sidebar */}
-              <div style={{ marginBottom: '30px' }}>
-                <h4 style={{ fontSize: '14px', color: '#002896', fontWeight: '800', marginBottom: '15px' }}>Type</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {['ALL', 'PRODUCT', 'SERVICE'].map(type => (
-                    <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#666', cursor: 'pointer' }}>
-                      <input type="radio" name="tenderTypeSidebar" checked={tenderType === type} onChange={() => { setTenderType(type); setCurrentPage(1); }} style={{ accentColor: '#002896' }} />
-                      {type === 'ALL' ? 'Tout' : type === 'PRODUCT' ? 'Produit' : 'Service'}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Price Filter - Min/Max Fields */}
-              <div style={{ marginBottom: '30px' }}>
-                <h4 style={{ fontSize: '14px', color: '#002896', fontWeight: '700', marginBottom: '15px' }}>Prix (DA)</h4>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <input 
-                    type="number" 
-                    placeholder="Min" 
-                    value={priceRange.min} 
-                    onChange={(e) => setPriceRange(prev => ({...prev, min: e.target.value}))} 
-                    style={{ width: '100%', padding: '10px', borderRadius: '12px', border: 'none', background: 'rgba(255,255,255,0.6)', fontSize: '12px', outline: 'none', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}
-                  />
-                  <span style={{color:'#666'}}>-</span>
-                  <input 
-                    type="number" 
-                    placeholder="Max" 
-                    value={priceRange.max} 
-                    onChange={(e) => setPriceRange(prev => ({...prev, max: e.target.value}))} 
-                    style={{ width: '100%', padding: '10px', borderRadius: '12px', border: 'none', background: 'rgba(255,255,255,0.6)', fontSize: '12px', outline: 'none', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}
-                  />
-                </div>
-              </div>
-
-              {/* Wilaya Filter */}
-              <div style={{ marginBottom: '30px' }}>
-                <h4 style={{ fontSize: '14px', color: '#002896', fontWeight: '700', marginBottom: '15px' }}>Wilaya</h4>
-                <select 
-                  value={selectedWilaya} 
-                  onChange={(e) => setSelectedWilaya(e.target.value)}
-                  style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'rgba(255,255,255,0.6)', color: '#666', fontSize: '13px', outline: 'none', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer' }}
-                >
-                  <option value="">Toutes les wilayas</option>
-                  {WILAYAS.map(w => (
-                    <option key={w} value={w}>{w}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Categories Filter */}
-              <div>
-                <h4 style={{ fontSize: '14px', color: '#002896', fontWeight: '700', marginBottom: '15px' }}>Catégories</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '200px', overflowY: 'auto', paddingRight: '5px' }}>
-                  {categories.map((cat) => (
-                    <label key={cat._id} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#666', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={selectedCategories.includes(cat._id)} onChange={() => toggleCategory(cat._id)} style={{ accentColor: '#002896' }} />
-                      {cat.name}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </aside>
-
           {/* Grid Content */}
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 288px)', gap: '25px', rowGap: '40px', justifyContent: 'center' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 284px)', gap: '25px', rowGap: '40px', justifyContent: 'center' }}>
               {currentData.length > 0 ? currentData.map((tender, i) => {
                 const companyName = tender.hidden ? 'Anonyme' : (tender.owner?.entreprise || tender.owner?.firstName || 'Nom Annonceur');
                 const type = (tender.tenderType || tender.type)?.toUpperCase();
@@ -316,28 +261,42 @@ const TendersPage = () => {
 
                 const timer = timers[tender.id] || { days: "0", hours: "0", minutes: "0", formattedEnd: "", hasEnded: false };
                 return (
-                  <div 
+                  <motion.div 
                     key={tender.id || i}
+                    initial={false}
+                    animate={{ rotateY: flippedId === tender.id ? 180 : 0 }}
+                    transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
                     style={{ 
                       width: '288px',
                       minWidth: '288px',
                       maxWidth: '288px',
-                      height: '383px',
-                      minHeight: '383px',
-                      maxHeight: '383px',
-                      cursor: 'pointer',
+                      height: '464px',
+                      minHeight: '464px',
+                      maxHeight: '464px',
                       position: 'relative',
                       zIndex: 1,
-                      borderRadius: '20px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      overflow: 'hidden',
-                      transition: 'transform 0.3s'
+                      transformStyle: 'preserve-3d'
                     }}
-                    onMouseOver={e => e.currentTarget.style.transform = 'translateY(-10px)'} 
-                    onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
-                    onClick={() => tender.id && router.push(`/tender-details/${tender.id}`)}
                   >
+                    {/* FRONT SIDE */}
+                    <div 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        position: 'absolute',
+                        backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                        backgroundColor: 'transparent',
+                        cursor: 'pointer',
+                        boxShadow: 'none',
+                        border: 'none'
+                      }}
+                      onClick={() => !flippedId && router.push(`/tender-details/${tender.id}`)}
+                    >
                     <div style={{ width: '288px', height: '280px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                       <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                         <ShareButton 
@@ -345,110 +304,374 @@ const TendersPage = () => {
                           id={tender.id} 
                           title={tender.title} 
                           description={tender.description} 
-                          imageUrl={getTenderImageUrl(tender)} 
+                          imageUrl={getTenderImageUrl(tender, cardImageIndexes[tender.id] || 0)} 
                         />
                       </div>
                       <img 
-                        src={getTenderImageUrl(tender)} 
+                        src={getTenderImageUrl(tender, cardImageIndexes[tender.id] || 0)} 
                         alt={tender.title} 
                         style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
                         onError={(e) => (e.currentTarget.src = DEFAULT_TENDER_IMAGE)} 
                       />
-                    </div>
-                        <div style={{ 
-                          padding: '10px 10px', 
-                          flex: 1,
+
+                      {/* Image Navigation Arrows */}
+                      {(tender.attachments?.length > 1 || tender.images?.length > 1) && (
+                        <>
+                          <div 
+                            className="image-nav-arrow"
+                            style={{
+                              position: 'absolute',
+                              top: '45%',
+                              left: '8px',
+                              transform: 'translateY(-50%)',
+                              width: '26px',
+                              height: '26px',
+                              borderRadius: '50%',
+                              backgroundColor: 'rgba(255,255,255,0.9)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              zIndex: 25,
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                              border: 'none',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const total = (tender.attachments?.length || tender.images?.length || 1);
+                              const current = cardImageIndexes[tender.id] || 0;
+                              setCardImageIndexes({ ...cardImageIndexes, [tender.id]: (current - 1 + total) % total });
+                            }}
+                          >
+                            <i className="bi bi-chevron-left" style={{ color: '#002896', fontSize: '12px' }}></i>
+                          </div>
+                          <div 
+                            className="image-nav-arrow"
+                            style={{
+                              position: 'absolute',
+                              top: '45%',
+                              right: '8px',
+                              transform: 'translateY(-50%)',
+                              width: '26px',
+                              height: '26px',
+                              borderRadius: '50%',
+                              backgroundColor: 'rgba(255,255,255,0.9)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              zIndex: 25,
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                              border: 'none',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const total = (tender.attachments?.length || tender.images?.length || 1);
+                              const current = cardImageIndexes[tender.id] || 0;
+                              setCardImageIndexes({ ...cardImageIndexes, [tender.id]: (current + 1) % total });
+                            }}
+                          >
+                            <i className="bi bi-chevron-right" style={{ color: '#002896', fontSize: '12px' }}></i>
+                          </div>
+                          
+                          {/* Dots indicator */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '10px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            display: 'flex',
+                            gap: '4px',
+                            zIndex: 25
+                          }}>
+                            {(tender.attachments || tender.images).map((_, i) => (
+                              <div key={i} style={{
+                                width: '6px',
+                                height: '6px',
+                                borderRadius: '50%',
+                                backgroundColor: (cardImageIndexes[tender.id] || 0) === i ? '#002896' : 'rgba(255,255,255,0.6)',
+                                transition: 'all 0.3s ease'
+                              }} />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                      
+                      <div 
+                        style={{ 
+                          position: 'absolute', 
+                          bottom: '10px', 
+                          right: '10px', 
+                          zIndex: 30,
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          padding: '3px 8px',
+                          borderRadius: '15px',
+                          boxShadow: 'none',
+                          cursor: 'pointer',
                           display: 'flex',
-                          flexDirection: 'column',
-                          position: 'relative'
+                          alignItems: 'center',
+                          gap: '4px',
+                          transition: 'all 0.3s ease',
+                          border: 'none'
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setFlippedId(flippedId === tender.id ? null : tender.id);
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.backgroundColor = '#fff';
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                      >
+                        <span style={{ 
+                          fontSize: '11px', 
+                          fontWeight: '600', 
+                          color: '#002896',
+                          fontFamily: 'Inter, sans-serif'
+                        }}>Plus de détails</span>
+                        <i className="bi bi-info-circle" style={{ color: '#002896', fontSize: '12px' }}></i>
+                      </div>
+                    </div>
+                    <div style={{ 
+                      padding: '10px 10px', 
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      position: 'relative'
+                    }}>
+                      <div>
+                        <h4 style={{ 
+                          width: '268px',
+                          height: '23px',
+                          fontFamily: 'Roboto, sans-serif',
+                          fontWeight: '700', 
+                          fontSize: '20px', 
+                          lineHeight: '100%',
+                          letterSpacing: '0px',
+                          verticalAlign: 'middle',
+                          color: '#002896', 
+                          margin: '0 0 5px 0', 
+                          whiteSpace: 'nowrap', 
+                          overflow: 'hidden', 
+                          textOverflow: 'ellipsis',
+                          opacity: 1
                         }}>
-                          <h4 style={{ 
-                            width: '281px',
-                            height: '23px',
+                          {tender.title || 'Nom Produit'}
+                        </h4>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                            <span style={{ 
+                              width: 'auto',
+                              height: '29px',
+                              fontFamily: 'Inter, sans-serif',
+                              fontWeight: '700', 
+                              fontSize: Number(tender.budget || 0).toLocaleString().length > 10 ? '16px' : 
+                                        Number(tender.budget || 0).toLocaleString().length > 8 ? '20px' : '24px', 
+                              lineHeight: '29px',
+                              color: '#002896',
+                              transition: 'font-size 0.2s ease'
+                            }}>
+                              {tender.budget ? `${Number(tender.budget).toLocaleString()}` : "Offre"}
+                            </span>
+                            {tender.budget && (
+                              <span style={{ 
+                                fontFamily: 'Inter, sans-serif',
+                                fontSize: '14px', 
+                                fontWeight: '700', 
+                                color: '#002896',
+                                marginLeft: '1px'
+                              }}>DA</span>
+                            )}
+                          </div>
+                          <span style={{ 
+                            width: '101px',
+                            height: '16px',
                             fontFamily: 'Roboto, sans-serif',
-                            fontWeight: '700', 
-                            fontSize: '20px', 
-                            lineHeight: '100%',
-                            letterSpacing: '0px',
-                            verticalAlign: 'middle',
+                            fontSize: '14px', 
+                            fontWeight: '400', 
+                            lineHeight: '16px',
                             color: '#002896', 
-                            margin: '0 0 5px 0', 
+                            display: 'flex',
+                            alignItems: 'center',
                             whiteSpace: 'nowrap', 
                             overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            textAlign: 'right',
+                            justifyContent: 'flex-end'
+                          }}>
+                            {companyName}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <span style={{ 
+                            width: '100%',
+                            height: '16px',
+                            fontFamily: 'Roboto, sans-serif',
+                            fontSize: '14px', 
+                            fontWeight: '400', 
+                            lineHeight: '100%',
+                            color: '#002896',
+                            display: 'flex',
+                            alignItems: 'center',
+                            letterSpacing: '-0.3px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
                             textOverflow: 'ellipsis',
+                            verticalAlign: 'middle',
                             opacity: 1
                           }}>
-                            {tender.title || 'Nom Produit'}
-                          </h4>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <span style={{ 
-                                width: 'auto',
-                                height: '29px',
-                                fontFamily: 'Inter, sans-serif',
-                                fontWeight: '700', 
-                                fontSize: '24px', 
-                                lineHeight: '29px',
-                                color: '#002896',
-                                display: 'flex',
-                                alignItems: 'center'
-                              }}>
-                                {tender.budget ? `${Number(tender.budget).toLocaleString()}` : "Offre"}
-                              </span>
-                              {tender.budget && (
-                                <span style={{ 
-                                  fontFamily: 'Inter, sans-serif',
-                                  fontSize: '14px', 
-                                  fontWeight: '700', 
-                                  color: '#002896',
-                                  marginLeft: '2px',
-                                  display: 'flex',
-                                  alignItems: 'center'
-                                }}>DA</span>
-                              )}
-                            </div>
-                            <span style={{ 
-                              width: '101px',
-                              height: '16px',
-                              fontFamily: 'Roboto, sans-serif',
-                              fontSize: '14px', 
-                              fontWeight: '400', 
-                              lineHeight: '16px',
-                              color: '#002896', 
-                              display: 'flex',
-                              alignItems: 'center',
-                              whiteSpace: 'nowrap', 
-                              overflow: 'hidden', 
-                              textOverflow: 'ellipsis', 
-                              textAlign: 'right',
-                              justifyContent: 'flex-end'
-                            }}>
-                              {companyName}
-                            </span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', marginTop: 'auto' }}>
-                            <span style={{ 
-                              width: '100%',
-                              height: '16px',
-                              fontFamily: 'Roboto, sans-serif',
-                              fontSize: '14px', 
-                              fontWeight: '400', 
-                              lineHeight: '100%',
-                              color: '#002896',
-                              display: 'flex',
-                              alignItems: 'center',
-                              letterSpacing: '-0.3px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              verticalAlign: 'middle',
-                              opacity: 1
-                            }}>
-                              {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j ${timer.hours}h (${timer.formattedEnd})`}
-                            </span>
-                          </div>
+                            {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j ${timer.hours}h (${timer.formattedEnd})`}
+                          </span>
                         </div>
+                      </div>
+
+                      <button 
+                        disabled={timer.hasEnded}
+                        style={{
+                          width: '268px',
+                          height: '39px',
+                          backgroundColor: '#EB4545',
+                          borderRadius: '10px',
+                          padding: '10px',
+                          border: 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: timer.hasEnded ? 'default' : 'pointer',
+                          gap: '10px',
+                          opacity: timer.hasEnded ? 0.6 : 1,
+                          transition: 'all 0.3s ease'
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!timer.hasEnded) router.push(`/tender-details/${tender.id}`);
+                        }}
+                        onMouseOver={(e) => {
+                          if (!timer.hasEnded) {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.filter = 'brightness(1.1)';
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (!timer.hasEnded) {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.filter = 'brightness(1)';
+                          }
+                        }}
+                      >
+                        <span style={{
+                          fontFamily: 'Inter, sans-serif',
+                          fontWeight: '500',
+                          fontSize: '16px',
+                          lineHeight: '100%',
+                          color: '#FFFFFF',
+                          textAlign: 'center'
+                        }}>
+                          Soumission rapide
+                        </span>
+                      </button>
+                    </div>
                   </div>
+
+                    {/* BACK SIDE */}
+                    <div 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                        backgroundColor: 'transparent',
+                        color: '#333',
+                        transform: 'rotateY(180deg)',
+                        padding: '18px',
+                        boxSizing: 'border-box',
+                        border: 'none',
+                        boxShadow: 'none'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', fontFamily: 'Roboto, sans-serif', color: '#002896', textTransform: 'uppercase' }}>Fiche Technique</h4>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFlippedId(null);
+                          }}
+                          style={{ backgroundColor: 'transparent', border: 'none', color: '#999', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
+                        >
+                          <i className="bi bi-x-lg" style={{ fontSize: '16px' }}></i>
+                        </button>
+                      </div>
+
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {/* Databook rows */}
+                        {[
+                          { label: 'Désignation', value: tender.title },
+                          { label: 'Budget', value: tender.budget ? `${Number(tender.budget).toLocaleString()} DA` : "Offre" },
+                          { label: 'Quantité', value: tender.quantity || 'N/A' },
+                          { label: 'Type', value: (tender.bidType === 'SERVICE' || tender.tenderType === 'SERVICE') ? '🛠️ Service' : '📦 Produit' },
+                          { label: 'Catégorie', value: tender.category?.name || tender.productSubCategory?.name || tender.productCategory?.name || tender.categoryName || 'Général' },
+                          { label: 'Localisation', value: `${tender.wilaya || ''}${tender.location ? ', ' + tender.location : ''}` || 'Algérie' },
+                          { label: 'Annonceur', value: companyName },
+                          { label: 'Terminaison', value: timer.hasEnded ? 'Terminé' : `${timer.days}j ${timer.hours}h` },
+                        ].map((row, idx) => (
+                          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #eee', paddingBottom: '1px', alignItems: 'flex-start' }}>
+                            <span style={{ fontSize: '10px', fontWeight: '600', color: '#888', flexShrink: 0 }}>{row.label}</span>
+                            <span style={{ fontSize: '10px', fontWeight: '700', color: '#333', textAlign: 'right', marginLeft: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>{row.value}</span>
+                          </div>
+                        ))}
+
+                        <div style={{ marginTop: '3px' }}>
+                          <p style={{ fontSize: '11px', fontWeight: '600', color: '#888', margin: '0 0 2px 0' }}>Description du projet</p>
+                          <p style={{ 
+                            fontSize: '11px', 
+                            color: '#555', 
+                            margin: 0, 
+                            lineHeight: '1.3', 
+                            fontFamily: 'Inter, sans-serif',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                          }}>
+                            {tender.description || 'Aucune description disponible.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button 
+                        style={{
+                          width: '100%',
+                          height: '40px',
+                          backgroundColor: '#EB4545',
+                          color: '#fff',
+                          borderRadius: '8px',
+                          border: 'none',
+                          marginTop: '12px',
+                          fontWeight: '700',
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onClick={() => router.push(`/tender-details/${tender.id}`)}
+                      >
+                        Consulter l'offre
+                      </button>
+                    </div>
+                  </motion.div>
                 );
               }) : (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '100px', color: '#666', fontWeight:'800' }}>Désolé, aucune offre ne correspond à vos critères.</div>
@@ -464,13 +687,13 @@ const TendersPage = () => {
                   style={{ 
                     padding: '12px 30px', 
                     borderRadius: '50px', 
-                    background: currentPage === 1 ? '#f1f5f9' : '#61d997', 
+                    background: currentPage === 1 ? '#f1f5f9' : '#EFCB6E', 
                     border: 'none', 
                     color: currentPage === 1 ? '#94a3b8' : 'white', 
                     fontWeight: '800', 
                     fontSize: '14px', 
                     cursor: currentPage === 1 ? 'default' : 'pointer',
-                    boxShadow: '0 4px 10px rgba(97, 217, 151, 0.2)',
+                    boxShadow: '0 4px 10px rgba(239, 203, 110, 0.2)',
                     transition: '0.3s'
                   }}>
                   Précédent
@@ -487,7 +710,7 @@ const TendersPage = () => {
                             width: '42px', 
                             height: '42px', 
                             borderRadius: '12px', 
-                            background: currentPage === num ? '#61d997' : '#fff', 
+                            background: currentPage === num ? '#EFCB6E' : '#fff', 
                             border: currentPage === num ? 'none' : '1px solid #e2e8f0', 
                             display: 'flex', 
                             alignItems: 'center', 
@@ -495,7 +718,7 @@ const TendersPage = () => {
                             color: currentPage === num ? '#fff' : '#64748b', 
                             fontWeight: '800', 
                             cursor:'pointer', 
-                            boxShadow: currentPage === num ? '0 4px 12px rgba(97, 217, 151, 0.3)' : 'none',
+                            boxShadow: currentPage === num ? '0 4px 12px rgba(239, 203, 110, 0.3)' : 'none',
                             transition: '0.3s'
                           }}>
                           {num}
@@ -515,13 +738,13 @@ const TendersPage = () => {
                   style={{ 
                     padding: '12px 40px', 
                     borderRadius: '50px', 
-                    background: currentPage === totalPages ? '#f1f5f9' : '#61d997', 
+                    background: currentPage === totalPages ? '#f1f5f9' : '#EFCB6E', 
                     border: 'none', 
                     color: currentPage === totalPages ? '#94a3b8' : 'white', 
                     fontWeight: '800', 
                     fontSize: '14px', 
                     cursor: currentPage === totalPages ? 'default' : 'pointer',
-                    boxShadow: '0 4px 10px rgba(97, 217, 151, 0.2)',
+                    boxShadow: '0 4px 10px rgba(239, 203, 110, 0.2)',
                     transition: '0.3s'
                   }}>
                   Next
@@ -529,8 +752,39 @@ const TendersPage = () => {
               </div>
             )}
           </div>
+
+        <FilterPopup 
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          categories={categories}
+          selectedCategories={selectedCategories}
+          onToggleCategory={(id) => setSelectedCategories(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])}
+          priceRange={priceRange}
+          onPriceChange={(key, val) => setPriceRange(prev => ({ ...prev, [key]: val }))}
+          wilayas={WILAYAS}
+          selectedWilaya={selectedWilaya}
+          onWilayaChange={setSelectedWilaya}
+          selectedTypes={selectedTypes}
+          onToggleType={(type) => setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])}
+          availability={availability}
+          onToggleAvailability={(key) => setAvailability(prev => ({ ...prev, [key]: !prev[key] }))}
+          rating={rating}
+          onToggleRating={(r) => setRating(prev => prev === r ? null : r)}
+          onClear={() => {
+            setPriceRange({ min: '', max: '' });
+            setSelectedCategories([]);
+            setSelectedWilaya('');
+            setSelectedTypes([]);
+            setAvailability({ inStock: false, recentlyPublished: false });
+            setRating(null);
+          }}
+          onApply={() => {
+            setIsFilterOpen(false);
+            setCurrentPage(1);
+          }}
+        />
+          </div>
         </div>
-      </div>
       <Footer />
     </>
   );

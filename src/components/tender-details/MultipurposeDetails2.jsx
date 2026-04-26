@@ -360,7 +360,7 @@ const MultipurposeDetails2 = () => {
               <div className="countdown-info">{formatRemainingTime(safeEndingAt)}</div>
               
               {safeMaxBudget > 0 && (
-                <div className="budget-display-redesign my-2" style={{ width: '120px', height: '24px', opacity: 1 }}>
+                <div className="budget-display-redesign my-2" style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
                   <span className="budget-amount" style={{ 
                     fontFamily: "'Inter', sans-serif", 
                     fontSize: '24px', 
@@ -369,7 +369,16 @@ const MultipurposeDetails2 = () => {
                     letterSpacing: '0.03em', 
                     color: '#000000' 
                   }}>
-                    {formatPrice(safeMaxBudget)} DA
+                    {formatPrice(safeMaxBudget).trim()}
+                  </span>
+                  <span style={{ 
+                    fontFamily: "'Inter', sans-serif", 
+                    fontSize: '24px', 
+                    fontWeight: '400', 
+                    lineHeight: '24px', 
+                    color: '#000000' 
+                  }}>
+                    DA
                   </span>
                 </div>
               )}
@@ -395,12 +404,6 @@ const MultipurposeDetails2 = () => {
                   <span className="info-label-mini">TYPE:</span>
                   <span className="info-text-mini">{safeTenderType === 'SERVICE' ? '🛠️ Service' : '📦 Produit'}</span>
                 </div>
-                {tenderData?.auctionType && (
-                  <div className="info-item-mini">
-                    <span className="info-label-mini">MODE:</span>
-                    <span className="info-text-mini">{tenderData.auctionType.toLowerCase() === 'express' ? '⚡ Express' : '🤝 Classique'}</span>
-                  </div>
-                )}
                 <div className="info-item-mini">
                   <span className="info-label-mini">STATUT:</span>
                   <span className="info-text-mini" style={{ color: safeStatus === 'OPEN' ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>

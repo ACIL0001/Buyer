@@ -42,158 +42,173 @@ export default function Register() {
         backgroundColor: '#FFFFFF',
         overflow: 'hidden',
         position: 'relative',
-        justifyContent: 'flex-start',
-        alignItems: step === 0 ? 'flex-start' : 'center',
+        justifyContent: step === 0 ? 'center' : 'flex-start',
+        alignItems: 'stretch',
       }}
     >
       {step === 0 ? (
-        /* ── STEP 0: FULL SCREEN PROFILE SELECTION (1438x848) ── */
-        <Box sx={{ position: 'relative', width: '1438px', height: '848px', backgroundColor: '#FFFFFF', mt: '10px' }}>
-          <Typography
-            sx={{
-              position: 'absolute',
-              width: '1022px',
-              height: '56px',
-              left: '208px',
-              top: '74px',
-              fontFamily: '"DM Sans", sans-serif',
-              fontWeight: 700,
-              fontSize: '40px',
-              lineHeight: '140%',
-              letterSpacing: '-0.02em',
-              color: '#002896',
-            }}
-          >
-            Choisissez le profil qui correspond à votre utilisation
-          </Typography>
-
-          <Typography
-            sx={{
-              position: 'absolute',
-              width: '298px',
-              height: '28px',
-              left: '564px',
-              top: '148px',
-              fontFamily: '"Inter", sans-serif',
-              fontWeight: 600,
-              fontSize: '19.7568px',
-              lineHeight: '140%',
-              letterSpacing: '-0.02em',
-              color: '#757575',
-            }}
-          >
-            Sélectionnez votre type de profil
-          </Typography>
-
-          {/* Enterprise Card */}
-          <Box
-            onClick={() => handleSelectProfile(CLIENT_TYPE.PROFESSIONAL)}
-            sx={{
-              boxSizing: 'border-box',
-              position: 'absolute',
-              width: '500px',
-              height: '355px',
-              left: '140px',
-              top: '269px',
-              background: '#FFFFFF',
-              border: '1px solid #DBDADE',
-              boxShadow: '0px 5px 30px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25)',
-              borderRadius: '35px',
-              cursor: 'pointer',
-              transition: 'transform 0.2s',
-              '&:hover': { transform: 'scale(1.02)' },
-            }}
-          >
-            <Box
-              sx={{
-                position: 'absolute',
-                width: '72px',
-                height: '72px',
-                left: '94px',  // 234 - 140
-                top: '132px',  // 401 - 269
-                color: '#000000',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Iconify icon="ph:buildings-bold" width={72} height={72} />
-            </Box>
+        /* ── STEP 0: FULL SCREEN PROFILE SELECTION ── */
+        <Box 
+          sx={{ 
+            width: '100%', 
+            height: '100%', 
+            backgroundColor: '#FFFFFF', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            py: 4,
+            overflowY: 'auto'
+          }}
+        >
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 6, px: 2, textAlign: 'center' }}>
             <Typography
               sx={{
-                position: 'absolute',
-                width: '249px',
-                height: '34px',
-                left: '94px', // 234 - 140
-                top: '248px', // 517 - 269
-                fontFamily: '"Inter", sans-serif',
+                fontFamily: '"DM Sans", sans-serif',
                 fontWeight: 700,
-                fontSize: '24px',
+                fontSize: { xs: '28px', md: '40px' },
+                lineHeight: '140%',
+                letterSpacing: '-0.02em',
+                color: '#002896',
+                mb: 2,
+                maxWidth: '1022px'
+              }}
+            >
+              Choisissez le profil qui correspond à votre utilisation
+            </Typography>
+
+            <Typography
+              sx={{
+                fontFamily: '"Inter", sans-serif',
+                fontWeight: 600,
+                fontSize: '19.7568px',
                 lineHeight: '140%',
                 letterSpacing: '-0.02em',
                 color: '#757575',
               }}
             >
-              Je suis une entreprise
+              Sélectionnez votre type de profil
             </Typography>
           </Box>
 
-          {/* Individual Card (Particulier) */}
-          <Box
-            onClick={() => handleSelectProfile(CLIENT_TYPE.CLIENT)}
-            sx={{
-              boxSizing: 'border-box',
-              position: 'absolute',
-              width: '500px',
-              height: '355px',
-              left: '798px',
-              top: '267px',
-              background: '#FFFFFF',
-              border: '1px solid #DBDADE',
-              boxShadow: '0px 5px 30px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25)',
-              borderRadius: '35px',
-              cursor: 'pointer',
-              transition: 'transform 0.2s',
-              '&:hover': { transform: 'scale(1.02)' },
-            }}
-          >
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, px: 2 }}>
+            {/* Enterprise Card */}
             <Box
+              onClick={() => handleSelectProfile(CLIENT_TYPE.PROFESSIONAL)}
               sx={{
-                position: 'absolute',
-                width: '72px',
-                height: '72px',
-                left: '103px', // 901 - 798
-                top: '134px', // 401 - 267
-                color: '#000000',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                boxSizing: 'border-box',
+                position: 'relative',
+                width: '500px',
+                maxWidth: '100%',
+                height: '355px',
+                background: '#FFFFFF',
+                border: '1px solid #DBDADE',
+                boxShadow: '0px 5px 30px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25)',
+                borderRadius: '35px',
+                cursor: 'pointer',
+                transition: 'transform 0.2s',
+                '&:hover': { transform: 'scale(1.02)' },
               }}
             >
-              <Iconify icon="ph:user-bold" width={72} height={72} />
+              <Box
+                sx={{
+                  position: 'absolute',
+                  width: '72px',
+                  height: '72px',
+                  left: '94px',
+                  top: '132px',
+                  color: '#000000',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Iconify icon="ph:buildings-bold" width={72} height={72} />
+              </Box>
+              <Typography
+                sx={{
+                  position: 'absolute',
+                  width: '249px',
+                  height: '34px',
+                  left: '94px',
+                  top: '248px',
+                  fontFamily: '"Inter", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '24px',
+                  lineHeight: '140%',
+                  letterSpacing: '-0.02em',
+                  color: '#757575',
+                }}
+              >
+                Je suis une entreprise
+              </Typography>
             </Box>
-            <Typography
+
+            {/* Individual Card (Particulier) */}
+            <Box
+              onClick={() => handleSelectProfile(CLIENT_TYPE.CLIENT)}
               sx={{
-                position: 'absolute',
-                width: '235px',
-                height: '34px',
-                left: '103px', // 901 - 798
-                top: '250px', // 517 - 267
-                fontFamily: '"Inter", sans-serif',
-                fontWeight: 700,
-                fontSize: '24px',
-                lineHeight: '140%',
-                letterSpacing: '-0.02em',
-                color: '#757575',
+                boxSizing: 'border-box',
+                position: 'relative',
+                width: '500px',
+                maxWidth: '100%',
+                height: '355px',
+                background: '#FFFFFF',
+                border: '1px solid #DBDADE',
+                boxShadow: '0px 5px 30px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25)',
+                borderRadius: '35px',
+                cursor: 'pointer',
+                transition: 'transform 0.2s',
+                '&:hover': { transform: 'scale(1.02)' },
               }}
             >
-              Je suis un particulier
-            </Typography>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  width: '72px',
+                  height: '72px',
+                  left: '103px',
+                  top: '134px',
+                  color: '#000000',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Iconify icon="ph:user-bold" width={72} height={72} />
+              </Box>
+              <Typography
+                sx={{
+                  position: 'absolute',
+                  width: '235px',
+                  height: '34px',
+                  left: '103px',
+                  top: '250px',
+                  fontFamily: '"Inter", sans-serif',
+                  fontWeight: 700,
+                  fontSize: '24px',
+                  lineHeight: '140%',
+                  letterSpacing: '-0.02em',
+                  color: '#757575',
+                }}
+              >
+                Je suis un particulier
+              </Typography>
+            </Box>
           </Box>
         </Box>
       ) : (
         /* ── STEP 1: REGISTRATION FORM WITH BACKGROUND IMAGE ── */
-        <Box sx={{ position: 'relative', width: '1438px', height: '848px', display: 'flex', flexDirection: 'row', backgroundColor: '#FFFFFF' }}>
+        <Box 
+          sx={{ 
+            position: 'relative', 
+            width: '100%', 
+            height: '100%', 
+            backgroundColor: '#FFFFFF', 
+            display: 'flex', 
+            flexDirection: 'row', 
+          }}
+        >
           {/* Left Panel: Image */}
           <Box
             sx={{
@@ -203,7 +218,7 @@ export default function Register() {
               position: 'relative',
               overflow: 'hidden',
               flexShrink: 0,
-              display: 'flex',
+              display: { xs: 'none', md: 'flex' },
               alignItems: 'center',
               justifyContent: 'center',
             }}
@@ -217,8 +232,8 @@ export default function Register() {
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%) rotate(0deg)',
-                width: '701px',
-                height: '848px',
+                width: '100%',
+                height: '100%',
                 objectFit: 'cover',
                 objectPosition: 'center',
                 opacity: 1,
@@ -229,7 +244,8 @@ export default function Register() {
               sx={{
                 position: 'absolute',
                 left: '137px',
-                top: '250px',
+                top: '50%',
+                transform: 'translateY(-50%)',
                 width: '548px',
                 height: '320px',
                 background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.32) 0%, transparent 75%)',
@@ -243,8 +259,9 @@ export default function Register() {
                 position: 'absolute',
                 width: '508px',
                 height: '280px',
-                left: '157px',
-                top: '270px',
+                left: '97px',
+                top: '50%',
+                transform: 'translateY(-50%)',
                 zIndex: 2,
                 fontFamily: '"DM Sans", sans-serif',
                 fontStyle: 'normal',
@@ -256,7 +273,11 @@ export default function Register() {
                 whiteSpace: 'pre-line',
               }}
             >
-              {`Bienvenue\nCreez votre compte\nMazadclick\net commencez a\nvendre en toute simplicité`}
+              Bienvenue{'\n'}
+              Creez votre compte{'\n'}
+              <Box component="span" sx={{ fontWeight: 700 }}>Mazadclick</Box>{'\n'}
+              et commencez a{'\n'}
+              vendre en toute simplicité
             </Typography>
           </Box>
 
@@ -269,16 +290,17 @@ export default function Register() {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
-              alignItems: 'flex-start',
+              alignItems: 'center',
               position: 'relative',
               overflowY: 'auto',
-              px: 0,
+              px: { xs: 2, md: 0 },
+              py: { xs: 4, md: 0 },
             }}
           >
             <Box
               sx={{
                 width: '527.79px',
-                ml: '138px',
+                maxWidth: '100%',
                 py: '20px',
               }}
             >

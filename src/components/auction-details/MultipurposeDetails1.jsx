@@ -23,6 +23,7 @@ import commentsApi from "@/app/api/comments";
 import { useTranslation } from 'react-i18next';
 import { motion } from "framer-motion";
 import ShareButton from "@/components/common/ShareButton";
+import { normalizeImageUrl } from '@/utils/url';
 import CommentItem from "@/components/common/CommentItem";
 
 const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-dark.png";
@@ -371,22 +372,32 @@ const MultipurposeDetails1 = () => {
   // Update timers for similar auctions
   useEffect(() => {
     if (!allAuctions || allAuctions.length === 0) return;
+    const catId = auctionData?.category?._id || auctionData?.productCategory?._id;
+    const catName = auctionData?.categoryName;
     const filtered = allAuctions
       .filter((auction) => auction._id !== auctionId)
-      .slice(0, 4);
+      .filter((auction) => {
+        const aCatId = auction.category?._id || auction.productCategory?._id;
+        const aCatName = auction.categoryName;
+        return (catId && aCatId && aCatId === catId) || (catName && aCatName && aCatName === catName);
+      })
+      .slice(0, 8);
     function updateTimers() {
       setSimilarAuctionTimers(
         filtered.map((auction) => {
           const endDate =
             auction.endDate || auction.endingAt || "2024-09-23 11:42:00";
-          return getTimeRemaining(endDate); // getTimeRemaining now formats with leading zeros
+          return getTimeRemaining(endDate);
         })
       );
     }
     updateTimers();
     const interval = setInterval(updateTimers, 1000);
     return () => clearInterval(interval);
-  }, [allAuctions, auctionId]);
+  }, [allAuctions, auctionId, auctionData]);
+
+  const [flippedSimilarId, setFlippedSimilarId] = useState(null);
+  const [similarCardImageIndexes, setSimilarCardImageIndexes] = useState({});
 
   // Using the real end date if available, otherwise fallback to static date
   const endDate = auctionData?.endDate || auctionData?.endingAt || "2024-09-23 11:42:00";
@@ -1492,35 +1503,162 @@ const MultipurposeDetails1 = () => {
           </div>
 
           {/* Similar Auctions (Carousel) */}
-
           <div className="similar-auctions-redesign mt-5">
             <div className="section-header-redesign d-flex justify-content-between align-items-center mb-4">
               <h2 className="redesign-title">Enchères similaires</h2>
               <Link href="/auction-sidebar" className="btn-view-all">Tout voir →</Link>
             </div>
-            
-            <Swiper
-              modules={[Navigation, Pagination, Autoplay]}
-              spaceBetween={20}
-              slidesPerView={1}
-              breakpoints={{
-                640: { slidesPerView: 2 },
-                1024: { slidesPerView: 3 },
-                1200: { slidesPerView: 4 }
-              }}
-              className="similar-swiper-custom"
-            >
-              {allAuctions?.filter(a => a._id !== auctionId).slice(0, 8).map((auction) => (
-                <SwiperSlide key={auction._id}>
-                  <SimilarAuctionCard 
-                    auction={auction} 
-                    app={app} 
-                    formatPrice={formatPrice} 
-                    defaultImage={DEFAULT_AUCTION_IMAGE}
-                  />
-                </SwiperSlide>
-              ))}
-            </Swiper>
+            {(() => {
+              const catId = auctionData?.category?._id || auctionData?.productCategory?._id;
+              const catName = auctionData?.categoryName;
+              const similar = allAuctions
+                .filter(a => a._id !== auctionId)
+                .filter(a => {
+                  const aCatId = a.category?._id || a.productCategory?._id;
+                  const aCatName = a.categoryName;
+                  return (catId && aCatId && aCatId === catId) || (catName && aCatName && aCatName === catName);
+                })
+                .slice(0, 8);
+              if (!similar.length) return <p style={{ color: '#888', fontStyle: 'italic' }}>Aucune enchère similaire trouvée.</p>;
+              return (
+                <div style={{ position: 'relative', overflow: 'visible' }}>
+                  <Swiper
+                    modules={[Navigation, Autoplay]}
+                    spaceBetween={20}
+                    slidesPerView="auto"
+                    style={{ padding: '30px 10px', margin: '-30px -10px', overflow: 'visible' }}
+                  >
+                    {similar.map(auction => {
+                      const aid = auction._id || auction.id;
+                      const endDate = auction.endDate || auction.endingAt;
+                      const timer = endDate ? calculateTimeRemaining(endDate) : { days: '0', hours: '0', minutes: '0', formattedEnd: '', hasEnded: false };
+                      const isEnded = timer.hasEnded;
+                      const images = auction.thumbs || auction.images || [];
+                      const curImgIdx = similarCardImageIndexes[aid] || 0;
+                      const getImg = (idx = 0) => {
+                        const raw = images[idx];
+                        if (!raw) return DEFAULT_AUCTION_IMAGE;
+                        const url = typeof raw === 'string' ? raw : (raw.url || raw.fullUrl || raw);
+                        return normalizeImageUrl(url);
+                      };
+                      const price = auction.currentPrice || auction.startingPrice || 0;
+                      const seller = auction.owner?.entreprise || auction.owner?.firstName || 'Nom Entreprise';
+                      return (
+                        <SwiperSlide key={aid} style={{ overflow: 'visible', width: '284px', minWidth: '284px', maxWidth: '284px', perspective: '1000px' }}>
+                          <motion.div
+                            key={aid}
+                            initial={false}
+                            animate={{ rotateY: flippedSimilarId === aid ? 180 : 0 }}
+                            transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
+                            style={{ width: '284px', minWidth: '284px', maxWidth: '284px', height: '464px', minHeight: '464px', maxHeight: '464px', position: 'relative', zIndex: 1, transformStyle: 'preserve-3d' }}
+                          >
+                            {/* FRONT */}
+                            <div
+                              style={{ width: '100%', height: '100%', position: 'absolute', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', borderRadius: '20px', display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: 'transparent', cursor: 'pointer', boxShadow: 'none', border: 'none' }}
+                              onClick={() => window.location.assign(`/auction-details/${aid}`)}
+                            >
+                              <div style={{ width: '284px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                                <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
+                                  <ShareButton type="auction" id={aid} title={auction.title} description={auction.description} imageUrl={getImg(curImgIdx)} />
+                                </div>
+                                <img src={getImg(curImgIdx)} alt={auction.title} style={{ width: '100%', height: '100%', objectFit: 'fill' }} onError={e => e.currentTarget.src = DEFAULT_AUCTION_IMAGE} />
+                                {images.length > 1 && (
+                                  <>
+                                    <div className="image-nav-arrow" style={{ position: 'absolute', top: '45%', left: '8px', transform: 'translateY(-50%)', width: '26px', height: '26px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 25, border: 'none', transition: 'all 0.2s ease' }} onClick={e => { e.stopPropagation(); setSimilarCardImageIndexes(prev => ({ ...prev, [aid]: (curImgIdx - 1 + images.length) % images.length })); }}>
+                                      <i className="bi bi-chevron-left" style={{ color: '#002896', fontSize: '12px' }}></i>
+                                    </div>
+                                    <div className="image-nav-arrow" style={{ position: 'absolute', top: '45%', right: '8px', transform: 'translateY(-50%)', width: '26px', height: '26px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 25, border: 'none', transition: 'all 0.2s ease' }} onClick={e => { e.stopPropagation(); setSimilarCardImageIndexes(prev => ({ ...prev, [aid]: (curImgIdx + 1) % images.length })); }}>
+                                      <i className="bi bi-chevron-right" style={{ color: '#002896', fontSize: '12px' }}></i>
+                                    </div>
+                                    <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '4px', zIndex: 25 }}>
+                                      {images.map((_, i) => <div key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: curImgIdx === i ? '#002896' : 'rgba(255,255,255,0.6)', transition: 'all 0.3s ease' }} />)}
+                                    </div>
+                                  </>
+                                )}
+                                <div
+                                  style={{ position: 'absolute', bottom: '10px', right: '10px', zIndex: 30, backgroundColor: 'rgba(255,255,255,0.95)', padding: '3px 8px', borderRadius: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.3s ease', border: 'none' }}
+                                  onClick={e => { e.stopPropagation(); setFlippedSimilarId(flippedSimilarId === aid ? null : aid); }}
+                                  onMouseOver={e => { e.currentTarget.style.backgroundColor = '#fff'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+                                  onMouseOut={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.95)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                >
+                                  <span style={{ fontSize: '11px', fontWeight: '600', color: '#002896', fontFamily: 'Inter, sans-serif' }}>Plus de détails</span>
+                                  <i className="bi bi-info-circle" style={{ color: '#002896', fontSize: '12px' }}></i>
+                                </div>
+                              </div>
+                              <div style={{ padding: '8px 10px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                <h4 style={{ width: '280px', height: '23px', fontFamily: 'Roboto, sans-serif', fontWeight: 700, fontSize: '20px', lineHeight: '100%', letterSpacing: '0px', verticalAlign: 'middle', color: '#002896', margin: '0 0 8px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: 1 }}>{auction.title || 'Nom Produit'}</h4>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'nowrap', justifyContent: 'space-between' }}>
+                                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                                    <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: Number(price).toLocaleString().length > 10 ? '16px' : Number(price).toLocaleString().length > 8 ? '20px' : '24px', lineHeight: '100%', color: '#062C90', transition: 'font-size 0.2s ease' }}>{Number(price).toLocaleString()}</span>
+                                    <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 700, color: '#062C90', marginLeft: '1px' }}>DA</span>
+                                  </div>
+                                  <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center', gap: '10px' }}>
+                                    <span style={{ fontFamily: 'Roboto, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '100%', color: '#002896', whiteSpace: 'nowrap', width: '69px', height: '16px' }}>{auction.participantsCount || 0} enchères</span>
+                                    <span style={{ width: '101px', height: '16px', fontFamily: 'Roboto, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '100%', color: '#062C90', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right' }}>{seller}</span>
+                                  </div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+                                  <span style={{ fontFamily: 'Roboto, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '100%', letterSpacing: '0px', verticalAlign: 'middle', color: '#002896', width: '100%', whiteSpace: 'nowrap', height: '16px' }}>
+                                    {isEnded ? 'Terminé' : `Temps restant ${timer.days}j${timer.hours}h (${timer.formattedEnd})`}
+                                  </span>
+                                </div>
+                                <button
+                                  disabled={isEnded}
+                                  style={{ width: '264px', height: '39px', backgroundColor: '#EB4545', borderRadius: '10px', padding: '10px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isEnded ? 'default' : 'pointer', gap: '10px', opacity: isEnded ? 0.6 : 1, transition: 'all 0.3s ease' }}
+                                  onClick={e => { e.stopPropagation(); if (!isEnded) window.location.assign(`/auction-details/${aid}`); }}
+                                  onMouseOver={e => { if (!isEnded) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(1.1)'; } }}
+                                  onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.filter = 'brightness(1)'; }}
+                                >
+                                  <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '100%', color: '#FFFFFF', textAlign: 'center' }}>Enchère rapide</span>
+                                </button>
+                              </div>
+                            </div>
+                            {/* BACK */}
+                            <div
+                              style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', borderRadius: '20px', display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: 'transparent', color: '#333', transform: 'rotateY(180deg)', padding: '18px', boxSizing: 'border-box', border: 'none', boxShadow: 'none' }}
+                            >
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 800, fontFamily: 'Roboto, sans-serif', color: '#002896', textTransform: 'uppercase' }}>Fiche Technique</h4>
+                                <button onClick={e => { e.stopPropagation(); setFlippedSimilarId(null); }} style={{ backgroundColor: 'transparent', border: 'none', color: '#999', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}>
+                                  <i className="bi bi-x-lg" style={{ fontSize: '16px' }}></i>
+                                </button>
+                              </div>
+                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {[
+                                  { label: 'Désignation', value: auction.title },
+                                  { label: 'Mise à prix', value: `${Number(auction.startingPrice || 0).toLocaleString()} DA` },
+                                  { label: 'Participation', value: `${auction.participantsCount || 0} inscrits` },
+                                  { label: 'Type', value: (auction.bidType === 'SERVICE' || auction.type === 'SERVICE') ? '🛠️ Service' : '📦 Produit' },
+                                  { label: 'Catégorie', value: auction.category?.name || auction.productSubCategory?.name || auction.productCategory?.name || auction.categoryName || 'Général' },
+                                  { label: 'Localisation', value: `${auction.wilaya || ''}${auction.place ? ', ' + auction.place : ''}` || 'Algérie' },
+                                  { label: 'Annonceur', value: seller },
+                                  { label: 'Terminaison', value: isEnded ? 'Terminé' : `${timer.days}j ${timer.hours}h` },
+                                ].map((row, idx) => (
+                                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #eee', paddingBottom: '1px', alignItems: 'flex-start' }}>
+                                    <span style={{ fontSize: '10px', fontWeight: 600, color: '#888', flexShrink: 0 }}>{row.label}</span>
+                                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#333', textAlign: 'right', marginLeft: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>{row.value}</span>
+                                  </div>
+                                ))}
+                                <div style={{ marginTop: '3px' }}>
+                                  <p style={{ fontSize: '11px', fontWeight: 600, color: '#888', margin: '0 0 2px 0' }}>Description</p>
+                                  <p style={{ fontSize: '11px', color: '#555', margin: 0, lineHeight: '1.3', fontFamily: 'Inter, sans-serif', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{auction.description || 'Aucune description disponible.'}</p>
+                                </div>
+                              </div>
+                              <button
+                                style={{ width: '100%', height: '40px', backgroundColor: '#EB4545', color: '#fff', borderRadius: '8px', border: 'none', marginTop: '12px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.3s ease' }}
+                                onClick={() => window.location.assign(`/auction-details/${aid}`)}
+                              >
+                                Consulter l'annonce
+                              </button>
+                            </div>
+                          </motion.div>
+                        </SwiperSlide>
+                      );
+                    })}
+                  </Swiper>
+                </div>
+              );
+            })()}
           </div>
 
 
@@ -1562,32 +1700,4 @@ const MultipurposeDetails1 = () => {
   );
 };
 
-/* Internal Helper Component for Similar Auctions */
-const SimilarAuctionCard = ({ auction, app, formatPrice, defaultImage }) => {
-  const timer = useCountdownTimer(auction.endTime);
-  const isEnded = timer.isExpired || timer.total <= 0;
-  
-  return (
-    <div className={`similar-card-redesign ${isEnded ? 'ended' : ''}`} onClick={() => !isEnded && window.location.assign(`/auction-details/${auction._id}`)}>
-      <div className="card-image-wrapper">
-        <img 
-          src={auction?.thumbs?.[0]?.url ? (auction.thumbs[0].url.startsWith('http') ? auction.thumbs[0].url : `${app.baseURL}${auction.thumbs[0].url.startsWith('/') ? auction.thumbs[0].url.substring(1) : auction.thumbs[0].url}`) : defaultImage} 
-          alt={auction.title} 
-        />
-        {!isEnded && (
-          <div className="urgent-badge-mini">
-            {timer.days > 0 ? `${timer.days}j` : `${timer.hours}h:${timer.minutes}m`}
-          </div>
-        )}
-      </div>
-      <div className="card-info-mini">
-        <h4>{auction.title}</h4>
-        <div className="price-tag-mini">{formatPrice(auction.currentPrice || auction.startingPrice)} DA</div>
-      </div>
-    </div>
-  );
-};
-
 export default MultipurposeDetails1;
-
-

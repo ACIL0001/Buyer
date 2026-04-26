@@ -132,9 +132,9 @@ export default function Home() {
         /* Distinct Light Grey Glassmorphism Card Hover */
         .grey-glass-card {
           width: 388px;
-          height: 356px;
+          height: 280px;
           border-radius: 24px;
-          padding: 40px 24px;
+          padding: 25px 24px;
           background: 
             linear-gradient(127.45deg, rgba(220, 225, 235, 0.78) 2.15%, rgba(190, 195, 210, 0.28) 63.05%) padding-box,
             linear-gradient(127.23deg, rgba(255, 255, 255, 0.45) 2.46%, rgba(255, 255, 255, 0.25) 97.36%) border-box;
@@ -157,7 +157,7 @@ export default function Home() {
           .grey-glass-card {
             max-width: 100%;
             height: auto;
-            min-height: 356px;
+            min-height: 280px;
           }
         }
       `}</style>
@@ -195,7 +195,7 @@ export default function Home() {
                     {/* Que voulez-vous faire? Section with ambient background for glass effect */}
                     <div style={{
                       position: 'relative', zIndex: 3, width: '100%', margin: '0 auto', 
-                      padding: '80px 20px', textAlign: 'center', 
+                      padding: '40px 20px', textAlign: 'center', 
                       background: '#ffffff', overflow: 'hidden'
                     }}>
                       
@@ -222,11 +222,11 @@ export default function Home() {
                           
                           {/* CARD 1: Enchères */}
                           <div className="grey-glass-card">
-                            <div style={{ width: '150px', height: '145px', marginBottom: '55px' }}>
-                              <img src="/assets/images/icon 1.png" alt="Enchères" style={{ position: 'absolute', top: '0px', left: '119px', width: '150px', height: '145px', opacity: 1 }} />
+                            <div style={{ height: '105px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '5px' }}>
+                              <img src="/assets/images/icon 1.png" alt="Enchères" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '15px' }}>Enchères</h3>
-                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', marginBottom: '35px', minHeight: '66px' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: 'auto' }}>Enchères</h3>
+
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center' }}>
                               <button onClick={() => router.push('/auction-sidebar')} className="btn-3d-blue">Enchérir</button>
                               <button onClick={() => router.push('/dashboard/auctions/create')} className="btn-3d-blue">Poster</button>
@@ -235,11 +235,11 @@ export default function Home() {
 
                           {/* CARD 2: Vente directe */}
                           <div className="grey-glass-card">
-                            <div style={{ width: '160px', height: '132px', marginBottom: '55px' }}>
-                              <img src="/assets/images/icon 2.png" alt="Vente directe" style={{ position: 'absolute', top: '0px', left: '114px', width: '160px', height: '132px', opacity: 1 }} />
+                            <div style={{ height: '105px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '5px' }}>
+                              <img src="/assets/images/icon 2.png" alt="Vente directe" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '15px' }}>Vente directe</h3>
-                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', marginBottom: '35px', minHeight: '66px' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: 'auto' }}>Vente directe</h3>
+
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center' }}>
                               <button onClick={() => router.push('/dashboard/direct-sales/create')} className="btn-3d-blue">Vendre</button>
                               <button onClick={() => router.push('/direct-sale')} className="btn-3d-blue">Acheter</button>
@@ -248,11 +248,11 @@ export default function Home() {
 
                           {/* CARD 3: Soumission d'offre */}
                           <div className="grey-glass-card">
-                            <div style={{ width: '140px', height: '114px', marginBottom: '55px' }}>
-                              <img src="/assets/images/icon 3.png" alt="Soumission" style={{ position: 'absolute', top: '0px', left: '124px', width: '140px', height: '114px', opacity: 1 }} />
+                            <div style={{ height: '105px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '5px' }}>
+                              <img src="/assets/images/icon 3.png" alt="Soumission" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '28px', lineHeight: '25px', textAlign: 'center', marginBottom: '15px' }}>Consultez les projets et soumissionnez</h3>
-                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', marginBottom: '35px', minHeight: '66px' }}>Lorem ipsum dolor sit amet consectetur.<br/>Fringilla ulla.</p>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '28px', lineHeight: '30px', textAlign: 'center', marginBottom: 'auto' }}>Consultez les projets et soumissionnez</h3>
+
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center' }}>
                               <button onClick={() => router.push('/dashboard/tenders/create')} className="btn-3d-blue">Publier</button>
                               <button onClick={() => router.push('/tenders')} className="btn-3d-blue">Postuler</button>
@@ -263,13 +263,7 @@ export default function Home() {
                       </div>
                     </div>
                   </section>
-                  
-                  {isReady && !isLogged && (
-                    <section style={{ width: '100%', background: '#ffffff', padding: 0 }}>
-                      <CategoryGrid />
-                    </section>
-                  )}
-                  
+
                   {/* Live Lists Components */}
                   <section style={{ width: '100%', background: '#ffffff', padding: 0 }}>
                     <Home1LiveAuction />
@@ -279,6 +273,10 @@ export default function Home() {
                   </section>
                   <section style={{ width: '100%', background: '#ffffff', padding: 0 }}>
                     <Home1LiveTenders />
+                  </section>
+
+                  <section style={{ width: '100%', background: '#ffffff', padding: 0 }}>
+                    <CategoryGrid />
                   </section>
 
                   {!isLogged && (
@@ -299,11 +297,7 @@ export default function Home() {
                     </section>
                   )}
 
-                  {isLogged && (
-                    <section style={{ width: '100%', background: '#ffffff', padding: 0 }}>
-                      <CategoryGrid />
-                    </section>
-                  )}
+
                   
                 </main>
                 <Footer />

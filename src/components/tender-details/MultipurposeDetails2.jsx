@@ -7,6 +7,8 @@ import "@/components/auction-details/multipurpose-redesign.css";
 
 import Link from "next/link";
 import { useMemo, useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { normalizeImageUrl } from '@/utils/url';
 import { useCountdownTimer } from "@/customHooks/useCountdownTimer";
 import HandleQuantity from "../common/HandleQuantity";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
@@ -17,6 +19,7 @@ import { OfferAPI } from "@/app/api/offer";
 import { AutoBidAPI } from "@/app/api/auto-bid";
 import useAuth from "@/hooks/useAuth";
 import app, { getSellerUrl } from "@/config";
+import { calculateTimeRemaining } from "@/components/live-tenders/Home1LiveTenders";
 import commentsApi from "@/app/api/comments";
 import { useTranslation } from 'react-i18next';
 import ShareButton from "@/components/common/ShareButton";
@@ -202,6 +205,42 @@ const MultipurposeDetails2 = () => {
     fetchAll();
   }, []);
 
+  // Timer state for similar tender cards
+  const [similarTimers, setSimilarTimers] = useState({});
+  const [flippedSimilarId, setFlippedSimilarId] = useState(null);
+  const [similarCardImageIndexes, setSimilarCardImageIndexes] = useState({});
+
+  // Compute similar tenders by same category (strict)
+  const similarTenders = useMemo(() => {
+    if (!tenderData || !allTenders.length) return [];
+    const catId = tenderData?.category?._id || tenderData?.productCategory?._id || tenderData?.productSubCategory?._id;
+    const catName = tenderData?.categoryName;
+    return allTenders
+      .filter(t => (t._id || t.id) !== tenderId)
+      .filter(t => {
+        const tCatId = t.category?._id || t.productCategory?._id || t.productSubCategory?._id;
+        const tCatName = t.categoryName;
+        return (catId && tCatId && tCatId === catId) || (catName && tCatName && tCatName === catName);
+      })
+      .slice(0, 8);
+  }, [tenderData, allTenders, tenderId]);
+
+  // Drive countdown timers for similar cards
+  useEffect(() => {
+    if (!similarTenders.length) return;
+    const update = () => {
+      const map = {};
+      similarTenders.forEach(t => {
+        const id = t._id || t.id;
+        if (id && t.endingAt) map[id] = calculateTimeRemaining(t.endingAt);
+      });
+      setSimilarTimers(map);
+    };
+    update();
+    const iv = setInterval(update, 60000);
+    return () => clearInterval(iv);
+  }, [similarTenders]);
+
   const safeTenderData = tenderData || {};
   const safeAttachments = safeTenderData.attachments || safeTenderData.images || [];
   const safeVideos = safeTenderData.videos || [];
@@ -228,13 +267,19 @@ const MultipurposeDetails2 = () => {
     try {
       if (!isLogged) { toast.error("Connectez-vous"); router.push('/auth/login'); return; }
       const isMieuxDisant = tenderData?.evaluationType === 'MIEUX_DISANT';
-      const bidInput = document.querySelector(".quantity__input");
+      const bidInput = document.querySelector(".quantity__input_v2");
       const bidAmountRaw = bidInput?.value || "0";
       const cleanBidAmount = parseFloat(bidAmountRaw.replace(/[^0-9.]/g, '')) || 0;
 
-      if (!isMieuxDisant && cleanBidAmount >= currentLowestBidPrice) {
-        toast.error(`Votre offre doit être inférieure à ${currentLowestBidPrice.toLocaleString()} DA`);
-        return;
+      if (!isMieuxDisant) {
+        if (offers.length > 0 && cleanBidAmount >= currentLowestBidPrice) {
+          toast.error(`Votre offre doit être strictement inférieure à la meilleure offre actuelle (${currentLowestBidPrice.toLocaleString()} DA)`);
+          return;
+        }
+        if (offers.length === 0 && cleanBidAmount > currentLowestBidPrice) {
+          toast.error(`Votre offre ne peut pas dépasser le budget maximum (${currentLowestBidPrice.toLocaleString()} DA)`);
+          return;
+        }
       }
 
       let payload;
@@ -490,7 +535,7 @@ const MultipurposeDetails2 = () => {
                       <i className="fa fa-coins" style={{ fontSize: '18px' }}></i> Votre offre financière (DA) :
                     </label>
                     <div className="quantity-stepper">
-                      <HandleQuantity initialValue={currentLowestBidPrice - 100} startingPrice={currentLowestBidPrice} maxValue={currentLowestBidPrice - 1} />
+                      <HandleQuantity initialValue={currentLowestBidPrice} startingPrice={currentLowestBidPrice} maxValue={currentLowestBidPrice} />
                     </div>
                   </div>
                 )}
@@ -620,17 +665,147 @@ const MultipurposeDetails2 = () => {
           </div>
 
           <div className="similar-auctions-redesign mt-5">
-            <h2 className="redesign-title mb-4">Similaires</h2>
-            <Swiper modules={[Navigation, Autoplay]} navigation spaceBetween={20} slidesPerView={1} breakpoints={{ 640: { slidesPerView: 2 }, 1024: { slidesPerView: 4 } }}>
-              {allTenders?.filter(t => t._id !== tenderId).slice(0, 8).map(t => (
-                <SwiperSlide key={t._id}>
-                  <div className="similar-card-redesign" onClick={() => window.location.assign(`/tender-details/${t._id}`)}>
-                    <div className="card-image-wrapper"><img src={t.attachments?.[0]?.url || DEFAULT_TENDER_IMAGE} alt="" /></div>
-                    <div className="card-info-mini"><h4>{t.title}</h4><div className="price-tag-mini">{formatPrice(t.maxBudget)} DA</div></div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 className="redesign-title">Appels d'offres similaires</h2>
+            </div>
+            {similarTenders.length > 0 ? (
+              <div style={{ position: 'relative', overflow: 'visible' }}>
+                <Swiper
+                  modules={[Navigation, Autoplay]}
+                  spaceBetween={20}
+                  slidesPerView="auto"
+                  style={{ padding: '30px 10px', margin: '-30px -10px', overflow: 'visible' }}
+                >
+                  {similarTenders.map(t => {
+                    const tid = t._id || t.id;
+                    const timer = similarTimers[tid] || { days: '0', hours: '0', minutes: '0', formattedEnd: '', hasEnded: false };
+                    const images = t.attachments || t.images || [];
+                    const getImg = (idx = 0) => {
+                      const raw = images[idx];
+                      if (!raw) return DEFAULT_TENDER_IMAGE;
+                      const url = typeof raw === 'string' ? raw : (raw.url || raw.fullUrl || raw);
+                      return normalizeImageUrl ? normalizeImageUrl(url) : (url.startsWith('http') ? url : `${app.baseURL}${url.startsWith('/') ? url.substring(1) : url}`);
+                    };
+                    const seller = t.hidden ? 'Anonyme' : (t.owner?.entreprise || t.owner?.companyName || t.owner?.firstName || 'Annonceur');
+                    const budget = t.budget || t.maxBudget || t.price;
+                    const curImgIdx = similarCardImageIndexes[tid] || 0;
+                    return (
+                      <SwiperSlide key={tid} style={{ overflow: 'visible', width: '284px', minWidth: '284px', maxWidth: '284px', perspective: '1000px' }}>
+                        <motion.div
+                          key={tid}
+                          initial={false}
+                          animate={{ rotateY: flippedSimilarId === tid ? 180 : 0 }}
+                          transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
+                          style={{ width: '284px', minWidth: '284px', maxWidth: '284px', height: '464px', minHeight: '464px', maxHeight: '464px', position: 'relative', zIndex: 1, transformStyle: 'preserve-3d' }}
+                        >
+                          {/* FRONT */}
+                          <div
+                            style={{ width: '100%', height: '100%', position: 'absolute', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', borderRadius: '20px', display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: 'transparent', cursor: 'pointer', boxShadow: 'none', border: 'none' }}
+                            onClick={() => router.push(`/tender-details/${tid}`)}
+                          >
+                            <div style={{ width: '284px', height: '280px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                              <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
+                                <ShareButton type="tender" id={tid} title={t.title} description={t.description} imageUrl={getImg(curImgIdx)} />
+                              </div>
+                              <img src={getImg(curImgIdx)} alt={t.title} style={{ width: '100%', height: '100%', objectFit: 'fill' }} onError={e => e.currentTarget.src = DEFAULT_TENDER_IMAGE} />
+                              {images.length > 1 && (
+                                <>
+                                  <div className="image-nav-arrow" style={{ position: 'absolute', top: '45%', left: '8px', transform: 'translateY(-50%)', width: '26px', height: '26px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 25, border: 'none', transition: 'all 0.2s ease' }} onClick={e => { e.stopPropagation(); setSimilarCardImageIndexes(prev => ({ ...prev, [tid]: (curImgIdx - 1 + images.length) % images.length })); }}>
+                                    <i className="bi bi-chevron-left" style={{ color: '#002896', fontSize: '12px' }}></i>
+                                  </div>
+                                  <div className="image-nav-arrow" style={{ position: 'absolute', top: '45%', right: '8px', transform: 'translateY(-50%)', width: '26px', height: '26px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 25, border: 'none', transition: 'all 0.2s ease' }} onClick={e => { e.stopPropagation(); setSimilarCardImageIndexes(prev => ({ ...prev, [tid]: (curImgIdx + 1) % images.length })); }}>
+                                    <i className="bi bi-chevron-right" style={{ color: '#002896', fontSize: '12px' }}></i>
+                                  </div>
+                                  <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '4px', zIndex: 25 }}>
+                                    {images.map((_, i) => <div key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: curImgIdx === i ? '#002896' : 'rgba(255,255,255,0.6)', transition: 'all 0.3s ease' }} />)}
+                                  </div>
+                                </>
+                              )}
+                              <div
+                                style={{ position: 'absolute', bottom: '10px', right: '10px', zIndex: 30, backgroundColor: 'rgba(255,255,255,0.95)', padding: '3px 8px', borderRadius: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.3s ease', border: 'none' }}
+                                onClick={e => { e.stopPropagation(); setFlippedSimilarId(flippedSimilarId === tid ? null : tid); }}
+                                onMouseOver={e => { e.currentTarget.style.backgroundColor = '#fff'; e.currentTarget.style.transform = 'scale(1.05)'; }}
+                                onMouseOut={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.95)'; e.currentTarget.style.transform = 'scale(1)'; }}
+                              >
+                                <span style={{ fontSize: '11px', fontWeight: '600', color: '#002896', fontFamily: 'Inter, sans-serif' }}>Plus de détails</span>
+                                <i className="bi bi-info-circle" style={{ color: '#002896', fontSize: '12px' }}></i>
+                              </div>
+                            </div>
+                            <div style={{ padding: '10px 10px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
+                              <div>
+                                <h4 style={{ width: '281px', height: '23px', fontFamily: 'Roboto, sans-serif', fontWeight: 700, fontSize: '20px', lineHeight: '100%', letterSpacing: '0px', verticalAlign: 'middle', color: '#002896', margin: '0 0 5px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: 1 }}>{t.title || "Appel d'offres"}</h4>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                                    <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: budget && t.evaluationType !== 'MIEUX_DISANT' ? (Number(budget).toLocaleString().length > 10 ? '16px' : Number(budget).toLocaleString().length > 8 ? '20px' : '24px') : '20px', lineHeight: '29px', color: '#002896', transition: 'font-size 0.2s ease' }}>
+                                      {budget && t.evaluationType !== 'MIEUX_DISANT' ? Number(budget).toLocaleString() : 'Offre'}
+                                    </span>
+                                    {budget && t.evaluationType !== 'MIEUX_DISANT' && <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 700, color: '#002896', marginLeft: '1px' }}>DA</span>}
+                                  </div>
+                                  <span style={{ width: '101px', height: '16px', fontFamily: 'Roboto, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '16px', color: '#002896', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right', justifyContent: 'flex-end' }}>{seller}</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                  <span style={{ width: '100%', height: '16px', fontFamily: 'Roboto, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '100%', color: '#002896', display: 'flex', alignItems: 'center', letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', verticalAlign: 'middle' }}>
+                                    {timer.hasEnded ? 'Terminé' : `Temps restant ${timer.days}j ${timer.hours}h (${timer.formattedEnd})`}
+                                  </span>
+                                </div>
+                              </div>
+                              <button
+                                disabled={timer.hasEnded}
+                                style={{ width: '268px', height: '39px', backgroundColor: '#EB4545', borderRadius: '10px', padding: '10px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: timer.hasEnded ? 'default' : 'pointer', gap: '10px', opacity: timer.hasEnded ? 0.6 : 1, transition: 'all 0.3s ease' }}
+                                onClick={e => { e.stopPropagation(); if (!timer.hasEnded) router.push(`/tender-details/${tid}`); }}
+                                onMouseOver={e => { if (!timer.hasEnded) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(1.1)'; } }}
+                                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.filter = 'brightness(1)'; }}
+                              >
+                                <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 500, fontSize: '16px', lineHeight: '100%', color: '#FFFFFF', textAlign: 'center' }}>Soumission rapide</span>
+                              </button>
+                            </div>
+                          </div>
+                          {/* BACK */}
+                          <div
+                            style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', borderRadius: '20px', display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: 'transparent', color: '#333', transform: 'rotateY(180deg)', padding: '18px', boxSizing: 'border-box', border: 'none', boxShadow: 'none' }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                              <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 800, fontFamily: 'Roboto, sans-serif', color: '#002896', textTransform: 'uppercase' }}>Fiche Technique</h4>
+                              <button onClick={e => { e.stopPropagation(); setFlippedSimilarId(null); }} style={{ backgroundColor: 'transparent', border: 'none', color: '#999', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}>
+                                <i className="bi bi-x-lg" style={{ fontSize: '16px' }}></i>
+                              </button>
+                            </div>
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              {[
+                                { label: 'Désignation', value: t.title },
+                                { label: 'Budget max', value: budget && t.evaluationType !== 'MIEUX_DISANT' ? `${Number(budget).toLocaleString()} DA` : 'Mieux Disant' },
+                                { label: 'Type', value: t.tenderType === 'SERVICE' ? '🛠️ Service' : '📦 Produit' },
+                                { label: 'Catégorie', value: t.category?.name || t.productSubCategory?.name || t.productCategory?.name || t.categoryName || 'Général' },
+                                { label: 'Localisation', value: t.wilaya || t.location || 'Algérie' },
+                                { label: 'Annonceur', value: seller },
+                                { label: 'Terminaison', value: timer.hasEnded ? 'Terminé' : `${timer.days}j ${timer.hours}h` },
+                              ].map((row, idx) => (
+                                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #eee', paddingBottom: '1px', alignItems: 'flex-start' }}>
+                                  <span style={{ fontSize: '10px', fontWeight: 600, color: '#888', flexShrink: 0 }}>{row.label}</span>
+                                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#333', textAlign: 'right', marginLeft: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>{row.value}</span>
+                                </div>
+                              ))}
+                              <div style={{ marginTop: '3px' }}>
+                                <p style={{ fontSize: '11px', fontWeight: 600, color: '#888', margin: '0 0 2px 0' }}>Description</p>
+                                <p style={{ fontSize: '11px', color: '#555', margin: 0, lineHeight: '1.3', fontFamily: 'Inter, sans-serif', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{t.description || 'Aucune description disponible.'}</p>
+                              </div>
+                            </div>
+                            <button
+                              style={{ width: '100%', height: '40px', backgroundColor: '#EB4545', color: '#fff', borderRadius: '8px', border: 'none', marginTop: '12px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', transition: 'all 0.3s ease' }}
+                              onClick={() => router.push(`/tender-details/${tid}`)}
+                            >
+                              Consulter l'annonce
+                            </button>
+                          </div>
+                        </motion.div>
+                      </SwiperSlide>
+                    );
+                  })}
+                </Swiper>
+              </div>
+            ) : (
+              <p style={{ color: '#888', fontStyle: 'italic' }}>Aucun appel d'offres similaire trouvé.</p>
+            )}
           </div>
         </div>
       )}

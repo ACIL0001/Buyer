@@ -38,10 +38,21 @@ export default function Login() {
         overflow: 'hidden',
         position: 'relative',
         justifyContent: 'flex-start',
-        alignItems: 'center',
+        alignItems: 'stretch',
       }}
     >
-      <Box sx={{ position: 'relative', width: '1438px', height: '848px', backgroundColor: '#FFFFFF', display: 'flex', flexDirection: 'row' }}>
+      <Box 
+        sx={{ 
+          position: 'relative', 
+          width: '100%', 
+          height: '100%', 
+          backgroundColor: '#FFFFFF', 
+          display: 'flex', 
+          flexDirection: 'row',
+          transform: 'rotate(0deg)',
+          opacity: 1
+        }}
+      >
         
         {/* ── Left Section: Background Image (701px) ── */}
         <Box
@@ -52,7 +63,7 @@ export default function Login() {
             position: 'relative',
             overflow: 'hidden',
             flexShrink: 0,
-            display: 'flex',
+            display: { xs: 'none', md: 'flex' },
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -66,8 +77,8 @@ export default function Login() {
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%) rotate(0deg)',
-              width: '701px',
-              height: '848px',
+              width: '100%',
+              height: '100%',
               objectFit: 'cover',
               objectPosition: 'center',
               opacity: 1,
@@ -78,7 +89,8 @@ export default function Login() {
             sx={{
               position: 'absolute',
               left: '137px',
-              top: '250px',
+              top: '50%',
+              transform: 'translateY(-50%)',
               width: '548px',
               height: '320px',
               background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.32) 0%, transparent 75%)',
@@ -92,7 +104,8 @@ export default function Login() {
               width: '508px',
               height: '56px',
               left: '97px',
-              top: '398px',
+              top: '50%',
+              transform: 'translateY(-50%)',
               zIndex: 2,
               fontFamily: '"Poppins", sans-serif',
               fontStyle: 'normal',
@@ -108,89 +121,88 @@ export default function Login() {
           </Typography>
         </Box>
 
-        {/* ── Right Section: Absolute Form Box ── */}
-        <Box sx={{ flex: 1, position: 'relative', backgroundColor: '#FFFFFF' }}>
-          
-          {/* Header Texts */}
-          <Box sx={{ position: 'absolute', left: '230px', top: '198px', width: '178px', height: '70px' }}>
-            <Typography 
-               sx={{ 
-                 position: 'absolute',
-                 left: '0%',
-                 top: '0%',
-                 fontFamily: '"Poppins", sans-serif',
-                 fontWeight: 600,
-                 fontSize: '24px',
-                 lineHeight: '140%',
-                 letterSpacing: '-0.02em',
-                 color: '#757575',
-               }}
-            >
-              Se connecter
-            </Typography>
-            <Typography 
-               sx={{ 
-                 position: 'absolute',
-                 left: '0%',
-                 bottom: '0%',
-                 fontFamily: '"Poppins", sans-serif',
-                 fontWeight: 400,
-                 fontSize: '14px',
-                 lineHeight: '140%',
-                 letterSpacing: '-0.02em',
-                 color: '#757575',
-               }}
-            >
-              Heureux de vous retrouver
-            </Typography>
+        {/* ── Right Section: Form Box ── */}
+        <Box 
+          sx={{ 
+            flex: 1, 
+            position: 'relative', 
+            backgroundColor: '#FFFFFF',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            px: { xs: 2, md: 0 },
+            py: { xs: 4, md: 0 },
+            overflowY: 'auto'
+          }}
+        >
+          <Box sx={{ width: '252.6px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
+            {/* Header Texts */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mb: '10px' }}>
+              <Typography 
+                 sx={{ 
+                   fontFamily: '"Poppins", sans-serif',
+                   fontWeight: 600,
+                   fontSize: '24px',
+                   lineHeight: '140%',
+                   letterSpacing: '-0.02em',
+                   color: '#757575',
+                 }}
+              >
+                Se connecter
+              </Typography>
+              <Typography 
+                 sx={{ 
+                   fontFamily: '"Poppins", sans-serif',
+                   fontWeight: 400,
+                   fontSize: '14px',
+                   lineHeight: '140%',
+                   letterSpacing: '-0.02em',
+                   color: '#757575',
+                 }}
+              >
+                Heureux de vous retrouver
+              </Typography>
+            </Box>
+
+            {/* Form */}
+            <Box sx={{ width: '100%' }}>
+              <LoginForm />
+            </Box>
+
+            {/* Footer Texts */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', mt: '10px' }}>
+              <Typography
+                sx={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 400,
+                  fontSize: '12px',
+                  lineHeight: '140%',
+                  letterSpacing: '-0.02em',
+                  color: '#757575',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                Vous n’avez pas de compte ?
+              </Typography>
+              <Link
+                component={NextLink}
+                href="/auth/register"
+                sx={{
+                  fontFamily: '"Poppins", sans-serif',
+                  fontWeight: 400,
+                  fontSize: '12px',
+                  lineHeight: '140%',
+                  letterSpacing: '-0.02em',
+                  color: '#007AFF',
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' }
+                }}
+              >
+                S’inscrire
+              </Link>
+            </Box>
           </Box>
-
-          {/* Form */}
-          <Box sx={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }}>
-            <LoginForm />
-          </Box>
-
-          {/* Footer Texts */}
-          <Typography
-            sx={{
-              position: 'absolute',
-              width: '170px',
-              height: '17px',
-              left: '246px',
-              top: '620px',
-              fontFamily: '"Poppins", sans-serif',
-              fontWeight: 400,
-              fontSize: '12px',
-              lineHeight: '140%',
-              letterSpacing: '-0.02em',
-              color: '#757575',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            Vous n’avez pas de compte ?
-          </Typography>
-          <Link
-            component={NextLink}
-            href="/auth/register"
-            sx={{
-              position: 'absolute',
-              width: '52px',
-              height: '17px',
-              left: '428px',
-              top: '620px',
-              fontFamily: '"Poppins", sans-serif',
-              fontWeight: 400,
-              fontSize: '12px',
-              lineHeight: '140%',
-              letterSpacing: '-0.02em',
-              color: '#007AFF',
-              textDecoration: 'none',
-              '&:hover': { textDecoration: 'underline' }
-            }}
-          >
-            S’inscrire
-          </Link>
-
         </Box>
       </Box>
     </Box>

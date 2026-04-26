@@ -12,8 +12,16 @@ export default function TenderDetailsClient() {
     <SnackbarProvider>
       <AxiosInterceptor>
         <RequestProvider>
+          <style jsx global>{`
+            body {
+              background-color: #ffffff !important;
+              background-image: none !important;
+            }
+          `}</style>
           <Header />
-          <MultipurposeDetails2 />
+          <main style={{ minHeight: '100vh', backgroundColor: '#fff', marginTop: 0, paddingTop: 0 }}>
+            <MultipurposeDetails2 />
+          </main>
           <Footer />
         </RequestProvider>
       </AxiosInterceptor>

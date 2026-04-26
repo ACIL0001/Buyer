@@ -7,6 +7,15 @@ import { TermsAPI } from '../../../app/api/terms';
 import { CategoryAPI } from '../../../app/api/category';
 import { styled } from '@mui/material/styles';
 import { WILAYAS } from '../../../constants/wilayas';
+const POSTES = [
+  'Directeur Général',
+  'Gérant',
+  'Responsable Commercial',
+  'Responsable des Achats',
+  'Responsable Marketing',
+  'Employé',
+  'Autre',
+];
 import * as mammoth from 'mammoth';
 // material
 import {
@@ -600,8 +609,20 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
         {profileType === CLIENT_TYPE.PROFESSIONAL ? (
           /* ─── ENTERPRISE LAYOUT ─── */
           <>
+            {/* Row 0: Code promo (optionnel) */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: COL_GAP, mb: '16px' }}>
+              <EntryField label="Code promo (optionnel)">
+                <FigmaField
+                  fieldProps={getFieldProps('promoCode')}
+                  placeholder="Entrez un code promo"
+                />
+              </EntryField>
+              <Box sx={{ display: { xs: 'none', md: 'block' }, width: COL_WIDTH }} />
+            </Box>
+
+
             {/* Row 1: Designation entreprise | Secteur d'activité */}
-            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: COL_GAP, mb: '16px' }}>
               <EntryField label="Designation entreprise *">
                 <FigmaField
                   fieldProps={getFieldProps('socialReason')}
@@ -649,7 +670,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
             </Box>
 
             {/* Row 2: E-mail professionnel | Numéro de téléphone Professionnel */}
-            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: COL_GAP, mb: '16px' }}>
               <EntryField label="E-mail professionnel *">
                 <FigmaField
                   fieldProps={getFieldProps('email')}
@@ -669,8 +690,16 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
               </EntryField>
             </Box>
 
-            {/* Row 3: Wilaya | Code promo (optionnel) */}
-            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+            {/* Row 3: Poste | Wilaya */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: COL_GAP, mb: '16px' }}>
+              <EntryField label="Poste">
+                <FigmaField
+                  fieldProps={getFieldProps('jobTitle')}
+                  placeholder="Quel poste occupez-vous ?"
+                  error={Boolean(touched.jobTitle && errors.jobTitle)}
+                  helperText={touched.jobTitle && errors.jobTitle}
+                />
+              </EntryField>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2.82px', width: COL_WIDTH }}>
                 <Typography component="label" sx={{ ...labelSx, color: '#454545' }}>
                   Wilaya <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
@@ -703,19 +732,25 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                   onChange={(_, value) => setFieldValue('wilaya', value)}
                 />
               </Box>
+            </Box>
+          </>
+        ) : (
+          /* ─── PARTICULAR LAYOUT ─── */
+          <>
+            {/* Row 0: Code promo (optionnel) */}
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: COL_GAP, mb: '16px' }}>
               <EntryField label="Code promo (optionnel)">
                 <FigmaField
                   fieldProps={getFieldProps('promoCode')}
                   placeholder="Entrez un code promo"
                 />
               </EntryField>
+              <Box sx={{ display: { xs: 'none', md: 'block' }, width: COL_WIDTH }} />
             </Box>
-          </>
-        ) : (
-          /* ─── PARTICULAR LAYOUT ─── */
-          <>
+
+
             {/* Row 1: Nom | Prénom */}
-            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: COL_GAP, mb: '16px' }}>
               <EntryField label="Nom *">
                 <FigmaField
                   fieldProps={getFieldProps('lastName')}
@@ -737,7 +772,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
             </Box>
 
             {/* Row 2: Date de naissance | E-mail professionnel */}
-            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: COL_GAP, mb: '16px' }}>
               <EntryField label="Date de naissance *">
                 <TextField
                   fullWidth
@@ -757,7 +792,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                   }}
                 />
               </EntryField>
-              <EntryField label="E-mail professionnel *">
+              <EntryField label="Email *">
                 <FigmaField
                   fieldProps={getFieldProps('email')}
                   placeholder="Entrez votre e-mail"
@@ -769,7 +804,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
             </Box>
 
             {/* Row 3: Numéro de téléphone | Wilaya de résidence */}
-            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: COL_GAP, mb: '16px' }}>
               <EntryField label="Numéro de téléphone *">
                 <FigmaField
                   fieldProps={getFieldProps('phone')}
@@ -812,26 +847,11 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
               </Box>
             </Box>
 
-            {/* Row 4: Poste | Code promo (optionnel) */}
-            <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
-              <EntryField label="Poste">
-                <FigmaField
-                  fieldProps={getFieldProps('jobTitle')}
-                  placeholder="Quel poste occupez-vous ?"
-                />
-              </EntryField>
-              <EntryField label="Code promo (optionnel)">
-                <FigmaField
-                  fieldProps={getFieldProps('promoCode')}
-                  placeholder="Entrez un code promo"
-                />
-              </EntryField>
-            </Box>
           </>
         )}
 
         {/* Row Last: Mot de passe | Confirmer le mot de passe (Shared by both) */}
-        <Box sx={{ display: 'flex', gap: COL_GAP, mb: '16px' }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: COL_GAP, mb: '16px' }}>
           <EntryField label="Mot de passe *">
             <FigmaField
               fieldProps={getFieldProps('password')}
@@ -938,7 +958,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
         </Box>
 
         {/* ── Buttons row ── */}
-        <Box sx={{ display: 'flex', flexDirection: 'row', gap: COL_GAP, height: FIELD_HEIGHT, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: COL_GAP, height: { xs: 'auto', md: FIELD_HEIGHT }, alignItems: { xs: 'stretch', md: 'center' } }}>
           {/* Create account */}
           <LoadingButton
             type="submit"

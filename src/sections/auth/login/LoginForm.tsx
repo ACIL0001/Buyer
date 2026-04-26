@@ -163,15 +163,11 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onKeyPress={handleKeyPress}>
-        <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
-          
+        <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '22px' }}>
           {loginError && (
             <Alert 
               severity="error" 
               sx={{ 
-                position: 'absolute', 
-                left: 931 - offsetX, 
-                top: 220, 
                 width: 252.6, 
                 fontSize: '10px' 
               }}
@@ -183,11 +179,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           {/* Email Container */}
           <Box 
              sx={{ 
-               position: 'absolute', 
-               left: 932 - offsetX, 
-               top: 290, 
                width: 252.6, 
-               height: 50.69, 
                display: 'flex', 
                flexDirection: 'column', 
                alignItems: 'flex-start',
@@ -235,11 +227,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           {/* Password Container */}
           <Box 
              sx={{ 
-               position: 'absolute', 
-               left: 932 - offsetX, 
-               top: 363, 
                width: 252.6, 
-               height: 50.69, 
                display: 'flex', 
                flexDirection: 'column', 
                alignItems: 'flex-start',
@@ -294,18 +282,17 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             />
           </Box>
 
-          {/* Remember me */}
-          <Box 
-            sx={{ 
-              position: 'absolute',
-              left: 938 - offsetX,
-              top: 438,
-              width: 100.58,
-              height: 14.11,
-              display: 'flex', 
-              alignItems: 'center',
-            }}
-          >
+          {/* Actions Row */}
+          <Box sx={{ width: 252.6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {/* Remember me */}
+            <Box 
+              sx={{ 
+                width: 100.58,
+                height: 14.11,
+                display: 'flex', 
+                alignItems: 'center',
+              }}
+            >
             <Box 
               sx={{
                 width: 14.11,
@@ -352,47 +339,39 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             </Typography>
           </Box>
 
-          {/* Links Section: Mot de passe oublié ? */}
-          <Link 
-            component="button" 
-            variant="body2" 
-            underline="none"
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              router.push('/auth/forgot-password');
-            }}
-            sx={{ 
-              position: 'absolute',
-              // 938+100.58=1038 approx for left, the image places it symmetrically. 
-              // Left side of input is 932. Width is 252.6. Right side is 1184.6. 
-              // The text is text-align: right. Let's just pin it to the right edge.
-              right: 1438 - 1184.6, // Wait, since parent is absolute, we can just use left mathematically.
-              left: 1080 - offsetX, // roughly calculated to line up with the right edge
-              top: 438,
-              fontSize: '9.87838px',
-              fontFamily: '"Poppins", sans-serif',
-              fontWeight: 400,
-              color: '#007AFF',
-              lineHeight: '140%',
-              letterSpacing: '-0.02em',
-              textAlign: 'right',
-            }}
-          >
-            Mot de passe oublié ?
-          </Link>
+            {/* Links Section: Mot de passe oublié ? */}
+            <Link 
+              component="button" 
+              variant="body2" 
+              underline="none"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                router.push('/auth/forgot-password');
+              }}
+              sx={{ 
+                fontSize: '9.87838px',
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 400,
+                color: '#007AFF',
+                lineHeight: '140%',
+                letterSpacing: '-0.02em',
+                textAlign: 'right',
+              }}
+            >
+              Mot de passe oublié ?
+            </Link>
+          </Box>
 
           {/* Login Button */}
-          <LoadingButton
-            type="submit"
-            variant="contained"
-            loading={isSubmitting}
-            sx={{ 
-              position: 'absolute',
-              left: 931 - offsetX,
-              top: 500,
-              width: 252.6,
-              height: 33.87,
+          <Box sx={{ mt: '10px' }}>
+            <LoadingButton
+              type="submit"
+              variant="contained"
+              loading={isSubmitting}
+              sx={{ 
+                width: 252.6,
+                height: 33.87,
               borderRadius: '3.52799px',
               background: '#002896',
               color: '#FFFFFF',
@@ -410,7 +389,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             }}
           >
             Se connecter
-          </LoadingButton>
+            </LoadingButton>
+          </Box>
 
         </Box>
       </Form>

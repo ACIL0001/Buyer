@@ -548,7 +548,7 @@ const Home1LiveTenders = () => {
                             {/* Databook rows */}
                             {[
                               { label: 'Désignation', value: tender.title },
-                              { label: 'Budget', value: (tender.budget || tender.maxBudget || tender.price) ? `${Number(tender.budget || tender.maxBudget || tender.price).toLocaleString()} DA` : "Offre" },
+                              ...(tender.evaluationType !== 'MIEUX_DISANT' ? [{ label: 'Budget', value: (tender.budget || tender.maxBudget || tender.price) ? `${Number(tender.budget || tender.maxBudget || tender.price).toLocaleString()} DA` : "Offre" }] : []),
                               { label: 'Quantité', value: tender.quantity || 'N/A' },
                               { label: 'Type', value: (tender.bidType === 'SERVICE' || tender.tenderType === 'SERVICE') ? '🛠️ Service' : '📦 Produit' },
                               { label: 'Catégorie', value: tender.category?.name || tender.productSubCategory?.name || tender.productCategory?.name || tender.categoryName || 'Général' },

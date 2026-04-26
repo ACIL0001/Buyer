@@ -39,9 +39,7 @@ const FilterPopup = ({
   onClear,
   onApply,
   availability = { inStock: false, recentlyPublished: false },
-  onToggleAvailability = () => {},
-  rating = null,
-  onToggleRating = () => {}
+  onToggleAvailability = () => {}
 }) => {
   if (!isOpen) return null;
 
@@ -202,30 +200,7 @@ const FilterPopup = ({
             </div>
           </div>
 
-          {/* Stars Filter */}
-          <div style={{ marginBottom: '60px' }}>
-            <h4 style={{ fontSize: '18px', fontWeight: '700', color: '#777', marginBottom: '25px' }}>Nombre d'étoiles</h4>
-            <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap' }}>
-              {[1, 2, 3, 4, 5].map(stars => (
-                <label key={stars} style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', cursor: 'pointer' }}>
-                  <span style={{ fontSize: '11px', color: '#888', fontWeight: '600' }}>{stars} {stars > 1 ? 'étoiles' : 'étoile'}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <input 
-                      type="checkbox" 
-                      checked={rating === stars} 
-                      onChange={() => onToggleRating(stars)} 
-                      style={{ width: '22px', height: '22px', cursor: 'pointer', accentColor: '#00a3e0' }} 
-                    />
-                    <div style={{ display: 'flex', gap: '2px' }}>
-                      {[...Array(stars)].map((_, i) => (
-                        <i key={i} className="bi bi-star-fill" style={{ color: '#F8D14E', fontSize: '18px' }}></i>
-                      ))}
-                    </div>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
+
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '60px' }}>

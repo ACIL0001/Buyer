@@ -80,8 +80,9 @@ const AdsSlider: React.FC = () => {
   if (loading) {
     return (
       <div style={{
-        width: '100%',
-        height: isMobile ? '280px' : '640px',
+        width: isMobile ? '100%' : '1218px',
+        height: isMobile ? '280px' : '315px',
+        margin: isMobile ? '70px 0 0' : '68px auto 0',
         background: 'linear-gradient(135deg, #0f1c2e 0%, #1a3050 40%, #1e3a5f 70%, #2b5496 100%)',
         display: 'flex',
         alignItems: 'center',
@@ -128,8 +129,9 @@ const AdsSlider: React.FC = () => {
   if (ads.length === 0) {
     return (
       <div style={{
-        width: '100%',
-        height: isMobile ? '280px' : '640px',
+        width: isMobile ? '100%' : '1218px',
+        height: isMobile ? '280px' : '315px',
+        margin: isMobile ? '70px 0 0' : '68px auto 0',
         position: 'relative',
         overflow: 'hidden',
         cursor: 'default',
@@ -163,12 +165,12 @@ const AdsSlider: React.FC = () => {
     <>
       <style jsx>{`
         .ads-slider-container {
-          width: 100%;
+          width: ${isMobile ? '100%' : '1218px'};
           max-width: 100%;
           height: ${isMobile ? '280px' : '315px'};
           position: relative;
           overflow: hidden;
-          margin: 70px 0 0; /* aligned with GuestHero top margin */
+          margin: ${isMobile ? '70px 0 0' : '68px auto 0'}; /* adjusted top margin to achieve 264px absolute top */
           opacity: 1;
           border-radius: 0px;
         }

@@ -9,7 +9,7 @@ const GuestHero = () => {
 
   return (
     <div style={{ 
-      width: '100%', 
+      width: '1218px', 
       maxWidth: '100%',
       height: '315px',
       position: 'relative',
@@ -18,7 +18,7 @@ const GuestHero = () => {
       alignItems: 'center',
       justifyContent: 'center',
       overflow: 'hidden',
-      margin: '70px auto 0', /* adjusted top margin */
+      margin: '10px auto 0', /* 10px margin top as requested */
       borderRadius: '0px',
       opacity: 1,
       transform: 'rotate(0deg)'

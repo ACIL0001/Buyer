@@ -115,23 +115,31 @@ const GuestHero = () => {
           <button 
             onClick={() => window.location.href = 'http://localhost:3001/auth/register/'}
             style={{
+              width: '181px',
+              height: '71px',
               borderRadius: '40px',
               padding: '24px 36px',
               background: 'linear-gradient(88.88deg, #062C90 50.03%, #3F95DD 98.92%)',
-              boxShadow: 'inset 1px 1px 4px 0px #FFFFFF99, inset -1px -1px 1px 0px #FFFFFF40, inset 1px 1px 1px 0px #062C9066, inset -1px -1px 1px 0px #062C9066',
+              boxShadow: 'inset -1px -1px 1px rgba(6, 44, 144, 0.4), inset 1px 1px 1px rgba(6, 44, 144, 0.4), inset -1px -1px 1px rgba(255, 255, 255, 0.25), inset 1px 1px 4px rgba(255, 255, 255, 0.6)',
               border: 'none',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              gap: '10px',
               transition: 'all 0.3s ease',
               opacity: 1
             }}
           >
             <span style={{
+              width: '109px',
+              height: '23px',
               fontFamily: "'DM Sans', sans-serif",
+              fontStyle: 'normal',
               fontWeight: '600',
               fontSize: '18px',
+              lineHeight: '23px',
+              textAlign: 'center',
               color: '#FFFFFF'
             }}>
               Commencer

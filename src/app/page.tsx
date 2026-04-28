@@ -132,7 +132,7 @@ export default function Home() {
         /* Distinct Light Grey Glassmorphism Card Hover */
         .grey-glass-card {
           width: 388px;
-          height: 280px;
+          height: 310px;
           border-radius: 24px;
           padding: 0px 24px 25px;
           background: 
@@ -225,9 +225,12 @@ export default function Home() {
                             <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px' }}>
                               <img src="/assets/images/icon 1.png" alt="Enchères" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: 'auto' }}>Enchères</h3>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '10px' }}>Enchères</h3>
+                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', margin: '0 0 15px' }}>
+                              Lorem ipsum dolor sit amet consectetur. Fringilla ulla.
+                            </p>
 
-                            <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
                               <button onClick={() => router.push('/auction-sidebar')} className="btn-3d-blue">Enchérir</button>
                               <button onClick={() => router.push('/dashboard/auctions/create')} className="btn-3d-blue">Poster</button>
                             </div>
@@ -238,9 +241,12 @@ export default function Home() {
                             <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px' }}>
                               <img src="/assets/images/icon 2.png" alt="Vente directe" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: 'auto' }}>Vente directe</h3>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '10px' }}>Vente directe</h3>
+                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', margin: '0 0 15px' }}>
+                              Lorem ipsum dolor sit amet consectetur. Fringilla ulla.
+                            </p>
 
-                            <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
                               <button onClick={() => router.push('/dashboard/direct-sales/create')} className="btn-3d-blue">Vendre</button>
                               <button onClick={() => router.push('/direct-sale')} className="btn-3d-blue">Acheter</button>
                             </div>
@@ -251,9 +257,12 @@ export default function Home() {
                             <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px' }}>
                               <img src="/assets/images/icon 3.png" alt="Soumission" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '28px', lineHeight: '30px', textAlign: 'center', marginBottom: 'auto' }}>Consultez les projets et soumissionnez</h3>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '28px', lineHeight: '30px', textAlign: 'center', marginBottom: '10px' }}>Consultez les projets et soumissionnez</h3>
+                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', margin: '0 0 15px' }}>
+                              Lorem ipsum dolor sit amet consectetur. Fringilla ulla.
+                            </p>
 
-                            <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
                               <button onClick={() => router.push('/dashboard/tenders/create')} className="btn-3d-blue">Publier</button>
                               <button onClick={() => router.push('/tenders')} className="btn-3d-blue">Postuler</button>
                             </div>

@@ -134,7 +134,7 @@ export default function Home() {
           width: 388px;
           height: 280px;
           border-radius: 24px;
-          padding: 25px 24px;
+          padding: 0px 24px 25px;
           background: 
             linear-gradient(127.45deg, rgba(220, 225, 235, 0.78) 2.15%, rgba(190, 195, 210, 0.28) 63.05%) padding-box,
             linear-gradient(127.23deg, rgba(255, 255, 255, 0.45) 2.46%, rgba(255, 255, 255, 0.25) 97.36%) border-box;
@@ -222,7 +222,7 @@ export default function Home() {
                           
                           {/* CARD 1: Enchères */}
                           <div className="grey-glass-card">
-                            <div style={{ height: '105px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '5px' }}>
+                            <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px' }}>
                               <img src="/assets/images/icon 1.png" alt="Enchères" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
                             <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: 'auto' }}>Enchères</h3>
@@ -235,7 +235,7 @@ export default function Home() {
 
                           {/* CARD 2: Vente directe */}
                           <div className="grey-glass-card">
-                            <div style={{ height: '105px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '5px' }}>
+                            <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px' }}>
                               <img src="/assets/images/icon 2.png" alt="Vente directe" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
                             <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: 'auto' }}>Vente directe</h3>
@@ -248,7 +248,7 @@ export default function Home() {
 
                           {/* CARD 3: Soumission d'offre */}
                           <div className="grey-glass-card">
-                            <div style={{ height: '105px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '5px' }}>
+                            <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px' }}>
                               <img src="/assets/images/icon 3.png" alt="Soumission" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
                             <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '28px', lineHeight: '30px', textAlign: 'center', marginBottom: 'auto' }}>Consultez les projets et soumissionnez</h3>

@@ -132,7 +132,7 @@ export default function Home() {
         /* Distinct Light Grey Glassmorphism Card Hover */
         .grey-glass-card {
           width: 388px;
-          height: 310px;
+          height: 356px;
           border-radius: 24px;
           padding: 0px 24px 25px;
           background: 

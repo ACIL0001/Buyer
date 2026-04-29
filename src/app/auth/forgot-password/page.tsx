@@ -36,167 +36,176 @@ const RootStyle = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  position: 'relative',
-  background: '#ffffff',
+  background: '#f8f9fa',
   padding: theme.spacing(2),
+}));
+
+const StyledCard = styled(Paper)(({ theme }) => ({
+  position: 'relative',
+  width: '367px',
+  height: '522px',
+  background: '#FFFFFF',
+  border: '1px solid #DBDADE',
+  boxShadow: '0px 5px 30px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25)',
+  borderRadius: '35px',
   overflow: 'hidden',
 }));
 
-const GlassContainer = styled(Paper)(({ theme }) => ({
-  background: `linear-gradient(135deg, 
-    ${alpha('#ffffff', 0.95)} 0%,
-    ${alpha('#ffffff', 0.9)} 100%
-  )`,
-  backdropFilter: 'blur(40px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-  border: `1px solid ${alpha('#1976d2', 0.1)}`,
-  boxShadow: `
-    0 24px 48px ${alpha('#000000', 0.2)},
-    0 12px 24px ${alpha('#000000', 0.12)},
-    inset 0 1px 0 ${alpha('#ffffff', 0.8)}
-  `,
-  borderRadius: '24px',
-  padding: theme.spacing(3),
-  position: 'relative',
-  zIndex: 10,
-  maxWidth: '480px',
-  width: '100%',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: `
-      0 32px 64px ${alpha('#000000', 0.24)},
-      0 16px 32px ${alpha('#1976d2', 0.16)}
-    `,
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(2.5),
-    borderRadius: '20px',
-  },
-}));
-
-const LogoBox = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'center',
-  marginBottom: theme.spacing(2),
-  '& img': {
-    height: 'auto',
-    maxHeight: '60px',
-    maxWidth: '180px',
-    filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))',
-    transition: 'transform 0.3s ease',
-    '&:hover': {
-      transform: 'scale(1.05)',
-    },
-  },
-}));
-
-const IconWrapper = styled(Box)(({ theme }) => ({
-  width: 64,
-  height: 64,
-  borderRadius: '16px',
-  background: `linear-gradient(135deg, #1976d2, #42a5f5)`,
+const IconFrame = styled(Box)({
+  position: 'absolute',
+  width: '50px',
+  height: '50px',
+  left: '148px',
+  top: '21px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  margin: '0 auto',
-  marginBottom: theme.spacing(2),
-  boxShadow: `0 8px 24px ${alpha('#1976d2', 0.4)}`,
   '& svg': {
-    fontSize: 32,
-    color: '#ffffff',
-  },
-}));
+    width: '30px',
+    height: '30px',
+    color: '#1C274C',
+    opacity: 0.5,
+  }
+});
+
+const TitleText = styled(Typography)({
+  position: 'absolute',
+  width: '263px',
+  height: '36px',
+  left: '50px',
+  top: '84px',
+  fontFamily: "'Poppins', sans-serif",
+  fontWeight: 600,
+  fontSize: '24px',
+  lineHeight: '36px',
+  textAlign: 'center',
+  color: '#757575',
+});
+
+const SubtitleText = styled(Typography)({
+  position: 'absolute',
+  width: '259px',
+  height: '42px',
+  left: '50px',
+  top: '133px',
+  fontFamily: "'Poppins', sans-serif",
+  fontWeight: 400,
+  fontSize: '14px',
+  lineHeight: '21px',
+  textAlign: 'center',
+  color: '#757575',
+});
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
+  position: 'absolute',
+  top: '199px',
+  left: '0',
   width: '100%',
-  backgroundColor: alpha('#f5f5f5', 0.8),
-  borderRadius: '16px',
-  padding: theme.spacing(0.5),
-  border: 'none',
+  justifyContent: 'center',
   '& .MuiToggleButton-root': {
-    flex: 1,
+    height: '44px',
+    background: '#FFFFFF',
+    borderRadius: '10px !important',
     border: 'none',
-    borderRadius: '12px',
-    padding: theme.spacing(1.5),
     textTransform: 'none',
-    fontSize: '1rem',
-    fontWeight: 600,
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    color: theme.palette.text.secondary,
-    '&.Mui-selected': {
-      background: `linear-gradient(135deg, #1976d2, #42a5f5)`,
-      color: '#ffffff',
-      boxShadow: `0 4px 12px ${alpha('#1976d2', 0.4)}`,
-      '&:hover': {
-        background: `linear-gradient(135deg, #1565c0, #1e88e5)`,
-      },
-    },
-    '&:hover': {
-      backgroundColor: alpha('#1976d2', 0.08),
-    },
-  },
-}));
-
-const StyledTextField = styled(TextField)(({ theme }) => ({
-  '& .MuiOutlinedInput-root': {
-    borderRadius: '16px',
-    backgroundColor: alpha('#f5f5f5', 0.5),
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    '&:hover': {
-      backgroundColor: alpha('#e3f2fd', 0.7),
-      '& .MuiOutlinedInput-notchedOutline': {
-        borderColor: '#1976d2',
-      },
-    },
-    '&.Mui-focused': {
-      backgroundColor: alpha('#ffffff', 0.9),
-      boxShadow: `0 0 0 4px ${alpha('#1976d2', 0.1)}`,
-      '& .MuiOutlinedInput-notchedOutline': {
-        borderColor: '#1976d2',
-        borderWidth: 2,
-      },
-    },
-  },
-  '& .MuiInputLabel-root': {
+    fontFamily: "'Inter', sans-serif",
     fontWeight: 500,
+    fontSize: '16px',
+    lineHeight: '19px',
+    color: '#000000',
+    padding: '10px 12px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    transition: 'all 0.2s',
+    '&.Mui-selected': {
+      background: '#f5f5f5',
+      color: '#080341',
+      '&:hover': {
+        background: '#eeeeee',
+      },
+    },
+    '&:hover': {
+      background: '#f9f9f9',
+    },
+    '& svg': {
+      width: '24px',
+      height: '24px',
+      color: '#080341',
+    }
   },
 }));
 
-const StyledLoadingButton = styled(LoadingButton)(({ theme }) => ({
-  borderRadius: '16px',
-  padding: theme.spacing(1.75),
-  fontSize: '1.1rem',
-  fontWeight: 700,
-  textTransform: 'none',
-  background: `linear-gradient(135deg, #1976d2, #42a5f5)`,
-  boxShadow: `0 8px 24px ${alpha('#1976d2', 0.4)}`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    background: `linear-gradient(135deg, #1565c0, #1e88e5)`,
-    transform: 'translateY(-2px)',
-    boxShadow: `0 12px 32px ${alpha('#1976d2', 0.5)}`,
+const StyledTextField = styled(TextField)({
+  position: 'absolute',
+  width: '315px',
+  height: '44px',
+  left: '28px',
+  top: '268px',
+  '& .MuiOutlinedInput-root': {
+    height: '44px',
+    borderRadius: '10px',
+    backgroundColor: '#FFFFFF',
+    '& fieldset': {
+      borderColor: '#C2C2C2',
+    },
+    '&:hover fieldset': {
+      borderColor: '#B0B0B0',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#0096E3',
+    },
   },
-  '&:active': {
-    transform: 'translateY(0)',
+  '& .MuiInputBase-input': {
+    padding: '10px',
+    fontFamily: "'Inter', sans-serif",
+    fontSize: '12px',
+    '&::placeholder': {
+      color: '#C4C4C4',
+      opacity: 1,
+    },
   },
-}));
+});
 
-const BackButton = styled(Button)(({ theme }) => ({
-  borderRadius: '16px',
-  padding: theme.spacing(1.5),
-  fontSize: '1rem',
-  fontWeight: 600,
+const StyledLoadingButton = styled(LoadingButton)({
+  position: 'absolute',
+  width: '315px',
+  height: '44px',
+  left: '31px',
+  top: '337px',
+  background: 'linear-gradient(180deg, #0096E3 0%, rgba(0, 83, 125, 0.7) 100%)',
+  borderRadius: '10px',
   textTransform: 'none',
-  color: theme.palette.text.primary,
-  border: `2px solid ${alpha('#e0e0e0', 0.5)}`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  fontFamily: "'DM Sans', sans-serif",
+  fontWeight: 500,
+  fontSize: '16px',
+  lineHeight: '24px',
+  color: '#FFFFFF',
+  boxShadow: 'none',
   '&:hover': {
-    backgroundColor: alpha('#1976d2', 0.08),
-    borderColor: '#1976d2',
-    transform: 'translateX(-4px)',
+    background: 'linear-gradient(180deg, #0082c4 0%, rgba(0, 69, 104, 0.8) 100%)',
   },
-}));
+});
+
+const BackLinkBox = styled(Box)({
+  position: 'absolute',
+  width: '259px',
+  height: '18px',
+  left: '54px',
+  top: '398px',
+  textAlign: 'center',
+  '& a': {
+    fontFamily: "'Poppins', sans-serif",
+    fontWeight: 400,
+    fontSize: '12px',
+    lineHeight: '18px',
+    color: '#757575',
+    textDecoration: 'none',
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  },
+});
 
 export default function ForgotPassword() {
   const router = useRouter();
@@ -262,154 +271,103 @@ export default function ForgotPassword() {
 
   return (
     <RootStyle>
-      <Container maxWidth="sm">
-        <Fade in timeout={600}>
-          <div>
-            <LogoBox>
-              <NextLink href="/" passHref>
-                <img src={logoUrl || "/assets/img/logo.png"} alt="MazadClick" />
+      <Fade in timeout={600}>
+        <StyledCard elevation={0}>
+          <IconFrame>
+            <LockResetIcon />
+          </IconFrame>
+
+          <TitleText variant="h4">
+            Mot de passe oublié ?
+          </TitleText>
+
+          <SubtitleText>
+            Choisissez votre méthode de réinitialisation
+          </SubtitleText>
+
+          <StyledToggleButtonGroup
+            value={method}
+            exclusive
+            onChange={handleMethodChange}
+            aria-label="reset method"
+          >
+            <ToggleButton value="email" sx={{ position: 'absolute', left: '66px', width: '95px' }}>
+              <EmailIcon />
+              Email
+            </ToggleButton>
+            <ToggleButton value="phone" sx={{ position: 'absolute', left: '167px', width: '135px' }}>
+              <PhoneAndroidIcon />
+              Téléphone
+            </ToggleButton>
+          </StyledToggleButtonGroup>
+
+          {error && (
+            <Alert 
+              severity="error" 
+              sx={{ 
+                position: 'absolute',
+                top: '425px',
+                left: '28px',
+                width: '315px',
+                borderRadius: '10px',
+                zIndex: 10,
+              }}
+            >
+              {error}
+            </Alert>
+          )}
+          
+          {success && (
+            <Alert 
+              severity="success" 
+              sx={{ 
+                position: 'absolute',
+                top: '425px',
+                left: '28px',
+                width: '315px',
+                borderRadius: '10px',
+                zIndex: 10,
+              }}
+            >
+              {success}
+            </Alert>
+          )}
+
+          <form onSubmit={formik.handleSubmit}>
+            {method === 'email' ? (
+              <StyledTextField
+                fullWidth
+                placeholder="Adresse E-mail"
+                {...formik.getFieldProps('email')}
+                error={Boolean(formik.touched.email && formik.errors.email)}
+                helperText={formik.touched.email && formik.errors.email}
+              />
+            ) : (
+              <StyledTextField
+                fullWidth
+                placeholder="Numéro de téléphone"
+                {...formik.getFieldProps('phone')}
+                error={Boolean(formik.touched.phone && formik.errors.phone)}
+                helperText={formik.touched.phone && formik.errors.phone}
+              />
+            )}
+
+            <StyledLoadingButton
+              type="submit"
+              variant="contained"
+              loading={formik.isSubmitting}
+            >
+              Envoyer le code
+            </StyledLoadingButton>
+
+            <BackLinkBox>
+              <NextLink href="/auth/login">
+                Retour a la connextion
               </NextLink>
-            </LogoBox>
-
-            <Slide direction="up" in timeout={800}>
-              <GlassContainer elevation={0}>
-                <IconWrapper>
-                  <LockResetIcon />
-                </IconWrapper>
-
-                <Typography 
-                  variant="h4" 
-                  align="center" 
-                  sx={{ 
-                    fontWeight: 800, 
-                    color: 'text.primary',
-                    mb: 1.5,
-                    background: 'linear-gradient(135deg, #1976d2, #9c27b0)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  Mot de passe oublié ?
-                </Typography>
-
-                <Typography 
-                  sx={{ 
-                    color: 'text.secondary', 
-                    mb: 4,
-                    textAlign: 'center',
-                    fontSize: '1rem',
-                    fontWeight: 500,
-                  }}
-                >
-                  Choisissez votre méthode de réinitialisation
-                </Typography>
-
-                <Box sx={{ mb: 4 }}>
-                  <StyledToggleButtonGroup
-                    value={method}
-                    exclusive
-                    onChange={handleMethodChange}
-                    aria-label="reset method"
-                  >
-                    <ToggleButton value="email">
-                      <EmailIcon sx={{ mr: 1, fontSize: 20 }} />
-                      Email
-                    </ToggleButton>
-                    <ToggleButton value="phone">
-                      <PhoneAndroidIcon sx={{ mr: 1, fontSize: 20 }} />
-                      Téléphone
-                    </ToggleButton>
-                  </StyledToggleButtonGroup>
-                </Box>
-
-                {error && (
-                  <Fade in>
-                    <Alert 
-                      severity="error" 
-                      sx={{ 
-                        mb: 3, 
-                        borderRadius: '12px',
-                        '& .MuiAlert-icon': {
-                          fontSize: 24,
-                        },
-                      }}
-                    >
-                      {error}
-                    </Alert>
-                  </Fade>
-                )}
-                
-                {success && (
-                  <Fade in>
-                    <Alert 
-                      severity="success" 
-                      sx={{ 
-                        mb: 3, 
-                        borderRadius: '12px',
-                        '& .MuiAlert-icon': {
-                          fontSize: 24,
-                        },
-                      }}
-                    >
-                      {success}
-                    </Alert>
-                  </Fade>
-                )}
-
-                <form onSubmit={formik.handleSubmit}>
-                  {method === 'email' ? (
-                    <StyledTextField
-                      fullWidth
-                      label="Adresse Email"
-                      {...formik.getFieldProps('email')}
-                      error={Boolean(formik.touched.email && formik.errors.email)}
-                      helperText={formik.touched.email && formik.errors.email}
-                      sx={{ mb: 3 }}
-                      InputProps={{
-                        startAdornment: <EmailIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                      }}
-                    />
-                  ) : (
-                    <StyledTextField
-                      fullWidth
-                      label="Numéro de téléphone"
-                      placeholder="+213660295655"
-                      {...formik.getFieldProps('phone')}
-                      error={Boolean(formik.touched.phone && formik.errors.phone)}
-                      helperText={formik.touched.phone && formik.errors.phone || 'Format: +213XXXXXXXXX ou 0XXXXXXXXX'}
-                      sx={{ mb: 3 }}
-                      InputProps={{
-                        startAdornment: <PhoneAndroidIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                      }}
-                    />
-                  )}
-
-                  <StyledLoadingButton
-                    fullWidth
-                    size="large"
-                    type="submit"
-                    variant="contained"
-                    loading={formik.isSubmitting}
-                  >
-                    Envoyer le code
-                  </StyledLoadingButton>
-
-                  <BackButton
-                    fullWidth
-                    size="large"
-                    onClick={() => router.push('/auth/login')}
-                    sx={{ mt: 2 }}
-                    startIcon={<ArrowBackIcon />}
-                  >
-                    Retour à la connexion
-                  </BackButton>
-                </form>
-              </GlassContainer>
-            </Slide>
-          </div>
-        </Fade>
-      </Container>
+            </BackLinkBox>
+          </form>
+        </StyledCard>
+      </Fade>
     </RootStyle>
   );
 }

@@ -21,18 +21,14 @@ import {
 import NextLink from 'next/link';
 import { LoadingButton } from '@mui/lab';
 import Iconify from '../../../components/Iconify';
-import { motion } from 'framer-motion';
 import { useFormik } from 'formik';
 import { useSettingsStore } from "@/contexts/settingsStore";
 import { useTranslation } from 'react-i18next';
 import * as Yup from 'yup';
 import axios from 'axios';
 import app from '../../../config';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
-import SecurityIcon from '@mui/icons-material/Security';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const RootStyle = styled('div')(({ theme }) => ({
@@ -40,179 +36,188 @@ const RootStyle = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  position: 'relative',
-  background: '#ffffff',
+  background: '#f8f9fa',
   padding: theme.spacing(2),
+}));
+
+const StyledCard = styled(Paper)(({ theme }) => ({
+  position: 'relative',
+  width: '367px',
+  height: '666px',
+  background: '#FFFFFF',
+  border: '1px solid #DBDADE',
+  boxShadow: '0px 5px 30px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25)',
+  borderRadius: '35px',
   overflow: 'hidden',
 }));
 
-const GlassContainer = styled(Paper)(({ theme }) => ({
-  background: `linear-gradient(135deg,
-    ${alpha(theme.palette.background.paper, 0.95)} 0%,
-    ${alpha(theme.palette.background.paper, 0.9)} 100%
-  )`,
-  backdropFilter: 'blur(40px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  boxShadow: `
-    0 24px 48px ${alpha(theme.palette.common.black, 0.2)},
-    0 12px 24px ${alpha(theme.palette.common.black, 0.12)},
-    inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
-  `,
-  borderRadius: '24px',
-  padding: theme.spacing(4),
-  position: 'relative',
-  zIndex: 10,
-  maxWidth: '480px',
-  width: '100%',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: `
-      0 32px 64px ${alpha(theme.palette.common.black, 0.24)},
-      0 16px 32px ${alpha(theme.palette.common.black, 0.16)}
-    `,
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(2.5),
-    borderRadius: '24px',
-  },
-}));
-
-const LogoBox = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'center',
-  marginBottom: theme.spacing(3),
-  '& img': {
-    height: 'auto',
-    maxHeight: '60px',
-    maxWidth: '180px',
-    filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))',
-    transition: 'transform 0.3s ease',
-    '&:hover': {
-      transform: 'scale(1.05)',
-    },
-  },
-}));
-
-const IconWrapper = styled(Box)(({ theme }) => ({
-  width: 64,
-  height: 64,
-  borderRadius: '16px',
-  background: `linear-gradient(135deg, #1976d2, #42a5f5)`,
+const IconFrame = styled(Box)({
+  position: 'absolute',
+  width: '50px',
+  height: '50px',
+  left: '148px',
+  top: '21px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  margin: '0 auto',
-  marginBottom: theme.spacing(2.5),
-  boxShadow: `0 8px 24px ${alpha('#1976d2', 0.4)}`,
-  '& svg': {
-    fontSize: 32,
-    color: theme.palette.common.white,
+});
+
+const TitleText = styled(Typography)({
+  position: 'absolute',
+  width: '232px',
+  height: '72px',
+  left: '65px',
+  top: '84px',
+  fontFamily: "'Poppins', sans-serif",
+  fontWeight: 600,
+  fontSize: '24px',
+  lineHeight: '36px',
+  textAlign: 'center',
+  color: '#757575',
+});
+
+const SubtitleText = styled(Typography)({
+  position: 'absolute',
+  width: '259px',
+  height: '42px',
+  left: '54px',
+  top: '169px',
+  fontFamily: "'Poppins', sans-serif",
+  fontWeight: 400,
+  fontSize: '14px',
+  lineHeight: '21px',
+  textAlign: 'center',
+  color: '#757575',
+});
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  position: 'absolute',
+  width: '315px',
+  left: '23px',
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '10px',
+    backgroundColor: '#FFFFFF',
+    '& fieldset': {
+      borderColor: '#C2C2C2',
+    },
+    '&:hover fieldset': {
+      borderColor: '#B0B0B0',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#0096E3',
+    },
+  },
+  '& .MuiInputBase-input': {
+    padding: '10px',
+    fontFamily: "'Inter', sans-serif",
+    fontSize: '14px',
+    '&::placeholder': {
+      color: '#C4C4C4',
+      opacity: 1,
+    },
   },
 }));
 
-const StyledTextField = styled(TextField)(({ theme }) => ({
+const CodeTextField = styled(StyledTextField)({
+  top: '328px',
   '& .MuiOutlinedInput-root': {
-    borderRadius: '16px',
-    backgroundColor: alpha(theme.palette.background.default, 0.5),
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    '&:hover': {
-      backgroundColor: alpha(theme.palette.background.default, 0.7),
-      '& .MuiOutlinedInput-notchedOutline': {
-        borderColor: theme.palette.primary.main,
-      },
-    },
-    '&.Mui-focused': {
-      backgroundColor: alpha(theme.palette.background.paper, 0.9),
-      boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.1)}`,
-      '& .MuiOutlinedInput-notchedOutline': {
-        borderColor: theme.palette.primary.main,
-        borderWidth: 2,
-      },
+    height: '37px',
+    borderColor: '#0096E3',
+    '& fieldset': {
+      borderColor: '#0096E3',
     },
   },
   '& .MuiInputLabel-root': {
-    fontWeight: 500,
-  },
-}));
+    color: '#0096E3',
+    fontSize: '10px',
+    transform: 'translate(14px, -10px) scale(1)',
+    background: '#FFFFFF',
+    padding: '0 4px',
+    fontFamily: "'Inter', sans-serif",
+  }
+});
 
-const OTPTextField = styled(StyledTextField)(({ theme }) => ({
+const PasswordTextField = styled(StyledTextField)({
   '& .MuiOutlinedInput-root': {
-    fontSize: '1.5rem',
-    fontWeight: 700,
-    letterSpacing: '0.5rem',
-    textAlign: 'center',
-    '& input': {
-      textAlign: 'center',
+    height: '46px',
+    borderColor: '#0096E3',
+    '& fieldset': {
+      borderColor: '#0096E3',
     },
   },
-}));
+});
 
-const StyledLoadingButton = styled(LoadingButton)(({ theme }) => ({
-  borderRadius: '16px',
-  padding: theme.spacing(1.75),
-  fontSize: '1.1rem',
-  fontWeight: 700,
+const DotsOverlay = styled(Box)({
+  position: 'absolute',
+  width: '157px',
+  height: '7px',
+  left: '31px',
+  top: '19px',
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: '8px',
+  pointerEvents: 'none',
+  '& div': {
+    width: '7px',
+    height: '7px',
+    borderRadius: '50%',
+    background: '#757575',
+  }
+});
+
+const ConfirmLabel = styled(Typography)({
+  position: 'absolute',
+  width: '165px',
+  height: '18px',
+  left: '18px',
+  top: '502px',
+  fontFamily: "'Poppins', sans-serif",
+  fontWeight: 400,
+  fontSize: '12px',
+  lineHeight: '18px',
+  color: '#757575',
+});
+
+const StyledLoadingButton = styled(LoadingButton)({
+  position: 'absolute',
+  width: '315px',
+  height: '44px',
+  left: '23px',
+  top: '538px',
+  background: 'linear-gradient(180deg, #0096E3 0%, rgba(0, 83, 125, 0.7) 100%)',
+  borderRadius: '10px',
   textTransform: 'none',
-  background: `linear-gradient(135deg, #1976d2, #42a5f5)`,
-  boxShadow: `0 8px 24px ${alpha('#1976d2', 0.4)}`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  fontFamily: "'DM Sans', sans-serif",
+  fontWeight: 500,
+  fontSize: '16px',
+  lineHeight: '24px',
+  color: '#FFFFFF',
+  boxShadow: 'none',
   '&:hover': {
-    background: `linear-gradient(135deg, #1565c0, #1e88e5)`,
-    transform: 'translateY(-2px)',
-    boxShadow: `0 12px 32px ${alpha('#1976d2', 0.5)}`,
+    background: 'linear-gradient(180deg, #0082c4 0%, rgba(0, 69, 104, 0.8) 100%)',
   },
-  '&:active': {
-    transform: 'translateY(0)',
-  },
-}));
+});
 
-const ResendButton = styled(Button)(({ theme }) => ({
-  borderRadius: '12px',
-  padding: theme.spacing(1, 2),
-  fontSize: '0.95rem',
-  fontWeight: 600,
-  textTransform: 'none',
-  color: theme.palette.primary.main,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.08),
-    transform: 'scale(1.05)',
+const BackLinkBox = styled(Box)({
+  position: 'absolute',
+  width: '259px',
+  height: '18px',
+  left: '53px',
+  top: '599px',
+  textAlign: 'center',
+  '& a': {
+    fontFamily: "'Poppins', sans-serif",
+    fontWeight: 400,
+    fontSize: '12px',
+    lineHeight: '18px',
+    color: '#757575',
+    textDecoration: 'none',
+    '&:hover': {
+      textDecoration: 'underline',
+    },
   },
-  '&.Mui-disabled': {
-    color: theme.palette.text.disabled,
-  },
-}));
-
-const CancelButton = styled(Button)(({ theme }) => ({
-  borderRadius: '16px',
-  padding: theme.spacing(1.5),
-  fontSize: '1rem',
-  fontWeight: 600,
-  textTransform: 'none',
-  color: theme.palette.text.primary,
-  border: `2px solid ${alpha(theme.palette.divider, 0.2)}`,
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.action.hover, 0.08),
-    borderColor: theme.palette.error.main,
-    color: theme.palette.error.main,
-  },
-}));
-
-const MethodChip = styled(Chip)(({ theme }) => ({
-  borderRadius: '12px',
-  padding: theme.spacing(2, 1),
-  fontSize: '0.95rem',
-  fontWeight: 600,
-  background: alpha(theme.palette.info.main, 0.1),
-  color: theme.palette.info.main,
-  border: `2px solid ${alpha(theme.palette.info.main, 0.3)}`,
-  '& .MuiChip-icon': {
-    color: theme.palette.info.main,
-  },
-}));
+});
 
 function ResetPasswordContent() {
   const { t } = useTranslation();
@@ -226,31 +231,6 @@ function ResetPasswordContent() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [resendCountdown, setResendCountdown] = useState(0);
-
-  useEffect(() => {
-    if (resendCountdown > 0) {
-      const timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendCountdown]);
-
-  const handleResendCode = async () => {
-    try {
-      setError(null);
-      const payload = method === 'email'
-        ? { email: identifier }
-        : { phone: identifier };
-
-      await axios.post(`${app.baseURL}auth/forgot-password`, payload);
-      setSuccess('Code renvoyé avec succès !');
-      setResendCountdown(60);
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err: any) {
-      console.error(err);
-      setError(err.response?.data?.message || 'Erreur lors du renvoi du code.');
-    }
-  };
 
   const formik = useFormik({
     initialValues: {
@@ -306,205 +286,170 @@ function ResetPasswordContent() {
     },
   });
 
+  const renderDots = () => (
+    <DotsOverlay>
+      {[...Array(11)].map((_, i) => (
+        <div key={i} />
+      ))}
+    </DotsOverlay>
+  );
+
   return (
     <RootStyle>
-      <Container maxWidth="sm">
-        <Fade in timeout={600}>
-          <div>
-            <LogoBox>
-              <NextLink href="/" passHref>
-                <img src={(() => {
-                    const { logoUrl } = useSettingsStore.getState();
-                    return logoUrl || "/assets/img/logo.png";
-                })()} alt="MazadClick" />
+      <Fade in timeout={600}>
+        <StyledCard elevation={0}>
+          <IconFrame>
+            <Box sx={{ 
+              width: '54px', 
+              height: '40px', 
+              border: '1px solid #d0d0d0', 
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#2b2b43',
+              fontWeight: 700,
+              fontSize: '1.2rem',
+              letterSpacing: '1px'
+            }}>
+              ***
+            </Box>
+          </IconFrame>
+
+          <TitleText>
+            Réinitialiser le mot<br />de passe
+          </TitleText>
+
+          <SubtitleText>
+            Entrez le code reçu par mail et choisissez un nouveua mot de passe
+          </SubtitleText>
+
+          {error && (
+            <Alert 
+              severity="error" 
+              sx={{ 
+                position: 'absolute',
+                top: '215px',
+                left: '23px',
+                width: '315px',
+                borderRadius: '10px',
+                zIndex: 10,
+                py: 0,
+                fontSize: '12px'
+              }}
+            >
+              {error}
+            </Alert>
+          )}
+          
+          {success && (
+            <Alert 
+              severity="success" 
+              sx={{ 
+                position: 'absolute',
+                top: '215px',
+                left: '23px',
+                width: '315px',
+                borderRadius: '10px',
+                zIndex: 10,
+                py: 0,
+                fontSize: '12px'
+              }}
+            >
+              {success}
+            </Alert>
+          )}
+
+          <form onSubmit={formik.handleSubmit}>
+            {method === 'email' ? (
+              <StyledTextField
+                fullWidth
+                placeholder="Adresse E-mail"
+                {...formik.getFieldProps('email')}
+                error={Boolean(formik.touched.email && formik.errors.email)}
+                sx={{ top: '255px', height: '44px' }}
+                disabled={!!initialEmail}
+              />
+            ) : (
+              <StyledTextField
+                fullWidth
+                placeholder="Numéro de téléphone"
+                {...formik.getFieldProps('phone')}
+                error={Boolean(formik.touched.phone && formik.errors.phone)}
+                sx={{ top: '255px', height: '44px' }}
+                disabled={!!initialPhone}
+              />
+            )}
+
+            <CodeTextField
+              fullWidth
+              label="Code"
+              placeholder=""
+              {...formik.getFieldProps('code')}
+              error={Boolean(formik.touched.code && formik.errors.code)}
+              InputLabelProps={{ shrink: true }}
+            />
+
+            <Box sx={{ position: 'absolute', top: '385px', left: '23px', width: '315px' }}>
+              <PasswordTextField
+                fullWidth
+                type={showPassword ? 'text' : 'password'}
+                {...formik.getFieldProps('newPassword')}
+                error={Boolean(formik.touched.newPassword && formik.errors.newPassword)}
+                sx={{ position: 'relative', left: 0, top: 0, width: '100%' }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" sx={{ color: '#757575' }}>
+                        <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              {!formik.values.newPassword && renderDots()}
+            </Box>
+
+            <Box sx={{ position: 'absolute', top: '451px', left: '23px', width: '315px' }}>
+              <PasswordTextField
+                fullWidth
+                type={showPassword ? 'text' : 'password'}
+                {...formik.getFieldProps('confirmPassword')}
+                error={Boolean(formik.touched.confirmPassword && formik.errors.confirmPassword)}
+                sx={{ position: 'relative', left: 0, top: 0, width: '100%' }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" sx={{ color: '#757575' }}>
+                        <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              {!formik.values.confirmPassword && renderDots()}
+            </Box>
+
+            <ConfirmLabel>
+              Confirmez mot de passe
+            </ConfirmLabel>
+
+            <StyledLoadingButton
+              type="submit"
+              variant="contained"
+              loading={formik.isSubmitting}
+            >
+              Réinitialiser
+            </StyledLoadingButton>
+
+            <BackLinkBox>
+              <NextLink href="/auth/login">
+                Retour a la connextion
               </NextLink>
-            </LogoBox>
-
-            <Slide direction="up" in timeout={800}>
-              <GlassContainer elevation={0}>
-                <IconWrapper>
-                  <LockOpenIcon />
-                </IconWrapper>
-
-                <Typography 
-                  variant="h4" 
-                  align="center" 
-                  sx={{ 
-                    fontWeight: 800, 
-                    color: 'text.primary',
-                    mb: 1.5,
-                    fontSize: { xs: '1.5rem', sm: '1.75rem' },
-                    background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  Réinitialiser le mot de passe
-                </Typography>
-
-                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2.5 }}>
-                  <MethodChip
-                    icon={method === 'email' ? <EmailIcon /> : <PhoneAndroidIcon />}
-                    label={method === 'email' ? 'Via Email' : 'Via SMS'}
-                  />
-                </Box>
-
-                <Typography 
-                  sx={{ 
-                    color: 'text.secondary', 
-                    mb: 3,
-                    textAlign: 'center',
-                    fontSize: '0.95rem',
-                    fontWeight: 500,
-                  }}
-                >
-                  {method === 'email' 
-                    ? 'Entrez le code reçu par email ainsi que votre nouveau mot de passe.'
-                    : 'Entrez le code reçu par SMS ainsi que votre nouveau mot de passe.'}
-                </Typography>
-
-                {error && (
-                  <Fade in>
-                    <Alert 
-                      severity="error" 
-                      sx={{ 
-                        mb: 2.5, 
-                        borderRadius: '12px',
-                        '& .MuiAlert-icon': { fontSize: 24 },
-                      }}
-                    >
-                      {error}
-                    </Alert>
-                  </Fade>
-                )}
-                
-                {success && (
-                  <Fade in>
-                    <Alert 
-                      severity="success" 
-                      icon={<CheckCircleIcon fontSize="inherit" />}
-                      sx={{ 
-                        mb: 2.5, 
-                        borderRadius: '12px',
-                        '& .MuiAlert-icon': { fontSize: 24 },
-                      }}
-                    >
-                      {success}
-                    </Alert>
-                  </Fade>
-                )}
-
-                <form onSubmit={formik.handleSubmit}>
-                  {method === 'email' ? (
-                    <StyledTextField
-                      fullWidth
-                      label="Adresse Email"
-                      {...formik.getFieldProps('email')}
-                      error={Boolean(formik.touched.email && formik.errors.email)}
-                      helperText={formik.touched.email && formik.errors.email}
-                      sx={{ mb: 2.5 }}
-                      disabled={!!initialEmail}
-                      InputProps={{
-                        startAdornment: <EmailIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                      }}
-                    />
-                  ) : (
-                    <StyledTextField
-                      fullWidth
-                      label="Numéro de téléphone"
-                      {...formik.getFieldProps('phone')}
-                      error={Boolean(formik.touched.phone && formik.errors.phone)}
-                      helperText={formik.touched.phone && formik.errors.phone}
-                      sx={{ mb: 2.5 }}
-                      disabled={!!initialPhone}
-                      InputProps={{
-                        startAdornment: <PhoneAndroidIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                      }}
-                    />
-                  )}
-
-                  <OTPTextField
-                    fullWidth
-                    label="Code OTP"
-                    {...formik.getFieldProps('code')}
-                    error={Boolean(formik.touched.code && formik.errors.code)}
-                    helperText={formik.touched.code && formik.errors.code}
-                    sx={{ mb: 2 }}
-                    InputProps={{
-                      startAdornment: <SecurityIcon sx={{ mr: 1, color: 'info.main' }} />,
-                    }}
-                  />
-
-                  {method === 'phone' && (
-                    <Box sx={{ mb: 3, textAlign: 'right' }}>
-                      <ResendButton
-                        size="small"
-                        onClick={handleResendCode}
-                        disabled={resendCountdown > 0}
-                        startIcon={<RefreshIcon />}
-                      >
-                        {resendCountdown > 0 
-                          ? `Renvoyer dans ${resendCountdown}s` 
-                          : 'Renvoyer le code'}
-                      </ResendButton>
-                    </Box>
-                  )}
-
-                  <StyledTextField
-                    fullWidth
-                    type={showPassword ? 'text' : 'password'}
-                    label="Nouveau mot de passe"
-                    {...formik.getFieldProps('newPassword')}
-                    error={Boolean(formik.touched.newPassword && formik.errors.newPassword)}
-                    helperText={formik.touched.newPassword && formik.errors.newPassword}
-                    sx={{ mb: 2.5 }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                            <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-
-                  <StyledTextField
-                    fullWidth
-                    type={showPassword ? 'text' : 'password'}
-                    label="Confirmer le mot de passe"
-                    {...formik.getFieldProps('confirmPassword')}
-                    error={Boolean(formik.touched.confirmPassword && formik.errors.confirmPassword)}
-                    helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
-                    sx={{ mb: 3 }}
-                  />
-
-                  <StyledLoadingButton
-                    fullWidth
-                    size="large"
-                    type="submit"
-                    variant="contained"
-                    loading={formik.isSubmitting}
-                    startIcon={<CheckCircleIcon />}
-                  >
-                    Réinitialiser
-                  </StyledLoadingButton>
-
-                  <CancelButton
-                    fullWidth
-                    size="large"
-                    onClick={() => router.push('/auth/login')}
-                    sx={{ mt: 2 }}
-                  >
-                    Annuler
-                  </CancelButton>
-                </form>
-              </GlassContainer>
-            </Slide>
-          </div>
-        </Fade>
-      </Container>
+            </BackLinkBox>
+          </form>
+        </StyledCard>
+      </Fade>
     </RootStyle>
   );
 }

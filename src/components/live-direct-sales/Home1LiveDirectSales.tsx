@@ -74,7 +74,7 @@ const Home1LiveDirectSales = () => {
   }, [allDirectSales]);
 
   const settings = useMemo(() => ({
-    slidesPerView: "auto" as const, 
+    slidesPerView: 4, 
     speed: 800, 
     spaceBetween: 20,
     loop: true,
@@ -83,7 +83,10 @@ const Home1LiveDirectSales = () => {
       prevEl: '.direct-sale-prev',
     },
     breakpoints: {
-      0: { slidesPerView: "auto" as const }
+      1200: { slidesPerView: 4 },
+      992: { slidesPerView: 3 },
+      768: { slidesPerView: 2 },
+      0: { slidesPerView: 1 }
     },
   }), []);
 
@@ -97,7 +100,7 @@ const Home1LiveDirectSales = () => {
       {/* SECTION HEADER - REMOVED OVERFLOW HIDDEN */}
       <div style={{ 
         width: '100%', 
-        maxWidth: '1400px', 
+        maxWidth: '1240px', 
         margin: '0 auto',
         position: 'relative', 
         padding: '60px 20px 40px', 
@@ -149,17 +152,17 @@ const Home1LiveDirectSales = () => {
         </div>
       </div>
 
-      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1400px', margin: '0 auto', padding: '0 20px', overflow: 'visible' }}>
+      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1240px', margin: '0 auto', padding: '0 20px', overflow: 'visible' }}>
         {directSales.length > 0 ? (
           <div className="direct-sale-carousel-container" style={{ position: 'relative', overflow: 'visible' }}>
             <div style={{ position: 'relative' }}>
-              <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper direct-sale-slider" style={{ padding: '30px 10px', margin: '-30px -10px', overflow: 'visible' }}>
+              <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper direct-sale-slider" style={{ padding: '30px 10px', margin: '-30px -10px', overflow: 'hidden' }}>
                 {directSales.map((sale: any) => {
                   const companyName = sale.owner?.entreprise || sale.owner?.companyName || sale.owner?.firstName || 'Nom Entreprise';
                   const availableQuantity = sale.quantity > 0 ? (sale.quantity - (sale.soldQuantity || 0)) : 'Illimité';
                   
                   return (
-                    <SwiperSlide key={sale.id} style={{ overflow: 'visible', width: '284px', minWidth: '284px', maxWidth: '284px', perspective: '1000px' }}>
+                    <SwiperSlide key={sale.id} style={{ overflow: 'visible', perspective: '1000px' }}>
                       <motion.div 
                         key={sale.id}
                         initial={false}
@@ -550,7 +553,7 @@ const Home1LiveDirectSales = () => {
               <div className="direct-sale-prev" style={{
                 position: 'absolute',
                 top: '232px',
-                left: '-40px',
+                left: '10px',
                 transform: 'translateY(-50%)',
                 width: '60px',
                 height: '40px',
@@ -571,7 +574,7 @@ const Home1LiveDirectSales = () => {
               <div className="direct-sale-next" style={{
                 position: 'absolute',
                 top: '232px',
-                right: '-40px',
+                right: '10px',
                 transform: 'translateY(-50%)',
                 width: '60px',
                 height: '40px',

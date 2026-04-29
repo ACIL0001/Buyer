@@ -104,7 +104,7 @@ const Home1LiveTenders = () => {
   }, [liveTenders]);
 
   const settings = useMemo(() => ({
-    slidesPerView: "auto" as const, 
+    slidesPerView: 4, 
     speed: 800, 
     spaceBetween: 20,
     loop: true,
@@ -113,7 +113,10 @@ const Home1LiveTenders = () => {
       prevEl: '.tender-prev',
     },
     breakpoints: {
-      0: { slidesPerView: "auto" as const }
+      1200: { slidesPerView: 4 },
+      992: { slidesPerView: 3 },
+      768: { slidesPerView: 2 },
+      0: { slidesPerView: 1 }
     },
   }), []);
 
@@ -125,7 +128,7 @@ const Home1LiveTenders = () => {
       {/* SECTION HEADER */}
       <div style={{ 
         width: '100%', 
-        maxWidth: '1400px', 
+        maxWidth: '1240px', 
         margin: '0 auto',
         position: 'relative', 
         padding: '60px 20px 40px', 
@@ -178,17 +181,17 @@ const Home1LiveTenders = () => {
         </div>
       </div>
 
-      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1400px', margin: '0 auto', padding: '0 20px', overflow: 'visible' }}>
+      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1240px', margin: '0 auto', padding: '0 20px', overflow: 'visible' }}>
         {liveTenders.length > 0 ? (
           <div className="tender-carousel-container" style={{ position: 'relative', overflow: 'visible' }}>
             <div style={{ position: 'relative' }}>
-              <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper tender-slider" style={{ padding: '30px 10px', margin: '-30px -10px', overflow: 'visible' }}>
+              <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper tender-slider" style={{ padding: '30px 10px', margin: '-30px -10px', overflow: 'hidden' }}>
                 {liveTenders.map((tender: any) => {
                   const timer = timers[tender.id] || { days: "0", hours: "0", minutes: "0", formattedEnd: "", hasEnded: false };
                   const companyName = tender.hidden ? 'Anonyme' : (tender.owner?.entreprise || tender.owner?.companyName || tender.owner?.firstName || 'Nom annonceur');
                   
                   return (
-                    <SwiperSlide key={tender.id} style={{ overflow: 'visible', width: '284px', minWidth: '284px', maxWidth: '284px', perspective: '1000px' }}>
+                    <SwiperSlide key={tender.id} style={{ overflow: 'visible', perspective: '1000px' }}>
                       <motion.div 
                         key={tender.id}
                         initial={false}
@@ -609,7 +612,7 @@ const Home1LiveTenders = () => {
               <div className="tender-prev" style={{
                 position: 'absolute',
                 top: '232px',
-                left: '-40px',
+                left: '10px',
                 transform: 'translateY(-50%)',
                 width: '60px',
                 height: '40px',
@@ -630,7 +633,7 @@ const Home1LiveTenders = () => {
               <div className="tender-next" style={{
                 position: 'absolute',
                 top: '232px',
-                right: '-40px',
+                right: '10px',
                 transform: 'translateY(-50%)',
                 width: '60px',
                 height: '40px',

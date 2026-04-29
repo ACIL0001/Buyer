@@ -113,17 +113,17 @@ export default function Register() {
               <Box
                 sx={{
                   position: 'absolute',
-                  width: '72px',
-                  height: '72px',
+                  width: '100px',
+                  height: '100px',
                   left: '94px',
-                  top: '132px',
+                  top: '112px',
                   color: '#000000',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Iconify icon="ph:buildings-bold" width={72} height={72} />
+                <Box component="img" src="/assets/images/company.svg" sx={{ width: 100, height: 100, transform: 'rotate(0deg)', opacity: 1 }} />
               </Box>
               <Typography
                 sx={{
@@ -165,17 +165,17 @@ export default function Register() {
               <Box
                 sx={{
                   position: 'absolute',
-                  width: '72px',
-                  height: '72px',
+                  width: '100px',
+                  height: '100px',
                   left: '103px',
-                  top: '134px',
+                  top: '114px',
                   color: '#000000',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Iconify icon="ph:user-bold" width={72} height={72} />
+                <Box component="img" src="/assets/images/businessman.svg" sx={{ width: 100, height: 100, opacity: 1 }} />
               </Box>
               <Typography
                 sx={{

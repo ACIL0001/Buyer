@@ -104,19 +104,21 @@ const Home1LiveAuction = () => {
   }, [liveAuctions]);
 
   const settings = useMemo(() => ({
-    slidesPerView: 4, 
-    speed: 800, 
-    spaceBetween: 20,
+    slidesPerView: 1,
+    speed: 800,
+    spaceBetween: 16,
     loop: true,
     navigation: {
       nextEl: '.auction-next',
       prevEl: '.auction-prev',
     },
     breakpoints: {
-      1200: { slidesPerView: 4 },
-      992: { slidesPerView: 3 },
-      768: { slidesPerView: 2 },
-      0: { slidesPerView: 1 }
+      0: { slidesPerView: 1, spaceBetween: 12 },
+      475: { slidesPerView: 1.2, spaceBetween: 14 },
+      640: { slidesPerView: 2, spaceBetween: 16 },
+      768: { slidesPerView: 2, spaceBetween: 18 },
+      1024: { slidesPerView: 3, spaceBetween: 20 },
+      1280: { slidesPerView: 4, spaceBetween: 20 },
     },
   }), []);
 
@@ -126,30 +128,30 @@ const Home1LiveAuction = () => {
     <div style={{ background: 'transparent', width: '100%', paddingBottom: '0px' }}>
     <div className="auctions-section-wrapper" style={{ width: '100%', position: 'relative', overflow: 'visible' }}>
       {/* SECTION HEADER - REMOVED OVERFLOW HIDDEN */}
-      <div style={{ 
-        width: '100%', 
-        maxWidth: '1240px', 
+      <div style={{
+        width: '100%',
+        maxWidth: '1240px',
         margin: '0 auto',
-        position: 'relative', 
-        padding: '60px 20px 40px', 
+        position: 'relative',
+        padding: 'clamp(32px, 6vw, 60px) clamp(16px, 4vw, 20px) clamp(20px, 4vw, 40px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'visible'
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            style={{ 
-              color: '#002896', 
+            style={{
+              color: '#002896',
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: '48px', 
-              fontWeight: '700', 
-              margin: 0, 
-              letterSpacing: '0px', 
-              lineHeight: '100%',
+              fontSize: 'clamp(1.75rem, 5vw, 3rem)',
+              fontWeight: '700',
+              margin: 0,
+              letterSpacing: '0px',
+              lineHeight: 1.1,
               textAlign: 'center'
             }}
           >
@@ -158,29 +160,27 @@ const Home1LiveAuction = () => {
           <motion.div initial={{ width: 0 }} whileInView={{ width: '100px' }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 1 }} style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #002896, transparent)', marginTop: '15px', borderRadius: '10px' }} />
         </div>
 
-        <div style={{ position: 'absolute', right: '35px', top: '75px' }}>
-          <Link href="/auction-sidebar" style={{ 
-            display: 'inline-flex', 
-            width: '93px', 
-            height: '28px', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            color: '#002896', 
-            textDecoration: 'none', 
-            fontSize: '20px', 
-            fontWeight: '700', 
-            fontFamily: 'Roboto, sans-serif', 
-            lineHeight: '100%', 
-            whiteSpace: 'nowrap', 
-            cursor: 'pointer', 
-            transition: 'all 0.3s ease' 
+        <div style={{ position: 'absolute', right: 'clamp(12px, 3vw, 35px)', top: 'clamp(40px, 8vw, 75px)' }}>
+          <Link href="/auction-sidebar" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#002896',
+            textDecoration: 'none',
+            fontSize: 'clamp(0.875rem, 1.6vw, 1.25rem)',
+            fontWeight: '700',
+            fontFamily: 'Roboto, sans-serif',
+            lineHeight: 1.2,
+            whiteSpace: 'nowrap',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
           }}>
             Voir tout
           </Link>
         </div>
       </div>
 
-      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1240px', margin: '0 auto', padding: '0 20px', overflow: 'visible' }}>
+      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1240px', margin: '0 auto', padding: '0 clamp(12px, 3vw, 20px)', overflow: 'visible' }}>
         {liveAuctions.length > 0 ? (
           <div className="auction-carousel-container" style={{ position: 'relative', overflow: 'visible' }}>
             <div style={{ position: 'relative' }}>
@@ -196,13 +196,11 @@ const Home1LiveAuction = () => {
                         initial={false}
                         animate={{ rotateY: flippedId === auction.id ? 180 : 0 }}
                         transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-                        style={{ 
-                          width: '284px',
-                          minWidth: '284px',
-                          maxWidth: '284px',
-                          height: '464px',
-                          minHeight: '464px',
-                          maxHeight: '464px',
+                        style={{
+                          width: '100%',
+                          maxWidth: '320px',
+                          aspectRatio: '284 / 464',
+                          margin: '0 auto',
                           position: 'relative',
                           zIndex: 1,
                           transformStyle: 'preserve-3d'
@@ -227,7 +225,7 @@ const Home1LiveAuction = () => {
                           }}
                           onClick={() => router.push(`/auction-details/${auction.id}`)}
                         >
-                        <div style={{ width: '284px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                        <div style={{ width: '100%', aspectRatio: '284 / 295', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                           <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                             <ShareButton 
                               type="auction" 
@@ -375,19 +373,17 @@ const Home1LiveAuction = () => {
                           flexDirection: 'column',
                           justifyContent: 'space-between'
                         }}>
-                          <h4 style={{ 
-                            width: '280px',
-                            height: '23px',
+                          <h4 style={{
+                            width: '100%',
                             fontFamily: 'Roboto, sans-serif',
-                            fontWeight: '700', 
-                            fontSize: '20px', 
-                            lineHeight: '100%',
+                            fontWeight: '700',
+                            fontSize: 'clamp(1rem, 1.6vw, 1.25rem)',
+                            lineHeight: 1.15,
                             letterSpacing: '0px',
-                            verticalAlign: 'middle',
-                            color: '#002896', 
-                            margin: '0 0 8px 0', 
-                            whiteSpace: 'nowrap', 
-                            overflow: 'hidden', 
+                            color: '#002896',
+                            margin: '0 0 8px 0',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             opacity: 1
                           }}>
@@ -418,30 +414,27 @@ const Home1LiveAuction = () => {
                               }}>DA</span>
                             </div>
                             <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center', gap: '10px' }}>
-                              <span style={{ 
+                              <span style={{
                                 fontFamily: 'Roboto, sans-serif',
-                                fontSize: '14px', 
-                                fontWeight: '400', 
-                                lineHeight: '100%',
-                                color: '#002896', 
-                                whiteSpace: 'nowrap',
-                                width: '69px',
-                                height: '16px'
+                                fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
+                                fontWeight: '400',
+                                lineHeight: 1.2,
+                                color: '#002896',
+                                whiteSpace: 'nowrap'
                               }}>
                                 {auction.participantsCount || 0} enchères
                               </span>
-                              <span style={{ 
-                                width: '101px',
-                                height: '16px',
+                              <span style={{
+                                maxWidth: '120px',
                                 fontFamily: 'Roboto, sans-serif',
-                                fontSize: '14px', 
-                                fontWeight: '400', 
-                                lineHeight: '100%',
-                                color: '#062C90', 
-                                whiteSpace: 'nowrap', 
-                                overflow: 'hidden', 
-                                textOverflow: 'ellipsis', 
-                                textAlign: 'right' 
+                                fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
+                                fontWeight: '400',
+                                lineHeight: 1.2,
+                                color: '#062C90',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                textAlign: 'right'
                               }}>
                                 {companyName}
                               </span>
@@ -464,11 +457,11 @@ const Home1LiveAuction = () => {
                             </span>
                           </div>
 
-                          <button 
+                          <button
                             disabled={timer.hasEnded}
                             style={{
-                              width: '264px',
-                              height: '39px',
+                              width: '100%',
+                              minHeight: '44px',
                               backgroundColor: '#EB4545',
                               borderRadius: '10px',
                               padding: '10px',
@@ -499,12 +492,10 @@ const Home1LiveAuction = () => {
                             }}
                           >
                             <span style={{
-                              width: '116px',
-                              height: '19px',
                               fontFamily: 'Inter, sans-serif',
                               fontWeight: '500',
-                              fontSize: '16px',
-                              lineHeight: '100%',
+                              fontSize: 'clamp(0.875rem, 1.4vw, 1rem)',
+                              lineHeight: 1.2,
                               color: '#FFFFFF',
                               textAlign: 'center'
                             }}>
@@ -614,11 +605,11 @@ const Home1LiveAuction = () => {
               {/* Custom Navigation Buttons - Oval Style */}
               <div className="auction-prev" style={{
                 position: 'absolute',
-                top: '232px',
-                left: '10px',
+                top: '50%',
+                left: 'clamp(4px, 1vw, 10px)',
                 transform: 'translateY(-50%)',
-                width: '60px',
-                height: '40px',
+                width: 'clamp(40px, 5vw, 60px)',
+                height: 'clamp(32px, 4vw, 40px)',
                 backgroundColor: 'white',
                 borderRadius: '25px',
                 display: 'flex',
@@ -635,11 +626,11 @@ const Home1LiveAuction = () => {
               </div>
               <div className="auction-next" style={{
                 position: 'absolute',
-                top: '232px',
-                right: '10px',
+                top: '50%',
+                right: 'clamp(4px, 1vw, 10px)',
                 transform: 'translateY(-50%)',
-                width: '60px',
-                height: '40px',
+                width: 'clamp(40px, 5vw, 60px)',
+                height: 'clamp(32px, 4vw, 40px)',
                 backgroundColor: 'white',
                 borderRadius: '25px',
                 display: 'flex',

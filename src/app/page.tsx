@@ -41,10 +41,10 @@ export default function Home() {
     const checkMobile = () => {
       const width = window.innerWidth;
       
-      let calculatedHeight = 196; // matches the actual header inner wrapper height (1440px design)
-      if (width <= 375) calculatedHeight = 62;
-      else if (width <= 768) calculatedHeight = 65;
-      else if (width <= 992) calculatedHeight = 70;
+      // Header switches to compact mobile bar at <= 1024 (see Header.jsx showMobileHeader)
+      let calculatedHeight = 196;
+      if (width <= 375) calculatedHeight = 60;
+      else if (width <= 1024) calculatedHeight = 68;
       else calculatedHeight = 196;
       
       const safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-top)') || '0', 10) || 0;

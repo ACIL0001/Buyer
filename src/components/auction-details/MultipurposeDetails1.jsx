@@ -1544,20 +1544,20 @@ const MultipurposeDetails1 = () => {
                       const price = auction.currentPrice || auction.startingPrice || 0;
                       const seller = auction.owner?.entreprise || auction.owner?.firstName || 'Nom Entreprise';
                       return (
-                        <SwiperSlide key={aid} style={{ overflow: 'visible', width: '284px', minWidth: '284px', maxWidth: '284px', perspective: '1000px' }}>
+                        <SwiperSlide key={aid} style={{ overflow: 'visible', perspective: '1000px' }}>
                           <motion.div
                             key={aid}
                             initial={false}
                             animate={{ rotateY: flippedSimilarId === aid ? 180 : 0 }}
                             transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
-                            style={{ width: '284px', minWidth: '284px', maxWidth: '284px', height: '464px', minHeight: '464px', maxHeight: '464px', position: 'relative', zIndex: 1, transformStyle: 'preserve-3d' }}
+                            style={{ width: '100%', maxWidth: '320px', aspectRatio: '284 / 464', margin: '0 auto', position: 'relative', zIndex: 1, transformStyle: 'preserve-3d' }}
                           >
                             {/* FRONT */}
                             <div
                               style={{ width: '100%', height: '100%', position: 'absolute', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', borderRadius: '20px', display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: 'transparent', cursor: 'pointer', boxShadow: 'none', border: 'none' }}
                               onClick={() => window.location.assign(`/auction-details/${aid}`)}
                             >
-                              <div style={{ width: '284px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                              <div style={{ width: '100%', aspectRatio: '284 / 295', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                                 <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                                   <ShareButton type="auction" id={aid} title={auction.title} description={auction.description} imageUrl={getImg(curImgIdx)} />
                                 </div>
@@ -1586,15 +1586,15 @@ const MultipurposeDetails1 = () => {
                                 </div>
                               </div>
                               <div style={{ padding: '8px 10px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                <h4 style={{ width: '280px', height: '23px', fontFamily: 'Roboto, sans-serif', fontWeight: 700, fontSize: '20px', lineHeight: '100%', letterSpacing: '0px', verticalAlign: 'middle', color: '#002896', margin: '0 0 8px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: 1 }}>{auction.title || 'Nom Produit'}</h4>
+                                <h4 style={{ width: '100%', fontFamily: 'Roboto, sans-serif', fontWeight: 700, fontSize: 'clamp(1rem, 1.6vw, 1.25rem)', lineHeight: 1.15, letterSpacing: '0px', color: '#002896', margin: '0 0 8px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: 1 }}>{auction.title || 'Nom Produit'}</h4>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'nowrap', justifyContent: 'space-between' }}>
                                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
                                     <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: Number(price).toLocaleString().length > 10 ? '16px' : Number(price).toLocaleString().length > 8 ? '20px' : '24px', lineHeight: '100%', color: '#062C90', transition: 'font-size 0.2s ease' }}>{Number(price).toLocaleString()}</span>
                                     <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 700, color: '#062C90', marginLeft: '1px' }}>DA</span>
                                   </div>
                                   <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center', gap: '10px' }}>
-                                    <span style={{ fontFamily: 'Roboto, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '100%', color: '#002896', whiteSpace: 'nowrap', width: '69px', height: '16px' }}>{auction.participantsCount || 0} enchères</span>
-                                    <span style={{ width: '101px', height: '16px', fontFamily: 'Roboto, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '100%', color: '#062C90', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right' }}>{seller}</span>
+                                    <span style={{ fontFamily: 'Roboto, sans-serif', fontSize: 'clamp(0.75rem, 1vw, 0.875rem)', fontWeight: 400, lineHeight: 1.2, color: '#002896', whiteSpace: 'nowrap' }}>{auction.participantsCount || 0} enchères</span>
+                                    <span style={{ maxWidth: '120px', fontFamily: 'Roboto, sans-serif', fontSize: 'clamp(0.75rem, 1vw, 0.875rem)', fontWeight: 400, lineHeight: 1.2, color: '#062C90', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right' }}>{seller}</span>
                                   </div>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
@@ -1604,7 +1604,7 @@ const MultipurposeDetails1 = () => {
                                 </div>
                                 <button
                                   disabled={isEnded}
-                                  style={{ width: '264px', height: '39px', backgroundColor: '#EB4545', borderRadius: '10px', padding: '10px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isEnded ? 'default' : 'pointer', gap: '10px', opacity: isEnded ? 0.6 : 1, transition: 'all 0.3s ease' }}
+                                  style={{ width: '100%', minHeight: '44px', backgroundColor: '#EB4545', borderRadius: '10px', padding: '10px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isEnded ? 'default' : 'pointer', gap: '10px', opacity: isEnded ? 0.6 : 1, transition: 'all 0.3s ease' }}
                                   onClick={e => { e.stopPropagation(); if (!isEnded) window.location.assign(`/auction-details/${aid}`); }}
                                   onMouseOver={e => { if (!isEnded) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(1.1)'; } }}
                                   onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.filter = 'brightness(1)'; }}

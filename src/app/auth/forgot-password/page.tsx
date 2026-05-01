@@ -42,8 +42,9 @@ const RootStyle = styled('div')(({ theme }) => ({
 
 const StyledCard = styled(Paper)(({ theme }) => ({
   position: 'relative',
-  width: '367px',
-  height: '522px',
+  width: '100%',
+  maxWidth: '367px',
+  minHeight: '522px',
   background: '#FFFFFF',
   border: '1px solid #DBDADE',
   boxShadow: '0px 5px 30px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25)',

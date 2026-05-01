@@ -259,13 +259,11 @@ const MultipurposeAuctionSidebar = () => {
                     initial={false}
                     animate={{ rotateY: flippedId === auction.id ? 180 : 0 }}
                     transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-                    style={{ 
-                      width: '284px',
-                      minWidth: '284px',
-                      maxWidth: '284px',
-                      height: '464px',
-                      minHeight: '464px',
-                      maxHeight: '464px',
+                    style={{
+                      width: '100%',
+                      maxWidth: '320px',
+                      aspectRatio: '284 / 464',
+                      margin: '0 auto',
                       position: 'relative',
                       zIndex: 1,
                       transformStyle: 'preserve-3d'
@@ -290,7 +288,7 @@ const MultipurposeAuctionSidebar = () => {
                       }}
                       onClick={() => !flippedId && router.push(`/auction-details/${auction.id}`)}
                     >
-                    <div style={{ width: '284px', height: '295px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                    <div style={{ width: '100%', aspectRatio: '284 / 295', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                       <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                         <ShareButton 
                           type="auction" 
@@ -438,19 +436,17 @@ const MultipurposeAuctionSidebar = () => {
                       flexDirection: 'column',
                       justifyContent: 'space-between'
                     }}>
-                      <h4 style={{ 
-                        width: '280px',
-                        height: '23px',
+                      <h4 style={{
+                        width: '100%',
                         fontFamily: 'Roboto, sans-serif',
-                        fontWeight: '700', 
-                        fontSize: '20px', 
-                        lineHeight: '100%',
+                        fontWeight: '700',
+                        fontSize: 'clamp(1rem, 1.6vw, 1.25rem)',
+                        lineHeight: 1.15,
                         letterSpacing: '0px',
-                        verticalAlign: 'middle',
-                        color: '#002896', 
-                        margin: '0 0 8px 0', 
-                        whiteSpace: 'nowrap', 
-                        overflow: 'hidden', 
+                        color: '#002896',
+                        margin: '0 0 8px 0',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         opacity: 1
                       }}>
@@ -481,30 +477,27 @@ const MultipurposeAuctionSidebar = () => {
                           }}>DA</span>
                         </div>
                         <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center', gap: '10px' }}>
-                          <span style={{ 
+                          <span style={{
                             fontFamily: 'Roboto, sans-serif',
-                            fontSize: '14px', 
-                            fontWeight: '400', 
-                            lineHeight: '100%',
-                            color: '#002896', 
-                            whiteSpace: 'nowrap',
-                            width: '69px',
-                            height: '16px'
+                            fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
+                            fontWeight: '400',
+                            lineHeight: 1.2,
+                            color: '#002896',
+                            whiteSpace: 'nowrap'
                           }}>
                             {auction.participantsCount || 0} enchères
                           </span>
-                          <span style={{ 
-                            width: '101px',
-                            height: '16px',
+                          <span style={{
+                            maxWidth: '120px',
                             fontFamily: 'Roboto, sans-serif',
-                            fontSize: '14px', 
-                            fontWeight: '400', 
-                            lineHeight: '100%',
-                            color: '#062C90', 
-                            whiteSpace: 'nowrap', 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis', 
-                            textAlign: 'right' 
+                            fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
+                            fontWeight: '400',
+                            lineHeight: 1.2,
+                            color: '#062C90',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            textAlign: 'right'
                           }}>
                             {companyName}
                           </span>
@@ -527,11 +520,11 @@ const MultipurposeAuctionSidebar = () => {
                         </span>
                       </div>
 
-                      <button 
+                      <button
                         disabled={timer.hasEnded}
                         style={{
-                          width: '264px',
-                          height: '39px',
+                          width: '100%',
+                          minHeight: '44px',
                           backgroundColor: '#EB4545',
                           borderRadius: '10px',
                           padding: '10px',

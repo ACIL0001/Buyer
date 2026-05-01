@@ -197,11 +197,11 @@ const MultipurposeDirectSaleSidebar = () => {
           </div>
         </div>
 
-        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'center' }}>
-          
+        <div className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(12px, 3vw, 20px)', display: 'flex', justifyContent: 'center' }}>
+
           {/* Grid Content */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 284px)', gap: '25px', rowGap: '40px', justifyContent: 'center' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', width: '100%' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(260px, 100%), 1fr))', columnGap: 'clamp(12px, 2vw, 25px)', rowGap: 'clamp(20px, 3vw, 40px)', width: '100%', maxWidth: '1232px', margin: '0 auto' }}>
               {currentData.length > 0 ? currentData.map((sale: any, i) => {
                 const companyName = sale.owner?.entreprise || sale.owner?.firstName || 'Nom entreprise';
                 const type = (sale.type || sale.tenderType)?.toUpperCase();
@@ -213,20 +213,18 @@ const MultipurposeDirectSaleSidebar = () => {
                     initial={false}
                     animate={{ rotateY: flippedId === sale.id ? 180 : 0 }}
                     transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-                    style={{ 
-                      width: '284px',
-                      minWidth: '284px',
-                      maxWidth: '284px',
-                      height: '464px',
-                      minHeight: '464px',
-                      maxHeight: '464px',
+                    style={{
+                      width: '100%',
+                      maxWidth: '320px',
+                      aspectRatio: '284 / 464',
+                      margin: '0 auto',
                       position: 'relative',
                       zIndex: 1,
                       transformStyle: 'preserve-3d'
                     }}
                   >
                     {/* FRONT SIDE */}
-                    <div 
+                    <div
                       style={{
                         width: '100%',
                         height: '100%',
@@ -244,7 +242,7 @@ const MultipurposeDirectSaleSidebar = () => {
                       }}
                       onClick={() => !flippedId && router.push(`/direct-sale/${sale.id}`)}
                     >
-                    <div style={{ width: '284px', height: '280px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                    <div style={{ width: '100%', aspectRatio: '284 / 280', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                       <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                         <ShareButton 
                           type="directSale" 
@@ -394,19 +392,17 @@ const MultipurposeDirectSaleSidebar = () => {
                       position: 'relative'
                     }}>
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                        <h4 style={{ 
-                          width: '264px',
-                          height: '23px',
+                        <h4 style={{
+                          width: '100%',
                           fontFamily: 'Roboto, sans-serif',
-                          fontWeight: '700', 
-                          fontSize: '20px', 
-                          lineHeight: '100%',
+                          fontWeight: '700',
+                          fontSize: 'clamp(1rem, 1.6vw, 1.25rem)',
+                          lineHeight: 1.15,
                           letterSpacing: '0px',
-                          verticalAlign: 'middle',
-                          color: '#002896', 
-                          margin: '0 0 6px 0', 
-                          whiteSpace: 'nowrap', 
-                          overflow: 'hidden', 
+                          color: '#002896',
+                          margin: '0 0 6px 0',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           opacity: 1
                         }}>
@@ -435,19 +431,18 @@ const MultipurposeDirectSaleSidebar = () => {
                               marginLeft: '1px'
                             }}>DA</span>
                           </div>
-                          <span style={{ 
-                            width: '101px',
-                            height: '16px',
+                          <span style={{
+                            maxWidth: '120px',
                             fontFamily: 'Roboto, sans-serif',
-                            fontSize: '14px', 
-                            fontWeight: '400', 
-                            lineHeight: '16px',
-                            color: '#002896', 
+                            fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
+                            fontWeight: '400',
+                            lineHeight: 1.2,
+                            color: '#002896',
                             display: 'flex',
                             alignItems: 'center',
-                            whiteSpace: 'nowrap', 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis', 
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
                             textAlign: 'right',
                             justifyContent: 'flex-end'
                           }}>
@@ -455,10 +450,10 @@ const MultipurposeDirectSaleSidebar = () => {
                           </span>
                         </div>
 
-                        <button 
+                        <button
                           style={{
-                            width: '264px',
-                            height: '39px',
+                            width: '100%',
+                            minHeight: '44px',
                             backgroundColor: '#EB4545',
                             borderRadius: '10px',
                             padding: '10px',

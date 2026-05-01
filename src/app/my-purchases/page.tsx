@@ -224,11 +224,12 @@ export default function MyPurchasesPage() {
                             style={{
                               background: 'white',
                               borderRadius: '12px',
-                              padding: '25px',
+                              padding: 'clamp(16px, 3vw, 25px)',
                               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                               border: '1px solid #e0e0e0',
                               display: 'flex',
-                              gap: '20px',
+                              flexWrap: 'wrap',
+                              gap: 'clamp(12px, 2vw, 20px)',
                               alignItems: 'center'
                             }}
                           >
@@ -236,8 +237,8 @@ export default function MyPurchasesPage() {
                             <div
                               onClick={() => router.push(`/direct-sale/${purchase.directSale._id}`)}
                               style={{
-                                width: '120px',
-                                height: '120px',
+                                width: 'clamp(80px, 18vw, 120px)',
+                                height: 'clamp(80px, 18vw, 120px)',
                                 background: '#f5f5f5',
                                 borderRadius: '8px',
                                 overflow: 'hidden',
@@ -260,11 +261,11 @@ export default function MyPurchasesPage() {
                             </div>
 
                             {/* Details */}
-                            <div style={{ flex: 1 }}>
+                            <div style={{ flex: '1 1 200px', minWidth: 0 }}>
                               <h3
                                 onClick={() => router.push(`/direct-sale/${purchase.directSale._id}`)}
                                 style={{
-                                  fontSize: '1.3rem',
+                                  fontSize: 'clamp(1rem, 2vw, 1.3rem)',
                                   fontWeight: '600',
                                   marginBottom: '10px',
                                   color: '#333',
@@ -301,7 +302,7 @@ export default function MyPurchasesPage() {
                             </div>
 
                             {/* Status and Total */}
-                            <div style={{ textAlign: 'right', minWidth: '150px' }}>
+                            <div style={{ textAlign: 'right', minWidth: '120px', flexShrink: 0 }}>
                               <div
                                 style={{
                                   display: 'inline-block',
@@ -316,7 +317,7 @@ export default function MyPurchasesPage() {
                               >
                                 {getStatusLabel(purchase.status)}
                               </div>
-                              <p style={{ fontSize: '1.5rem', fontWeight: '700', color: '#0063b1', margin: 0 }}>
+                              <p style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.5rem)', fontWeight: '700', color: '#0063b1', margin: 0 }}>
                                 {purchase.totalPrice.toLocaleString()} DA
                               </p>
                             </div>

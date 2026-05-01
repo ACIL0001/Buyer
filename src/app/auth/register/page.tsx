@@ -91,50 +91,48 @@ export default function Register() {
             </Typography>
           </Box>
 
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, px: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 2, md: 4 }, px: 2, width: '100%', maxWidth: '1100px', justifyContent: 'center' }}>
             {/* Enterprise Card */}
             <Box
               onClick={() => handleSelectProfile(CLIENT_TYPE.PROFESSIONAL)}
               sx={{
                 boxSizing: 'border-box',
                 position: 'relative',
-                width: '500px',
-                maxWidth: '100%',
-                height: '355px',
+                width: '100%',
+                maxWidth: '500px',
+                aspectRatio: '500 / 355',
                 background: '#FFFFFF',
                 border: '1px solid #DBDADE',
                 boxShadow: '0px 5px 30px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25)',
                 borderRadius: '35px',
                 cursor: 'pointer',
                 transition: 'transform 0.2s',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+                padding: 'clamp(20px, 5vw, 94px) clamp(20px, 5vw, 94px)',
+                gap: 'clamp(16px, 3vw, 36px)',
                 '&:hover': { transform: 'scale(1.02)' },
               }}
             >
               <Box
                 sx={{
-                  position: 'absolute',
-                  width: '100px',
-                  height: '100px',
-                  left: '94px',
-                  top: '112px',
+                  width: 'clamp(64px, 12vw, 100px)',
+                  height: 'clamp(64px, 12vw, 100px)',
                   color: '#000000',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Box component="img" src="/assets/images/company.svg" sx={{ width: 100, height: 100, transform: 'rotate(0deg)', opacity: 1 }} />
+                <Box component="img" src="/assets/images/company.svg" sx={{ width: '100%', height: '100%' }} />
               </Box>
               <Typography
                 sx={{
-                  position: 'absolute',
-                  width: '249px',
-                  height: '34px',
-                  left: '94px',
-                  top: '248px',
                   fontFamily: '"Inter", sans-serif',
                   fontWeight: 700,
-                  fontSize: '24px',
+                  fontSize: 'clamp(1rem, 2.5vw, 1.5rem)',
                   lineHeight: '140%',
                   letterSpacing: '-0.02em',
                   color: '#757575',
@@ -150,43 +148,41 @@ export default function Register() {
               sx={{
                 boxSizing: 'border-box',
                 position: 'relative',
-                width: '500px',
-                maxWidth: '100%',
-                height: '355px',
+                width: '100%',
+                maxWidth: '500px',
+                aspectRatio: '500 / 355',
                 background: '#FFFFFF',
                 border: '1px solid #DBDADE',
                 boxShadow: '0px 5px 30px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25)',
                 borderRadius: '35px',
                 cursor: 'pointer',
                 transition: 'transform 0.2s',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+                padding: 'clamp(20px, 5vw, 94px) clamp(20px, 5vw, 94px)',
+                gap: 'clamp(16px, 3vw, 36px)',
                 '&:hover': { transform: 'scale(1.02)' },
               }}
             >
               <Box
                 sx={{
-                  position: 'absolute',
-                  width: '100px',
-                  height: '100px',
-                  left: '103px',
-                  top: '114px',
+                  width: 'clamp(64px, 12vw, 100px)',
+                  height: 'clamp(64px, 12vw, 100px)',
                   color: '#000000',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Box component="img" src="/assets/images/businessman.svg" sx={{ width: 100, height: 100, opacity: 1 }} />
+                <Box component="img" src="/assets/images/businessman.svg" sx={{ width: '100%', height: '100%' }} />
               </Box>
               <Typography
                 sx={{
-                  position: 'absolute',
-                  width: '235px',
-                  height: '34px',
-                  left: '103px',
-                  top: '250px',
                   fontFamily: '"Inter", sans-serif',
                   fontWeight: 700,
-                  fontSize: '24px',
+                  fontSize: 'clamp(1rem, 2.5vw, 1.5rem)',
                   lineHeight: '140%',
                   letterSpacing: '-0.02em',
                   color: '#757575',
@@ -212,8 +208,9 @@ export default function Register() {
           {/* Left Panel: Image */}
           <Box
             sx={{
-              width: '701px',
-              minWidth: '701px',
+              width: { xs: '0', md: '50%', lg: '55%', xl: '701px' },
+              minWidth: { xs: 0, md: '320px' },
+              maxWidth: { xl: '701px' },
               height: '100%',
               position: 'relative',
               overflow: 'hidden',
@@ -243,11 +240,11 @@ export default function Register() {
             <Box
               sx={{
                 position: 'absolute',
-                left: '137px',
+                left: 'clamp(24px, 8vw, 137px)',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                width: '548px',
-                height: '320px',
+                width: 'clamp(280px, 60%, 548px)',
+                aspectRatio: '548 / 320',
                 background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.32) 0%, transparent 75%)',
                 zIndex: 1,
                 pointerEvents: 'none',
@@ -257,16 +254,14 @@ export default function Register() {
             <Typography
               sx={{
                 position: 'absolute',
-                width: '508px',
-                height: '280px',
-                left: '97px',
+                maxWidth: 'min(508px, 75%)',
+                left: 'clamp(20px, 6vw, 97px)',
                 top: '50%',
                 transform: 'translateY(-50%)',
                 zIndex: 2,
                 fontFamily: '"DM Sans", sans-serif',
-                fontStyle: 'normal',
                 fontWeight: 400,
-                fontSize: '40px',
+                fontSize: 'clamp(1.5rem, 3.5vw, 2.5rem)',
                 lineHeight: '140%',
                 letterSpacing: '-0.02em',
                 color: '#FFFFFF',
@@ -293,14 +288,14 @@ export default function Register() {
               alignItems: 'center',
               position: 'relative',
               overflowY: 'auto',
-              px: { xs: 2, md: 0 },
+              px: { xs: 2, sm: 4, md: 4 },
               py: { xs: 4, md: 0 },
             }}
           >
             <Box
               sx={{
-                width: '527.79px',
-                maxWidth: '100%',
+                width: '100%',
+                maxWidth: '527.79px',
                 py: '20px',
               }}
             >
@@ -347,7 +342,7 @@ export default function Register() {
 
               <Box
                 sx={{
-                  width: '527.79px',
+                  width: '100%',
                   '& .MuiOutlinedInput-root': {
                     height: '33.87px',
                     borderRadius: '25px',

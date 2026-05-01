@@ -299,8 +299,9 @@ export default function OTPVerification() {
         }
 
         .confirm-button {
-          width: 320px;
-          height: 48px;
+          width: 100%;
+          max-width: 320px;
+          min-height: 48px;
           background: #002795;
           color: #ffffff;
           border: none;

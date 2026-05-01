@@ -14,14 +14,14 @@ const StartupPage = () => {
 
 
   return (
-    <div style={{ backgroundColor: '#FFFFFF', width: '100vw', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ backgroundColor: '#FFFFFF', width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
       <main
-        style={{ 
+        style={{
         width: '100%',
         margin: '0',
         background: '#FFFFFF',
-        paddingTop: '256px',
+        paddingTop: 'clamp(80px, 18vw, 256px)',
         position: 'relative',
         opacity: 1,
         transform: 'rotate(0deg)',
@@ -35,7 +35,7 @@ const StartupPage = () => {
           position: 'relative', 
           width: '100%',
           height: '657px',
-          marginTop: '0px',
+          marginTop: '60px',
           display: 'flex',
           alignItems: 'center',
           backgroundImage: 'linear-gradient(0deg, rgba(0, 40, 150, 0.63), rgba(0, 40, 150, 0.63)), url("/assets/images/startup banner.jpg")',
@@ -45,13 +45,13 @@ const StartupPage = () => {
           transform: 'rotate(0deg)'
         }}>
           {/* Centered 1440px Figma Artboard for Absolute Positioning */}
-          <div style={{ position: 'relative', width: '1440px', height: '100%', margin: '0 auto' }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '1440px', height: '100%', margin: '0 auto' }}>
             {/* Group 17 Container */}
             <div style={{
             position: 'absolute',
             width: '792.45px',
             height: '443px',
-            left: '75.95px', /* 80.95px - 5px offset */
+            left: '80.95px', /* Updated to match spec */
             top: '107px',    /* 440px - 333px offset */
             zIndex: 2,
           }}>
@@ -64,7 +64,7 @@ const StartupPage = () => {
                 position: 'absolute',
                 width: '739.49px',
                 height: '201px',
-                left: 0,
+                left: 0, /* Relative to container at 80.95px */
                 top: 0,
                 fontFamily: '"DM Sans", sans-serif',
                 fontStyle: 'normal',
@@ -175,7 +175,7 @@ const StartupPage = () => {
             {/* Row 1 - Figma Absolute Layout */}
             <div style={{
               position: 'relative',
-              width: '1440px',
+              width: '100%', maxWidth: '1440px',
               height: '440px', /* Image height determines block height */
               margin: '0 auto',
               marginBottom: '80px',
@@ -188,7 +188,7 @@ const StartupPage = () => {
                 width: '520px',
                 height: 'auto',
                 left: '91px',
-                top: '166px', /* 1360px - 1194px */
+                top: '120px', /* Adjusted to be higher and centered vertically */
                 fontFamily: '"DM Sans", sans-serif',
                 fontWeight: 400,
                 fontSize: '24px',
@@ -203,7 +203,7 @@ const StartupPage = () => {
 
               {/* Image Block */}
               <img 
-                src="/assets/images/startup01.png" 
+                src="/assets/images/startup01.jpg" 
                 alt="Valorisez votre savoir-faire"
                 style={{
                   position: 'absolute',
@@ -221,7 +221,7 @@ const StartupPage = () => {
             {/* Row 2 - Figma Absolute Layout */}
             <div style={{
               position: 'relative',
-              width: '1440px',
+              width: '100%', maxWidth: '1440px',
               height: '440px', /* Image height */
               margin: '0 auto',
               marginBottom: '80px',
@@ -249,7 +249,7 @@ const StartupPage = () => {
                 width: '520px',
                 height: 'auto',
                 left: '827px', /* Mirrored offset */
-                top: '166px', /* Mirrored offset */
+                top: '120px', /* Adjusted to be higher and centered vertically */
                 fontFamily: '"DM Sans", sans-serif',
                 fontWeight: 400,
                 fontSize: '24px',
@@ -266,7 +266,7 @@ const StartupPage = () => {
             {/* Row 3 - Figma Absolute Layout */}
             <div style={{
               position: 'relative',
-              width: '1440px',
+              width: '100%', maxWidth: '1440px',
               height: '440px', /* Image height */
               margin: '0 auto',
               marginBottom: '40px', /* Gap before button */
@@ -279,7 +279,7 @@ const StartupPage = () => {
                 width: '520px',
                 height: 'auto',
                 left: '91px', /* Mirrored offset */
-                top: '166px', /* Mirrored offset */
+                top: '120px', /* Adjusted to be higher and centered vertically */
                 fontFamily: '"DM Sans", sans-serif',
                 fontWeight: 400,
                 fontSize: '24px',
@@ -309,7 +309,7 @@ const StartupPage = () => {
             </div>
             
             {/* CTA Button */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '80px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '80px' }}>
               <button 
                 onClick={(e) => e.preventDefault()}
                 className="btn-solid-blue"
@@ -324,14 +324,14 @@ const StartupPage = () => {
         {/* 3. Statistics Banner Figma Absolute */}
         <section style={{ 
           position: 'relative',
-          width: '1440px',
+          width: '100%', maxWidth: '1440px',
           height: '211px',
           margin: '0 auto 60px',
         }}>
           {/* Banner Background Tool */}
           <div style={{
             position: 'absolute',
-            width: '1288px',
+            width: '100%', maxWidth: '1288px',
             height: '211px',
             top: '0px', /* 2628px - 2628px */
             left: '85px',
@@ -450,20 +450,20 @@ const StartupPage = () => {
         {/* 4. Final CTA Section Figma Absolute */}
         <section style={{ 
           position: 'relative',
-          width: '1440px',
+          width: '100%', maxWidth: '1440px',
           height: '609px',
           margin: '0 auto',
         }}>
           {/* Image Rect 48 */}
           <div style={{
             position: 'absolute',
-            width: '1290px',
+            width: '100%', maxWidth: '1290px',
             height: '496px',
             top: '0px', /* 2934 - 2934 */
             left: '84px',
-            backgroundImage: 'url("/assets/images/startup01.png")', /* Fallback to existing image to avoid missing asset errors */
+            backgroundImage: 'url("/assets/images/startup01.jpg")', /* Fallback to existing image to avoid missing asset errors */
             backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundPosition: 'center 20%',
             borderRadius: '24px'
           }}>
             {/* Keeping overlay from previous design so blue text remains readable if image is light */}

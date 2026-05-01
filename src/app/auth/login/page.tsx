@@ -54,11 +54,12 @@ export default function Login() {
         }}
       >
         
-        {/* ── Left Section: Background Image (701px) ── */}
+        {/* ── Left Section: Background Image (responsive) ── */}
         <Box
           sx={{
-            width: '701px',
-            minWidth: '701px',
+            width: { xs: '0', md: '50%', lg: '55%', xl: '701px' },
+            minWidth: { xs: 0, md: '320px' },
+            maxWidth: { xl: '701px' },
             height: '100%',
             position: 'relative',
             overflow: 'hidden',
@@ -88,11 +89,11 @@ export default function Login() {
           <Box
             sx={{
               position: 'absolute',
-              left: '137px',
+              left: 'clamp(24px, 8vw, 137px)',
               top: '50%',
               transform: 'translateY(-50%)',
-              width: '548px',
-              height: '320px',
+              width: 'clamp(280px, 60%, 548px)',
+              aspectRatio: '548 / 320',
               background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.32) 0%, transparent 75%)',
               zIndex: 1,
               pointerEvents: 'none',
@@ -101,20 +102,17 @@ export default function Login() {
           <Typography
             sx={{
               position: 'absolute',
-              width: '508px',
-              height: '56px',
-              left: '97px',
+              maxWidth: 'min(508px, 75%)',
+              left: 'clamp(20px, 6vw, 97px)',
               top: '50%',
               transform: 'translateY(-50%)',
               zIndex: 2,
               fontFamily: '"Poppins", sans-serif',
-              fontStyle: 'normal',
               fontWeight: 400,
-              fontSize: '40px',
+              fontSize: 'clamp(1.5rem, 3.5vw, 2.5rem)',
               lineHeight: '140%',
-              letterSpacing: '-0.02em', // Equivalent to -2%
+              letterSpacing: '-0.02em',
               color: '#FFFFFF',
-              opacity: 1,
             }}
           >
             Content de vous retrouver !
@@ -122,21 +120,21 @@ export default function Login() {
         </Box>
 
         {/* ── Right Section: Form Box ── */}
-        <Box 
-          sx={{ 
-            flex: 1, 
-            position: 'relative', 
+        <Box
+          sx={{
+            flex: 1,
+            position: 'relative',
             backgroundColor: '#FFFFFF',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            px: { xs: 2, md: 0 },
+            px: { xs: 2, sm: 4, md: 4 },
             py: { xs: 4, md: 0 },
             overflowY: 'auto'
           }}
         >
-          <Box sx={{ width: '252.6px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
+          <Box sx={{ width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
             {/* Header Texts */}
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mb: '10px' }}>
               <Typography 

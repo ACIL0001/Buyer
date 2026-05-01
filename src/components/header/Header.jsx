@@ -65,6 +65,10 @@ export const Header = () => {
   const isMobile = windowWidth <= 768;
   const isTablet = windowWidth > 768 && windowWidth <= 1024;
   const isSmallMobile = windowWidth <= 375;
+  // Render the compact mobile header for everything that can't fit the 1100px+ desktop layout
+  const showMobileHeader = windowWidth <= 1024;
+  // When on dashboard pages, route the hamburger to the dashboard sidebar instead of the public nav drawer
+  const isDashboard = pathName?.startsWith('/dashboard');
   const socketContext = useCreateSocket();
   const windowRef = useRef(null);
   const headerRef = useRef(null);
@@ -255,6 +259,18 @@ export const Header = () => {
 
   const isNavActive = (matchPaths) => matchPaths.some(mp => pathName === mp || pathName.startsWith(mp + '/'));
 
+  // Mobile nav links — used in the mobile drawer below md
+  const mobileNavLinks = [
+    { name: t('navigation.home') || 'Accueil', path: '/' },
+    { name: 'Catégories', path: '/category' },
+    { name: t('navigation.howToBid') || 'Comment ça marche', path: '/how-to-bid' },
+    { name: 'Startup', path: '/startup' },
+    { name: 'International', path: '/international' },
+    { name: 'Nos plans', path: '/plans' },
+    { name: 'A propos', path: '/about' },
+    { name: 'Contact', path: '/contact' },
+  ];
+
   return (
     <header
       ref={headerRef}
@@ -271,16 +287,337 @@ export const Header = () => {
         fontFamily: "'DM Sans', 'Inter', sans-serif",
       }}
     >
-      <div 
+      {/* --- MOBILE HEADER (below md / 768px) --- */}
+      {isClient && showMobileHeader && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px',
+            width: '100%',
+            height: 'clamp(56px, 14vw, 64px)',
+            padding: '0 clamp(12px, 4vw, 20px)',
+            background: '#FFFFFF',
+            borderBottom: '1px solid #f0f2f5',
+          }}
+        >
+          {/* Hamburger — routes to dashboard sidebar on /dashboard/*, public nav drawer otherwise */}
+          <button
+            type="button"
+            onClick={() => {
+              if (isDashboard) {
+                window.dispatchEvent(new CustomEvent('toggle-dashboard-sidebar'));
+              } else {
+                setMenuOpen((prev) => !prev);
+              }
+            }}
+            aria-label="Ouvrir le menu"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              border: 'none',
+              background: 'transparent',
+              color: '#002896',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+              {!isDashboard && isMenuOpen ? (
+                <>
+                  <path d="M18 6L6 18" />
+                  <path d="M6 6l12 12" />
+                </>
+              ) : (
+                <>
+                  <path d="M3 6h18" />
+                  <path d="M3 12h18" />
+                  <path d="M3 18h18" />
+                </>
+              )}
+            </svg>
+          </button>
+
+          {/* Logo (centered) */}
+          <Link href={getFrontendUrl()} style={{ display: 'flex', alignItems: 'center', flex: 1, justifyContent: 'center', textDecoration: 'none', minWidth: 0 }}>
+            <img
+              src={logoUrl || '/assets/img/logo.png'}
+              alt="MazadClick"
+              style={{ height: 'clamp(28px, 8vw, 36px)', maxWidth: '60%', objectFit: 'contain' }}
+            />
+          </Link>
+
+          {/* Right cluster: messages + notifications + profile */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
+            {isClient && isLogged && (
+              <>
+                <ChatNotifications variant="header" />
+                <NotificationBellStable />
+                <div ref={accountDropdownRef} style={{ position: 'relative' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsAccountDropdownOpen((prev) => !prev)}
+                    aria-label="Mon compte"
+                    aria-haspopup="menu"
+                    aria-expanded={isAccountDropdownOpen}
+                    style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: '50%',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: '#F5F5FA',
+                      color: '#002896',
+                      flexShrink: 0,
+                      border: '1px solid #E6E6E6',
+                      padding: 0,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {getAvatarUrl() ? (
+                      <img src={getAvatarUrl()} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                    )}
+                  </button>
+                  {isAccountDropdownOpen && (
+                    <div
+                      role="menu"
+                      style={{
+                        position: 'absolute',
+                        top: 'calc(100% + 8px)',
+                        right: 0,
+                        minWidth: 220,
+                        background: '#FFFFFF',
+                        borderRadius: 16,
+                        boxShadow: '0 12px 32px rgba(0,0,0,0.14)',
+                        border: '1px solid #f0f2f5',
+                        padding: 8,
+                        zIndex: 9999,
+                      }}
+                    >
+                      <div style={{ padding: '10px 12px 12px', borderBottom: '1px solid #f0f2f5', marginBottom: 6 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: '#002896', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {auth?.user?.firstName || 'Utilisateur'}
+                        </div>
+                        <div style={{ fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {auth?.user?.email}
+                        </div>
+                      </div>
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsAccountDropdownOpen(false)}
+                        role="menuitem"
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', color: '#1e293b', textDecoration: 'none', fontSize: 14, fontWeight: 500, borderRadius: 10, minHeight: 44 }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Profil
+                      </Link>
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setIsAccountDropdownOpen(false)}
+                        role="menuitem"
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', color: '#1e293b', textDecoration: 'none', fontSize: 14, fontWeight: 500, borderRadius: 10, minHeight: 44 }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                        Tableau de bord
+                      </Link>
+                      <Link
+                        href="/settings"
+                        onClick={() => setIsAccountDropdownOpen(false)}
+                        role="menuitem"
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', color: '#1e293b', textDecoration: 'none', fontSize: 14, fontWeight: 500, borderRadius: 10, minHeight: 44 }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        Paramètres
+                      </Link>
+                      <div style={{ height: 1, background: '#f0f2f5', margin: '6px 0' }} />
+                      <button
+                        type="button"
+                        onClick={() => { setIsAccountDropdownOpen(false); handleLogout(); }}
+                        role="menuitem"
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: '#ef4444', fontSize: 14, fontWeight: 600, cursor: 'pointer', borderRadius: 10, textAlign: 'left', minHeight: 44 }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Déconnexion
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+            {isClient && !isLogged && (
+              <Link
+                href="/auth/login"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 36,
+                  padding: '0 14px',
+                  borderRadius: 18,
+                  background: '#002896',
+                  color: '#fff',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Connexion
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* --- MOBILE DRAWER (public nav only — dashboard pages use the dashboard sidebar instead) --- */}
+      {isClient && showMobileHeader && !isDashboard && isMenuOpen && (
+        <>
+          <div
+            onClick={() => setMenuOpen(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.4)',
+              zIndex: 9998,
+            }}
+          />
+          <nav
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              bottom: 0,
+              width: 'min(320px, 85vw)',
+              background: '#FFFFFF',
+              zIndex: 9999,
+              padding: '20px 16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              boxShadow: '4px 0 24px rgba(0,0,0,0.08)',
+              overflowY: 'auto',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #f0f2f5' }}>
+              <img src={logoUrl || '/assets/img/logo.png'} alt="MazadClick" style={{ height: 32, objectFit: 'contain' }} />
+              <button
+                type="button"
+                onClick={() => setMenuOpen(false)}
+                aria-label="Fermer le menu"
+                style={{ width: 36, height: 36, border: 'none', background: 'transparent', color: '#002896', cursor: 'pointer' }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                  <path d="M18 6L6 18" />
+                  <path d="M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Mobile search */}
+            <form
+              onSubmit={(e) => { e.preventDefault(); handleSearchSubmit(e); setMenuOpen(false); }}
+              style={{ marginBottom: 12 }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#F5F5FA', borderRadius: 14 }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7878AB" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input
+                  type="text"
+                  placeholder={t('category.searchPlaceholder') || 'Rechercher un produit ...'}
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: 14, color: '#002896', minWidth: 0 }}
+                />
+              </div>
+            </form>
+
+            {/* Nav links */}
+            {mobileNavLinks.map((item) => (
+              <Link
+                key={item.path}
+                href={item.path}
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  color: isNavActive([item.path]) ? '#002896' : '#3a4a6b',
+                  background: isNavActive([item.path]) ? 'rgba(0, 40, 150, 0.08)' : 'transparent',
+                  fontSize: 15,
+                  fontWeight: isNavActive([item.path]) ? 700 : 500,
+                  textDecoration: 'none',
+                  minHeight: 44,
+                }}
+              >
+                {item.name}
+              </Link>
+            ))}
+
+            <div style={{ marginTop: 'auto', paddingTop: 16, borderTop: '1px solid #f0f2f5' }}>
+              {isClient && isLogged ? (
+                <>
+                  <Link
+                    href="/profile"
+                    onClick={() => setMenuOpen(false)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, color: '#002896', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}
+                  >
+                    Mon profil
+                  </Link>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMenuOpen(false)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, color: '#002896', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}
+                  >
+                    Tableau de bord
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => { handleLogout(); setMenuOpen(false); }}
+                    style={{ width: '100%', textAlign: 'left', padding: '12px 14px', border: 'none', borderRadius: 12, background: 'transparent', color: '#EB4545', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Déconnexion
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/auth/login"
+                  onClick={() => setMenuOpen(false)}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px', borderRadius: 12, background: '#002896', color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 700 }}
+                >
+                  Connexion
+                </Link>
+              )}
+            </div>
+          </nav>
+        </>
+      )}
+
+      <div
         className="header-content-wrapper"
         style={{
-          width: '1440px',
+          width: '100%',
+          maxWidth: '1440px',
           height: '196px',
           position: 'relative',
           background: '#FFFFFF',
           opacity: 1,
-          transform: 'rotate(0deg)',
           margin: '0 auto',
+          display: isClient && showMobileHeader ? 'none' : 'block',
         }}
       >
         {/* --- LOGO --- */}

@@ -30,32 +30,28 @@ const FAQSection = () => {
   const [activeId, setActiveId] = useState<number | null>(null);
 
   return (
-    <div style={{ width: '100%', background: '#ffffff', padding: '80px 20px 140px 20px', fontFamily: '"DM Sans", sans-serif', minHeight: '378px' }}>
-      <div style={{ maxWidth: '714px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-          <h2 style={{ 
-            color: '#002896', 
+    <div style={{ width: '100%', background: '#ffffff', padding: 'clamp(40px, 8vw, 80px) clamp(16px, 4vw, 20px) clamp(60px, 12vw, 140px)', fontFamily: '"DM Sans", sans-serif' }}>
+      <div style={{ width: '100%', maxWidth: '714px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(28px, 6vw, 60px)' }}>
+          <h2 style={{
+            color: '#002896',
             fontFamily: '"DM Sans", sans-serif',
-            fontSize: '36px', 
-            fontWeight: '700', 
-            lineHeight: '46px',
-            marginBottom: '20px',
-            opacity: 1,
-            transform: 'rotate(0deg)'
+            fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
+            fontWeight: '700',
+            lineHeight: 1.25,
+            marginBottom: 'clamp(12px, 2vw, 20px)',
           }}>
             Tout Mazadclic en un clic
           </h2>
-          <p style={{ 
-            color: '#757575', 
+          <p style={{
+            color: '#757575',
             fontFamily: '"DM Sans", sans-serif',
-            fontSize: '24px', 
+            fontSize: 'clamp(1rem, 2.2vw, 1.5rem)',
             fontWeight: '400',
-            lineHeight: '30px',
-            maxWidth: '1000px', 
-            margin: '0 auto', 
+            lineHeight: 1.4,
+            maxWidth: '1000px',
+            margin: '0 auto',
             textAlign: 'center',
-            opacity: 1,
-            transform: 'rotate(0deg)'
           }}>
             Optimisez votre temps. Apprenez à piloter vos enchères, ventes et
             soumissions en toute simplicité pour ne plus jamais laisser passer
@@ -63,25 +59,22 @@ const FAQSection = () => {
           </p>
         </div>
 
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          gap: '51px',
-          width: '714px',
-          height: '441px',
-          opacity: 1,
-          transform: 'rotate(0deg)'
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'clamp(16px, 3vw, 32px)',
+          width: '100%',
         }}>
           {faqs.map((faq) => (
             <div key={faq.id} style={{ width: '100%' }}>
-              <div 
+              <div
                 onClick={() => setActiveId(activeId === faq.id ? null : faq.id)}
-                style={{ 
+                style={{
                   background: 'linear-gradient(127.45deg, rgba(230, 230, 230, 0.7) 2.15%, rgba(195, 201, 215, 0.14) 63.05%)',
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
-                  borderRadius: '24px', 
-                  padding: '20px 28px',
+                  borderRadius: '24px',
+                  padding: 'clamp(14px, 2vw, 20px) clamp(16px, 3vw, 28px)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -91,15 +84,13 @@ const FAQSection = () => {
                   borderImageSlice: 1,
                   boxShadow: '0px 10px 20px 0px #0000001A, 0px 4px 1px 0px #00000040',
                   transition: 'all 0.3s ease',
-                  width: '714px',
-                  height: '72px',
+                  width: '100%',
+                  minHeight: 'clamp(56px, 8vw, 72px)',
                   gap: '20px',
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
                   boxSizing: 'border-box'
                 }}
               >
-                <span style={{ color: '#002896', fontSize: '20px', fontWeight: '700' }}>
+                <span style={{ color: '#002896', fontSize: 'clamp(0.95rem, 1.6vw, 1.25rem)', fontWeight: '700' }}>
                   {faq.question}
                 </span>
                 <motion.div

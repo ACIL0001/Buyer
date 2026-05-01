@@ -127,7 +127,7 @@ export default function TenderDetailPage() {
       </div>
 
       {/* Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)', gap: 20, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 20, alignItems: 'start' }}>
         <div>
           <div style={card}>
             <h3 style={{ margin: '0 0 12px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📝 Description</h3>
@@ -135,7 +135,7 @@ export default function TenderDetailPage() {
           </div>
           <div style={card}>
             <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📋 Détails</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))', gap: 16 }}>
               {[
                 { label: 'Date de début', value: fmtDate(tender.startingAt) },
                 { label: 'Date de fin', value: fmtDate(tender.endingAt) },

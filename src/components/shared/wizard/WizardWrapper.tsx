@@ -29,7 +29,7 @@ export default function WizardWrapper({ title, subtitle, children, onBack, backL
         justifyContent: 'center'
       }}
     >
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, zoom: { xs: 1, md: 0.8 } }}>
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
         <Box
           component={motion.div}
           initial={{ opacity: 0, scale: 0.96, y: 30 }}

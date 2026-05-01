@@ -127,7 +127,7 @@ export default function DirectSaleOrderDetailPage() {
       </div>
 
       {/* Summary tiles */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))', gap: 14, marginBottom: 20 }}>
         <div style={{ background: '#fff', borderRadius: 12, padding: '20px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', borderLeft: `4px solid ${ACCENT}`, display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ width: 48, height: 48, borderRadius: 12, background: ACCENT_10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, flexShrink: 0 }}>📦</div>
           <div>
@@ -145,12 +145,12 @@ export default function DirectSaleOrderDetailPage() {
       </div>
 
       {/* Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)', gap: 20, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 20, alignItems: 'start' }}>
         <div>
           {/* Date & unit price */}
           <div style={card}>
             <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📊 Récapitulatif</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))', gap: 16 }}>
               {[
                 { label: 'Prix unitaire', value: `${(sale.price || 0).toLocaleString('fr-FR')} DA`, color: '#334155' },
                 { label: 'Quantité', value: order.quantity, color: '#334155' },

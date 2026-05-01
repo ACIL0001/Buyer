@@ -199,13 +199,11 @@ export default function CreateTenderPage() {
                 justifyContent: 'center',
                 overflow: 'auto'
             }}>
-                <Container maxWidth={false} sx={{ 
-                    width: { xl: '1161px' }, 
-                    transform: { xl: 'scale(0.82)', lg: 'scale(0.8)' },
-                    transformOrigin: 'top center',
-                    p: '0 !important', 
-                    display: 'flex', 
-                    flexDirection: 'column', 
+                <Container maxWidth="lg" sx={{
+                    width: '100%',
+                    p: '0 !important',
+                    display: 'flex',
+                    flexDirection: 'column',
                     gap: '16px',
                     pb: 10
                 }}>
@@ -393,32 +391,30 @@ export default function CreateTenderPage() {
                                             </Grid>
                                         </Box>
 
-                                        <Box sx={{ 
-                                            width: '475px',
-                                            height: '215px',
+                                        <Box sx={{
+                                            width: '100%',
+                                            maxWidth: '475px',
                                             backgroundColor: '#ffffff',
                                             borderRadius: '24px',
                                             border: '1px solid #E7E7E7',
-                                            p: '24px',
+                                            p: 'clamp(16px, 3vw, 24px)',
                                             display: 'flex',
                                             flexDirection: 'column',
                                             gap: '16px',
-                                            opacity: 1,
                                             boxSizing: 'border-box'
                                         }}>
-                                            <Typography variant="h5" sx={{ color: '#002795', fontWeight: 700, fontSize: '22px', mb: 0, lineHeight: 1 }}>
+                                            <Typography variant="h5" sx={{ color: '#002795', fontWeight: 700, fontSize: 'clamp(1rem, 2vw, 1.375rem)', mb: 0, lineHeight: 1.2 }}>
                                                 Image offre/ service
                                             </Typography>
-                                            <Typography variant="body2" sx={{ color: '#94a3b8', mb: 0, lineHeight: 1 }}>
+                                            <Typography variant="body2" sx={{ color: '#94a3b8', mb: 0, lineHeight: 1.4 }}>
                                                 <Typography component="span" sx={{ color: '#002795', fontWeight: 700 }}>Note :</Typography> Format photos SVG, PNG, or JPG (Max size 4mb)
                                             </Typography>
-                                            
-                                            <Box sx={{ 
-                                                display: 'flex', 
-                                                gap: '16px', 
-                                                width: '427px', 
-                                                height: '97px', 
-                                                opacity: 1
+
+                                            <Box sx={{
+                                                display: 'grid',
+                                                gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+                                                gap: 'clamp(8px, 2vw, 16px)',
+                                                width: '100%',
                                             }}>
                                                 {[1, 2, 3, 4].map((i) => {
                                                     const file = attachments[i - 1];
@@ -441,8 +437,8 @@ export default function CreateTenderPage() {
                                                                 input.click();
                                                             }}
                                                             sx={{
-                                                                width: '94.75px',
-                                                                height: '97px',
+                                                                width: '100%',
+                                                                aspectRatio: '94.75 / 97',
                                                                 borderRadius: '8px',
                                                                 border: '1px dashed #1A71F6',
                                                                 backgroundColor: '#EEF7FF',

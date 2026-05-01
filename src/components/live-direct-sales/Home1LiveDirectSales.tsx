@@ -74,19 +74,21 @@ const Home1LiveDirectSales = () => {
   }, [allDirectSales]);
 
   const settings = useMemo(() => ({
-    slidesPerView: 4, 
-    speed: 800, 
-    spaceBetween: 20,
+    slidesPerView: 1,
+    speed: 800,
+    spaceBetween: 16,
     loop: true,
     navigation: {
       nextEl: '.direct-sale-next',
       prevEl: '.direct-sale-prev',
     },
     breakpoints: {
-      1200: { slidesPerView: 4 },
-      992: { slidesPerView: 3 },
-      768: { slidesPerView: 2 },
-      0: { slidesPerView: 1 }
+      0: { slidesPerView: 1, spaceBetween: 12 },
+      475: { slidesPerView: 1.2, spaceBetween: 14 },
+      640: { slidesPerView: 2, spaceBetween: 16 },
+      768: { slidesPerView: 2, spaceBetween: 18 },
+      1024: { slidesPerView: 3, spaceBetween: 20 },
+      1280: { slidesPerView: 4, spaceBetween: 20 },
     },
   }), []);
 
@@ -98,30 +100,30 @@ const Home1LiveDirectSales = () => {
     <div style={{ background: 'transparent', width: '100%', paddingBottom: '0px' }}>
     <div className="direct-sales-section-wrapper" style={{ width: '100%', position: 'relative', overflow: 'visible' }}>
       {/* SECTION HEADER - REMOVED OVERFLOW HIDDEN */}
-      <div style={{ 
-        width: '100%', 
-        maxWidth: '1240px', 
+      <div style={{
+        width: '100%',
+        maxWidth: '1240px',
         margin: '0 auto',
-        position: 'relative', 
-        padding: '60px 20px 40px', 
+        position: 'relative',
+        padding: 'clamp(32px, 6vw, 60px) clamp(16px, 4vw, 20px) clamp(20px, 4vw, 40px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'visible'
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            style={{ 
-              color: '#002896', 
+            style={{
+              color: '#002896',
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: '48px', 
-              fontWeight: '700', 
-              margin: 0, 
-              letterSpacing: '0px', 
-              lineHeight: '100%',
+              fontSize: 'clamp(1.75rem, 5vw, 3rem)',
+              fontWeight: '700',
+              margin: 0,
+              letterSpacing: '0px',
+              lineHeight: 1.1,
               textAlign: 'center'
             }}
           >
@@ -130,29 +132,27 @@ const Home1LiveDirectSales = () => {
           <motion.div initial={{ width: 0 }} whileInView={{ width: '100px' }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 1 }} style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #002896, transparent)', marginTop: '15px', borderRadius: '10px' }} />
         </div>
 
-        <div style={{ position: 'absolute', right: '35px', top: '75px' }}>
-          <Link href="/direct-sale" style={{ 
-            display: 'inline-flex', 
-            width: '93px', 
-            height: '28px', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            color: '#002896', 
-            textDecoration: 'none', 
-            fontSize: '20px', 
-            fontWeight: '700', 
-            fontFamily: 'Roboto, sans-serif', 
-            lineHeight: '100%', 
-            whiteSpace: 'nowrap', 
-            cursor: 'pointer', 
-            transition: 'all 0.3s ease' 
+        <div style={{ position: 'absolute', right: 'clamp(12px, 3vw, 35px)', top: 'clamp(40px, 8vw, 75px)' }}>
+          <Link href="/direct-sale" style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#002896',
+            textDecoration: 'none',
+            fontSize: 'clamp(0.875rem, 1.6vw, 1.25rem)',
+            fontWeight: '700',
+            fontFamily: 'Roboto, sans-serif',
+            lineHeight: 1.2,
+            whiteSpace: 'nowrap',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease'
           }}>
             Voir tout
           </Link>
         </div>
       </div>
 
-      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1240px', margin: '0 auto', padding: '0 20px', overflow: 'visible' }}>
+      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1240px', margin: '0 auto', padding: '0 clamp(12px, 3vw, 20px)', overflow: 'visible' }}>
         {directSales.length > 0 ? (
           <div className="direct-sale-carousel-container" style={{ position: 'relative', overflow: 'visible' }}>
             <div style={{ position: 'relative' }}>
@@ -168,13 +168,11 @@ const Home1LiveDirectSales = () => {
                         initial={false}
                         animate={{ rotateY: flippedId === sale.id ? 180 : 0 }}
                         transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-                        style={{ 
-                          width: '284px',
-                          minWidth: '284px',
-                          maxWidth: '284px',
-                          height: '464px',
-                          minHeight: '464px',
-                          maxHeight: '464px',
+                        style={{
+                          width: '100%',
+                          maxWidth: '320px',
+                          aspectRatio: '284 / 464',
+                          margin: '0 auto',
                           position: 'relative',
                           zIndex: 1,
                           transformStyle: 'preserve-3d'
@@ -199,7 +197,7 @@ const Home1LiveDirectSales = () => {
                           }}
                           onClick={() => router.push(`/direct-sale/${sale.id}`)}
                         >
-                        <div style={{ width: '284px', height: '280px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                        <div style={{ width: '100%', aspectRatio: '284 / 280', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                           <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                             <ShareButton 
                               type="directSale" 
@@ -349,19 +347,17 @@ const Home1LiveDirectSales = () => {
                           position: 'relative'
                         }}>
                           <div>
-                            <h4 style={{ 
-                              width: '281px',
-                              height: '23px',
+                            <h4 style={{
+                              width: '100%',
                               fontFamily: 'Roboto, sans-serif',
-                              fontWeight: '700', 
-                              fontSize: '20px', 
-                              lineHeight: '100%',
+                              fontWeight: '700',
+                              fontSize: 'clamp(1rem, 1.6vw, 1.25rem)',
+                              lineHeight: 1.15,
                               letterSpacing: '0px',
-                              verticalAlign: 'middle',
-                              color: '#002896', 
-                              margin: '0 0 6px 0', 
-                              whiteSpace: 'nowrap', 
-                              overflow: 'hidden', 
+                              color: '#002896',
+                              margin: '0 0 6px 0',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               opacity: 1
                             }}>
@@ -390,65 +386,25 @@ const Home1LiveDirectSales = () => {
                                   marginLeft: '1px'
                                 }}>DA</span>
                               </div>
-                              <span style={{ 
-                                width: '101px',
-                                height: '16px',
+                              <span style={{
+                                maxWidth: '120px',
                                 fontFamily: 'Roboto, sans-serif',
-                                fontSize: '14px', 
-                                fontWeight: '400', 
-                                lineHeight: '16px',
-                                color: '#002896', 
+                                fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
+                                fontWeight: '400',
+                                lineHeight: 1.2,
+                                color: '#002896',
                                 display: 'flex',
                                 alignItems: 'center',
-                                whiteSpace: 'nowrap', 
-                                overflow: 'hidden', 
-                                textOverflow: 'ellipsis', 
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
                                 textAlign: 'right',
                                 justifyContent: 'flex-end'
                               }}>
                                 {companyName}
                               </span>
                             </div>
-                            <button 
-                              style={{
-                                width: '264px',
-                                height: '39px',
-                                backgroundColor: '#EB4545',
-                                borderRadius: '10px',
-                                padding: '10px',
-                                border: 'none',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                gap: '10px',
-                                marginTop: '12px',
-                                transition: 'all 0.3s ease'
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                router.push(`/direct-sale/${sale.id}`);
-                              }}
-                              onMouseOver={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-2px)';
-                                e.currentTarget.style.filter = 'brightness(1.1)';
-                              }}
-                              onMouseOut={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.filter = 'brightness(1)';
-                              }}
-                            >
-                              <span style={{
-                                fontFamily: 'Inter, sans-serif',
-                                fontWeight: '500',
-                                fontSize: '16px',
-                                lineHeight: '100%',
-                                color: '#FFFFFF',
-                                textAlign: 'center'
-                              }}>
-                                Acheter rapide
-                              </span>
-                            </button>
+
                           </div>
                         </div>
                       </div>
@@ -552,11 +508,11 @@ const Home1LiveDirectSales = () => {
               {/* Custom Navigation Buttons - Oval Style */}
               <div className="direct-sale-prev" style={{
                 position: 'absolute',
-                top: '232px',
-                left: '10px',
+                top: '50%',
+                left: 'clamp(4px, 1vw, 10px)',
                 transform: 'translateY(-50%)',
-                width: '60px',
-                height: '40px',
+                width: 'clamp(40px, 5vw, 60px)',
+                height: 'clamp(32px, 4vw, 40px)',
                 backgroundColor: 'white',
                 borderRadius: '25px',
                 display: 'flex',
@@ -573,11 +529,11 @@ const Home1LiveDirectSales = () => {
               </div>
               <div className="direct-sale-next" style={{
                 position: 'absolute',
-                top: '232px',
-                right: '10px',
+                top: '50%',
+                right: 'clamp(4px, 1vw, 10px)',
                 transform: 'translateY(-50%)',
-                width: '60px',
-                height: '40px',
+                width: 'clamp(40px, 5vw, 60px)',
+                height: 'clamp(32px, 4vw, 40px)',
                 backgroundColor: 'white',
                 borderRadius: '25px',
                 display: 'flex',

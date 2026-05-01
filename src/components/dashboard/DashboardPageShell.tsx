@@ -102,15 +102,15 @@ const styles = {
 
   statsRow: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-    gap: '14px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(160px, 100%), 1fr))',
+    gap: 'clamp(10px, 1.5vw, 14px)',
     marginBottom: '20px',
   },
 
   statCard: (color: string) => ({
     background: '#ffffff',
     borderRadius: '12px',
-    padding: '16px 20px',
+    padding: 'clamp(12px, 2vw, 20px)',
     boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
     border: '1px solid rgba(0,0,0,0.05)',
     borderLeft: `4px solid ${color}`,
@@ -141,7 +141,7 @@ const styles = {
   } as React.CSSProperties),
 
   statLabel: {
-    fontSize: '0.72rem',
+    fontSize: 'clamp(0.7rem, 1.4vw, 0.8rem)',
     color: '#94a3b8',
     fontWeight: 600,
     textTransform: 'uppercase' as const,
@@ -155,6 +155,12 @@ const styles = {
     boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
     border: '1px solid rgba(0,0,0,0.06)',
     overflow: 'hidden',
+  } as React.CSSProperties,
+
+  tableScroll: {
+    width: '100%',
+    overflowX: 'auto' as const,
+    WebkitOverflowScrolling: 'touch' as const,
   } as React.CSSProperties,
 };
 
@@ -205,8 +211,10 @@ export default function DashboardPageShell({
         </div>
       )}
 
-      {/* Table Card */}
-      <div style={styles.tableCard}>{children}</div>
+      {/* Table Card (horizontal scroll on small viewports) */}
+      <div style={styles.tableCard}>
+        <div className="table-scroll" style={styles.tableScroll}>{children}</div>
+      </div>
     </div>
   );
 }

@@ -1,38 +1,40 @@
 /* Redesign styles inspired by user-provided images */
 
 .redesign-v2-container {
-    padding: 20px;
+    padding: clamp(16px, 3vw, 20px);
+    width: 100%;
     max-width: 1440px;
     margin: 0 auto;
     font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
     color: #333;
-    padding-top: 230px;
+    padding-top: clamp(120px, 18vw, 230px);
 }
 
-/* Image 1: Main Product Section Layout */
+/* Image 1: Main Product Section Layout (mobile-first) */
 .product-hero-section {
     display: grid;
-    grid-template-columns: 95.766px 632px 400px; /* Adjusted to match user specs */
-    gap: 19px; /* Distance between 105px and 220px (115px - 96px width) */
-    margin-bottom: 50px;
+    grid-template-columns: 1fr;
+    gap: clamp(12px, 2vw, 20px);
+    margin-bottom: clamp(24px, 5vw, 50px);
     align-items: start;
-    justify-content: center;
 }
 
-@media (max-width: 1200px) {
+@media (min-width: 768px) {
     .product-hero-section {
-        grid-template-columns: 100px 1fr 350px;
-        gap: 20px;
+        grid-template-columns: clamp(80px, 8vw, 100px) minmax(0, 1fr);
+        gap: clamp(16px, 2.5vw, 24px);
     }
 }
 
-@media (max-width: 991px) {
+@media (min-width: 1024px) {
     .product-hero-section {
-        grid-template-columns: 1fr;
-        display: flex;
-        flex-direction: column;
+        grid-template-columns: clamp(80px, 7vw, 100px) minmax(0, 1fr) minmax(280px, 400px);
+        gap: clamp(16px, 2vw, 24px);
+        justify-content: center;
     }
-    
+}
+
+@media (max-width: 767px) {
     .thumbnails-vertical {
         order: 2;
         flex-direction: row !important;
@@ -40,7 +42,7 @@
         width: 100%;
         margin-top: 15px;
     }
-    
+
     .thumbnails-vertical .thumb-item {
         width: 80px !important;
         height: 80px !important;
@@ -61,13 +63,13 @@
 .thumbnails-vertical {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    width: 95.766px;
+    gap: clamp(8px, 1.5vw, 15px);
+    width: 100%;
 }
 
 .thumbnails-vertical .thumb-item {
-    width: 95.766px; /* Spec: 95.766... */
-    height: 77.74px; /* Spec: 77.739... */
+    width: 100%;
+    aspect-ratio: 95.766 / 77.74;
     border-radius: 2.25px;
     overflow: hidden;
     cursor: pointer;
@@ -94,23 +96,17 @@
 
 /* Main Image Area */
 .main-image-area {
-    width: 632px;
+    width: 100%;
     max-width: 632px;
-    background-color: transparent; 
+    aspect-ratio: 632 / 600;
+    background-color: transparent;
     border-radius: 4px;
     overflow: hidden;
-    height: 600px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-}
-
-@media (max-width: 768px) {
-    .main-image-area {
-        height: 400px;
-    }
 }
 
 .main-image-area img,
@@ -184,8 +180,8 @@
     line-height: 21px;
     letter-spacing: 0%;
     margin-bottom: 30px;
-    width: 373px;
-    height: 63px;
+    width: 100%;
+    max-width: 373px;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -203,14 +199,15 @@
 }
 
 .enchirir-btn {
-    width: 336px;
-    height: 44px;
-    background-color: #002d9c; /* Dark blue button from Image 1 */
+    width: 100%;
+    max-width: 336px;
+    min-height: 44px;
+    background-color: #002d9c;
     color: white;
     border: none;
-    padding: 10px 48px;
+    padding: 10px clamp(20px, 4vw, 48px);
     border-radius: 4px;
-    font-size: 16px; /* Adjusted to fit 44px height comfortably */
+    font-size: 16px;
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -232,7 +229,8 @@
     align-items: center;
     gap: 10px;
     margin-bottom: 20px;
-    width: 336px;
+    width: 100%;
+    max-width: 336px;
 }
 
 .quantity-counter-v2 {
@@ -421,9 +419,9 @@
 
 .product-description-container {
     border-radius: 8px;
-    padding: 0 27px; /* Corresponding to 'left: 27px' */
-    margin-top: 69px; /* Corresponding to 'top: 69px' */
-    margin-bottom: 50px;
+    padding: 0 clamp(12px, 3vw, 27px);
+    margin-top: clamp(32px, 6vw, 69px);
+    margin-bottom: clamp(24px, 5vw, 50px);
 }
 
 .description-header-title {

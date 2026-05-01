@@ -40,46 +40,34 @@ const AboutPage = () => {
         paddingTop: `${headerHeight}px`,
       }}>
         
-        {/* 1. Hero Section - Design from Image 5 */}
-        <section style={{ padding: '80px 20px', textAlign: 'center' }}>
-          <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <motion.h1 
+        {/* 1. Hero Section */}
+        <section style={{ padding: 'clamp(40px, 8vw, 80px) clamp(16px, 4vw, 20px)', textAlign: 'center' }}>
+          <div className="container" style={{ width: '100%', maxWidth: '1440px', margin: '0 auto' }}>
+            <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              style={{ 
-                color: '#002896', 
+              style={{
+                color: '#002896',
                 fontFamily: '"DM Sans", sans-serif',
-                fontSize: '56px', 
-                fontWeight: '700', 
-                lineHeight: '66px',
+                fontSize: 'clamp(1.75rem, 5vw, 3.5rem)',
+                fontWeight: '700',
+                lineHeight: 1.18,
                 textAlign: 'center',
-                height: '132px',
-                marginTop: '60px',
+                marginTop: 'clamp(20px, 4vw, 60px)',
                 marginBottom: '20px',
-                opacity: 1,
-                transform: 'rotate(0deg)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
               }}
             >
               Contactez notre équipe pour plus de renseignements
             </motion.h1>
-            <p style={{ 
-              color: '#0096E3', 
+            <p style={{
+              color: '#0096E3',
               fontFamily: '"Inter", sans-serif',
-              fontSize: '18px', 
-              fontWeight: '400', 
-              lineHeight: '18px',
+              fontSize: 'clamp(0.95rem, 1.6vw, 1.125rem)',
+              fontWeight: '400',
+              lineHeight: 1.4,
               textAlign: 'center',
-              height: '54px',
-              maxWidth: '800px', 
-              margin: '0 auto 60px',
-              opacity: 1,
-              transform: 'rotate(0deg)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              maxWidth: '800px',
+              margin: '0 auto clamp(28px, 5vw, 60px)',
             }}>
               MazadClick ne digitalise pas le marché : elle l'organise.
             </p>
@@ -106,87 +94,80 @@ const AboutPage = () => {
                 </p>
               </div>
 
-              {/* Right Column Team - Based on Image 5 */}
-              <div 
+              {/* Right Column Image */}
+              <div
                 className="about-images-column"
-                style={{ gridColumn: 'span 5', display: 'flex', gap: '30px', justifyContent: 'center', position: 'relative' }}>
-                <div className="team-member" style={{ marginTop: '100px' }}>
-                  <div className="circle-img-wrapper">
-                    <img src="/assets/images/aboutus.png" alt="Founder" />
-                  </div>
-                  <h4 style={{ color: '#0ea5e9', marginTop: '15px', marginBottom: '4px' }}>Nom prenom</h4>
-                  <p style={{ color: '#0ea5e9', fontSize: '14px' }}>co Fondateur</p>
-                </div>
-                <div className="team-member" style={{ marginTop: '0' }}>
-                  <div className="circle-img-wrapper">
-                    <img src="/assets/images/aboutus1.png" alt="Founder" />
-                  </div>
-                  <h4 style={{ color: '#0ea5e9', marginTop: '15px', marginBottom: '4px' }}>Nom prenom</h4>
-                  <p style={{ color: '#0ea5e9', fontSize: '14px' }}>Co fondateur</p>
-                </div>
+                style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <img
+                  src="/assets/images/about.jpg"
+                  alt="About MazadClick"
+                  style={{
+                    width: '100%',
+                    maxWidth: '630px',
+                    aspectRatio: '630 / 523',
+                    objectFit: 'cover',
+                    borderRadius: '10px',
+                    boxShadow: '0 15px 35px rgba(0,0,0,0.1)'
+                  }}
+                />
               </div>
             </div>
           </div>
         </section>
 
         {/* 2. Stats Bar - Advanced Glassmorphism Design */}
-        <section style={{ 
-          padding: '40px 20px',
+        <section style={{
+          padding: 'clamp(20px, 4vw, 40px) clamp(16px, 4vw, 20px)',
           display: 'flex',
           justifyContent: 'center'
         }}>
-          <div style={{ 
-            width: '1282px',
-            height: '212px',
+          <div style={{
+            width: '100%',
+            maxWidth: '1282px',
+            minHeight: '160px',
+            padding: 'clamp(20px, 4vw, 40px) clamp(16px, 4vw, 32px)',
             background: '#d8d8d8',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            borderRadius: '24px', 
+            borderRadius: '24px',
             border: '1px solid',
             borderImageSource: 'linear-gradient(127.23deg, rgba(255, 255, 255, 0.42) 2.46%, rgba(255, 255, 255, 0.24) 97.36%)',
             borderImageSlice: 1,
-            display: 'flex', 
-            justifyContent: 'space-around', 
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'space-around',
             alignItems: 'center',
+            gap: 'clamp(16px, 3vw, 32px)',
             textAlign: 'center',
             boxShadow: '0px 20px 40px 0px #0000001A, 0px 4px 4px 0px #00000040',
-            opacity: 1,
-            transform: 'rotate(0deg)',
             boxSizing: 'border-box'
           }}>
-              <div>
-                <h2 style={{ color: '#002896', fontSize: '48px', fontWeight: '800' }}>15</h2>
-                <p style={{ color: '#002896', fontSize: '14px', fontWeight: '600' }}>Membres de l'équipe</p>
+              <div style={{ flex: '1 1 140px' }}>
+                <h2 style={{ color: '#002896', fontSize: 'clamp(2rem, 4.5vw, 3rem)', fontWeight: '800', margin: 0 }}>15</h2>
+                <p style={{ color: '#002896', fontSize: 'clamp(0.8rem, 1.4vw, 0.875rem)', fontWeight: '600', margin: '6px 0 0' }}>Membres de l'équipe</p>
               </div>
-              <div>
-                <h2 style={{ color: '#002896', fontSize: '48px', fontWeight: '800' }}>10</h2>
-                <p style={{ color: '#002896', fontSize: '14px', fontWeight: '600' }}>Fonctionnalités</p>
+              <div style={{ flex: '1 1 140px' }}>
+                <h2 style={{ color: '#002896', fontSize: 'clamp(2rem, 4.5vw, 3rem)', fontWeight: '800', margin: 0 }}>10</h2>
+                <p style={{ color: '#002896', fontSize: 'clamp(0.8rem, 1.4vw, 0.875rem)', fontWeight: '600', margin: '6px 0 0' }}>Fonctionnalités</p>
               </div>
-              <div>
-                <h2 style={{ color: '#002896', fontSize: '48px', fontWeight: '800' }}>+10</h2>
-                <p style={{ color: '#002896', fontSize: '14px', fontWeight: '600' }}>Entreprises</p>
+              <div style={{ flex: '1 1 140px' }}>
+                <h2 style={{ color: '#002896', fontSize: 'clamp(2rem, 4.5vw, 3rem)', fontWeight: '800', margin: 0 }}>+10</h2>
+                <p style={{ color: '#002896', fontSize: 'clamp(0.8rem, 1.4vw, 0.875rem)', fontWeight: '600', margin: '6px 0 0' }}>Entreprises</p>
               </div>
             </div>
         </section>
 
         {/* 3. Nos Valeurs Section */}
-        <section style={{ padding: '100px 20px' }}>
-          <div className="container" style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <h2 style={{ 
-              color: '#002896', 
+        <section style={{ padding: 'clamp(48px, 10vw, 100px) clamp(16px, 4vw, 20px)' }}>
+          <div className="container" style={{ width: '100%', maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <h2 style={{
+              color: '#002896',
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: '64px', 
-              fontWeight: '700', 
-              textAlign: 'center', 
-              width: '505px',
-              height: '104px',
-              lineHeight: '18px', // Following exact specification
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '60px',
-              opacity: 1,
-              transform: 'rotate(0deg)'
+              fontSize: 'clamp(2rem, 6vw, 4rem)',
+              fontWeight: '700',
+              textAlign: 'center',
+              lineHeight: 1.1,
+              marginBottom: 'clamp(28px, 5vw, 60px)',
             }}>
               Nos valeurs
             </h2>
@@ -212,41 +193,28 @@ const AboutPage = () => {
         </section>
 
         {/* 4. Contact CTA */}
-        <section style={{ padding: '80px 20px', textAlign: 'center' }}>
-          <div className="container" style={{ maxWidth: '700px', margin: '0 auto' }}>
-            <h2 style={{ 
-              color: '#002896', 
+        <section style={{ padding: 'clamp(40px, 8vw, 80px) clamp(16px, 4vw, 20px)', textAlign: 'center' }}>
+          <div className="container" style={{ width: '100%', maxWidth: '700px', margin: '0 auto' }}>
+            <h2 style={{
+              color: '#002896',
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: '56px', 
-              fontWeight: '700', 
-              lineHeight: '66px',
+              fontSize: 'clamp(1.5rem, 5vw, 3.5rem)',
+              fontWeight: '700',
+              lineHeight: 1.2,
               textAlign: 'center',
-              height: '66px',
-              marginBottom: '40px',
-              whiteSpace: 'nowrap',
-              opacity: 1,
-              transform: 'rotate(0deg)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              marginBottom: 'clamp(20px, 4vw, 40px)',
             }}>
-              Besoin d’un accompagnement
+              Besoin d&rsquo;un accompagnement
             </h2>
-            <p style={{ 
-              color: '#002896', 
+            <p style={{
+              color: '#002896',
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: '24px', 
+              fontSize: 'clamp(1rem, 2.2vw, 1.5rem)',
               fontWeight: '400',
-              lineHeight: '26px', 
+              lineHeight: 1.4,
               textAlign: 'center',
-              height: '78px',
-              maxWidth: '800px', 
-              margin: '0 auto 45px', 
-              opacity: 1,
-              transform: 'rotate(0deg)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              maxWidth: '800px',
+              margin: '0 auto clamp(24px, 4vw, 45px)',
             }}>
               Nos experts sont là pour vous aider à optimiser vos enchères ou finaliser vos soumissions. Envoyez-nous un message et recevez une réponse rapide.
             </p>
@@ -259,50 +227,44 @@ const AboutPage = () => {
         <style jsx>{`
           .about-grid-container {
             display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 60px;
-            text-align: left;
-            align-items: start;
+            grid-template-columns: 1fr;
+            gap: clamp(24px, 4vw, 60px);
+            text-align: center;
+            align-items: center;
           }
           .about-text-column {
-            grid-column: span 7;
             color: #64748b;
-            font-size: 16px;
-            line-height: 1.8;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            line-height: 1.5;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
           }
           .about-images-column {
-            grid-column: span 5;
-          }
-          @media (max-width: 992px) {
-            .about-grid-container {
-              display: flex;
-              flex-direction: column;
-              gap: 40px;
-            }
-            .about-text-column, .about-images-column {
-              width: 100%;
-            }
-          }
-          .circle-img-wrapper {
-            width: 295px;
-            height: 344px;
-            border-radius: 812px;
-            overflow: hidden;
-            border: 6px solid white;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-          }
-          .circle-img-wrapper img {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
           }
+
+          @media (min-width: 992px) {
+            .about-grid-container {
+              grid-template-columns: 1fr 1fr;
+              gap: 60px;
+            }
+            .about-text-column {
+              text-align: left;
+            }
+          }
+
           .values-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+            gap: clamp(16px, 3vw, 30px);
+            width: 100%;
           }
           .value-card {
-            padding: 50px 30px;
+            padding: clamp(28px, 5vw, 50px) clamp(20px, 4vw, 30px);
             border-radius: 30px;
             text-align: center;
             transition: all 0.3s ease;
@@ -313,31 +275,25 @@ const AboutPage = () => {
           }
           .star-icon {
             color: #fbbf24;
-            font-size: 36px;
+            font-size: clamp(28px, 5vw, 36px);
             margin-bottom: 20px;
           }
           .gradient-btn {
             background: linear-gradient(95deg, #002896 0%, #3b82f6 100%);
             color: white;
-            padding: 18px 70px;
+            padding: clamp(14px, 2.5vw, 18px) clamp(32px, 7vw, 70px);
             border-radius: 50px;
             border: none;
             font-weight: 700;
-            font-size: 16px;
+            font-size: clamp(0.875rem, 1.5vw, 1rem);
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 10px 20px rgba(0, 40, 150, 0.2);
+            min-height: 44px;
           }
           .gradient-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 15px 30px rgba(0, 40, 150, 0.3);
-          }
-          @media (max-width: 992px) {
-            .values-grid { grid-template-columns: repeat(2, 1fr); }
-          }
-          @media (max-width: 650px) {
-            .values-grid { grid-template-columns: 1fr; }
-            .team-member { scale: 0.8; }
           }
         `}</style>
       </main>

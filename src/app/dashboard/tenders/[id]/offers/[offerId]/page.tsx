@@ -145,7 +145,7 @@ export default function TenderOfferDetailPage() {
       </div>
 
       {/* Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)', gap: 20, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 20, alignItems: 'start' }}>
         <div>
           {/* Proposal / Amount */}
           <div style={card}>

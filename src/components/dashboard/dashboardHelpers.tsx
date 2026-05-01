@@ -271,6 +271,7 @@ export const tableStyles = {
 
   table: {
     width: '100%',
+    minWidth: '720px',
     borderCollapse: 'collapse' as const,
     fontSize: '0.875rem',
   } as React.CSSProperties,

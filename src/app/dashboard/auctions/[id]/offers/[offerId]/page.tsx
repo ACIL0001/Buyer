@@ -103,7 +103,7 @@ export default function AuctionOfferDetailPage() {
       </div>
 
       {/* Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)', gap: 20, alignItems: 'start', marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 20, alignItems: 'start', marginBottom: 20 }}>
         {/* Left: Offer amount + date */}
         <div>
           <div style={card}>
@@ -116,7 +116,7 @@ export default function AuctionOfferDetailPage() {
               </div>
             </div>
             {/* Comparison */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(140px, 100%), 1fr))', gap: 12, marginTop: 16 }}>
               {[
                 { label: 'Prix de départ', value: `${(auction.startingPrice || 0).toLocaleString('fr-FR')} DA`, color: '#64748b' },
                 { label: 'Prix actuel', value: `${(auction.currentPrice || auction.startingPrice || 0).toLocaleString('fr-FR')} DA`, color: '#10b981' },

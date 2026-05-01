@@ -125,7 +125,7 @@ const ActionCard = ({ item }: { item: typeof QUICK_ACTIONS[0] }) => {
             elevation={0}
             sx={{
                 width: '100%',
-                height: 180, // Increased height for buttons
+                minHeight: 180,
                 bgcolor: theme.bg,
                 color: theme.main,
                 borderRadius: 4,
@@ -220,14 +220,15 @@ const StatCard = ({ item }: { item: any }) => {
         <Paper
             elevation={0}
             sx={{
-                px: 3,
-                height: 140, // Increased height
+                px: { xs: 1.5, sm: 2, md: 3 },
+                py: { xs: 1.5, sm: 2 },
+                minHeight: 140,
                 borderRadius: 4,
                 border: '1px solid',
                 borderColor: 'divider',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 3,
+                gap: { xs: 1.5, sm: 2, md: 3 },
                 position: 'relative',
                 overflow: 'hidden',
                 transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
@@ -263,9 +264,9 @@ const StatCard = ({ item }: { item: any }) => {
             <Box
                 className="stat-icon"
                 sx={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: '20px', // Soft square
+                    width: { xs: 44, sm: 52, md: 56 },
+                    height: { xs: 44, sm: 52, md: 56 },
+                    borderRadius: '20px',
                     bgcolor: theme.bg,
                     color: theme.main,
                     display: 'flex',
@@ -276,15 +277,15 @@ const StatCard = ({ item }: { item: any }) => {
                     boxShadow: `0 4px 10px ${theme.bg}`,
                 }}
             >
-                <Icon size={28} />
+                <Icon size={24} />
             </Box>
 
             {/* Content - Right Side */}
             <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', zIndex: 1 }}>
-                <Typography variant="h3" sx={{ fontWeight: 800, color: '#1a1a1a', lineHeight: 1, fontSize: '2rem' }}>
+                <Typography variant="h3" sx={{ fontWeight: 800, color: '#1a1a1a', lineHeight: 1, fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}>
                     {item.value}
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, mt: 0.5, letterSpacing: '0.02em', textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, mt: 0.5, letterSpacing: '0.02em', textTransform: 'uppercase', fontSize: 'clamp(0.7rem, 1.5vw, 0.85rem)' }}>
                     {t(item.label)}
                 </Typography>
                 
@@ -404,12 +405,12 @@ export default function DashboardPage() {
     );
 
     return (
-        <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1.5, sm: 3 } }}>
             <DashboardKeyframes />
             {/* Quick Actions Section */}
             <SectionHeader icon={MdRocketLaunch} title={t('dashboard.quickActions')} />
-            
-            <Grid container spacing={3} sx={{ mb: 6 }}>
+
+            <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: { xs: 4, md: 6 } }}>
                 {QUICK_ACTIONS.map((action, index) => (
                     <Zoom in={true} style={{ transitionDelay: `${index * 50}ms` }} key={index}>
                         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -422,7 +423,7 @@ export default function DashboardPage() {
             {/* Performance Section */}
             <SectionHeader icon={MdTrendingUp} title={t('dashboard.performance')} />
             
-            <Grid container spacing={3} sx={{ mb: 6 }}>
+            <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: { xs: 4, md: 6 } }}>
                 {statsPerformance.map((stat, index) => (
                     <Zoom in={true} style={{ transitionDelay: `${index * 50}ms` }} key={index}>
                         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -435,7 +436,7 @@ export default function DashboardPage() {
             {/* Offers & Submissions Section */}
             <SectionHeader icon={MdEmail} title={t('dashboard.offersOverview')} />
             
-            <Grid container spacing={3} sx={{ mb: 6 }}>
+            <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: { xs: 4, md: 6 } }}>
                 {statsOffers.map((stat, index) => (
                     <Zoom in={true} style={{ transitionDelay: `${index * 50}ms` }} key={index}>
                         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -447,8 +448,8 @@ export default function DashboardPage() {
 
             {/* Financial Section */}
             <SectionHeader icon={MdMonetizationOn} title={t('dashboard.financialOverview')} />
-            
-            <Grid container spacing={3}>
+
+            <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
                 {statsFinance.map((stat, index) => (
                     <Zoom in={true} style={{ transitionDelay: `${index * 50}ms` }} key={index}>
                         <Grid size={{ xs: 12, sm: 6, md: 3 }}>

@@ -329,13 +329,11 @@ export default function CreateDirectSalePage() {
                 overflow: 'auto',
                 fontFamily: "'DM Sans', sans-serif"
             }}>
-                <Container maxWidth={false} sx={{ 
-                    width: { xl: '1161px' }, 
-                    transform: { xl: 'scale(0.82)', lg: 'scale(0.8)' },
-                    transformOrigin: 'top center',
-                    p: '0 !important', 
-                    display: 'flex', 
-                    flexDirection: 'column', 
+                <Container maxWidth="lg" sx={{
+                    width: '100%',
+                    p: '0 !important',
+                    display: 'flex',
+                    flexDirection: 'column',
                     gap: '16px',
                     pb: 10
                 }}>
@@ -545,17 +543,16 @@ export default function CreateDirectSalePage() {
                                         </Stack>
                                     </Box>
 
-                                    <Box sx={{ 
-                                        width: '475px',
-                                        height: '215px',
+                                    <Box sx={{
+                                        width: '100%',
+                                        maxWidth: '475px',
                                         backgroundColor: '#ffffff',
                                         borderRadius: '24px',
                                         border: '1px solid #E7E7E7',
-                                        p: '24px',
+                                        p: 'clamp(16px, 3vw, 24px)',
                                         display: 'flex',
                                         flexDirection: 'column',
                                         gap: '16px',
-                                        opacity: 1,
                                         boxSizing: 'border-box'
                                     }}>
                                         <Typography 
@@ -578,12 +575,11 @@ export default function CreateDirectSalePage() {
                                             Note : <span style={{ color: '#94a3b8', fontWeight: 400 }}>Format photos SVG, PNG, or JPG (Max size 4mb)</span>
                                         </Typography>
 
-                                        <Box sx={{ 
-                                            display: 'flex', 
-                                            gap: '16px', 
-                                            width: '427px', 
-                                            height: '97px', 
-                                            opacity: 1
+                                        <Box sx={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+                                            gap: 'clamp(8px, 2vw, 16px)',
+                                            width: '100%',
                                         }}>
                                             {[1, 2, 3, 4].map((i) => {
                                                 const file = mediaFiles[i - 1];
@@ -606,8 +602,8 @@ export default function CreateDirectSalePage() {
                                                             input.click();
                                                         }}
                                                         sx={{
-                                                            width: '94.75px',
-                                                            height: '97px',
+                                                            width: '100%',
+                                                            aspectRatio: '94.75 / 97',
                                                             borderRadius: '8px',
                                                             border: '1px dashed #1A71F6',
                                                             backgroundColor: '#EEF7FF',

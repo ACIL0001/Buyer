@@ -84,7 +84,7 @@ const InternationalPage = () => {
           <div style={{ 
             position: 'relative', 
             zIndex: 2, 
-            width: '1440px', 
+            width: '100%', maxWidth: '1440px', 
             height: '100%',
             margin: '0 auto'
           }}>
@@ -177,7 +177,7 @@ const InternationalPage = () => {
         </section>
 
         {/* 2. Why Use MazadClick? (Grid Layout from Image 1) */}
-        <section style={{ position: 'relative', width: '1440px', height: '850px', margin: '0 auto' }}>
+        <section style={{ position: 'relative', width: '100%', maxWidth: '1440px', height: '850px', margin: '0 auto' }}>
             <h2 style={{ 
               position: 'absolute',
               width: '1217px',
@@ -275,7 +275,7 @@ const InternationalPage = () => {
             ))}
         </section>
              {/* 3. How to Launch (Layout from Image 2) */}
-        <section style={{ position: 'relative', width: '1440px', height: '900px', margin: '0 auto', background: '#FFFFFF' }}>
+        <section style={{ position: 'relative', width: '100%', maxWidth: '1440px', height: '900px', margin: '0 auto', background: '#FFFFFF' }}>
             <h2 style={{ 
               position: 'absolute',
               width: '610px', /* Estimated to fit 56px text well center-aligned */
@@ -337,7 +337,7 @@ const InternationalPage = () => {
         {/* 4. Contact Team (Light Blue Glass Section from Image 2) */}
         <section style={{ 
             position: 'relative', 
-            width: '1440px', 
+            width: '100%', maxWidth: '1440px', 
             height: '500px', 
             margin: '0 auto',
             background: '#FFFFFF'

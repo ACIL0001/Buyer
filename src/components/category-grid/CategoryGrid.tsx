@@ -72,26 +72,26 @@ const CategoryItem = ({ cat, router }: { cat: any; router: any }) => {
   const subCategories = subData?.data || [];
 
   return (
-    <div style={{ borderBottom: '2px solid #002896', width: '389px' }}>
-      <motion.div 
+    <div style={{ borderBottom: '2px solid #002896', width: '100%', minWidth: 0 }}>
+      <motion.div
         whileHover={{ x: 5 }}
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
+        style={{
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0',
-          height: '72px',
+          minHeight: 'clamp(56px, 8vw, 72px)',
           cursor: 'pointer'
         }}
       >
-        <div 
+        <div
           onClick={() => router.push(`/auction-sidebar?category=${cat._id}`)}
-          style={{ display: 'flex', alignItems: 'center', gap: '22px', flex: 1 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 'clamp(12px, 2vw, 22px)', flex: 1, minWidth: 0 }}
         >
-          <div style={{ color: '#002896', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ color: '#002896', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {iconMap[cat.name] || <DefaultIcon />}
           </div>
-          <span style={{ color: '#002896', fontSize: '20px', fontWeight: '700', fontFamily: 'Roboto, sans-serif' }}>
+          <span style={{ color: '#002896', fontSize: 'clamp(0.95rem, 1.5vw, 1.25rem)', fontWeight: '700', fontFamily: 'Roboto, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {cat.name}
           </span>
         </div>
@@ -165,9 +165,9 @@ const CategoryGrid = () => {
 
   if (isLoading) {
     return (
-      <div style={{ width: '100%', background: '#ffffff', padding: '80px 20px' }}>
+      <div style={{ width: '100%', background: '#ffffff', padding: 'clamp(40px, 6vw, 80px) clamp(16px, 4vw, 20px)' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(389px, 1fr))', gap: '40px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 'clamp(16px, 3vw, 40px)' }}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} style={{ height: '72px', background: '#f1f5f9', borderRadius: '8px', animation: 'pulse 1.5s infinite' }} />
             ))}
@@ -179,35 +179,27 @@ const CategoryGrid = () => {
   }
 
   return (
-    <div style={{ width: '100%', background: '#ffffff', padding: '100px 0', fontFamily: '"DM Sans", sans-serif', minHeight: '288px' }}>
+    <div style={{ width: '100%', background: '#ffffff', padding: 'clamp(48px, 8vw, 100px) 0', fontFamily: '"DM Sans", sans-serif' }}>
       <div className="container-responsive" style={{ maxWidth: '1258px', margin: '0 auto', width: '100%' }}>
-        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-          <h2 style={{ color: '#002896', fontSize: 'clamp(26px, 4.5vw, 38px)', fontWeight: '700', margin: 0, letterSpacing: '-1px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(28px, 5vw, 60px)' }}>
+          <h2 style={{ color: '#002896', fontSize: 'clamp(1.4rem, 4vw, 2.4rem)', fontWeight: '700', margin: 0, letterSpacing: '-1px', lineHeight: 1.2 }}>
             {displayTitle}
           </h2>
         </div>
 
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(3, 389px)', 
-          columnGap: '40px',
-          rowGap: '20px',
-          justifyContent: 'center',
-          padding: '0 20px',
-          margin: '0 auto'
-        }} className="category-three-grid">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
+          columnGap: 'clamp(16px, 3vw, 40px)',
+          rowGap: 'clamp(8px, 1.5vw, 20px)',
+          padding: '0 clamp(0px, 2vw, 20px)',
+          margin: '0 auto',
+          maxWidth: '1300px'
+        }}>
           {categories.slice(0, 9).map((cat: any) => (
             <CategoryItem key={cat._id} cat={cat} router={router} />
           ))}
         </div>
-        <style jsx>{`
-          @media (max-width: 1200px) {
-            .category-three-grid {
-              grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)) !important;
-              gap: 20px !important;
-            }
-          }
-        `}</style>
       </div>
     </div>
   );

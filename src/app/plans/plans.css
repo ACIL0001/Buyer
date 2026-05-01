@@ -82,24 +82,27 @@
 
 /* Plans Grid */
 .plans-grid {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
     justify-content: center;
-    align-items: flex-start;
-    gap: 32px;
+    align-items: stretch;
+    gap: clamp(16px, 3vw, 32px);
     max-width: 1280px;
     margin: 0 auto;
-    flex-wrap: wrap;
+    padding: 0 clamp(16px, 4vw, 20px);
 }
 
 .plan-card {
-    width: 388px;
-    height: 667px;
-    background: 
+    width: 100%;
+    max-width: 420px;
+    min-height: 600px;
+    margin: 0 auto;
+    background:
       linear-gradient(127.45deg, rgba(230, 230, 230, 0.7) 2.15%, rgba(195, 201, 215, 0.14) 63.05%) padding-box,
       linear-gradient(127.23deg, rgba(255, 255, 255, 0.42) 2.46%, rgba(255, 255, 255, 0.24) 97.36%) border-box;
     border: 1px solid transparent;
     border-radius: 24px;
-    padding: 48px;
+    padding: clamp(24px, 5vw, 48px);
     display: flex;
     flex-direction: column;
     position: relative;

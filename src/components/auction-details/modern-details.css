@@ -10,7 +10,7 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-  height: 420px;
+  height: clamp(220px, 40vw, 420px);
   background-color: #f8f8f8;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   margin-top: 0;
@@ -716,64 +716,53 @@
   color: #FFED85;
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments (image height handled by clamp() above) */
 @media (max-width: 991px) {
-  .auction-details-modern .main-image-container {
-    height: 350px;
-  }
-  
   .auction-details-modern .auction-title {
     font-size: 26px;
     margin-top: 30px;
   }
-  
+
   .auction-details-modern .countdown-timer ul li.times {
     font-size: 24px;
   }
-  
+
   .auction-details-modern .primary-btn {
     padding: 12px 24px;
   }
 }
 
 @media (max-width: 767px) {
-  .auction-details-modern .main-image-container {
-    height: 300px;
-  }
-  
   .auction-details-modern .tab-container {
     width: 100%;
     justify-content: center;
     gap: 5px;
   }
-  
+
   .auction-details-modern .tab-button {
     padding: 8px 15px;
     font-size: 14px;
   }
-  
+
   .auction-details-modern .quantity-counter-and-btn-area {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .auction-details-modern .countdown-timer ul li.times {
     font-size: 20px;
   }
-  
+
   .auction-details-modern .countdown-timer ul li.colon {
     font-size: 20px;
   }
-  
+
   .auction-details-modern .related-auction-title {
     font-size: 24px;
   }
 }
 
 @media (max-width: 600px) {
-  .auction-details-modern .main-image-container {
-    height: 220px;
-  }
   .auction-details-modern .thumbnail {
     width: 48px;
     height: 48px;

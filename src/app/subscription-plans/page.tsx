@@ -166,13 +166,13 @@ export default function SubscriptionPlans() {
         onChange={handlePlanChange}
         sx={{ width: '100%' }}
       >
-        <Grid 
-          container 
-          spacing={2} 
+        <Grid
+          container
+          spacing={2}
           justifyContent="center"
-          sx={{ 
+          sx={{
             display: 'flex',
-            flexWrap: 'nowrap', 
+            flexWrap: { xs: 'wrap', md: 'nowrap' },
           }}
         >
           {subscriptionPlans.map((plan) => (

@@ -80,14 +80,14 @@ export default function TransactionsPage() {
     <Container maxWidth="xl" sx={{ py: 4, bgcolor: 'transparent' }}>
       
       {/* Top Filter Bar */}
-      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 4 }}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} spacing={2} sx={{ mb: 4 }}>
         <TextField
           placeholder="recherche"
           size="small"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          sx={{ 
-            width: 240,
+          sx={{
+            width: { xs: '100%', sm: 240 },
             '& .MuiOutlinedInput-root': {
               bgcolor: 'white',
               borderRadius: '8px',
@@ -118,7 +118,8 @@ export default function TransactionsPage() {
             boxShadow: '0px 2px 4px rgba(0,0,0,0.02)',
             border: '1px solid #F4F6F8',
             px: 2,
-            minWidth: 160,
+            minWidth: { xs: 'auto', sm: 160 },
+            width: { xs: '100%', sm: 'auto' },
             justifyContent: 'space-between',
             '&:hover': { bgcolor: '#F4F6F8' }
           }}
@@ -158,13 +159,13 @@ export default function TransactionsPage() {
         </Button>
       </Stack>
 
-      <TableContainer 
-        component={Box} 
-        sx={{ 
-          boxShadow: 'none', 
-          bgcolor: 'white', 
+      <TableContainer
+        component={Box}
+        className="table-scroll"
+        sx={{
+          boxShadow: 'none',
+          bgcolor: 'white',
           borderRadius: '12px',
-          overflow: 'hidden'
         }}
       >
         <Table sx={{ minWidth: 650 }}>

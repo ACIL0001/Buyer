@@ -8,20 +8,18 @@ const GuestHero = () => {
   const router = useRouter();
 
   return (
-    <div style={{ 
-      width: '1218px', 
-      maxWidth: '100%',
-      height: '315px',
+    <div style={{
+      width: '100%',
+      maxWidth: '1218px',
+      minHeight: 'clamp(220px, 35vw, 315px)',
       position: 'relative',
       background: '#f8f9fb',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       overflow: 'hidden',
-      margin: '10px auto 0', /* 10px margin top as requested */
+      margin: '10px auto 0',
       borderRadius: '0px',
-      opacity: 1,
-      transform: 'rotate(0deg)'
     }}>
       {/* Video Background */}
       <video
@@ -112,13 +110,13 @@ const GuestHero = () => {
           }}
         >
           {/* Commencer Button */}
-          <button 
+          <button
             onClick={() => window.location.href = 'http://localhost:3001/auth/register/'}
             style={{
-              width: '181px',
-              height: '71px',
+              minWidth: '140px',
+              minHeight: '52px',
+              padding: 'clamp(12px, 2vw, 24px) clamp(20px, 3vw, 36px)',
               borderRadius: '40px',
-              padding: '24px 36px',
               background: 'linear-gradient(88.88deg, #062C90 50.03%, #3F95DD 98.92%)',
               boxShadow: 'inset -1px -1px 1px rgba(6, 44, 144, 0.4), inset 1px 1px 1px rgba(6, 44, 144, 0.4), inset -1px -1px 1px rgba(255, 255, 255, 0.25), inset 1px 1px 4px rgba(255, 255, 255, 0.6)',
               border: 'none',
@@ -128,32 +126,29 @@ const GuestHero = () => {
               justifyContent: 'center',
               gap: '10px',
               transition: 'all 0.3s ease',
-              opacity: 1
             }}
           >
             <span style={{
-              width: '109px',
-              height: '23px',
               fontFamily: "'DM Sans', sans-serif",
-              fontStyle: 'normal',
               fontWeight: '600',
-              fontSize: '18px',
-              lineHeight: '23px',
+              fontSize: 'clamp(0.95rem, 1.6vw, 1.125rem)',
+              lineHeight: 1.3,
               textAlign: 'center',
-              color: '#FFFFFF'
+              color: '#FFFFFF',
+              whiteSpace: 'nowrap'
             }}>
               Commencer
             </span>
           </button>
-          
+
           {/* Aide Button */}
-          <button 
+          <button
             onClick={() => router.push('/contact')}
             style={{
-              width: '112px',
-              height: '71px',
+              minWidth: '92px',
+              minHeight: '52px',
+              padding: 'clamp(12px, 2vw, 24px) clamp(16px, 2.5vw, 36px)',
               borderRadius: '100px',
-              padding: '24px 36px',
               background: '#FFFFFF',
               boxShadow: 'inset 1px 1px 4px 0px #002896, inset -1px -1px 1px 0px #0096E3, inset -1px -1px 1px 0px #002896, inset 1px 1px 1px 0px #002896, 0px 4px 4px 0px #00000040',
               border: 'none',
@@ -162,13 +157,12 @@ const GuestHero = () => {
               alignItems: 'center',
               justifyContent: 'center',
               transition: 'all 0.3s ease',
-              opacity: 1
             }}
           >
             <span style={{
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: '600',
-              fontSize: '18px',
+              fontSize: 'clamp(0.95rem, 1.6vw, 1.125rem)',
               color: '#002896'
             }}>
               Aide

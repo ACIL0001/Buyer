@@ -690,20 +690,20 @@ const MultipurposeDetails2 = () => {
                     const budget = t.budget || t.maxBudget || t.price;
                     const curImgIdx = similarCardImageIndexes[tid] || 0;
                     return (
-                      <SwiperSlide key={tid} style={{ overflow: 'visible', width: '284px', minWidth: '284px', maxWidth: '284px', perspective: '1000px' }}>
+                      <SwiperSlide key={tid} style={{ overflow: 'visible', perspective: '1000px' }}>
                         <motion.div
                           key={tid}
                           initial={false}
                           animate={{ rotateY: flippedSimilarId === tid ? 180 : 0 }}
                           transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
-                          style={{ width: '284px', minWidth: '284px', maxWidth: '284px', height: '464px', minHeight: '464px', maxHeight: '464px', position: 'relative', zIndex: 1, transformStyle: 'preserve-3d' }}
+                          style={{ width: '100%', maxWidth: '320px', aspectRatio: '284 / 464', margin: '0 auto', position: 'relative', zIndex: 1, transformStyle: 'preserve-3d' }}
                         >
                           {/* FRONT */}
                           <div
                             style={{ width: '100%', height: '100%', position: 'absolute', backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', borderRadius: '20px', display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: 'transparent', cursor: 'pointer', boxShadow: 'none', border: 'none' }}
                             onClick={() => router.push(`/tender-details/${tid}`)}
                           >
-                            <div style={{ width: '284px', height: '280px', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                            <div style={{ width: '100%', aspectRatio: '284 / 280', borderRadius: '20px', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                               <div style={{ position: 'absolute', top: '15px', right: '15px', zIndex: 20 }}>
                                 <ShareButton type="tender" id={tid} title={t.title} description={t.description} imageUrl={getImg(curImgIdx)} />
                               </div>
@@ -733,7 +733,7 @@ const MultipurposeDetails2 = () => {
                             </div>
                             <div style={{ padding: '10px 10px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}>
                               <div>
-                                <h4 style={{ width: '281px', height: '23px', fontFamily: 'Roboto, sans-serif', fontWeight: 700, fontSize: '20px', lineHeight: '100%', letterSpacing: '0px', verticalAlign: 'middle', color: '#002896', margin: '0 0 5px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: 1 }}>{t.title || "Appel d'offres"}</h4>
+                                <h4 style={{ width: '100%', fontFamily: 'Roboto, sans-serif', fontWeight: 700, fontSize: 'clamp(1rem, 1.6vw, 1.25rem)', lineHeight: 1.15, letterSpacing: '0px', color: '#002896', margin: '0 0 5px 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', opacity: 1 }}>{t.title || "Appel d'offres"}</h4>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
                                     <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: budget && t.evaluationType !== 'MIEUX_DISANT' ? (Number(budget).toLocaleString().length > 10 ? '16px' : Number(budget).toLocaleString().length > 8 ? '20px' : '24px') : '20px', lineHeight: '29px', color: '#002896', transition: 'font-size 0.2s ease' }}>
@@ -741,7 +741,7 @@ const MultipurposeDetails2 = () => {
                                     </span>
                                     {budget && t.evaluationType !== 'MIEUX_DISANT' && <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 700, color: '#002896', marginLeft: '1px' }}>DA</span>}
                                   </div>
-                                  <span style={{ width: '101px', height: '16px', fontFamily: 'Roboto, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '16px', color: '#002896', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right', justifyContent: 'flex-end' }}>{seller}</span>
+                                  <span style={{ maxWidth: '120px', fontFamily: 'Roboto, sans-serif', fontSize: 'clamp(0.75rem, 1vw, 0.875rem)', fontWeight: 400, lineHeight: 1.2, color: '#002896', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'right', justifyContent: 'flex-end' }}>{seller}</span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                   <span style={{ width: '100%', height: '16px', fontFamily: 'Roboto, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '100%', color: '#002896', display: 'flex', alignItems: 'center', letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', verticalAlign: 'middle' }}>
@@ -751,7 +751,7 @@ const MultipurposeDetails2 = () => {
                               </div>
                               <button
                                 disabled={timer.hasEnded}
-                                style={{ width: '268px', height: '39px', backgroundColor: '#EB4545', borderRadius: '10px', padding: '10px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: timer.hasEnded ? 'default' : 'pointer', gap: '10px', opacity: timer.hasEnded ? 0.6 : 1, transition: 'all 0.3s ease' }}
+                                style={{ width: '100%', minHeight: '44px', backgroundColor: '#EB4545', borderRadius: '10px', padding: '10px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: timer.hasEnded ? 'default' : 'pointer', gap: '10px', opacity: timer.hasEnded ? 0.6 : 1, transition: 'all 0.3s ease' }}
                                 onClick={e => { e.stopPropagation(); if (!timer.hasEnded) router.push(`/tender-details/${tid}`); }}
                                 onMouseOver={e => { if (!timer.hasEnded) { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.filter = 'brightness(1.1)'; } }}
                                 onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.filter = 'brightness(1)'; }}
@@ -827,49 +827,60 @@ const MultipurposeDetails2 = () => {
       )}
 
       <style jsx>{`
-        .redesign-v2-container { max-width: 1440px; margin: 0 auto; padding: 236px 20px 100px; }
-        .product-hero-section { 
-          display: grid; 
-          grid-template-columns: 96px 632px 400px; 
-          gap: 19px; 
-          margin-bottom: 50px; 
-          justify-content: center; 
+        .redesign-v2-container { width: 100%; max-width: 1440px; margin: 0 auto; padding: clamp(120px, 18vw, 236px) clamp(16px, 4vw, 20px) clamp(48px, 10vw, 100px); }
+        .product-hero-section {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: clamp(12px, 2vw, 19px);
+          margin-bottom: clamp(28px, 5vw, 50px);
           align-items: start;
         }
-        .thumbnails-vertical { 
-          display: flex; 
-          flex-direction: column; 
-          gap: 15px; 
-          max-height: 600px; 
-          width: 95.766px;
+        @media (min-width: 768px) {
+          .product-hero-section {
+            grid-template-columns: clamp(80px, 8vw, 100px) minmax(0, 1fr);
+            gap: clamp(16px, 2.5vw, 24px);
+          }
         }
-        .thumb-item { 
-          width: 95.766px; 
-          height: 77.74px; 
-          border-radius: 2.25px; 
-          overflow: hidden; 
-          border: 1px solid transparent; 
-          cursor: pointer; 
-          background: #fff; 
+        @media (min-width: 1024px) {
+          .product-hero-section {
+            grid-template-columns: clamp(80px, 7vw, 100px) minmax(0, 1fr) minmax(280px, 400px);
+            justify-content: center;
+          }
+        }
+        .thumbnails-vertical {
+          display: flex;
+          flex-direction: column;
+          gap: clamp(8px, 1.5vw, 15px);
+          width: 100%;
+        }
+        .thumb-item {
+          width: 100%;
+          aspect-ratio: 95.766 / 77.74;
+          border-radius: 2.25px;
+          overflow: hidden;
+          border: 1px solid transparent;
+          cursor: pointer;
+          background: #fff;
           transition: all 0.2s ease;
         }
-        .thumb-item.active { 
-          border-color: #002896; 
+        .thumb-item.active {
+          border-color: #002896;
           box-shadow: 0 4px 8px rgba(0, 40, 150, 0.1);
         }
         .thumb-item img, .thumb-item video { width: 100%; height: 100%; object-fit: cover; }
-        .main-image-area { 
-          background: #f8fafc; 
-          border-radius: 4px; 
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          position: relative; 
-          width: 632px; 
-          height: 600px; 
-          overflow: hidden; 
-          border: 1px solid #e2e8f0; 
-          box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+        .main-image-area {
+          background: #f8fafc;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          width: 100%;
+          max-width: 632px;
+          aspect-ratio: 632 / 600;
+          overflow: hidden;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
         .main-image-area img { 
           width: 100%;
@@ -890,11 +901,11 @@ const MultipurposeDetails2 = () => {
         .budget-item { background: #f1f5f9; padding: 15px; border-radius: 16px; }
         .budget-item.highlight { background: #ecfdf5; border: 1px solid #10b981; }
         .budget-value { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 400; line-height: 24px; letter-spacing: 0.03em; color: #000; display: block; }
-        .enchirir-btn { width: 336px; height: 44px; padding: 10px 48px; border-radius: 4px; background: #002d9c; color: white; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .enchirir-btn { width: 100%; max-width: 336px; min-height: 44px; padding: 10px clamp(20px, 4vw, 48px); border-radius: 4px; background: #002d9c; color: white; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .product-description-container { margin-top: 69px; padding-left: 27px; }
         .description-title { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 25px; color: #000; }
-        .description-body { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: 0.03em; color: #444; max-width: 1158px; white-space: pre-wrap; margin-bottom: 20px; }
-        .seller-section-card { background: white; border-radius: 24px; padding: 30px; display: flex; align-items: center; gap: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .description-body { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: 0.03em; color: #444; width: 100%; max-width: 1158px; white-space: pre-wrap; margin-bottom: 20px; word-wrap: break-word; }
+        .seller-section-card { background: white; border-radius: 24px; padding: clamp(20px, 3vw, 30px); display: flex; flex-wrap: wrap; align-items: center; gap: clamp(16px, 3vw, 30px); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         .seller-avatar img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; }
         .seller-actions { margin-left: auto; display: flex; gap: 10px; }
         .seller-btn { padding: 10px 20px; border-radius: 10px; font-weight: 600; text-decoration: none; font-size: 14px; }

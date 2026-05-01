@@ -145,6 +145,61 @@ a {
 }
 
 
+/* ── Allow horizontal scroll on opt-in containers (overrides aggressive global rule below) ── */
+.h-scroll,
+.table-scroll {
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Fluid Layout Utilities (mobile-first responsive primitives) ── */
+.fluid-container {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 48px);
+}
+
+.fluid-card {
+  width: 100%;
+  max-width: clamp(240px, 90vw, 320px);
+}
+
+.fluid-grid {
+  display: grid;
+  gap: clamp(12px, 2vw, 24px);
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+}
+
+.fluid-grid-sm {
+  display: grid;
+  gap: clamp(8px, 1.5vw, 16px);
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+}
+
+.fluid-grid-lg {
+  display: grid;
+  gap: clamp(16px, 2.5vw, 32px);
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+}
+
+.fluid-modal {
+  width: min(600px, 92vw);
+  max-height: 90vh;
+}
+
+.fluid-stack {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2vw, 24px);
+}
+
+@media (min-width: 768px) {
+  .fluid-stack-row {
+    flex-direction: row;
+  }
+}
+
 @layer components {
   .primary-btn {
     @apply bg-primary text-white font-medium py-2 px-4 rounded-md transition-all duration-300 hover:bg-secondary;
@@ -736,11 +791,12 @@ footer {
   width: 100% !important;
 }
 
-/* ── Fixed Figma Canvas ── */
+/* ── Fluid Canvas (formerly fixed 1440px Figma canvas) ── */
 .desktop {
-  width: 1440px !important;
-  min-width: 1440px !important;
+  width: 100% !important;
   max-width: 1440px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 /* Fix any potential issues with positioned elements */

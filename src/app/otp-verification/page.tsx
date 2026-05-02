@@ -8,7 +8,7 @@ import type { AlertColor } from "@mui/material/Alert";
 import useAuth from "@/hooks/useAuth";
 
 export default function OTPVerification() {
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -56,7 +56,7 @@ export default function OTPVerification() {
   // Check if OTP is complete
   useEffect(() => {
     const otpString = otp.join("");
-    setIsComplete(otpString.length === 6);
+    setIsComplete(otpString.length === 5);
   }, [otp]);
 
   // Format countdown time
@@ -78,7 +78,7 @@ export default function OTPVerification() {
       setOtp(newOtp);
 
       // Auto focus next input
-      if (value && index < 5) {
+      if (value && index < 4) {
         inputRefs.current[index + 1]?.focus();
       }
     }
@@ -93,17 +93,17 @@ export default function OTPVerification() {
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData("text/plain");
-    if (/^\d{6}$/.test(pastedData)) {
+    if (/^\d{5}$/.test(pastedData)) {
       setOtp(pastedData.split(""));
-      inputRefs.current[5]?.focus();
+      inputRefs.current[4]?.focus();
     }
   };
 
   const handleVerifyOTP = async () => {
     const otpCode = otp.join("");
 
-    if (otpCode.length !== 6) {
-      setSnackbarMessage("Veuillez saisir le code complet à 6 chiffres");
+    if (otpCode.length !== 5) {
+      setSnackbarMessage("Veuillez saisir le code complet à 5 chiffres");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
       return;
@@ -158,7 +158,7 @@ export default function OTPVerification() {
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
 
-      setOtp(["", "", "", "", "", ""]);
+      setOtp(["", "", "", "", ""]);
       inputRefs.current[0]?.focus();
     } finally {
       setLoading(false);
@@ -188,7 +188,7 @@ export default function OTPVerification() {
 
         setTimeLeft(300);
         setCanResend(false);
-        setOtp(["", "", "", "", "", ""]);
+        setOtp(["", "", "", "", ""]);
         inputRefs.current[0]?.focus();
       } else {
         throw new Error(data.message || "Erreur lors de l'envoi du code");
@@ -394,7 +394,7 @@ export default function OTPVerification() {
           <h2 className="verification-title">Entrez le code de vérification</h2>
           
           <p className="verification-subtitle">
-            Un code à 6 chiffres a été envoyé au {formatPhoneForDisplay(phone)}.<br />
+            Un code à 5 chiffres a été envoyé au {formatPhoneForDisplay(phone)}.<br />
             Veuillez le saisir ci-dessous pour continuer.
           </p>
 

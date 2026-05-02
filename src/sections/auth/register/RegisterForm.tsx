@@ -479,21 +479,29 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
       try {
         const formatPhone = (p: string) => p.replace(/\s/g, '');
         const userData: any = {
-          firstName: values.firstName,
-          lastName: values.lastName,
           email: values.email,
           password: values.password,
           phone: formatPhone(values.phone),
-          type: CLIENT_TYPE.CLIENT,
-          birthDate: values.birthDate,
+          type: values.type,
           wilaya: values.wilaya,
-          companyName: values.socialReason,
-          activitySector: Array.isArray(values.activitySector)
-            ? values.activitySector.join(', ')
-            : values.activitySector,
-          jobTitle: values.jobTitle,
-          promoCode: values.promoCode,
         };
+
+        if (values.type === CLIENT_TYPE.PROFESSIONAL) {
+          userData.companyName = values.socialReason;
+          userData.activitySector = Array.isArray(values.activitySector)
+            ? values.activitySector.join(', ')
+            : values.activitySector;
+          if (values.jobTitle) userData.jobTitle = values.jobTitle;
+        } else {
+          userData.firstName = values.firstName;
+          userData.lastName = values.lastName;
+          if (values.birthDate) userData.birthDate = values.birthDate;
+        }
+
+        if (values.promoCode) {
+          userData.promoCode = values.promoCode;
+        }
+        
         await AuthAPI.signup(userData);
         router.push(`/otp-verification?phone=${encodeURIComponent(userData.phone)}`);
       } catch (error: any) {

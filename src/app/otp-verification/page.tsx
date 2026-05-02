@@ -244,7 +244,7 @@ export default function OTPVerification() {
 
         .verification-card {
           width: 100%;
-          max-width: 600px;
+          max-width: 680px;
           padding: 40px;
           text-align: center;
           display: flex;
@@ -258,34 +258,34 @@ export default function OTPVerification() {
         }
 
         .verification-title {
-          font-size: 28px;
+          font-size: 32px;
           font-weight: 600;
           color: #333333;
           margin-bottom: 25px;
         }
 
         .verification-subtitle {
-          font-size: 16px;
+          font-size: 18px;
           color: #666666;
           margin-bottom: 50px;
           line-height: 1.5;
-          max-width: 450px;
+          max-width: 520px;
         }
 
         .otp-inputs {
           display: flex;
-          gap: 15px;
+          gap: 18px;
           justify-content: center;
           margin-bottom: 60px;
         }
 
         .otp-input {
-          width: 68px;
-          height: 88px;
+          width: 78px;
+          height: 100px;
           border: 1px solid #D1D1D1;
-          border-radius: 12px;
+          border-radius: 14px;
           text-align: center;
-          font-size: 32px;
+          font-size: 36px;
           font-weight: 500;
           color: #333;
           outline: none;
@@ -300,13 +300,13 @@ export default function OTPVerification() {
 
         .confirm-button {
           width: 100%;
-          max-width: 320px;
-          min-height: 48px;
+          max-width: 360px;
+          min-height: 54px;
           background: #002795;
           color: #ffffff;
           border: none;
-          border-radius: 24px;
-          font-size: 16px;
+          border-radius: 27px;
+          font-size: 18px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
@@ -332,7 +332,7 @@ export default function OTPVerification() {
           background: none;
           border: none;
           color: #666666;
-          font-size: 14px;
+          font-size: 16px;
           cursor: pointer;
           transition: all 0.2s ease;
         }
@@ -362,15 +362,21 @@ export default function OTPVerification() {
 
         @media (max-width: 600px) {
           .otp-input {
-            width: 48px;
-            height: 64px;
-            font-size: 24px;
+            width: 54px;
+            height: 72px;
+            font-size: 26px;
           }
           .otp-inputs {
             gap: 10px;
           }
           .verification-card {
             padding: 20px;
+          }
+          .verification-title {
+            font-size: 26px;
+          }
+          .verification-subtitle {
+            font-size: 15px;
           }
         }
       `}</style>

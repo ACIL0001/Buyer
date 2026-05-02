@@ -134,14 +134,14 @@ export default function Login() {
             overflowY: 'auto'
           }}
         >
-          <Box sx={{ width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
+          <Box sx={{ width: '100%', maxWidth: '360px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
             {/* Header Texts */}
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mb: '10px' }}>
-              <Typography 
-                 sx={{ 
+              <Typography
+                 sx={{
                    fontFamily: '"Poppins", sans-serif',
                    fontWeight: 600,
-                   fontSize: '24px',
+                   fontSize: '30px',
                    lineHeight: '140%',
                    letterSpacing: '-0.02em',
                    color: '#757575',
@@ -149,11 +149,11 @@ export default function Login() {
               >
                 Se connecter
               </Typography>
-              <Typography 
-                 sx={{ 
+              <Typography
+                 sx={{
                    fontFamily: '"Poppins", sans-serif',
                    fontWeight: 400,
-                   fontSize: '14px',
+                   fontSize: '16px',
                    lineHeight: '140%',
                    letterSpacing: '-0.02em',
                    color: '#757575',
@@ -174,7 +174,7 @@ export default function Login() {
                 sx={{
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 400,
-                  fontSize: '12px',
+                  fontSize: '14px',
                   lineHeight: '140%',
                   letterSpacing: '-0.02em',
                   color: '#757575',
@@ -189,7 +189,7 @@ export default function Login() {
                 sx={{
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 400,
-                  fontSize: '12px',
+                  fontSize: '14px',
                   lineHeight: '140%',
                   letterSpacing: '-0.02em',
                   color: '#007AFF',

@@ -321,12 +321,15 @@ export default function CreateAuctionPage() {
                                         {/* MODERN SEGMENTED SELECTOR */}
                                         <Box sx={{ mb: 4 }}>
                                             <Typography sx={{ ...fieldLabelStyle, mb: 1.5 }}>Type d'enchère</Typography>
-                                            <Box sx={{ 
-                                                display: 'flex', 
-                                                backgroundColor: '#F8FAFC', 
-                                                p: 0.75, 
+                                            <Box sx={{
+                                                display: 'flex',
+                                                flexDirection: { xs: 'column', sm: 'row' },
+                                                backgroundColor: '#F8FAFC',
+                                                p: 0.75,
                                                 borderRadius: '16px',
-                                                width: 'fit-content',
+                                                width: { xs: '100%', sm: 'fit-content' },
+                                                maxWidth: '100%',
+                                                gap: { xs: 0.5, sm: 0 },
                                                 border: '1px solid #E2E8F0'
                                             }}>
                                                 {[
@@ -337,13 +340,16 @@ export default function CreateAuctionPage() {
                                                         key={type.id}
                                                         onClick={() => formik.setFieldValue('auctionType', type.id)}
                                                         sx={{
-                                                            px: 3,
+                                                            px: { xs: 2, sm: 3 },
                                                             py: 1.25,
                                                             borderRadius: '12px',
                                                             cursor: 'pointer',
                                                             display: 'flex',
                                                             alignItems: 'center',
+                                                            justifyContent: { xs: 'center', sm: 'flex-start' },
                                                             gap: 1.5,
+                                                            flex: { xs: '1 1 auto', sm: '0 0 auto' },
+                                                            minWidth: 0,
                                                             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                                             backgroundColor: formik.values.auctionType === type.id ? '#ffffff' : 'transparent',
                                                             color: formik.values.auctionType === type.id ? '#002795' : '#64748b',
@@ -353,11 +359,13 @@ export default function CreateAuctionPage() {
                                                             }
                                                         }}
                                                     >
-                                                        <Typography sx={{ fontSize: '18px' }}>{type.icon}</Typography>
-                                                        <Typography sx={{ 
-                                                            fontSize: '0.95rem', 
+                                                        <Typography sx={{ fontSize: '18px', flexShrink: 0 }}>{type.icon}</Typography>
+                                                        <Typography sx={{
+                                                            fontSize: { xs: '0.875rem', sm: '0.95rem' },
                                                             fontWeight: formik.values.auctionType === type.id ? 700 : 500,
-                                                            whiteSpace: 'nowrap'
+                                                            whiteSpace: 'nowrap',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis'
                                                         }}>
                                                             {type.label}
                                                         </Typography>

@@ -85,7 +85,8 @@ export const Header = () => {
   const searchInputRef = useRef(null);
   const searchResultsRef = useRef(null);
   const filterDropdownRef = useRef(null);
-  const accountDropdownRef = useRef(null);
+  const mobileAccountDropdownRef = useRef(null);
+  const desktopAccountDropdownRef = useRef(null);
 
   // --- DATA FETCHING FOR SEARCH ---
   const { data: categoriesData } = useQuery({ queryKey: ['categories', 'all'], queryFn: () => CategoryAPI.getCategories() });
@@ -119,8 +120,12 @@ export const Header = () => {
       if (showSearchResults && !event.target.closest('.header-search-container')) {
         setShowSearchResults(false);
       }
-      if (isAccountDropdownOpen && accountDropdownRef.current && !accountDropdownRef.current.contains(event.target)) {
-        setIsAccountDropdownOpen(false);
+      if (isAccountDropdownOpen) {
+        const insideMobile = mobileAccountDropdownRef.current && mobileAccountDropdownRef.current.contains(event.target);
+        const insideDesktop = desktopAccountDropdownRef.current && desktopAccountDropdownRef.current.contains(event.target);
+        if (!insideMobile && !insideDesktop) {
+          setIsAccountDropdownOpen(false);
+        }
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -358,7 +363,7 @@ export const Header = () => {
               <>
                 <ChatNotifications variant="header" />
                 <NotificationBellStable />
-                <div ref={accountDropdownRef} style={{ position: 'relative' }}>
+                <div ref={mobileAccountDropdownRef} style={{ position: 'relative' }}>
                   <button
                     type="button"
                     onClick={() => setIsAccountDropdownOpen((prev) => !prev)}
@@ -414,33 +419,33 @@ export const Header = () => {
                           {auth?.user?.email}
                         </div>
                       </div>
-                      <Link
-                        href="/profile"
-                        onClick={() => setIsAccountDropdownOpen(false)}
+                      <button
+                        type="button"
+                        onClick={() => { setIsAccountDropdownOpen(false); router.push('/profile'); }}
                         role="menuitem"
-                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', color: '#1e293b', textDecoration: 'none', fontSize: 14, fontWeight: 500, borderRadius: 10, minHeight: 44 }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: '#1e293b', textAlign: 'left', fontSize: 14, fontWeight: 500, borderRadius: 10, minHeight: 44, cursor: 'pointer', fontFamily: 'inherit' }}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         Profil
-                      </Link>
-                      <Link
-                        href="/dashboard"
-                        onClick={() => setIsAccountDropdownOpen(false)}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setIsAccountDropdownOpen(false); router.push('/dashboard'); }}
                         role="menuitem"
-                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', color: '#1e293b', textDecoration: 'none', fontSize: 14, fontWeight: 500, borderRadius: 10, minHeight: 44 }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: '#1e293b', textAlign: 'left', fontSize: 14, fontWeight: 500, borderRadius: 10, minHeight: 44, cursor: 'pointer', fontFamily: 'inherit' }}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
                         Tableau de bord
-                      </Link>
-                      <Link
-                        href="/settings"
-                        onClick={() => setIsAccountDropdownOpen(false)}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setIsAccountDropdownOpen(false); router.push('/settings'); }}
                         role="menuitem"
-                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', color: '#1e293b', textDecoration: 'none', fontSize: 14, fontWeight: 500, borderRadius: 10, minHeight: 44 }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: '#1e293b', textAlign: 'left', fontSize: 14, fontWeight: 500, borderRadius: 10, minHeight: 44, cursor: 'pointer', fontFamily: 'inherit' }}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                         Paramètres
-                      </Link>
+                      </button>
                       <div style={{ height: 1, background: '#f0f2f5', margin: '6px 0' }} />
                       <button
                         type="button"
@@ -571,20 +576,20 @@ export const Header = () => {
             <div style={{ marginTop: 'auto', paddingTop: 16, borderTop: '1px solid #f0f2f5' }}>
               {isClient && isLogged ? (
                 <>
-                  <Link
-                    href="/profile"
-                    onClick={() => setMenuOpen(false)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, color: '#002896', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}
+                  <button
+                    type="button"
+                    onClick={() => { setMenuOpen(false); router.push('/profile'); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 14px', borderRadius: 12, background: 'transparent', border: 'none', color: '#002896', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     Mon profil
-                  </Link>
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setMenuOpen(false)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, color: '#002896', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setMenuOpen(false); router.push('/dashboard'); }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 14px', borderRadius: 12, background: 'transparent', border: 'none', color: '#002896', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     Tableau de bord
-                  </Link>
+                  </button>
                   <button
                     type="button"
                     onClick={() => { handleLogout(); setMenuOpen(false); }}
@@ -809,7 +814,7 @@ export const Header = () => {
 
         {/* --- AUTH / LOGIN --- */}
         {isClient && isReady && (
-          <div ref={accountDropdownRef}>
+          <div ref={desktopAccountDropdownRef}>
             {isLogged ? (
               <>
                 <NotificationBellStable 

@@ -263,22 +263,22 @@ function TermsModal({
 }
 
 /* ─── Figma token helpers ─── */
-const FIELD_HEIGHT = '33.87px';
-const COL_WIDTH = '252.6px';
-const COL_GAP = '22.59px';
+const FIELD_HEIGHT = '44px';
+const COL_WIDTH = '300px';
+const COL_GAP = '24px';
 
 const fieldSx = {
   '& .MuiOutlinedInput-root': {
     height: FIELD_HEIGHT,
     borderRadius: '25px',
     backgroundColor: '#FFFFFF',
-    '& fieldset': { border: '0.71px solid #757575', borderRadius: '25px' },
+    '& fieldset': { border: '1px solid #757575', borderRadius: '25px' },
     '&:hover fieldset': { borderColor: '#002896' },
-    '&.Mui-focused fieldset': { borderColor: '#002896', borderWidth: '0.71px' },
+    '&.Mui-focused fieldset': { borderColor: '#002896', borderWidth: '1px' },
   },
   '& .MuiOutlinedInput-input': {
     fontFamily: '"Poppins", sans-serif',
-    fontSize: '9.87838px',
+    fontSize: '13px',
     color: '#2D3748',
     py: 0,
   },
@@ -288,7 +288,7 @@ const fieldSx = {
   },
   '& .MuiFormHelperText-root': {
     fontFamily: '"Poppins", sans-serif',
-    fontSize: '8px',
+    fontSize: '10px',
     color: '#d32f2f',
     margin: '2px 0 0',
   },
@@ -297,11 +297,11 @@ const fieldSx = {
 const labelSx = {
   fontFamily: '"Poppins", sans-serif',
   fontWeight: 400,
-  fontSize: '9.87838px',
+  fontSize: '13px',
   lineHeight: '140%',
   letterSpacing: '-0.02em',
   color: '#757575',
-  mb: '2.82px',
+  mb: '4px',
   display: 'block',
 };
 
@@ -319,7 +319,7 @@ function EntryField({
   const hasAsterisk = label.includes(' *');
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2.82px', width }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', width }}>
       {label && (
         <Typography component="label" sx={{ ...labelSx, color: '#454545' }}>
           {parts[0]}
@@ -381,11 +381,11 @@ function FigmaCheckbox({
       sx={{
         appearance: 'none',
         WebkitAppearance: 'none',
-        width: '14.11px',
-        height: '14.11px',
-        minWidth: '14.11px',
-        border: '0.705598px solid #757575',
-        borderRadius: '1.4112px',
+        width: '18px',
+        height: '18px',
+        minWidth: '18px',
+        border: '1px solid #757575',
+        borderRadius: '2px',
         cursor: 'pointer',
         flexShrink: 0,
         backgroundColor: checked ? '#002896' : 'transparent',
@@ -394,9 +394,9 @@ function FigmaCheckbox({
         '&:checked::after': {
           content: '"✓"',
           position: 'absolute',
-          top: '-2px',
-          left: '1px',
-          fontSize: '10px',
+          top: '-1px',
+          left: '2px',
+          fontSize: '13px',
           color: '#FFFFFF',
           lineHeight: 1,
         },
@@ -567,7 +567,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
       <IconButton onClick={toggle} edge="end" sx={{ p: '4px' }}>
         <Iconify
           icon={show ? 'eva:eye-fill' : 'eva:eye-off-fill'}
-          sx={{ width: 15, height: 15, color: '#757575' }}
+          sx={{ width: 18, height: 18, color: '#757575' }}
         />
       </IconButton>
     </InputAdornment>
@@ -601,7 +601,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
         {/* Error message */}
         {touched.email && errors.email && (
-          <Typography sx={{ fontFamily: '"Poppins", sans-serif', fontSize: '9px', color: '#d32f2f', mb: '6px' }}>
+          <Typography sx={{ fontFamily: '"Poppins", sans-serif', fontSize: '12px', color: '#d32f2f', mb: '6px' }}>
             {errors.email}
           </Typography>
         )}
@@ -632,7 +632,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                   sx={figmaRadius25Sx}
                 />
               </EntryField>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2.82px', width: COL_WIDTH }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', width: COL_WIDTH }}>
                 <Typography component="label" sx={{ ...labelSx, color: '#454545' }}>
                   Secteur d'activité <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
                 </Typography>
@@ -645,9 +645,9 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                     paper: {
                       sx: {
                         '& .MuiAutocomplete-option': {
-                          fontSize: '9.88px',
+                          fontSize: '13px',
                           fontFamily: '"Poppins", sans-serif',
-                          padding: '4px 8px',
+                          padding: '6px 10px',
                           minHeight: 'auto',
                         }
                       }
@@ -700,7 +700,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                   helperText={touched.jobTitle && errors.jobTitle}
                 />
               </EntryField>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2.82px', width: COL_WIDTH }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', width: COL_WIDTH }}>
                 <Typography component="label" sx={{ ...labelSx, color: '#454545' }}>
                   Wilaya <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
                 </Typography>
@@ -711,9 +711,9 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                     paper: {
                       sx: {
                         '& .MuiAutocomplete-option': {
-                          fontSize: '9.88px',
+                          fontSize: '13px',
                           fontFamily: '"Poppins", sans-serif',
-                          padding: '4px 8px',
+                          padding: '6px 10px',
                           minHeight: 'auto',
                         }
                       }
@@ -786,8 +786,10 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                     ...fieldSx,
                     '& input[type="date"]': {
                       fontFamily: '"Poppins", sans-serif',
-                      fontSize: '9.87838px',
+                      fontSize: '13px',
                       color: '#2D3748',
+                      height: FIELD_HEIGHT,
+                      boxSizing: 'border-box',
                     },
                   }}
                 />
@@ -813,7 +815,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                   helperText={touched.phone && errors.phone}
                 />
               </EntryField>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2.82px', width: COL_WIDTH }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', width: COL_WIDTH }}>
                 <Typography component="label" sx={{ ...labelSx, color: '#454545' }}>
                   Wilaya de résidence <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
                 </Typography>
@@ -824,9 +826,9 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                     paper: {
                       sx: {
                         '& .MuiAutocomplete-option': {
-                          fontSize: '9.88px',
+                          fontSize: '13px',
                           fontFamily: '"Poppins", sans-serif',
-                          padding: '4px 8px',
+                          padding: '6px 10px',
                           minHeight: 'auto',
                         }
                       }
@@ -882,10 +884,10 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            gap: '8.47px',
-            width: '113.58px',
-            height: '14.11px',
-            mb: '10.9px',
+            gap: '10px',
+            width: '160px',
+            height: '18px',
+            mb: '14px',
           }}
         >
           <FigmaCheckbox
@@ -896,7 +898,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
             sx={{
               fontFamily: '"Inter", sans-serif',
               fontWeight: 400,
-              fontSize: '9.87838px',
+              fontSize: '13px',
               lineHeight: '140%',
               letterSpacing: '-0.02em',
               color: '#454545',
@@ -913,10 +915,10 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            gap: '8.47px',
-            width: '274.58px',
-            height: '14.11px',
-            mb: '22.69px',
+            gap: '10px',
+            width: '100%',
+            maxWidth: '500px',
+            mb: '28px',
           }}
         >
           <FigmaCheckbox
@@ -927,11 +929,11 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
             sx={{
               fontFamily: '"Inter", sans-serif',
               fontWeight: 400,
-              fontSize: '9.87838px',
+              fontSize: '13px',
               lineHeight: '140%',
               letterSpacing: '-0.02em',
               color: '#454545',
-              width: '252px',
+              flex: 1,
             }}
           >
             J'accepte les{' '}
@@ -944,7 +946,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
               }}
               sx={{
                 fontFamily: '"Inter", sans-serif',
-                fontSize: '9.87838px',
+                fontSize: '13px',
                 color: '#007AFF',
                 letterSpacing: '-0.02em',
                 cursor: 'pointer',
@@ -973,7 +975,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
               textTransform: 'none',
               fontFamily: '"Poppins", sans-serif',
               fontWeight: 600,
-              fontSize: '9.87838px',
+              fontSize: '13px',
               lineHeight: '15px',
               letterSpacing: '-0.02em',
               boxShadow: 'none',
@@ -999,7 +1001,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                 position: 'absolute',
                 inset: 0,
                 backgroundColor: '#2D3748',
-                borderRadius: '3.52799px',
+                borderRadius: '6px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1010,7 +1012,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
               <Box
                 component="svg"
                 viewBox="0 0 24 24"
-                sx={{ width: '14.11px', height: '14.11px', flexShrink: 0 }}
+                sx={{ width: '18px', height: '18px', flexShrink: 0 }}
               >
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -1021,7 +1023,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                 sx={{
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 600,
-                  fontSize: '9.87838px',
+                  fontSize: '13px',
                   lineHeight: '15px',
                   letterSpacing: '-0.02em',
                   color: '#FFFFFF',

@@ -295,7 +295,7 @@ export default function Register() {
             <Box
               sx={{
                 width: '100%',
-                maxWidth: '527.79px',
+                maxWidth: '640px',
                 py: '20px',
               }}
             >
@@ -316,7 +316,7 @@ export default function Register() {
                     sx={{
                       fontFamily: '"DM Sans", sans-serif',
                       fontWeight: 600,
-                      fontSize: '24px',
+                      fontSize: '30px',
                       lineHeight: '140%',
                       letterSpacing: '-0.02em',
                       color: '#757575',
@@ -329,7 +329,7 @@ export default function Register() {
                   sx={{
                     fontFamily: '"Inter", sans-serif',
                     fontWeight: 400,
-                    fontSize: '14px',
+                    fontSize: '16px',
                     lineHeight: '140%',
                     letterSpacing: '-0.02em',
                     color: '#757575',
@@ -344,21 +344,21 @@ export default function Register() {
                 sx={{
                   width: '100%',
                   '& .MuiOutlinedInput-root': {
-                    height: '33.87px',
+                    height: '44px',
                     borderRadius: '25px',
                     backgroundColor: '#FFFFFF',
                     '& fieldset': {
-                      border: '0.71px solid #757575',
+                      border: '1px solid #757575',
                       borderRadius: '25px',
                     },
                     '&:hover fieldset': { borderColor: '#002896' },
-                    '&.Mui-focused fieldset': { borderColor: '#002896', borderWidth: '0.71px' },
+                    '&.Mui-focused fieldset': { borderColor: '#002896', borderWidth: '1px' },
                   },
                   '& .MuiInputBase-input': {
                     fontFamily: '"Poppins", sans-serif',
-                    fontSize: '9.87838px',
+                    fontSize: '13px',
                     color: '#2D3748',
-                    padding: '0 12px',
+                    padding: '0 14px',
                   },
                   '& .MuiInputBase-input::placeholder': { color: '#757575', opacity: 1 },
                 }}
@@ -372,7 +372,7 @@ export default function Register() {
                   width: '100%',
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 400,
-                  fontSize: '9.87838px',
+                  fontSize: '14px',
                   lineHeight: '140%',
                   letterSpacing: '-0.02em',
                   color: '#757575',
@@ -390,7 +390,7 @@ export default function Register() {
                     color: '#007AFF',
                     fontWeight: 400,
                     textDecoration: 'none',
-                    fontSize: '9.87838px',
+                    fontSize: '14px',
                     fontFamily: '"Poppins", sans-serif',
                     letterSpacing: '-0.02em',
                     '&:hover': { textDecoration: 'underline' },

@@ -165,11 +165,11 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
       <Form autoComplete="off" noValidate onKeyPress={handleKeyPress}>
         <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '22px' }}>
           {loginError && (
-            <Alert 
-              severity="error" 
-              sx={{ 
-                width: 252.6, 
-                fontSize: '10px' 
+            <Alert
+              severity="error"
+              sx={{
+                width: 320,
+                fontSize: '13px'
               }}
             >
               {loginError}
@@ -179,18 +179,18 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           {/* Email Container */}
           <Box 
              sx={{ 
-               width: 252.6, 
+               width: 320, 
                display: 'flex', 
                flexDirection: 'column', 
                alignItems: 'flex-start',
-               gap: '2.82px' 
+               gap: '4px' 
              }}
           >
             <Typography 
               sx={{ 
                 fontFamily: '"Inter", sans-serif',
                 fontWeight: 400,
-                fontSize: '9.87838px', 
+                fontSize: '13px', 
                 color: '#454545', 
                 lineHeight: '140%',
                 letterSpacing: '-0.02em',
@@ -208,14 +208,14 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
               error={Boolean(touched.login && errors.login)}
               InputProps={{
                 sx: { 
-                  width: 252.6, 
-                  height: 33.87, 
+                  width: 320, 
+                  height: 44, 
                   borderRadius: '25px',
-                  border: '0.705598px solid #757575',
+                  border: '1px solid #757575',
                   backgroundColor: '#FFFFFF',
                   fieldset: { border: 'none' },
                   fontFamily: '"Poppins", sans-serif',
-                  fontSize: '9.87838px',
+                  fontSize: '13px',
                   color: '#2D3748',
                   px: 1,
                   boxSizing: 'border-box'
@@ -227,18 +227,18 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           {/* Password Container */}
           <Box 
              sx={{ 
-               width: 252.6, 
+               width: 320, 
                display: 'flex', 
                flexDirection: 'column', 
                alignItems: 'flex-start',
-               gap: '2.82px' 
+               gap: '4px' 
              }}
           >
             <Typography 
               sx={{ 
                 fontFamily: '"Inter", sans-serif',
                 fontWeight: 400,
-                fontSize: '9.87838px', 
+                fontSize: '13px', 
                 color: '#454545', 
                 lineHeight: '140%',
                 letterSpacing: '-0.02em',
@@ -255,14 +255,14 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
               error={Boolean(touched.password && errors.password)}
               InputProps={{
                 sx: { 
-                  width: 252.6, 
-                  height: 33.87, 
+                  width: 320, 
+                  height: 44, 
                   borderRadius: '25px',
-                  border: '0.705598px solid #757575',
+                  border: '1px solid #757575',
                   backgroundColor: '#FFFFFF',
                   fieldset: { border: 'none' },
                   fontFamily: '"Poppins", sans-serif',
-                  fontSize: '9.87838px',
+                  fontSize: '13px',
                   color: '#2D3748',
                   px: 1,
                   boxSizing: 'border-box'
@@ -274,7 +274,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
                       sx={{ p: 0.5 }}
                       disableRipple
                     >
-                      <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} sx={{ width: 14, height: 14, color: '#757575' }} />
+                      <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} sx={{ width: 18, height: 18, color: '#757575' }} />
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -283,22 +283,22 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           </Box>
 
           {/* Actions Row */}
-          <Box sx={{ width: 252.6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ width: 320, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             {/* Remember me */}
             <Box 
               sx={{ 
-                width: 100.58,
-                height: 14.11,
+                width: 130,
+                height: 18,
                 display: 'flex', 
                 alignItems: 'center',
               }}
             >
             <Box 
               sx={{
-                width: 14.11,
-                height: 14.11,
-                border: '0.705598px solid #757575',
-                borderRadius: '1.4112px',
+                width: 18,
+                height: 18,
+                border: '1px solid #757575',
+                borderRadius: '2px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -321,14 +321,14 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
                 }} 
               />
               {rememberMe && (
-                <Iconify icon="eva:checkmark-fill" sx={{ width: 10, height: 10, color: '#757575' }} />
+                <Iconify icon="eva:checkmark-fill" sx={{ width: 14, height: 14, color: '#757575' }} />
               )}
             </Box>
             <Typography 
               sx={{ 
                 fontFamily: '"Poppins", sans-serif', 
                 fontWeight: 400,
-                fontSize: '9.87838px', 
+                fontSize: '13px', 
                 color: '#757575', 
                 lineHeight: '140%', 
                 letterSpacing: '-0.02em',
@@ -350,7 +350,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
                 router.push('/auth/forgot-password');
               }}
               sx={{ 
-                fontSize: '9.87838px',
+                fontSize: '13px',
                 fontFamily: '"Poppins", sans-serif',
                 fontWeight: 400,
                 color: '#007AFF',
@@ -370,13 +370,13 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
               variant="contained"
               loading={isSubmitting}
               sx={{ 
-                width: 252.6,
-                height: 33.87,
-              borderRadius: '3.52799px',
+                width: 320,
+                height: 44,
+              borderRadius: '6px',
               background: '#002896',
               color: '#FFFFFF',
               textTransform: 'none',
-              fontSize: '9.87838px',
+              fontSize: '13px',
               fontFamily: '"Poppins", sans-serif',
               fontWeight: 600,
               lineHeight: '15px',

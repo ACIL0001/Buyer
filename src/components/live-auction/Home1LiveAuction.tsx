@@ -128,17 +128,36 @@ const Home1LiveAuction = () => {
     <div style={{ background: 'transparent', width: '100%', paddingBottom: '0px' }}>
     <div className="auctions-section-wrapper" style={{ width: '100%', position: 'relative', overflow: 'visible' }}>
       {/* SECTION HEADER - REMOVED OVERFLOW HIDDEN */}
-      <div style={{
-        width: '100%',
-        maxWidth: '1240px',
-        margin: '0 auto',
-        position: 'relative',
-        padding: 'clamp(32px, 6vw, 60px) clamp(16px, 4vw, 20px) clamp(20px, 4vw, 40px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'visible'
-      }}>
+      <style jsx>{`
+        .live-section-header {
+          width: 100%;
+          max-width: 1240px;
+          margin: 0 auto;
+          position: relative;
+          padding: clamp(32px, 6vw, 60px) clamp(16px, 4vw, 20px) clamp(20px, 4vw, 40px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: visible;
+        }
+        .live-section-voirtout {
+          position: absolute;
+          right: clamp(12px, 3vw, 35px);
+          top: clamp(40px, 8vw, 75px);
+        }
+        @media (max-width: 640px) {
+          .live-section-header {
+            flex-direction: column;
+            gap: 12px;
+          }
+          .live-section-voirtout {
+            position: static;
+            right: auto;
+            top: auto;
+          }
+        }
+      `}</style>
+      <div className="live-section-header">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <motion.h2
             initial={{ opacity: 0, scale: 0.95 }}
@@ -160,7 +179,7 @@ const Home1LiveAuction = () => {
           <motion.div initial={{ width: 0 }} whileInView={{ width: '100px' }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 1 }} style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #002896, transparent)', marginTop: '15px', borderRadius: '10px' }} />
         </div>
 
-        <div style={{ position: 'absolute', right: 'clamp(12px, 3vw, 35px)', top: 'clamp(40px, 8vw, 75px)' }}>
+        <div className="live-section-voirtout">
           <Link href="/auction-sidebar" style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -184,7 +203,7 @@ const Home1LiveAuction = () => {
         {liveAuctions.length > 0 ? (
           <div className="auction-carousel-container" style={{ position: 'relative', overflow: 'visible' }}>
             <div style={{ position: 'relative' }}>
-              <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper auction-slider" style={{ padding: '30px 10px', margin: '-30px -10px', overflow: 'hidden' }}>
+              <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper auction-slider" style={{ padding: '30px 0', margin: '-30px 0', overflow: 'hidden' }}>
                 {liveAuctions.map((auction: any) => {
                   const timer = timers[auction.id] || { days: "0", hours: "0", minutes: "0", formattedEnd: "", hasEnded: false };
                   const companyName = auction.owner?.entreprise || auction.owner?.firstName || 'Nom Entreprise';

@@ -977,43 +977,16 @@ export default function CategoryClient() {
         {viewMode === 'categories' && (
           <>
             {/* Filter Buttons Section - styled like Home1Banner */}
-            <div style={{
+            <div className="cat-filter-row" style={{
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: 'clamp(20px, 3vw, 32px)',
-              gap: 'clamp(16px, 3vw, 24px)',
-              flexWrap: 'nowrap',
+              gap: 'clamp(12px, 2.5vw, 20px)',
               position: 'relative',
-              padding: '0 clamp(20px, 4vw, 40px)',
+              padding: '0 clamp(12px, 3vw, 40px)',
             }}>
-              <button
-                className={`filter-button product ${filterType === 'PRODUCT' ? 'active' : ''}`}
-                onClick={() => setFilterType(filterType === 'PRODUCT' ? 'ALL' : 'PRODUCT')}
-                style={{
-                  padding: '12px 28px',
-                  borderRadius: '35px',
-                  fontSize: 'clamp(0.85rem, 1.4vw, 1rem)',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                  border: '3px solid transparent',
-                  background: 'linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%)',
-                  backgroundSize: '200% 200%',
-                  color: 'white',
-                  boxShadow: filterType === 'PRODUCT'
-                    ? '0 6px 24px rgba(0, 40, 150, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
-                    : '0 4px 16px rgba(0, 40, 150, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.6px',
-                  minWidth: '110px',
-                  opacity: filterType === 'PRODUCT' ? 1 : 0.8,
-                }}
-              >
-                {t('common.product')}
-              </button>
               <h2 style={{
                 fontSize: 'clamp(1.5rem, 3vw, 2.2rem)',
                 fontWeight: 900,
@@ -1026,40 +999,76 @@ export default function CategoryClient() {
                 margin: 0,
                 letterSpacing: '-0.5px',
                 position: 'relative',
-                padding: '0 clamp(24px, 5vw, 40px)',
                 animation: 'shimmer-text 4s ease-in-out infinite',
                 textShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
                 lineHeight: '1.2',
               }}>
                 Categories
               </h2>
-              <button
-                className={`filter-button service ${filterType === 'SERVICE' ? 'active' : ''}`}
-                onClick={() => setFilterType(filterType === 'SERVICE' ? 'ALL' : 'SERVICE')}
-                style={{
-                  padding: '12px 28px',
-                  borderRadius: '35px',
-                  fontSize: 'clamp(0.85rem, 1.4vw, 1rem)',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                  border: '3px solid transparent',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
-                  backgroundSize: '200% 200%',
-                  color: 'white',
-                  boxShadow: filterType === 'SERVICE'
-                    ? '0 6px 24px rgba(16, 185, 129, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
-                    : '0 4px 16px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.6px',
-                  minWidth: '110px',
-                  opacity: filterType === 'SERVICE' ? 1 : 0.8,
-                }}
-              >
-                {t('common.service')}
-              </button>
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                gap: 'clamp(8px, 2vw, 16px)',
+                width: '100%',
+              }}>
+                <button
+                  className={`filter-button product ${filterType === 'PRODUCT' ? 'active' : ''}`}
+                  onClick={() => setFilterType(filterType === 'PRODUCT' ? 'ALL' : 'PRODUCT')}
+                  style={{
+                    padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 28px)',
+                    borderRadius: '35px',
+                    fontSize: 'clamp(0.85rem, 1.4vw, 1rem)',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    border: '3px solid transparent',
+                    background: 'linear-gradient(135deg, #0063b1 0%, #005299 50%, #004080 100%)',
+                    backgroundSize: '200% 200%',
+                    color: 'white',
+                    boxShadow: filterType === 'PRODUCT'
+                      ? '0 6px 24px rgba(0, 40, 150, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
+                      : '0 4px 16px rgba(0, 40, 150, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.6px',
+                    minWidth: 0,
+                    flex: '0 1 auto',
+                    opacity: filterType === 'PRODUCT' ? 1 : 0.8,
+                  }}
+                >
+                  {t('common.product')}
+                </button>
+                <button
+                  className={`filter-button service ${filterType === 'SERVICE' ? 'active' : ''}`}
+                  onClick={() => setFilterType(filterType === 'SERVICE' ? 'ALL' : 'SERVICE')}
+                  style={{
+                    padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 28px)',
+                    borderRadius: '35px',
+                    fontSize: 'clamp(0.85rem, 1.4vw, 1rem)',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    border: '3px solid transparent',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
+                    backgroundSize: '200% 200%',
+                    color: 'white',
+                    boxShadow: filterType === 'SERVICE'
+                      ? '0 6px 24px rgba(16, 185, 129, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.1) inset, inset 0 1px 0 rgba(255, 255, 255, 0.25)'
+                      : '0 4px 16px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.6px',
+                    minWidth: 0,
+                    flex: '0 1 auto',
+                    opacity: filterType === 'SERVICE' ? 1 : 0.8,
+                  }}
+                >
+                  {t('common.service')}
+                </button>
+              </div>
             </div>
           </>
         )}

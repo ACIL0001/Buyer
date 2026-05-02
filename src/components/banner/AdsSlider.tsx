@@ -14,7 +14,6 @@ const AdsSlider: React.FC = () => {
   const router = useRouter();
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -48,14 +47,15 @@ const AdsSlider: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  const adsContainerStyle: React.CSSProperties = {
+    width: '100%',
+    maxWidth: '1218px',
+    aspectRatio: '1218 / 315',
+    maxHeight: '315px',
+    margin: '68px auto 0',
+    position: 'relative',
+    overflow: 'hidden',
+  };
 
   const getAdImageUrl = (ad: Ad): string => {
     let imageUrl = '';
@@ -80,15 +80,11 @@ const AdsSlider: React.FC = () => {
   if (loading) {
     return (
       <div style={{
-        width: isMobile ? '100%' : '1218px',
-        height: isMobile ? '280px' : '315px',
-        margin: isMobile ? '70px 0 0' : '68px auto 0',
+        ...adsContainerStyle,
         background: 'linear-gradient(135deg, #0f1c2e 0%, #1a3050 40%, #1e3a5f 70%, #2b5496 100%)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        position: 'relative',
-        overflow: 'hidden',
       }}>
         {/* Shimmer overlay */}
         <div style={{
@@ -129,11 +125,7 @@ const AdsSlider: React.FC = () => {
   if (ads.length === 0) {
     return (
       <div style={{
-        width: isMobile ? '100%' : '1218px',
-        height: isMobile ? '280px' : '315px',
-        margin: isMobile ? '70px 0 0' : '68px auto 0',
-        position: 'relative',
-        overflow: 'hidden',
+        ...adsContainerStyle,
         cursor: 'default',
       }}>
         {/* Background image */}
@@ -165,14 +157,20 @@ const AdsSlider: React.FC = () => {
     <>
       <style jsx>{`
         .ads-slider-container {
-          width: ${isMobile ? '100%' : '1218px'};
-          max-width: 100%;
-          height: ${isMobile ? '280px' : '315px'};
+          width: 100%;
+          max-width: 1218px;
+          aspect-ratio: 1218 / 315;
+          max-height: 315px;
           position: relative;
           overflow: hidden;
-          margin: ${isMobile ? '70px 0 0' : '68px auto 0'}; /* adjusted top margin to achieve 264px absolute top */
+          margin: 68px auto 0;
           opacity: 1;
           border-radius: 0px;
+        }
+        @media (max-width: 768px) {
+          .ads-slider-container {
+            margin: 70px 0 0;
+          }
         }
 
         .ads-swiper {
@@ -220,14 +218,14 @@ const AdsSlider: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: ${isMobile ? '20px 24px' : '40px 60px'};
+          padding: clamp(20px, 4vw, 40px) clamp(24px, 5vw, 60px);
           z-index: 2;
           pointer-events: none;
         }
 
         .ad-title-text {
           color: white;
-          font-size: ${isMobile ? 'clamp(20px, 5.5vw, 28px)' : 'clamp(30px, 3.8vw, 46px)'};
+          font-size: clamp(20px, 4vw, 46px);
           font-weight: 700;
           font-family: 'DM Sans', sans-serif;
           text-align: center;

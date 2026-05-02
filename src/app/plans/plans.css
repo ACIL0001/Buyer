@@ -120,14 +120,36 @@
 
 .popular-badge {
     position: absolute;
-    top: 48px;
-    right: 48px;
+    top: clamp(16px, 4vw, 24px);
+    right: clamp(16px, 4vw, 24px);
     background: #4190f0;
     color: white;
     padding: 6px 20px;
     border-radius: 12px;
     font-size: 14px;
     font-weight: 600;
+    z-index: 2;
+}
+
+@media (max-width: 480px) {
+    .plan-card {
+        padding: 20px;
+        min-height: auto;
+    }
+    .popular-badge {
+        font-size: 11px;
+        padding: 4px 10px;
+    }
+    .plan-name {
+        font-size: 20px;
+        padding-right: 88px; /* keep title clear of the badge */
+    }
+    .plan-price {
+        font-size: 36px;
+    }
+    .plan-currency {
+        font-size: 18px;
+    }
 }
 
 .plan-name {

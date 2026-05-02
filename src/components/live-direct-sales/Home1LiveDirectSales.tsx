@@ -100,17 +100,36 @@ const Home1LiveDirectSales = () => {
     <div style={{ background: 'transparent', width: '100%', paddingBottom: '0px' }}>
     <div className="direct-sales-section-wrapper" style={{ width: '100%', position: 'relative', overflow: 'visible' }}>
       {/* SECTION HEADER - REMOVED OVERFLOW HIDDEN */}
-      <div style={{
-        width: '100%',
-        maxWidth: '1240px',
-        margin: '0 auto',
-        position: 'relative',
-        padding: 'clamp(32px, 6vw, 60px) clamp(16px, 4vw, 20px) clamp(20px, 4vw, 40px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'visible'
-      }}>
+      <style jsx>{`
+        .live-section-header {
+          width: 100%;
+          max-width: 1240px;
+          margin: 0 auto;
+          position: relative;
+          padding: clamp(32px, 6vw, 60px) clamp(16px, 4vw, 20px) clamp(20px, 4vw, 40px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: visible;
+        }
+        .live-section-voirtout {
+          position: absolute;
+          right: clamp(12px, 3vw, 35px);
+          top: clamp(40px, 8vw, 75px);
+        }
+        @media (max-width: 640px) {
+          .live-section-header {
+            flex-direction: column;
+            gap: 12px;
+          }
+          .live-section-voirtout {
+            position: static;
+            right: auto;
+            top: auto;
+          }
+        }
+      `}</style>
+      <div className="live-section-header">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <motion.h2
             initial={{ opacity: 0, y: 15 }}
@@ -132,7 +151,7 @@ const Home1LiveDirectSales = () => {
           <motion.div initial={{ width: 0 }} whileInView={{ width: '100px' }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 1 }} style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #002896, transparent)', marginTop: '15px', borderRadius: '10px' }} />
         </div>
 
-        <div style={{ position: 'absolute', right: 'clamp(12px, 3vw, 35px)', top: 'clamp(40px, 8vw, 75px)' }}>
+        <div className="live-section-voirtout">
           <Link href="/direct-sale" style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -156,7 +175,7 @@ const Home1LiveDirectSales = () => {
         {directSales.length > 0 ? (
           <div className="direct-sale-carousel-container" style={{ position: 'relative', overflow: 'visible' }}>
             <div style={{ position: 'relative' }}>
-              <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper direct-sale-slider" style={{ padding: '30px 10px', margin: '-30px -10px', overflow: 'hidden' }}>
+              <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper direct-sale-slider" style={{ padding: '30px 0', margin: '-30px 0', overflow: 'hidden' }}>
                 {directSales.map((sale: any) => {
                   const companyName = sale.owner?.entreprise || sale.owner?.companyName || sale.owner?.firstName || 'Nom Entreprise';
                   const availableQuantity = sale.quantity > 0 ? (sale.quantity - (sale.soldQuantity || 0)) : 'Illimité';

@@ -38,7 +38,7 @@ export default function ProtectedResellerRoute({ children }: ProtectedResellerRo
       
       // Redirect after showing message
       setTimeout(() => {
-        router.push('/profile');
+        router.push('/dashboard/profile');
       }, 3000);
     }
   }, [identityStatus, isLoading, router, t]);
@@ -121,7 +121,7 @@ export default function ProtectedResellerRoute({ children }: ProtectedResellerRo
             {message}
           </p>
           <button
-            onClick={() => router.push('/profile')}
+            onClick={() => router.push('/dashboard/profile')}
             style={{
               background: '#0063b1',
               color: 'white',

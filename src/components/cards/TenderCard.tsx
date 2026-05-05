@@ -408,12 +408,12 @@ const TenderCard = ({ tender }: TenderCardProps) => {
         }}>
           {tender.owner && !tender.hidden ? (
             <Link
-              href={`/profile/${typeof tender.owner === 'object' ? tender.owner._id : tender.owner}`}
+              href={`/dashboard/profile/${typeof tender.owner === 'object' ? tender.owner._id : tender.owner}`}
               scroll={false}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                navigateWithScroll(`/profile/${typeof tender.owner === 'object' ? tender.owner._id : tender.owner}`);
+                navigateWithScroll(`/dashboard/profile/${typeof tender.owner === 'object' ? tender.owner._id : tender.owner}`);
               }}
               style={{
                 display: 'flex',

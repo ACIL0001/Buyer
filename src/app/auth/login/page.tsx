@@ -18,7 +18,7 @@ export default function Login() {
       sessionStorage.removeItem('profile_note_shown_session');
       const loginCount = user?.loginCount ?? 0;
       if (loginCount <= 5) {
-        router.replace('/profile');
+        router.replace('/dashboard/profile');
       } else {
         router.replace('/');
       }

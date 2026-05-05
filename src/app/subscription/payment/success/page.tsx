@@ -218,7 +218,7 @@ export default function PaymentSuccessPage() {
               <Button
                 variant="contained"
                 size="large"
-                onClick={() => router.push('/profile')}
+                onClick={() => router.push('/dashboard/profile')}
                 sx={{ px: 4 }}
               >
                 Go to Profile

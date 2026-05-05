@@ -346,12 +346,12 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
         }}>
           {sale.owner && !sale.hidden ? (
             <Link
-              href={`/profile/${typeof sale.owner === 'object' ? (sale.owner as any)._id : sale.owner}`}
+              href={`/dashboard/profile/${typeof sale.owner === 'object' ? (sale.owner as any)._id : sale.owner}`}
               scroll={false}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                navigateWithScroll(`/profile/${typeof sale.owner === 'object' ? (sale.owner as any)._id : sale.owner}`);
+                navigateWithScroll(`/dashboard/profile/${typeof sale.owner === 'object' ? (sale.owner as any)._id : sale.owner}`);
               }}
               style={{
                 display: 'flex',

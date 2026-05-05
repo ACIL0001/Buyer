@@ -201,7 +201,7 @@ export default function OffersPage() {
                 return (
                   <tr key={_id} className="db-row" style={tableStyles.trHover}>
                     <td style={tableStyles.td}>
-                      <Link href={`/profile/${user?._id}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
+                      <Link href={`/dashboard/profile/${user?._id}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
                         <div style={tableStyles.avatar('var(--primary-auction-color)')}>{initials}</div>
                         <div>
                           <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>{displayName}</div>

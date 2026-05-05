@@ -1,370 +1,745 @@
-'use client';
+"use client"
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useSnackbar } from 'notistack';
-import useAuth from '@/hooks/useAuth';
-import { authStore } from '@/contexts/authStore';
-import { UserAPI } from '@/services/user';
-import { IdentityAPI } from '@/services/identity';
-import app from '@/config';
-import { WILAYAS } from '@/constants/wilayas';
-import './style.css';
-import ImageCropper from '@/components/common/ImageCropper';
-import { normalizeImageUrl } from '@/utils/url';
+import React, { useState, useEffect, useRef } from "react"
+import Header from "@/components/header/Header"
+import useAuth from "@/hooks/useAuth"
+import { useSnackbar } from "notistack"
+import RequestProvider from "@/contexts/RequestContext"
+import SocketProvider from "@/contexts/socket"
+import { motion, AnimatePresence } from "framer-motion"
+import "./modern-styles.css"
+import { UserAPI } from "@/app/api/users"
+import { IdentityAPI } from "@/app/api/identity"
+// import { useIdentityStatus } from "@/hooks/useIdentityStatus"
+import { useRouter } from "next/navigation"
+// import HistoryPage from "./history/HistoryPage"
+import { useTranslation } from "react-i18next"
+import { authStore } from "@/contexts/authStore"
+import { WILAYAS } from "@/constants/wilayas"
+import { CategoryAPI } from "@/services/category"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import ProfileSkeleton from "@/components/skeletons/ProfileSkeleton"
+import VerificationPopup from "@/components/VerificationPopup"
+import UserActivitiesSection from "@/components/profile/UserActivitiesSection"
+import ImageCropper from "@/components/common/ImageCropper"
+import { normalizeImageUrl } from "@/utils/url"
 
-interface ProfileFormData {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    rate: number;
-    wilaya: string;
-    secteur: string;
+// Local constants removed in favor of @/utils/url
+const getImageUrl = normalizeImageUrl;
+
+const ProfilePageWrapper = () => {
+    const [show, setShow] = useState(false)
+    const [check, setCheck] = useState(false)
+
+    return (
+        <SocketProvider setShow={setShow} setCheck={setCheck}>
+            <div className={`${show && "AllPages"}`}>
+                <RequestProvider>
+                    <ProfilePage />
+                </RequestProvider>
+            </div>
+        </SocketProvider>
+    )
 }
 
-interface AvatarData {
-    fullUrl?: string;
-    url?: string;
-    _id?: string;
-    filename?: string;
-    [key: string]: any;
-}
 
-const API_BASE_URL = app.baseURL;
 
-export default function ProfilePage() {
-    const router = useRouter();
-    const { auth, isLogged, isReady, set } = useAuth();
-    const { enqueueSnackbar } = useSnackbar();
+
+
+// ... existing code ...
+
+function ProfilePage() {
     const { t } = useTranslation();
+    const auth = useAuth();
+    const { enqueueSnackbar } = useSnackbar();
+    const router = useRouter();
+    const queryClient = useQueryClient();
+    const set = authStore((state: any) => state.set);
+    const [isReady, setIsReady] = useState(false);
+    const isLogged = !!auth.user;
 
-    const [isEditing, setIsEditing] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isPasswordChanging, setIsPasswordChanging] = useState(false);
-    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-    const [avatarKey, setAvatarKey] = useState(Date.now());
-    const [activeTab, setActiveTab] = useState('personal-info');
-    const [formData, setFormData] = useState<ProfileFormData>({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        rate: 0,
-        wilaya: '',
-        secteur: '',
+    // Wait for hydration
+    useEffect(() => {
+        setIsReady(true);
+    }, []);
+    
+    // Identity Query
+    const { data: identity, isLoading: isLoadingIdentity } = useQuery({
+        queryKey: ['identity'],
+        queryFn: async () => {
+            const response = await IdentityAPI.getMyIdentity();
+            const data = response.data as any;
+            if (data && !initialIdentity) {
+                setInitialIdentity(data);
+            }
+            return data;
+        },
+        retry: 1
     });
 
+    const [activeTab, setActiveTab] = useState("compte");
     const [passwordData, setPasswordData] = useState({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
     });
-
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // Document management state
-    const [identity, setIdentity] = useState<any>(null);
-    const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
-    const [isUploadingDocument, setIsUploadingDocument] = useState<string | null>(null);
-    const [uploadingFile, setUploadingFile] = useState<File | null>(null);
-    const documentFileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
-    const [activeUpgradeSection, setActiveUpgradeSection] = useState<'verified' | 'certified' | null>(null);
-
-    // Image Cropping State
-    const [showCropper, setShowCropper] = useState(false);
-    const [cropImage, setCropImage] = useState<string | null>(null);
-    const [cropType, setCropType] = useState<'avatar' | 'cover'>('avatar');
-    const coverInputRef = useRef<HTMLInputElement>(null);
+    const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [isUploadingCover, setIsUploadingCover] = useState(false);
     const [coverKey, setCoverKey] = useState(Date.now());
 
-    // Profile Note State - Shows once per session
-    const [showProfileNote, setShowProfileNote] = useState(true);
+    const [avatarKey, setAvatarKey] = useState(Date.now());
 
-    // Document field configurations
+    // Personal Info State
+    const [isEditing, setIsEditing] = useState(false);
+    const [categories, setCategories] = useState<any[]>([]);
+    const [formData, setFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        wilaya: "",
+        activitySector: "",
+        companyName: "",
+        jobTitle: "",
+        isProfileVisible: true,
+    });
+
+    const [initialFormData, setInitialFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        wilaya: "",
+        activitySector: "",
+        companyName: "",
+        jobTitle: "",
+        isProfileVisible: true,
+    });
+    
+    // Document Upload States
+    const [uploadingFile, setUploadingFile] = useState<File | null>(null);
+    const [isUploadingDocument, setIsUploadingDocument] = useState<string | null>(null);
+    const [isSubmittingIdentity, setIsSubmittingIdentity] = useState(false);
+    const [initialIdentity, setInitialIdentity] = useState<any>(null);
+    const [showVerificationPopup, setShowVerificationPopup] = useState(false);
+    
+    // Refs
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const coverInputRef = useRef<HTMLInputElement>(null);
+    const documentFileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+
+    // Cropper State
+    const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+    const [isCropping, setIsCropping] = useState(false);
+    const [cropType, setCropType] = useState<'avatar' | 'cover'>('avatar');
+
+    // Document Handling State & Logic
+    const [activeUpgradeSection, setActiveUpgradeSection] = useState<'verified' | 'certified' | null>('verified');
+
+    const isLoadingDocuments = isLoadingIdentity;
+
+    // Document lists
     const requiredDocuments = [
-        {
-            key: 'registreCommerceCarteAuto',
-            label: t('dashboard.profile.documentLabels.registreCommerceCarteAuto'),
-            description: t('dashboard.profile.documentLabels.registreCommerceCarteAutoDesc'),
-            required: true,
-        },
-        {
-            key: 'nifRequired',
-            label: t('dashboard.profile.documentLabels.nifRequired'),
-            description: t('dashboard.profile.documentLabels.nifRequiredDesc'),
-            required: true,
-        },
-        {
-            key: 'carteFellah',
-            label: t('dashboard.profile.documentLabels.carteFellah'),
-            description: t('dashboard.profile.documentLabels.carteFellahDesc'),
-            required: true,
-        },
+        { key: 'registreCommerceCarteAuto', label: t('profile.documents.registreCommerce') || 'Registre de Commerce / Carte Artisan', required: true, description: 'Format PDF ou Image' },
+        { key: 'nifRequired', label: t('profile.documents.nif') || 'NIF', required: true, description: 'Numéro d\'Identification Fiscale' },
+        { key: 'carteFellah', label: t('profile.documents.carteFellah') || 'Carte Fellah', required: true, description: 'Pour les agriculteurs' }
     ];
 
     const optionalDocuments = [
-        {
-            key: 'nis',
-            label: t('dashboard.profile.documentLabels.nis'),
-            description: t('dashboard.profile.documentLabels.nisDesc'),
-            required: false,
-        },
-        {
-            key: 'numeroArticle',
-            label: t('dashboard.profile.documentLabels.numeroArticle'),
-            description: t('dashboard.profile.documentLabels.numeroArticleDesc'),
-            required: false,
-        },
-        {
-            key: 'c20',
-            label: t('dashboard.profile.documentLabels.c20'),
-            description: t('dashboard.profile.documentLabels.c20Desc'),
-            required: false,
-        },
-        {
-            key: 'misesAJourCnas',
-            label: t('dashboard.profile.documentLabels.misesAJourCnas'),
-            description: t('dashboard.profile.documentLabels.misesAJourCnasDesc'),
-            required: false,
-        },
-        {
-            key: 'last3YearsBalanceSheet',
-            label: t('dashboard.profile.documentLabels.last3YearsBalanceSheet'),
-            description: t('dashboard.profile.documentLabels.last3YearsBalanceSheetDesc'),
-            required: false,
-        },
-        {
-            key: 'certificates',
-            label: t('dashboard.profile.documentLabels.certificates'),
-            description: t('dashboard.profile.documentLabels.certificatesDesc'),
-            required: false,
-        },
+        { key: 'nis', label: t('profile.documents.nis') || 'NIS' },
+        { key: 'c20', label: t('profile.documents.c20') || 'C20' },
+        { key: 'misesAJourCnas', label: t('profile.documents.misesAJourCnas') || 'Mises à jour CNAS' },
+        { key: 'last3YearsBalanceSheet', label: t('profile.documents.balanceSheet') || 'Bilans des 3 dernières années' },
+        { key: 'certificates', label: t('profile.documents.certificates') || 'Certificats' },
+        { key: 'identityCard', label: t('profile.documents.identityCard') || 'Carte d\'identité' }
     ];
+
+
+
+    const handleCropSave = async (croppedBlob: Blob) => {
+        setIsCropping(false);
+        if (cropType === 'avatar') {
+            await uploadAvatar(croppedBlob);
+        } else {
+            await uploadCover(croppedBlob);
+        }
+    };
+
+    const uploadCover = async (fileBlob: Blob) => {
+        setIsUploadingCover(true);
+        const formData = new FormData();
+        formData.append("cover", fileBlob, "cover.jpg");
+
+        try {
+            const response = await UserAPI.uploadCover(formData);
+            if (response.success) {
+                enqueueSnackbar(t("profile.hero.coverSuccess") || "Cover updated successfully", { variant: "success" });
+                await auth.fetchFreshUserData();
+                setCoverKey(Date.now());
+            } else {
+                 enqueueSnackbar(t("profile.hero.coverError") || "Failed to update cover", { variant: "error" });
+            }
+        } catch (error) {
+            console.error("Cover upload error:", error);
+            enqueueSnackbar(t("profile.hero.coverError") || "Failed to update cover", { variant: "error" });
+        } finally {
+             setIsUploadingCover(false);
+        }
+    };
+
+    const uploadAvatar = async (fileBlob: Blob) => {
+        setIsUploadingAvatar(true);
+
+        try {
+            console.log('🖼️ Uploading avatar...');
+            const formDataToUpload = new FormData();
+            formDataToUpload.append('avatar', fileBlob, "avatar.jpg");
+            const response = await UserAPI.uploadAvatar(formDataToUpload);
+
+            console.log('✅ Avatar upload response:', response);
+
+            if (response && response.success && (response.user || response.data)) {
+                const updatedUser = (response.user || response.data) as any;
+                const responseWithAttachment = response as any;
+                
+                // Get the updated user data and merge
+                let avatarObj = updatedUser.avatar;
+                if (responseWithAttachment?.attachment) {
+                    const attachment = responseWithAttachment.attachment;
+                    const normalizedUrl = normalizeImageUrl(attachment.url);
+                    avatarObj = {
+                        _id: attachment._id,
+                        url: attachment.url,
+                        filename: attachment.filename,
+                        fullUrl: attachment.fullUrl ? normalizeImageUrl(attachment.fullUrl) : normalizedUrl
+                    };
+                }
+
+                let photoURL = updatedUser.photoURL;
+                if (!photoURL && avatarObj) {
+                    const avatar = avatarObj as any;
+                    if (avatar.fullUrl) photoURL = normalizeImageUrl(avatar.fullUrl);
+                    else if (avatar.url) photoURL = normalizeImageUrl(avatar.url);
+                    else if (avatar.filename) photoURL = normalizeImageUrl(avatar.filename);
+                } else if (photoURL) {
+                     photoURL = normalizeImageUrl(photoURL);
+                }
+
+                const mergedUser = {
+                    ...auth.user,
+                    ...updatedUser,
+                    avatar: avatarObj || auth.user?.avatar,
+                    photoURL: photoURL || auth.user?.photoURL,
+                    type: (updatedUser.type || updatedUser.accountType || auth.user?.type || 'CLIENT') as any,
+                };
+
+                set({
+                    user: mergedUser as any,
+                    tokens: auth.tokens
+                });
+
+                setAvatarKey(Date.now());
+                enqueueSnackbar(response.message || t("avatarUpdated") || "Avatar updated successfully", { variant: "success" });
+
+                // Refresh fresh data
+                setTimeout(async () => {
+                    try {
+                        await fetchFreshUserData();
+                    } catch (err) {
+                        console.warn('⚠️ Error refreshing user data after avatar upload:', err);
+                    }
+                }, 500);
+            } else {
+                enqueueSnackbar(response?.message || 'Avatar upload failed', { variant: "error" });
+            }
+        } catch (error: any) {
+            console.error('❌ Error uploading avatar:', error);
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to upload avatar';
+            enqueueSnackbar(errorMessage, { variant: "error" });
+        } finally {
+            setIsUploadingAvatar(false);
+        }
+    };
+
+
+
+    // Helper to refresh user data
+    const fetchFreshUserData = async () => {
+        try {
+             // Re-fetch user profile
+             if (auth.user) {
+                  const response = await UserAPI.getMe();
+                  const userData = response.user || response.data;
+                  // Merge with existing token
+                  set({ user: userData, tokens: auth.tokens });
+             }
+        } catch (e) {
+            console.error("Failed to refresh user data", e);
+        }
+    };
+
+    const [showCompleteProfile, setShowCompleteProfile] = useState(false); 
+    
+    console.log('🏗️ ProfilePage Rendering', { 
+        showCompleteProfile, 
+        hasUser: !!auth.user, 
+        loginCount: auth.user?.loginCount 
+    });
+
+    // ... existing refs ...
 
     // Initialize form data when auth.user changes
     useEffect(() => {
+        console.log('🔄 useEffect [auth.user] triggered', { 
+            hasUser: !!auth.user, 
+            loginCount: auth.user?.loginCount 
+        });
+
         if (auth.user) {
-            setFormData({
-                firstName: auth.user.firstName || '',
-                lastName: auth.user.lastName || '',
-                email: auth.user.email || '',
-                phone: auth.user.phone || '',
-                rate: auth.user.rate || 0,
-                wilaya: auth.user.wilaya || '',
-                secteur: auth.user.secteur || '',
-            });
-            
-            if (auth.user.avatar || (auth.user as any).photoURL) {
-                setAvatarKey(Date.now());
-            }
-            if ((auth.user as any).coverPhoto) {
-                setCoverKey(Date.now());
-            }
+            const initialData = {
+                firstName: auth.user.firstName || "",
+                lastName: auth.user.lastName || "",
+                email: auth.user.email || "",
+                phone: auth.user.phone || "",
+                wilaya: auth.user.wilaya || "",
+                activitySector: Array.isArray((auth.user as any).activitySector) 
+                    ? (auth.user as any).activitySector.join(', ') 
+                    : (auth.user as any).activitySector || (auth.user as any).secteur || "",
+                companyName: (auth.user as any).companyName || (auth.user as any).socialReason || "",
+                jobTitle: auth.user.jobTitle || "",
+                isProfileVisible: (auth.user as any).isProfileVisible !== undefined ? (auth.user as any).isProfileVisible : true,
+            };
+            setFormData(initialData);
+            setInitialFormData(initialData);
         }
+        
+        // DEVELOPMENT: Force show for testing
+        if (typeof window !== 'undefined' && sessionStorage.getItem('force_show_profile_note') === 'true') {
+            console.log('🔧 FORCE SHOW ACTIVE via sessionStorage');
+            setShowCompleteProfile(true);
+            return;
+        }
+
+        // Check for Complete Profile Note
+        checkProfileCompletion(auth.user);
     }, [auth.user]);
 
-    // Check for profile note visibility
     useEffect(() => {
-        const hasSeenNote = localStorage.getItem('profile_notice_v2');
-        if (hasSeenNote === 'true') {
-            setShowProfileNote(false);
-        }
+        loadCategories();
     }, []);
 
-    const dismissProfileNote = () => {
-        setShowProfileNote(false);
+    const loadCategories = async () => {
+        try {
+            const response = await CategoryAPI.getCategories();
+            if (response && Array.isArray(response)) {
+                setCategories(response);
+            } else if (response?.data && Array.isArray(response.data)) {
+                setCategories(response.data);
+            }
+        } catch (error) {
+            console.error("Error loading categories", error);
+        }
     };
 
-    const dismissProfileNoteForever = () => {
-        setShowProfileNote(false);
-        localStorage.setItem('profile_notice_v2', 'true');
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const target = e.target as HTMLInputElement;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
     };
 
-    const readFile = (file: File): Promise<string> => {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.addEventListener('load', () => resolve(reader.result as string), false);
-            reader.readAsDataURL(file);
-        });
-    };
-
-    const handleCropSave = async (croppedBlob: Blob) => {
-        setShowCropper(false);
-        const fileName = cropType === 'avatar' ? 'avatar.jpg' : 'cover.jpg';
-        const file = new File([croppedBlob], fileName, { type: 'image/jpeg' });
+    const handleVisibilityToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.checked;
         
-        const formData = new FormData();
-        formData.append(cropType === 'avatar' ? 'avatar' : 'cover', file);
+        // Optimistic update
+        setFormData(prev => ({
+            ...prev,
+            isProfileVisible: newValue
+        }));
 
         try {
-            if (cropType === 'avatar') {
-                setIsUploadingAvatar(true);
-                const response = await UserAPI.uploadAvatar(formData);
-                handleUploadResponse(response.data, 'avatar');
-            } else {
-                setIsUploadingCover(true);
-                const response = await UserAPI.uploadCover(formData);
-                handleUploadResponse(response.data, 'cover');
+            await UserAPI.updateProfile({ isProfileVisible: newValue });
+            enqueueSnackbar(newValue ? "Profil visible" : "Profil masqué", { variant: "success" });
+            
+            // Update auth user context if needed
+            if (auth.user) {
+                const mergedUser = { ...auth.user, isProfileVisible: newValue };
+                set({ user: mergedUser, tokens: auth.tokens });
             }
-        } catch (error: any) {
-            const errorMessage = error.response?.data?.message || error.message || `Échec du téléchargement de ${cropType === 'avatar' ? 'l\'avatar' : 'la couverture'}`;
-            enqueueSnackbar(errorMessage, { variant: 'error' });
-        } finally {
-            if (cropType === 'avatar') {
-                setIsUploadingAvatar(false);
-            } else {
-                setIsUploadingCover(false);
-            }
+        } catch (error) {
+            console.error('Error updating profile visibility:', error);
+            // Revert on error
+            setFormData(prev => ({
+                ...prev,
+                isProfileVisible: !newValue
+            }));
+            enqueueSnackbar("Erreur lors de la mise à jour", { variant: "error" });
         }
     };
 
-    const handleUploadResponse = (updatedUser: any, type: 'avatar' | 'cover') => {
-        if (updatedUser) {
-            const currentUser = auth.user;
-            
-            const mergedUser: any = { ...currentUser };
-            
-            if (updatedUser) {
-                Object.keys(updatedUser).forEach(key => {
-                    const value = (updatedUser as any)[key];
-                    if (value !== undefined && value !== null) {
-                        mergedUser[key] = value;
-                    }
-                });
-            }
-
-            set({
-                user: mergedUser,
-                tokens: auth.tokens,
-            });
-
-            if (type === 'avatar') {
-                setAvatarKey(Date.now());
-                enqueueSnackbar('Photo de profil mise à jour avec succès', { variant: 'success' });
-            } else {
-                setCoverKey(Date.now());
-                enqueueSnackbar('Photo de couverture mise à jour avec succès', { variant: 'success' });
-            }
-        } else {
-            enqueueSnackbar(`Échec de la mise à jour de ${type === 'avatar' ? 'la photo de profil' : 'la couverture'}`, { variant: 'error' });
-        }
-    };
-
-
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setPasswordData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
+    const hasChanges = JSON.stringify(formData) !== JSON.stringify(initialFormData);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!hasChanges) {
+            enqueueSnackbar("Vous n'avez apporté aucune modification à votre profil.", { variant: "info" });
+            setIsEditing(false);
+            return;
+        }
+
         setIsLoading(true);
 
         try {
-            const response = await UserAPI.updateProfile(formData);
+            const updatePayload = { 
+                ...formData,
+                phone: formData.phone?.replace(/\s/g, '') || ''
+            };
 
-            if (response && response.data) {
-                let updatedUser = response.data;
+            console.log('📤 Submitting profile update payload:', updatePayload);
+            const response = await UserAPI.updateProfile(updatePayload);
+            
+            enqueueSnackbar(t("profileUpdated") || "Profile updated successfully", { variant: "success" });
+            setIsEditing(false);
 
-                if (updatedUser) {
-                    const currentUser = auth.user;
-                    const mergedUser = {
-                        ...currentUser,
-                        _id: updatedUser._id || currentUser?._id,
-                        firstName: updatedUser.firstName || formData.firstName || currentUser?.firstName || '',
-                        lastName: updatedUser.lastName || formData.lastName || currentUser?.lastName || '',
-                        email: updatedUser.email || currentUser?.email || '',
-                        type: (updatedUser as any).accountType || updatedUser.type || currentUser?.type || 'PROFESSIONAL',
-                        phone: updatedUser.phone || formData.phone || currentUser?.phone,
-                        wilaya: updatedUser.wilaya || formData.wilaya || currentUser?.wilaya,
-                        secteur: updatedUser.secteur || formData.secteur || currentUser?.secteur,
-                        avatar: updatedUser.avatar || currentUser?.avatar,
-                        rate: currentUser?.rate || 1,
-                        isPhoneVerified: (updatedUser as any)?.isPhoneVerified ?? (currentUser as any)?.isPhoneVerified,
-                        isVerified: (updatedUser as any)?.isVerified ?? (currentUser as any)?.isVerified,
-                        isCertified: (updatedUser as any)?.isCertified ?? (currentUser as any)?.isCertified ?? false,
-                    };
-
-                    set({
-                        tokens: auth.tokens,
-                        user: mergedUser,
-                    });
-
-                    enqueueSnackbar(t('dashboard.profile.notifications.profileUpdateSuccess'), { variant: 'success' });
-                    setIsEditing(false);
-                }
+            if (auth.user && response.data) {
+                const mergedUser = { ...auth.user, ...response.data };
+                set({ user: mergedUser, tokens: auth.tokens });
             }
         } catch (error: any) {
-            if (error.response?.status === 401) {
-                enqueueSnackbar('Session expirée', { variant: 'error' });
-                set({ tokens: undefined, user: undefined });
-                router.push('/login');
-            } else {
-                const errorMessage = error.response?.data?.message || error.message || t('dashboard.profile.notifications.profileUpdateError');
-                enqueueSnackbar(errorMessage, { variant: 'error' });
-            }
+            console.error('Error updating profile:', error);
+            const errorMessage = error.response?.data?.message || t("updateFailed") || "Failed to update profile";
+            enqueueSnackbar(errorMessage, { variant: "error" });
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handlePasswordSubmit = async (e: React.FormEvent) => {
+    const handlePasswordChange = async (e: React.FormEvent) => {
         e.preventDefault();
-
+        
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            enqueueSnackbar(t('dashboard.profile.notifications.passwordMismatch'), { variant: 'error' });
+            enqueueSnackbar(t("profile.passwordsDoNotMatch") || "Les mots de passe ne correspondent pas", { variant: "error" });
             return;
         }
 
-        if (passwordData.newPassword.length < 6) {
-            enqueueSnackbar(t('dashboard.profile.notifications.passwordTooShort'), { variant: 'error' });
+        if (passwordData.newPassword.length < 8) {
+            enqueueSnackbar(t("profile.passwordTooShort") || "Le mot de passe doit contenir au moins 8 caractères", { variant: "error" });
             return;
         }
 
-        setIsPasswordChanging(true);
+        setIsSubmittingPassword(true);
 
         try {
             const response = await UserAPI.changePassword({
                 currentPassword: passwordData.currentPassword,
-                newPassword: passwordData.newPassword,
+                newPassword: passwordData.newPassword
             });
-
-            enqueueSnackbar(response.message || t('dashboard.profile.notifications.passwordUpdateSuccess'), { variant: 'success' });
-
-            setPasswordData({
-                currentPassword: '',
-                newPassword: '',
-                confirmPassword: '',
-            });
-        } catch (error: any) {
-            if (error.response?.status === 401) {
-                enqueueSnackbar('Session expirée', { variant: 'error' });
-                set({ tokens: undefined, user: undefined });
-                router.push('/login');
+            
+            if (response && response.success) {
+                enqueueSnackbar(response.message || t("profile.passwordChanged") || "Mot de passe mis à jour avec succès", { variant: "success" });
+                setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
             } else {
-                const errorMessage = error.message || t('dashboard.profile.notifications.passwordUpdateError');
-                enqueueSnackbar(errorMessage, { variant: 'error' });
+                throw new Error(response.message || 'Failed to update password');
             }
+        } catch (error: any) {
+            console.error('❌ Error changing password:', error);
+            const errorMessage = error.response?.data?.message || error.message || t("profile.passwordChangeError") || "Erreur lors de la mise à jour du mot de passe";
+            enqueueSnackbar(errorMessage, { variant: "error" });
         } finally {
-            setIsPasswordChanging(false);
+            setIsSubmittingPassword(false);
         }
     };
+
+    const checkProfileCompletion = (user: any) => {
+        console.log('🎯 ===== PROFILE COMPLETION CHECK STARTED =====');
+        console.log('🔍 Initial check:', {
+            hasUser: !!user,
+            userObject: user,
+            loginCount: user?.loginCount,
+            dismissed: user?.profileCompletionNote?.dismissed,
+        });
+        
+        console.log('💾 SessionStorage state:', {
+            profile_note_shown: sessionStorage.getItem('profile_note_shown_session'),
+            allKeys: Object.keys(sessionStorage),
+            allValues: Object.entries(sessionStorage).reduce((acc, [key, val]) => ({ ...acc, [key]: val }), {})
+        });
+
+        console.log('👤 Full user data:', {
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+            email: user?.email,
+            phone: user?.phone,
+            wilaya: user?.wilaya,
+            type: user?.type,
+            companyName: user?.companyName,
+            activitySector: user?.activitySector,
+            post: user?.post,
+            isVerified: user?.isVerified,
+            isCertified: user?.isCertified,
+            isHasIdentity: user?.isHasIdentity,
+        });
+
+        if (!user) {
+            console.log('❌ BLOCKED: No user object');
+            setShowCompleteProfile(false);
+            return;
+        }
+
+        // 1. Check if user has permanently dismissed
+        if (user.profileCompletionNote?.dismissed) {
+            console.log('❌ BLOCKED: Profile notice permanently dismissed');
+            setShowCompleteProfile(false);
+            return;
+        }
+
+        // 2. Check login count limit from database
+        // Show notice for first 5 logins (handle undefined as 0)
+        const loginCount = user.loginCount ?? 0;
+        console.log('📊 Login count check:', { 
+            loginCount, 
+            isUndefined: user.loginCount === undefined,
+            shouldShow: loginCount <= 5 
+        });
+        
+        if (loginCount > 5) {
+             console.log('❌ BLOCKED: Login count exceeded limit (> 5)');
+             setShowCompleteProfile(false);
+             return;
+        }
+
+        // 3. Check if user postponed in this SPECIFIC login session
+        // We compare the postponed login count with the current login count
+        const lastPostponedCount = sessionStorage.getItem('profile_note_postponed_logincount');
+        const currentLoginCount = user.loginCount ?? 0;
+        
+        if (lastPostponedCount && parseInt(lastPostponedCount) === currentLoginCount) {
+            console.log('❌ BLOCKED: User postponed in this specific login session (Count: ' + currentLoginCount + ')');
+            setShowCompleteProfile(false);
+            return;
+        }
+
+        // 4. Determine what to show based on profile status
+        const isProfessional = user.type === 'PROFESSIONAL';
+        
+        // Check all personal information fields
+        const basicFieldsMissing = !user.firstName || 
+                                   !user.lastName || 
+                                   !user.email || 
+                                   !user.phone || 
+                                   !user.wilaya;
+        
+        // Additional checks for professional users
+        const professionalFieldsMissing = isProfessional && (
+            !user.companyName || 
+            !user.activitySector ||
+            !user.post
+        );
+        
+        const isProfileIncomplete = basicFieldsMissing || professionalFieldsMissing;
+        const isVerified = user.isVerified || false;
+        const isCertified = user.isCertified || false;
+        const hasIdentity = user.isHasIdentity || false;
+        
+        console.log('📋 Profile status check:', {
+            isProfessional,
+            basicFieldsMissing,
+            professionalFieldsMissing,
+            isProfileIncomplete,
+            isVerified,
+            isCertified,
+            hasIdentity
+        });
+
+        // Always show notice for first 5 logins, but with different messages
+        setShowCompleteProfile(true);
+        // sessionStorage.setItem('profile_note_shown_session', 'true'); // No longer automatically creating session block
+        console.log('✅ ===== NOTICE WILL BE DISPLAYED =====');
+        console.log('✅ Session storage set to prevent re-display this session');
+    };
+
+    // Get dynamic notice content based on profile status
+    const getNoticeContent = () => {
+        if (!auth.user) return null;
+        
+        const isProfessional = auth.user.type === 'PROFESSIONAL';
+        
+        // Check all personal information fields
+        const basicFieldsMissing = !auth.user.firstName || 
+                                   !auth.user.lastName || 
+                                   !auth.user.email || 
+                                   !auth.user.phone || 
+                                   !auth.user.wilaya;
+        
+        // Additional checks for professional users
+        const professionalFieldsMissing = isProfessional && (
+            !auth.user.companyName || 
+            !auth.user.secteur ||
+            !auth.user.jobTitle
+        );
+        
+        const isProfileIncomplete = basicFieldsMissing || professionalFieldsMissing;
+        const isVerified = auth.user.isVerified || false;
+        const isCertified = auth.user.isCertified || false;
+        const hasIdentity = auth.user.isHasIdentity || false;
+
+        // Priority 1: Incomplete profile - personal information missing
+        if (isProfileIncomplete) {
+            const message = isProfessional 
+                ? 'Ajoutez vos informations (nom, prénom, téléphone, localisation, entreprise, poste) pour vérifier votre compte.'
+                : 'Ajoutez vos informations (nom, prénom, téléphone, localisation) pour vérifier votre compte.';
+            
+            return {
+                icon: 'bi-person-lines-fill',
+                title: 'Complétez vos informations personnelles',
+                message: message,
+                primaryButton: { text: 'Compléter', action: 'complete' as const },
+                gradient: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)'
+            };
+        }
+        
+        // Priority 2: No identity documents
+        if (!hasIdentity) {
+            return {
+                icon: 'bi-file-earmark-text',
+                title: 'Vérifiez votre compte',
+                message: 'Soumettez vos documents d\'identité pour la vérification.',
+                primaryButton: { text: 'Compléter', action: 'complete' as const },
+                gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+            };
+        }
+        
+        // Priority 3: Not verified
+        if (!isVerified) {
+            return {
+                icon: 'bi-shield-check',
+                title: 'Vérification en attente',
+                message: 'Vos documents sont en cours de révision par notre équipe.',
+                primaryButton: { text: 'Voir statut', action: 'complete' as const },
+                gradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
+            };
+        }
+        
+        // Priority 4: Verified but not certified
+        if (!isCertified) {
+            return {
+                icon: 'bi-award',
+                title: 'Obtenir la certification',
+                message: 'Votre compte est vérifié ! Demandez la certification pour plus de crédibilité.',
+                primaryButton: { text: 'Demander certification', action: 'complete' as const },
+                gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
+            };
+        }
+        
+        // Priority 5: Everything complete!
+        return {
+            icon: 'bi-check-circle-fill',
+            title: 'Bienvenue !',
+            message: 'Votre profil est complet et vérifié. Explorez toutes nos fonctionnalités.',
+            primaryButton: { text: 'Explorer', action: 'postpone' as const },
+            gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+        };
+    };
+
+    const handleNoteAction = async (action: 'complete' | 'postpone' | 'dismiss') => {
+        if (action === 'complete') {
+             const user = auth.user;
+             if (!user) return;
+
+             const isProfessional = user.type === 'PROFESSIONAL';
+             
+             // Check personal info fields
+             const basicFieldsMissing = !user.firstName || !user.lastName || !user.email || !user.phone || !user.wilaya;
+             const professionalFieldsMissing = isProfessional && (!user.companyName || !(user as any).secteur && !(user as any).activitySector || !user.jobTitle);
+             const isProfileIncomplete = basicFieldsMissing || professionalFieldsMissing;
+
+             if (isProfileIncomplete) {
+                 setActiveTab('personal-info');
+             } else if (!user.isHasIdentity || !user.isVerified) {
+                 setActiveTab('documents');
+             } else if (!user.isCertified) {
+                 setActiveTab('documents');
+                 // Also ensure the Certified section is active if they go there for certification
+                 if (user.isVerified) {
+                     setActiveUpgradeSection('certified');
+                 }
+             } else {
+                 setActiveTab('personal-info');
+             }
+
+             setShowCompleteProfile(false);
+             
+             // Scroll to content
+             setTimeout(() => {
+                 const tabsElement = document.querySelector('.modern-tabs-section') || document.querySelector('.modern-content-grid');
+                 if (tabsElement) {
+                     tabsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                 }
+             }, 100);
+        } else if (action === 'dismiss') {
+             // "Jamais" - Dismiss forever via backend API
+             try {
+                 await UserAPI.updateProfileCompletionNote('dismiss');
+                 setShowCompleteProfile(false);
+                 // Refresh user data to get updated profileCompletionNote
+                 await fetchFreshUserData();
+                 enqueueSnackbar('Notification désactivée définitivement', { variant: 'success' });
+             } catch (error) {
+                 console.error('Error dismissing completion note:', error);
+                 enqueueSnackbar('Erreur lors de la désactivation de la notification', { variant: 'error' });
+             }
+        } else {
+             // "Plus tard" - Hide for this session ONLY (bound to login count)
+             if (auth.user) {
+                 const currentCount = auth.user.loginCount ?? 0;
+                 sessionStorage.setItem('profile_note_postponed_logincount', currentCount.toString());
+             }
+             setShowCompleteProfile(false);
+        }
+    };
+
+    const handleCoverClick = () => {
+        coverInputRef.current?.click();
+    };
+
+    const handleCoverChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            enqueueSnackbar(t("profile.hero.maxFileSize") || "File size too large (max 5MB)", { variant: "error" });
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+            setCropImageSrc(reader.result?.toString() || '');
+            setCropType('cover');
+            setIsCropping(true);
+        });
+        reader.readAsDataURL(file);
+        
+        // Reset input
+        event.target.value = '';
+    };
+
+
+
+
+
+    // ... existing code ...
+    
+    // In handleSubmit:
+    // Ensure we send correct keys
+
 
     const handleAvatarClick = () => {
         if (fileInputRef.current) {
@@ -372,75 +747,53 @@ export default function ProfilePage() {
         }
     };
 
-    const handleCoverClick = () => {
-        if (coverInputRef.current) {
-            coverInputRef.current.click();
-        }
-    };
-
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover') => {
+    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const maxSize = 5 * 1024 * 1024;
+        const maxSize = 5 * 1024 * 1024; // 5MB
         if (file.size > maxSize) {
-            enqueueSnackbar('Fichier trop volumineux. Veuillez sélectionner une image plus petite que 5MB', { variant: 'error' });
-            e.target.value = '';
+            enqueueSnackbar('File size too large. Please select an image smaller than 5MB', { variant: 'error' });
+            if (fileInputRef.current) fileInputRef.current.value = '';
             return;
         }
 
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
         if (!allowedTypes.includes(file.type)) {
-            enqueueSnackbar('Veuillez sélectionner un fichier image valide (JPEG, PNG, GIF, WebP)', { variant: 'error' });
-            e.target.value = '';
+            enqueueSnackbar('Please select a valid image file (JPEG, PNG, GIF, WebP)', { variant: 'error' });
             return;
         }
 
-        try {
-            const imageDataUrl = await readFile(file);
-            setCropImage(imageDataUrl);
-            setCropType(type);
-            setShowCropper(true);
-        } catch (error) {
-            console.error(error);
-            enqueueSnackbar('Erreur lors de la lecture du fichier', { variant: 'error' });
-        }
-        
-        e.target.value = '';
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+             setCropImageSrc(reader.result?.toString() || '');
+             setCropType('avatar');
+             setIsCropping(true);
+        });
+        reader.readAsDataURL(file);
+
+        // Reset input
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => handleFileChange(e, 'avatar');
-    const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => handleFileChange(e, 'cover');
+    const handleStartResellerConversion = () => {
+        router.push("/become-reseller");
+    };
 
     // Document management functions
-    const fetchIdentity = async () => {
-        try {
-            setIsLoadingDocuments(true);
-            const response = await IdentityAPI.getMy();
-            if (response && (response.data || response)) {
-                setIdentity(response.data || response);
-            } else {
-                setIdentity(null);
-            }
-        } catch (error: any) {
-            if (error.response?.status !== 404 && !error.message?.includes('timeout')) {
-                enqueueSnackbar('Erreur lors du chargement des documents', { variant: 'error' });
-            }
-            setIdentity(null);
-        } finally {
-            setIsLoadingDocuments(false);
-        }
-    };
+    // fetchIdentity removed in favor of useQuery
 
     const handleFileSelect = (fieldKey: string, file: File) => {
         if (!file) return;
 
+        // Validate file type
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
         if (!allowedTypes.includes(file.type)) {
             enqueueSnackbar('Format de fichier non supporté. Utilisez JPG, PNG ou PDF.', { variant: 'error' });
             return;
         }
 
+        // Validate file size (5MB max)
         const maxSize = 5 * 1024 * 1024;
         if (file.size > maxSize) {
             enqueueSnackbar('Fichier trop volumineux. Taille maximale: 5MB', { variant: 'error' });
@@ -454,30 +807,36 @@ export default function ProfilePage() {
     const uploadDocument = async (fieldKey: string, file: File) => {
         try {
             setIsUploadingDocument(fieldKey);
-
-            let response: any;
             
+            const formData = new FormData();
+            formData.append(fieldKey, file);
+
+            // If identity doesn't exist, create it with this document
             if (!identity || !identity._id) {
-                const formData = new FormData();
-                formData.append(fieldKey, file);
-                response = await IdentityAPI.create(formData);
+                // Create identity with this document (allow incremental uploads)
+                const createResponse: any = await IdentityAPI.create(formData);
                 
-                if (response && (response.data?._id || response._id)) {
-                    enqueueSnackbar('Document sauvegardé avec succès. Cliquez sur "Soumettre" pour envoyer pour vérification.', { variant: 'success' });
-                    await fetchIdentity();
+                if (createResponse && (createResponse._id || (createResponse.data && createResponse.data._id))) {
+                    enqueueSnackbar('Document sauvegardé avec succès. L\'identité a été créée. Cliquez sur "Soumettre" pour envoyer pour vérification.', { variant: 'success' });
+                    // Invalidating query to refresh data
+                    await queryClient.invalidateQueries({ queryKey: ['identity'] });
+                } else {
+                    throw new Error('Failed to create identity with document');
                 }
             } else {
-                response = await IdentityAPI.updateDocument(identity._id, fieldKey, file);
-
-                if (response && (response.success || response.data)) {
+                // Update existing identity
+                const updateResponse = await IdentityAPI.updateDocument(identity._id, fieldKey, file);
+                
+                if (updateResponse && updateResponse.success) {
                     enqueueSnackbar('Document sauvegardé avec succès. Cliquez sur "Soumettre" pour envoyer pour vérification.', { variant: 'success' });
-                    setIdentity((prev: any) =>
-                        prev ? { ...prev, [fieldKey]: response.data?.[fieldKey] || response[fieldKey] || prev[fieldKey] } : null
-                    );
-                    await fetchIdentity();
+                    // Invalidating query to refresh data
+                    await queryClient.invalidateQueries({ queryKey: ['identity'] });
+                } else {
+                    throw new Error(updateResponse?.message || 'Upload failed');
                 }
             }
         } catch (error: any) {
+            console.error('Error uploading document:', error);
             const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de la mise à jour du document';
             enqueueSnackbar(errorMessage, { variant: 'error' });
         } finally {
@@ -489,14 +848,15 @@ export default function ProfilePage() {
     const getDocumentUrl = (document: any): string => {
         if (!document) return '';
         if (document.fullUrl) return normalizeImageUrl(document.fullUrl);
-        if (document.url) return normalizeImageUrl(document.url);
-        if (document.filename) return normalizeImageUrl(document.filename);
+        if (document.url) {
+            return normalizeImageUrl(document.url);
+        }
         return '';
     };
 
     const getDocumentName = (document: any): string => {
         if (!document) return '';
-        return document.filename || document.originalname || 'Document';
+        return document.filename || 'Document';
     };
 
     const formatFileSize = (bytes: number): string => {
@@ -507,121 +867,33 @@ export default function ProfilePage() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
-    useEffect(() => {
+    // Load identity when documents tab is active - managed by useQuery enabled prop
+    /* useEffect(() => {
         if (activeTab === 'documents' && !identity) {
             fetchIdentity();
         }
-    }, [activeTab]);
+    }, [activeTab]); */
 
-
-
-    const appendCacheBuster = (url: string) => {
-        if (!url) return url;
-        let cleaned = url.replace(/[?&]v=\d+/g, '');
-        cleaned = cleaned.replace(/\?&/g, '?').replace(/&&+/g, '&');
-        cleaned = cleaned.replace(/[?&]+$/, '');
-        const hasQuery = cleaned.includes('?');
-        const separator = hasQuery ? '&' : '?';
-        return cleaned + separator + `v=${avatarKey}`;
-    };
-
-    const getAvatarSrc = () => {
-        if (!auth.user) return '/assets/images/avatar.jpg';
-
-        if ((auth.user as any).photoURL && (auth.user as any).photoURL.trim() !== '') {
-            const cleanUrl = normalizeImageUrl((auth.user as any).photoURL);
-            if (cleanUrl && !cleanUrl.includes('mock-images')) {
-                return appendCacheBuster(cleanUrl);
-            }
-        }
-
-        if (auth.user.avatar) {
-            const avatar = auth.user.avatar as any;
-            
-            if (avatar.fullUrl && avatar.fullUrl.trim() !== '') {
-                const cleanUrl = normalizeImageUrl(avatar.fullUrl);
-                if (cleanUrl && !cleanUrl.includes('mock-images')) {
-                    return appendCacheBuster(cleanUrl);
-                }
-            }
-            
-            if (avatar.url && avatar.url.trim() !== '') {
-                const cleanUrl = normalizeImageUrl(avatar.url);
-                if (cleanUrl && !cleanUrl.includes('mock-images')) {
-                    return appendCacheBuster(cleanUrl);
-                }
-            }
-            
-            if (avatar.filename && avatar.filename.trim() !== '') {
-                const cleanUrl = normalizeImageUrl(avatar.filename);
-                if (cleanUrl && !cleanUrl.includes('mock-images')) {
-                    return appendCacheBuster(cleanUrl);
-                }
-            }
-        }
-
-        return '/assets/images/avatar.jpg';
-    };
-
-    const getCoverSrc = () => {
-        if (!auth.user) return null;
-        const cover = (auth.user as any).coverPhoto;
-        
-        if (!cover) return null;
-
-        if (cover.fullUrl && cover.fullUrl.trim() !== '') {
-            return appendCacheBuster(normalizeImageUrl(cover.fullUrl));
-        }
-        
-        if (cover.url && cover.url.trim() !== '') {
-            return appendCacheBuster(normalizeImageUrl(cover.url));
-        }
-        
-        if (cover.filename && cover.filename.trim() !== '') {
-            return appendCacheBuster(normalizeImageUrl(cover.filename));
-        }
-
-        return null;
-    };
-
-    const avatarSrc = getAvatarSrc();
-    const coverSrc = getCoverSrc();
-    const [stableAvatarSrc, setStableAvatarSrc] = useState<string>('');
-    const [stableCoverSrc, setStableCoverSrc] = useState<string | null>(null);
-    const [isSubmittingIdentity, setIsSubmittingIdentity] = useState(false);
-
-    useEffect(() => {
-        if (avatarSrc && !avatarSrc.includes('/assets/images/avatar.jpg')) {
-            setStableAvatarSrc(avatarSrc);
-        }
-    }, [avatarSrc, auth.user?.avatar, (auth.user as any)?.photoURL]);
-
-    useEffect(() => {
-        if (coverSrc) {
-            setStableCoverSrc(coverSrc);
-        } else {
-            setStableCoverSrc(null);
-        }
-    }, [coverSrc, (auth.user as any)?.coverPhoto]);
-
-    if (isReady && !isLogged) {
-        return (
-            <div className="profile-login-required">
-                <div className="login-prompt">
-                    <h2>Authentification requise</h2>
-                    <p>Veuillez vous connecter pour accéder à votre profil.</p>
-                    <button onClick={() => router.push('/login')}>Aller à la connexion</button>
-                </div>
-            </div>
-        );
-    }
-
-
+    const hasIdentityChanges = JSON.stringify(identity) !== JSON.stringify(initialIdentity);
+    const canSubmitIdentity = identity && 
+        identity._id && 
+        (identity.status !== 'PENDING' && identity.status !== 'VERIFIED') &&
+        (hasIdentityChanges || (identity.status === 'REJECTED' || identity.status === 'NOT_SUBMITTED' || !identity.status));
 
     const handleSubmitIdentity = async () => {
         if (!identity || !identity._id) {
             enqueueSnackbar('Veuillez d\'abord télécharger au moins un document', { variant: 'warning' });
             return;
+        }
+
+        if (identity.status === 'PENDING') {
+            enqueueSnackbar('Votre demande est déjà en cours de vérification', { variant: 'info' });
+            return;
+        }
+
+        if (!canSubmitIdentity && identity.status !== 'REJECTED') {
+             enqueueSnackbar('Aucune modification détectée dans vos documents', { variant: 'info' });
+             return;
         }
 
         try {
@@ -633,9 +905,12 @@ export default function ProfilePage() {
                     response.message || 'Documents soumis avec succès. En attente de vérification par l\'administrateur.',
                     { variant: 'success' }
                 );
-                await fetchIdentity();
+                await queryClient.invalidateQueries({ queryKey: ['identity'] }); // Refresh to get updated status
+            } else {
+                throw new Error(response?.message || 'Failed to submit identity');
             }
         } catch (error: any) {
+            console.error('Error submitting identity:', error);
             const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de la soumission des documents';
             enqueueSnackbar(errorMessage, { variant: 'error' });
         } finally {
@@ -643,6 +918,7 @@ export default function ProfilePage() {
         }
     };
 
+    // Helper function to render document cards
     const renderDocumentCards = (documents: any[], sectionTitle: string, isRequired: boolean) => {
         return (
             <div className="modern-document-section">
@@ -652,53 +928,61 @@ export default function ProfilePage() {
                         {sectionTitle}
                     </h3>
                     <div className={`modern-document-section-badge ${isRequired ? 'required' : 'required'}`}>
-                        {isRequired ? t('dashboard.profile.documents.mandatory') : t('dashboard.profile.documents.required')}
+                        {isRequired ? 'Obligatoire' : 'Requis'}
                     </div>
                 </div>
-
+                
                 {isRequired && (
                     <div className="modern-document-optional-note">
                         <div className="modern-document-note-card">
                             <i className="bi-info-circle-fill"></i>
                             <div className="modern-document-note-content">
-                                <h4>{t('dashboard.profile.documents.verificationInfoTitle')}</h4>
-                                <p>{t('dashboard.profile.documents.verificationInfoBody1')}</p>
-                                <p>{t('dashboard.profile.documents.verificationInfoBody2')}</p>
+                                <h4>{t("profile.documents.verificationNoteTitle") || "Vérification"}</h4>
+                                <p>
+                                    {t("profile.documents.verificationRequirement") || "Fournir (RC/ Autres + NIF) ou (Carte Fellah uniquement)."}
+                                </p>
+                                <p>
+                                    {t("profile.documents.verificationSaveNote") || "Cliquez sur \"Soumettre\" pour envoyer à l'administrateur."}
+                                </p>
                             </div>
                         </div>
                     </div>
                 )}
-
+                
                 {!isRequired && (
                     <div className="modern-document-optional-note">
                         <div className="modern-document-note-card">
                             <i className="bi-info-circle-fill"></i>
                             <div className="modern-document-note-content">
-                                <h4>{t('dashboard.profile.documents.certificationInfoTitle')}</h4>
-                                <p>{t('dashboard.profile.documents.certificationInfoBody1')}</p>
-                                <p>{t('dashboard.profile.documents.certificationInfoBody2')}</p>
+                                <h4>{t("profile.documents.certificationNoteTitle") || "Certification"}</h4>
+                                <p>
+                                    {t("profile.documents.certificationRequirement") || "Ajoutez ces documents pour la certification professionnelle."}
+                                </p>
+                                <p>
+                                    {t("profile.documents.certificationSaveNote") || "Cliquez sur \"Soumettre\" pour envoyer à l'administrateur."}
+                                </p>
                             </div>
                         </div>
                     </div>
                 )}
-
+                
                 <div className="modern-document-grid">
                     {documents.map((field, index) => {
-                        const document = identity?.[field.key];
+                        const document = identity ? (identity as any)[field.key] : null;
                         const isUploadingThisField = isUploadingDocument === field.key;
-                        const hasDocument = document && ((document as any).url || (document as any).fullUrl);
+                        const hasDocument = document && document.url;
 
                         return (
                             <motion.div
                                 key={field.key}
-                                className={`modern-document-card ${hasDocument ? 'has-document' : 'no-document'} ${isUploadingThisField ? 'uploading' : ''}`}
+                                className={`modern-document-card ${hasDocument ? 'has-document' : 'no-document'} ${isUploadingThisField ? 'uploading' : ''} ${isRequired ? 'required-card' : 'optional-card'}`}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
                             >
                                 <div className="modern-document-header">
                                     <div className="modern-document-icon">
-                                        <i className={hasDocument ? 'bi-file-earmark-check-fill' : 'bi-file-earmark-plus'}></i>
+                                        <i className={hasDocument ? "bi-file-earmark-check-fill" : "bi-file-earmark-plus"}></i>
                                     </div>
                                     <div className="modern-document-info">
                                         <h3 className="modern-document-title">
@@ -714,12 +998,22 @@ export default function ProfilePage() {
                                         <div className="modern-document-file">
                                             {document.mimetype?.startsWith('image/') ? (
                                                 <div className="modern-document-image-preview">
-                                                    <img
-                                                        src={getDocumentUrl(document)}
+                                                    <img 
+                                                        src={getDocumentUrl(document)} 
                                                         alt={getDocumentName(document)}
                                                         className="modern-document-thumbnail"
                                                         onClick={() => window.open(getDocumentUrl(document), '_blank')}
+                                                        onError={(e) => {
+                                                            // Fallback to icon if image fails to load
+                                                            e.currentTarget.style.display = 'none';
+                                                            if (e.currentTarget.nextElementSibling) {
+                                                                (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                                                            }
+                                                        }}
                                                     />
+                                                    <div className="modern-document-icon-fallback" style={{ display: 'none' }}>
+                                                        <i className="bi-file-earmark-image"></i>
+                                                    </div>
                                                 </div>
                                             ) : (
                                                 <div className="modern-document-icon">
@@ -747,9 +1041,7 @@ export default function ProfilePage() {
 
                                 <div className="modern-document-upload">
                                     <input
-                                        ref={(el) => {
-                                            documentFileInputRefs.current[field.key] = el;
-                                        }}
+                                        ref={el => { documentFileInputRefs.current[field.key] = el; }}
                                         type="file"
                                         accept=".jpg,.jpeg,.png,.pdf"
                                         onChange={(e) => {
@@ -760,7 +1052,7 @@ export default function ProfilePage() {
                                         }}
                                         style={{ display: 'none' }}
                                     />
-
+                                    
                                     <motion.button
                                         className={`modern-btn ${hasDocument ? 'modern-btn-outline' : 'modern-btn-primary'} modern-btn-full`}
                                         onClick={() => documentFileInputRefs.current[field.key]?.click()}
@@ -771,17 +1063,17 @@ export default function ProfilePage() {
                                         {isUploadingThisField ? (
                                             <>
                                                 <div className="modern-spinner-sm"></div>
-                                                {t('dashboard.profile.documents.submitting')}
+                                                Upload en cours...
                                             </>
                                         ) : hasDocument ? (
                                             <>
                                                 <i className="bi-arrow-clockwise"></i>
-                                                {t('dashboard.profile.documents.replace')}
+                                                Remplacer
                                             </>
                                         ) : (
                                             <>
                                                 <i className="bi-upload"></i>
-                                                {t('dashboard.profile.documents.add')}
+                                                Ajouter
                                             </>
                                         )}
                                     </motion.button>
@@ -803,12 +1095,14 @@ export default function ProfilePage() {
                     })}
                 </div>
 
+                {/* Submit button for required documents section - only show when documents are ready */}
                 {isRequired && identity && identity._id && (() => {
                     const hasRc = identity.registreCommerceCarteAuto && ((identity.registreCommerceCarteAuto as any).url || (identity.registreCommerceCarteAuto as any).fullUrl);
                     const hasNif = identity.nifRequired && ((identity.nifRequired as any).url || (identity.nifRequired as any).fullUrl);
                     const hasCarteFellah = identity.carteFellah && ((identity.carteFellah as any).url || (identity.carteFellah as any).fullUrl);
                     const canSubmit = (hasRc && hasNif) || hasCarteFellah;
                     
+                    // Don't show button if documents aren't ready for submission
                     if (!canSubmit) return null;
                     
                     return (
@@ -831,22 +1125,22 @@ export default function ProfilePage() {
                                 {isSubmittingIdentity ? (
                                     <>
                                         <div className="modern-spinner-sm" style={{ marginRight: '0.5rem' }}></div>
-                                        {t('dashboard.profile.documents.submitting')}
+                                        Soumission...
                                     </>
                                 ) : identity?.status === 'WAITING' ? (
                                     <>
                                         <i className="bi-clock-history" style={{ marginRight: '0.5rem' }}></i>
-                                        {t('dashboard.profile.documents.waiting')}
+                                        En attente de vérification
                                     </>
                                 ) : identity?.status === 'DONE' ? (
                                     <>
                                         <i className="bi-check-circle-fill" style={{ marginRight: '0.5rem' }}></i>
-                                        {t('dashboard.profile.documents.verified')}
+                                        Vérifié
                                     </>
                                 ) : (
                                     <>
                                         <i className="bi-send-fill" style={{ marginRight: '0.5rem' }}></i>
-                                        {t('dashboard.profile.documents.submit')}
+                                        Soumettre pour vérification
                                     </>
                                 )}
                             </motion.button>
@@ -854,41 +1148,54 @@ export default function ProfilePage() {
                     );
                 })()}
 
+                {/* Submit button for optional documents section - show when at least one optional document is uploaded */}
                 {!isRequired && identity && identity._id && (() => {
-                    const optionalDocKeys = ['nis', 'numeroArticle', 'c20', 'misesAJourCnas', 'last3YearsBalanceSheet', 'certificates'];
+                    // Check if any optional document is uploaded
+                    const optionalDocKeys = ['nis', 'art', 'c20', 'misesAJourCnas', 'last3YearsBalanceSheet', 'certificates', 'identityCard'];
                     const hasAnyOptionalDoc = optionalDocKeys.some(key => {
-                        const doc = identity[key];
+                        const doc = (identity as any)[key];
                         return doc && ((doc as any).url || (doc as any).fullUrl);
                     });
                     
+                    // Don't show button if no optional documents are uploaded
                     if (!hasAnyOptionalDoc) return null;
                     
                     const certificationStatus = (identity as any).certificationStatus || 'DRAFT';
+                    const isCertificationWaiting = certificationStatus === 'WAITING';
+                    const isCertificationDone = certificationStatus === 'DONE';
                     
                     return (
                         <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center' }}>
                             <motion.button
                                 className="modern-btn modern-btn-primary"
                                 onClick={async () => {
+                                    if (!identity || !identity._id) {
+                                        enqueueSnackbar('Veuillez d\'abord télécharger au moins un document', { variant: 'warning' });
+                                        return;
+                                    }
+
                                     try {
                                         setIsSubmittingIdentity(true);
-                                        const response = await IdentityAPI.submitCertification(identity._id);
+                                    const response = await IdentityAPI.submitCertification(identity._id);
                                         
                                         if (response && response.success) {
                                             enqueueSnackbar(
-                                                response.message || 'Documents de certification soumis avec succès.',
+                                                response.message || 'Documents de certification soumis avec succès. En attente de vérification par l\'administrateur.',
                                                 { variant: 'success' }
                                             );
-                                            await fetchIdentity();
+                                            await queryClient.invalidateQueries({ queryKey: ['identity'] }); // Refresh to get updated status
+                                        } else {
+                                            throw new Error(response?.message || 'Failed to submit certification');
                                         }
                                     } catch (error: any) {
-                                        const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de la soumission';
+                                        console.error('Error submitting certification:', error);
+                                        const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de la soumission des documents de certification';
                                         enqueueSnackbar(errorMessage, { variant: 'error' });
                                     } finally {
                                         setIsSubmittingIdentity(false);
                                     }
                                 }}
-                                disabled={isSubmittingIdentity || certificationStatus === 'WAITING' || certificationStatus === 'DONE'}
+                                disabled={isSubmittingIdentity || isCertificationWaiting || isCertificationDone}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 style={{
@@ -896,6 +1203,8 @@ export default function ProfilePage() {
                                     fontSize: '0.9rem',
                                     fontWeight: 600,
                                     minWidth: '200px',
+                                    opacity: (isCertificationWaiting || isCertificationDone) ? 0.6 : 1,
+                                    cursor: (isCertificationWaiting || isCertificationDone) ? 'not-allowed' : 'pointer',
                                 }}
                             >
                                 {isSubmittingIdentity ? (
@@ -903,10 +1212,20 @@ export default function ProfilePage() {
                                         <div className="modern-spinner-sm" style={{ marginRight: '0.5rem' }}></div>
                                         Soumission...
                                     </>
+                                ) : isCertificationWaiting ? (
+                                    <>
+                                        <i className="bi-clock-history" style={{ marginRight: '0.5rem' }}></i>
+                                        {t("profile.documents.pendingCertification") || "En attente de certification"}
+                                    </>
+                                ) : isCertificationDone ? (
+                                    <>
+                                        <i className="bi-award-fill" style={{ marginRight: '0.5rem' }}></i>
+                                        {t("profile.documents.certified") || "Certifié"}
+                                    </>
                                 ) : (
                                     <>
                                         <i className="bi-send-fill" style={{ marginRight: '0.5rem' }}></i>
-                                        {t('dashboard.profile.documents.submit')}
+                                        {t("profile.documents.submitForCertification") || "Soumettre pour certification"}
                                     </>
                                 )}
                             </motion.button>
@@ -917,668 +1236,458 @@ export default function ProfilePage() {
         );
     };
 
-    return (
-        <main className="modern-profile-page">
-            {/* Animated Background */}
-            {/* Animated Background or Cover Photo */}
-            <div className="profile-background">
-                {stableCoverSrc ? (
-                    <img 
-                        src={stableCoverSrc} 
-                        alt="Couverture" 
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            position: 'absolute',
-                            top: 0,
-                            left: 0
-                        }}
-                    />
-                ) : (
-                    <>
-                        <div className="gradient-orb orb-1"></div>
-                        <div className="gradient-orb orb-2"></div>
-                        <div className="gradient-orb orb-3"></div>
-                    </>
-                )}
-                
-                {/* Cover Photo Edit Button */}
-                <div 
-                    style={{
-                        position: 'absolute',
-                        top: '20px',
-                        right: '20px',
-                        zIndex: 10
-                    }}
-                >
-                    <input
-                        type="file"
-                        ref={coverInputRef}
-                        style={{ display: 'none' }}
-                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                        onChange={handleCoverChange}
-                    />
-                    <motion.button
-                        className="modern-btn modern-btn-outline"
-                        style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                            backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
-                            color: 'white'
-                        }}
-                        onClick={handleCoverClick}
-                        whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.3)' }}
-                        whileTap={{ scale: 0.95 }}
-                        disabled={isUploadingCover}
-                    >
-                        {isUploadingCover ? (
-                            <div className="modern-spinner-sm" style={{borderColor: 'white', borderTopColor: 'transparent'}}></div>
-                        ) : (
-                            <i className="bi bi-camera-fill" style={{ marginRight: '8px' }}></i>
-                        )}
-                        {stableCoverSrc ? 'Modifier la couverture' : 'Ajouter une couverture'}
-                    </motion.button>
+    // normalizeUrl hook removed - using imported normalizeImageUrl directly
+    const normalizeUrl = normalizeImageUrl;
+
+    // Construct avatar source with multiple fallback options
+    const getAvatarSrc = () => {
+        if (!auth.user) return '/assets/images/avatar.jpg';
+        
+        console.log('🖼️ Constructing avatar URL from:', auth.user);
+        console.log('🖼️ Avatar object:', auth.user.avatar);
+        console.log('🖼️ photoURL:', auth.user.photoURL);
+        // Priority 0: avatar string (from registration)
+        const avatarAny = auth.user.avatar as any;
+        if (typeof avatarAny === 'string' && avatarAny.trim() !== '') {
+             const avatarUrl = normalizeUrl(avatarAny);
+             if (avatarUrl && !avatarUrl.includes('mock-images')) {
+                 console.log('📸 Using avatar string:', avatarUrl);
+                 return `${avatarUrl}?v=${avatarKey}`;
+             }
+        }
+        
+        // Priority 1: photoURL (direct from backend)
+        if (auth.user.photoURL && auth.user.photoURL.trim() !== "") {
+            const cleanUrl = normalizeUrl(auth.user.photoURL);
+            if (cleanUrl && !cleanUrl.includes('mock-images')) {
+                console.log('📸 Using photoURL:', cleanUrl);
+                return `${cleanUrl}?v=${avatarKey}`;
+            }
+        }
+        
+        // Priority 2: avatar object with fullUrl
+        if (auth.user.avatar && 'fullUrl' in auth.user.avatar && auth.user.avatar.fullUrl) {
+            const avatarUrl = normalizeUrl((auth.user.avatar as any).fullUrl);
+            if (avatarUrl && !avatarUrl.includes('mock-images')) {
+                console.log('📸 Using avatar.fullUrl:', avatarUrl);
+                return `${avatarUrl}?v=${avatarKey}`;
+            }
+        }
+        
+        // Priority 3: avatar.url
+        if (auth.user.avatar?.url) {
+            const avatarUrl = normalizeUrl(auth.user.avatar.url);
+            if (avatarUrl && !avatarUrl.includes('mock-images')) {
+                console.log('📸 Using avatar.url:', avatarUrl);
+                return `${avatarUrl}?v=${avatarKey}`;
+            }
+        }
+        
+        // Priority 4: avatar.filename
+        if (auth.user.avatar?.filename) {
+            // Check if filename is a full URL or needs prepending
+            const filename = auth.user.avatar.filename;
+            let avatarUrl;
+            
+            if (filename.startsWith('http') || filename.startsWith('/')) {
+                 avatarUrl = normalizeImageUrl(filename);
+            } else {
+                 // Use normalizeImageUrl which handles bare filenames by assuming static
+                 avatarUrl = normalizeImageUrl(filename);
+            }
+
+            if (avatarUrl && !avatarUrl.includes('mock-images')) {
+                console.log('📸 Using avatar.filename:', avatarUrl);
+                return `${avatarUrl}?v=${avatarKey}`;
+            }
+        }
+        
+        // Priority 5: fallback
+        console.log('📸 Using local default avatar');
+        return '/assets/images/avatar.jpg';
+    };
+    
+    const avatarSrc = getAvatarSrc();
+
+    // Show skeleton loading while authenticating
+    if (!isReady) {
+        return (
+            <>
+                <Header />
+                <div style={{ paddingTop: '30px', minHeight: '80vh' }}>
+                    <ProfileSkeleton />
+                </div>
+            </>
+        );
+    }
+
+    // Show login prompt if not logged in
+    if (isReady && !isLogged) {
+        return (
+            <div className="profile-login-required">
+                <div className="login-prompt">
+                    <h2>Authentication Required</h2>
+                    <p>Please log in to access your profile.</p>
+                    <button onClick={() => router.push("/auth/login")}>Go to Login</button>
                 </div>
             </div>
+        );
+    }
 
-            {/* Page Header with Title */}
-            <motion.div
-                className="profile-page-header"
-                initial={{ opacity: 0, y: -30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
-            >
-                <div className="profile-header-content">
-                    <motion.h1
+    return (
+        <div>
+            <Header />
+            <main className="figma-profile-page" style={{ paddingTop: '30px' }}>
+                <div className="figma-profile-container">
+                    <motion.div 
+                        className="figma-profile-hero"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        className="profile-page-title"
+                        transition={{ duration: 0.8 }}
                     >
-                        {t('dashboard.profile.personalInfo.title')}
-                    </motion.h1>
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.4 }}
-                        className="profile-page-subtitle"
-                    >
-                        {t('dashboard.profile.personalInfo.subtitle')}
-                    </motion.p>
-                </div>
-            </motion.div>
-
-            <div className="modern-profile-container">
-                {/* Hero Section - Full Width */}
-                <motion.div
-                    className="modern-profile-hero"
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.6 }}
-                >
-                    <motion.div
-                        className="hero-content"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.8, delay: 0.8 }}
-                    >
-                        {/* Profile Avatar Card - Centered */}
-                        <div className="hero-avatar-card" style={{ boxShadow: 'none' }}>
-                            <div className="avatar-container">
-                                <div className="avatar-wrapper" style={{ position: 'relative' }}>
-                                    <div className="avatar-frame" style={{
-                                        boxShadow: '0 0 0 2px #e5e7eb',
-                                        border: '4px solid #fff',
-                                        background: '#fff',
-                                        borderRadius: '50%',
-                                        padding: 0,
-                                        overflow: 'hidden'
-                                    }}>
-                                        <img
-                                            key={`avatar-${avatarKey}-${auth.user?._id || 'default'}`}
-                                            src={stableAvatarSrc || avatarSrc}
-                                            alt="Profile"
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'cover',
-                                                borderRadius: '50%',
-                                                display: 'block'
-                                            }}
-                                            loading="lazy"
-                                            onError={(e) => {
-                                                const target = e.currentTarget as HTMLImageElement;
-                                                if (!target.src.includes('avatar.jpg')) {
-                                                    target.src = '/assets/images/avatar.jpg';
-                                                }
-                                            }}
-                                        />
+                        {/* Combined Cover and Avatar Div */}
+                        <div className="figma-hero-header">
+                            <div className="figma-cover-dashed" onClick={handleCoverClick}>
+                                {auth.user?.coverPhotoURL ? (
+                                    <img 
+                                        key={coverKey}
+                                        src={`${getImageUrl(auth.user.coverPhotoURL)}${getImageUrl(auth.user.coverPhotoURL)?.includes('?') ? '&' : '?'}t=${coverKey}`} 
+                                        alt="Cover" 
+                                        className="figma-cover-img"
+                                    />
+                                ) : (
+                                    <div className="figma-cover-placeholder">
+                                        {isUploadingCover ? (
+                                            <motion.i className="bi bi-arrow-repeat" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
+                                        ) : (
+                                            <i className="bi bi-image" style={{ marginRight: '8px', fontSize: '20px' }}></i>
+                                        )}
+                                        <span>{t("profile.addCoverPhoto") || "Cliquez pour ajouter une photo de couverture"}</span>
                                     </div>
-                                    {auth.user?.rate && auth.user.rate > 0 && (
-                                        <div
-                                            className="rating-badge-avatar"
-                                            style={{
-                                                position: 'absolute',
-                                                top: '-8px',
-                                                right: '-8px',
-                                                background: 'transparent',
-                                                borderRadius: '50%',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                zIndex: 10,
-                                            }}
-                                        >
-                                            <span style={{
-                                                fontSize: '18px',
-                                                fontWeight: '800',
-                                                color: '#FFD700',
-                                                textShadow: '0 0 10px rgba(255, 215, 0, 0.6)',
-                                            }}>
-                                                +{Math.round(auth.user.rate)}
-                                            </span>
+                                )}
+                            </div>
+
+                            <div className="figma-avatar-container">
+                                <div className="figma-avatar-circle" onClick={handleAvatarClick}>
+                                    <img key={avatarKey} src={avatarSrc} alt="Avatar" className="figma-avatar-img" onError={(e) => {
+                                        const target = e.currentTarget as HTMLImageElement;
+                                        if (!target.src.includes('avatar.jpg')) target.src = '/assets/images/avatar.jpg';
+                                    }} />
+                                    {isUploadingAvatar && (
+                                        <div className="figma-avatar-uploading-overlay">
+                                            <motion.i className="bi bi-arrow-repeat" style={{ fontSize: '24px', color: '#0066FF' }} animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
                                         </div>
                                     )}
-                                    <input
-                                        type="file"
-                                        ref={fileInputRef}
-                                        style={{ display: 'none' }}
-                                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                                        onChange={handleAvatarChange}
-                                    />
-
-                                    <button
-                                        className="modern-avatar-btn"
-                                        onClick={handleAvatarClick}
-                                        disabled={isUploadingAvatar}
-                                    >
-                                        {isUploadingAvatar ? (
-                                            <div className="loading-spinner">
-                                                <i className="bi bi-arrow-clockwise"></i>
-                                            </div>
-                                        ) : (
-                                            <i className="bi bi-camera-fill"></i>
-                                        )}
-                                    </button>
                                 </div>
-
-                                <div className="avatar-info">
-                                    <motion.h3
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.5, delay: 1.1 }}
-                                    >
-                                        {auth.user?.firstName} {auth.user?.lastName || 'Utilisateur'}
-                                    </motion.h3>
-                                    <motion.p
-                                        className="user-email"
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.5, delay: 1.2 }}
-                                    >
-                                        {auth.user?.email}
-                                    </motion.p>
-
-                                    {/* Professional and Verified Badges */}
-                                    <motion.div
-                                        className="user-badges-container"
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.5, delay: 1.3 }}
-                                        style={{
-                                            display: 'flex',
-                                            gap: '6px',
-                                            marginTop: '4px',
-                                            flexWrap: 'wrap',
-                                            justifyContent: 'center',
-                                        }}
-                                    >
-                                        {auth.user?.type === 'PROFESSIONAL' && (
-                                            <motion.div
-                                                className="user-badge professional"
-                                                initial={{ opacity: 0, scale: 0.8 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: '3px',
-                                                    padding: '3px 6px',
-                                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                    color: 'white',
-                                                    borderRadius: '10px',
-                                                    fontSize: '11px',
-                                                    fontWeight: '600',
-                                                }}
-                                            >
-                                                <i className="bi bi-star-fill" style={{ fontSize: '9px' }}></i>
-                                                <span>PRO</span>
-                                            </motion.div>
-                                        )}
-
-                                        {(auth.user as any)?.isVerified && (
-                                            <motion.div
-                                                className="user-badge verified"
-                                                style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: '3px',
-                                                    padding: '3px 6px',
-                                                    background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-                                                    color: 'white',
-                                                    borderRadius: '10px',
-                                                    fontSize: '11px',
-                                                    fontWeight: '600',
-                                                }}
-                                            >
-                                                <i className="bi bi-check-circle-fill" style={{ fontSize: '9px' }}></i>
-                                                <span>VERIFIED</span>
-                                            </motion.div>
-                                        )}
-                                        {(auth.user as any)?.isCertified && (
-                                            <motion.div
-                                                className="user-badge certified"
-                                                style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: '3px',
-                                                    padding: '3px 6px',
-                                                    background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
-                                                    color: 'white',
-                                                    borderRadius: '10px',
-                                                    fontSize: '11px',
-                                                    fontWeight: '600',
-                                                }}
-                                            >
-                                                <i className="bi bi-award-fill" style={{ fontSize: '9px' }}></i>
-                                                <span>CERTIFIÉ</span>
-                                            </motion.div>
-                                        )}
-                                    </motion.div>
+                                <div className="figma-avatar-badges">
+                                    <div className="figma-badge top-left"><i className="bi bi-check-circle-fill"></i></div>
+                                    <div className="figma-badge top-right"><i className="bi bi-stars"></i></div>
+                                    <div className="figma-badge bottom-left"><i className="bi bi-award-fill"></i></div>
+                                    <div className="figma-badge bottom-right"><i className="bi bi-shield-fill-check"></i></div>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Hidden Inputs */}
+                        <input type="file" ref={coverInputRef} style={{ display: "none" }} accept="image/*" onChange={handleCoverChange} />
+                        <input type="file" ref={fileInputRef} style={{ display: "none" }} accept="image/*" onChange={handleAvatarChange} />
                     </motion.div>
-                </motion.div>
 
-                {/* Main Content Grid */}
-                <div className="modern-content-grid">
-                    {/* Profile Notice */}
-                    {/* DIAGNOSTIC: Modified to standard div */}
-                    {/* Profile Notice */}
-                    {showProfileNote && (
-                        <div 
-                            className="profile-note-banner"
-                            style={{
-                                marginBottom: '20px',
-                                background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
-                                borderRadius: '16px',
-                                padding: '20px',
-                                position: 'relative',
-                                boxShadow: '0 4px 15px rgba(33, 150, 243, 0.1)',
-                                border: '1px solid rgba(255, 255, 255, 0.6)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '15px',
-                                zIndex: 10
-                            }}
-                        >
-                            <div style={{ display: 'flex', alignItems: 'start', gap: '15px' }}>
-                                <div style={{ 
-                                    background: 'white', 
-                                    borderRadius: '50%', 
-                                    width: '40px', 
-                                    height: '40px', 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'center',
-                                    flexShrink: 0,
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                                    color: '#1976d2'
-                                }}>
-                                    <i className="bi bi-info-circle-fill" style={{ fontSize: '20px' }}></i>
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <h4 style={{ margin: '0 0 5px 0', color: '#0d47a1', fontSize: '16px', fontWeight: '700' }}>
-                                        Complétez votre profil
-                                    </h4>
-                                    <p style={{ margin: 0, color: '#1565c0', fontSize: '14px', lineHeight: '1.5' }}>
-                                        Vous pouvez compléter votre profil plus tard, mais cela est nécessaire pour avoir un statut "Terminé" et débloquer toutes les fonctionnalités (création d'enchères, soumissions, etc.).
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', width: '100%', flexWrap: 'wrap' }}>
-                                <button 
-                                    onClick={dismissProfileNoteForever}
-                                    style={{
-                                        background: 'transparent',
-                                        border: '1px solid rgba(25, 118, 210, 0.3)',
-                                        borderRadius: '8px',
-                                        padding: '8px 16px',
-                                        color: '#1976d2',
-                                        fontSize: '13px',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease',
-                                    }}
-                                    className="hover:bg-blue-50"
-                                >
-                                    Ne plus afficher
-                                </button>
-                                <button 
-                                    onClick={dismissProfileNote}
-                                    style={{
-                                        background: 'transparent',
-                                        border: '1px solid rgba(25, 118, 210, 0.5)',
-                                        borderRadius: '8px',
-                                        padding: '8px 16px',
-                                        color: '#1565c0',
-                                        fontSize: '13px',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease',
-                                    }}
-                                    className="hover:bg-blue-50"
-                                >
-                                    Plus tard
-                                </button>
-                                <button 
-                                    onClick={() => router.push('/settings')}
-                                    style={{
-                                        background: '#1976d2',
-                                        border: 'none',
-                                        borderRadius: '8px',
-                                        padding: '8px 20px',
-                                        color: 'white',
-                                        fontSize: '13px',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        boxShadow: '0 2px 6px rgba(25, 118, 210, 0.3)',
-                                        transition: 'all 0.2s ease',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '6px'
-                                    }}
-                                    className="hover:bg-blue-700"
-                                >
-                                    <span>Compléter maintenant</span>
-                                    <i className="bi bi-arrow-right"></i>
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                    {/* Profile Tabs Section */}
-                    <motion.div
-                        className="modern-tabs-section"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 1.2 }}
-                    >
-                        {/* Tab Navigation */}
-                        <div className="modern-tab-nav">
+                    <div className="figma-tabs-container">
+                        <div className="figma-tabs-pill">
                             {[
-                                { id: 'personal-info', icon: 'bi-person-circle', label: t('dashboard.profile.tabs.personalInfo') },
-                                { id: 'security', icon: 'bi-shield-lock-fill', label: t('dashboard.profile.tabs.security') },
-                            ].map((tab, index) => (
-                                <motion.button
+                                { id: "compte", label: "Compte" },
+                                { id: "securite", label: "Sécurité" },
+                                { id: "documents", label: "Vérification de documents" },
+                            ].map((tab) => (
+                                <button
                                     key={tab.id}
-                                    className={`modern-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                                    className={`figma-tab-btn ${activeTab === tab.id ? "active" : ""}`}
                                     onClick={() => setActiveTab(tab.id)}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
                                 >
-                                    <i className={tab.icon}></i>
-                                    <span>{tab.label}</span>
-                                    {activeTab === tab.id && (
-                                        <motion.div
-                                            className="tab-indicator"
-                                            layoutId="tab-indicator"
-                                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                                        />
-                                    )}
-                                </motion.button>
+                                    {tab.label}
+                                </button>
                             ))}
                         </div>
+                    </div>
 
-                        {/* Tab Content */}
-                        <div className="modern-tab-content">
-                            <AnimatePresence mode="wait">
-                                {/* Personal Info Tab */}
-                                {activeTab === 'personal-info' && (
-                                    <motion.div
-                                        key="personal-info"
-                                        className="modern-tab-content"
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -20 }}
-                                    >
-                                        <div className="modern-section-card">
-                                            <div className="section-header">
-                                                <div className="header-content">
-                                                    <motion.div
-                                                        className="header-icon"
-                                                        whileHover={{ rotate: 10, scale: 1.1 }}
-                                                    >
-                                                        <i className="bi bi-person-circle"></i>
-                                                    </motion.div>
-                                                    <div className="header-text">
-                                                        <h2>{t('dashboard.profile.personalInfo.title')}</h2>
-                                                        <p>{t('dashboard.profile.personalInfo.subtitle')}</p>
+                    <div className="figma-tab-content">
+                        <AnimatePresence mode="wait">
+                            {activeTab === "compte" && (
+                                <motion.div key="compte" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+                                    <form onSubmit={handleSubmit}>
+                                        <div className="figma-card figma-card-personal" style={{ marginBottom: '24px' }}>
+                                            <div className="figma-card-header">
+                                                <div className="figma-card-title-box">
+                                                    <h3 className="figma-card-title">Informations personnelles</h3>
+                                                    <p className="figma-card-description">Gérez vos informations personnelles et les détails de votre profil</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="figma-form-row">
+                                                <div className="figma-input-field">
+                                                    <label className="figma-input-label">Nom</label>
+                                                    <div className={`figma-form-field ${!isEditing ? 'readonly' : ''}`}>
+                                                        <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} disabled={!isEditing} placeholder="Nom" required />
                                                     </div>
                                                 </div>
-                                                <motion.button
-                                                    className={`modern-edit-button ${isEditing ? 'editing' : ''}`}
-                                                    onClick={() => setIsEditing(!isEditing)}
-                                                    whileHover={{ scale: 1.05 }}
-                                                    whileTap={{ scale: 0.95 }}
-                                                >
-                                                    <i className={`bi ${isEditing ? 'bi-x-circle' : 'bi-pencil-square'}`} />
-                                                    <span>{isEditing ? t('dashboard.profile.personalInfo.cancel') : t('dashboard.profile.personalInfo.edit')}</span>
-                                                </motion.button>
+                                                <div className="figma-input-field">
+                                                    <label className="figma-input-label">Prénom</label>
+                                                    <div className={`figma-form-field ${!isEditing ? 'readonly' : ''}`}>
+                                                        <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} disabled={!isEditing} placeholder="Prénom" required />
+                                                    </div>
+                                                </div>
+                                                <div className="figma-input-field">
+                                                    <label className="figma-input-label">Email</label>
+                                                    <div className={`figma-form-field ${!isEditing ? 'readonly' : ''}`}>
+                                                        <input type="email" name="email" value={formData.email} onChange={handleInputChange} disabled={!isEditing} placeholder="Email" required />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="figma-input-field" style={{ width: '100%' }}>
+                                                <label className="figma-input-label">Nom de l'entreprise</label>
+                                                <div className={`figma-form-field ${!isEditing ? 'readonly' : ''}`}>
+                                                    <input type="text" name="companyName" value={formData.companyName} onChange={handleInputChange} disabled={!isEditing} placeholder="Nom de l'entreprise" />
+                                                </div>
                                             </div>
 
-                                            <form onSubmit={handleSubmit}>
-                                                <div className="modern-form-grid">
-                                                    <div className="modern-form-field">
-                                                        <label htmlFor="firstName">{t('dashboard.profile.personalInfo.firstName')}</label>
-                                                        <input
-                                                            type="text"
-                                                            id="firstName"
-                                                            name="firstName"
-                                                            value={formData.firstName}
-                                                            onChange={handleInputChange}
-                                                            disabled={!isEditing}
-                                                            required
-                                                        />
-                                                    </div>
+                                            <div className="figma-cta-group figma-cta-group-personal">
+                                                {!isEditing ? (
+                                                    <button type="button" onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        setIsEditing(true);
+                                                        // Use a small timeout to ensure the input is enabled before focusing
+                                                        setTimeout(() => {
+                                                            const firstInput = document.querySelector('input[name="lastName"]') as HTMLInputElement;
+                                                            if (firstInput) firstInput.focus();
+                                                        }, 100);
+                                                    }} className="figma-btn-primary">
+                                                        Modifier
+                                                    </button>
+                                                ) : (
+                                                    <>
+                                                        <button type="submit" disabled={isLoading} className="figma-btn-primary">
+                                                            {isLoading ? "Enregistrement..." : "Enregistrer"}
+                                                        </button>
+                                                        <button type="button" onClick={() => setIsEditing(false)} className="figma-btn-secondary">Annuler</button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
 
-                                                    <div className="modern-form-field">
-                                                        <label htmlFor="lastName">{t('dashboard.profile.personalInfo.lastName')}</label>
-                                                        <input
-                                                            type="text"
-                                                            id="lastName"
-                                                            name="lastName"
-                                                            value={formData.lastName}
-                                                            onChange={handleInputChange}
-                                                            disabled={!isEditing}
-                                                            required
-                                                        />
+                                        <div className="figma-card figma-card-additional">
+                                            <div className="figma-card-header">
+                                                <div className="figma-card-title-box">
+                                                    <h3 className="figma-card-title">Details supplementaires</h3>
+                                                </div>
+                                                {!isEditing && (
+                                                    <button type="button" onClick={() => setIsEditing(true)} className="figma-btn-edit-v2">
+                                                        <span>Editer</span>
+                                                        <i className="bi bi-pencil-square"></i>
+                                                    </button>
+                                                )}
+                                            </div>
+                                            
+                                            <div className="figma-form-row">
+                                                <div className="figma-input-field">
+                                                    <label className="figma-input-label">Numéro de téléphone</label>
+                                                    <div className={`figma-form-field ${!isEditing ? 'readonly' : ''}`}>
+                                                        <input type="text" name="phone" value={formData.phone} onChange={handleInputChange} disabled={!isEditing} placeholder="Téléphone" />
                                                     </div>
-
-                                                    <div className="modern-form-field">
-                                                        <label htmlFor="email">{t('dashboard.profile.personalInfo.email')}</label>
-                                                        <input
-                                                            type="email"
-                                                            id="email"
-                                                            name="email"
-                                                            value={formData.email}
-                                                            onChange={handleInputChange}
-                                                            disabled={!isEditing}
-                                                            required
-                                                        />
-                                                    </div>
-
-                                                    <div className="modern-form-field">
-                                                        <label htmlFor="phone">{t('dashboard.profile.personalInfo.phone')}</label>
-                                                        <input
-                                                            type="tel"
-                                                            id="phone"
-                                                            name="phone"
-                                                            value={formData.phone}
-                                                            onChange={handleInputChange}
-                                                            disabled={!isEditing}
-                                                        />
-                                                    </div>
-
-                                                    <div className="modern-form-field">
-                                                        <label htmlFor="wilaya">Wilaya</label>
-                                                        <select
-                                                            id="wilaya"
-                                                            name="wilaya"
-                                                            value={formData.wilaya}
-                                                            onChange={handleInputChange}
-                                                            disabled={!isEditing}
-                                                            className="modern-select"
-                                                        >
-                                                            <option value="">Sélectionner une wilaya</option>
-                                                            {WILAYAS.map((w) => (
-                                                                <option key={w} value={w}>{w}</option>
-                                                            ))}
+                                                </div>
+                                                <div className="figma-input-field">
+                                                    <label className="figma-input-label">Pays / Wilaya</label>
+                                                    <div className={`figma-form-field ${!isEditing ? 'readonly' : ''}`}>
+                                                        <select name="wilaya" value={formData.wilaya} onChange={handleInputChange} disabled={!isEditing} style={{ border: 'none', background: 'transparent', width: '100%', outline: 'none', fontFamily: 'inherit', fontWeight: 700, fontSize: '14px', color: '#454545' }}>
+                                                            <option value="">Sélectionner</option>
+                                                            {WILAYAS.map((w, i) => <option key={i} value={w}>{w}</option>)}
                                                         </select>
                                                     </div>
-
-                                                    <div className="modern-form-field">
-                                                        <label htmlFor="secteur">Secteur</label>
-                                                        <input
-                                                            type="text"
-                                                            id="secteur"
-                                                            name="secteur"
-                                                            value={formData.secteur}
-                                                            onChange={handleInputChange}
-                                                            disabled={!isEditing}
-                                                        />
-                                                    </div>
                                                 </div>
-
-                                                {isEditing && (
-                                                    <div className="modern-actions">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setIsEditing(false)}
-                                                            className="modern-btn secondary"
-                                                        >
-                                                            <i className="bi bi-x-circle"></i>
-                                                            <span>{t('dashboard.profile.personalInfo.cancel')}</span>
-                                                        </button>
-
-                                                        <button
-                                                            type="submit"
-                                                            disabled={isLoading}
-                                                            className="modern-btn primary"
-                                                        >
-                                                            {isLoading ? (
-                                                                <>
-                                                                    <div className="loading-spinner-lg"></div>
-                                                                    <span>{t('dashboard.profile.personalInfo.save')}...</span>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <i className="bi bi-check-circle"></i>
-                                                                    <span>{t('dashboard.profile.personalInfo.save')}</span>
-                                                                </>
-                                                            )}
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </form>
-                                        </div>
-                                    </motion.div>
-                                )}
-
-                                {/* Security Tab */}
-                                {activeTab === 'security' && (
-                                    <motion.div
-                                        key="security"
-                                        className="modern-tab-content"
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -20 }}
-                                    >
-                                        <div className="modern-section-card">
-                                            <div className="section-header">
-                                                <div className="header-content">
-                                                    <div className="header-icon">
-                                                        <i className="bi bi-shield-lock-fill"></i>
-                                                    </div>
-                                                    <div className="header-text">
-                                                        <h2>{t('dashboard.profile.security.title')}</h2>
-                                                        <p>{t('dashboard.profile.security.subtitle')}</p>
+                                                <div className="figma-input-field">
+                                                    <label className="figma-input-label">Addresse / Secteur</label>
+                                                    <div className={`figma-form-field ${!isEditing ? 'readonly' : ''}`}>
+                                                        <input type="text" name="activitySector" value={formData.activitySector} onChange={handleInputChange} disabled={!isEditing} placeholder="Adresse" />
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            <form onSubmit={handlePasswordSubmit}>
-                                                <div className="modern-form-grid">
-                                                    {[
-                                                        { name: 'currentPassword', label: t('dashboard.profile.security.currentPassword') },
-                                                        { name: 'newPassword', label: t('dashboard.profile.security.newPassword') },
-                                                        { name: 'confirmPassword', label: t('dashboard.profile.security.confirmPassword') },
-                                                    ].map((field) => (
-                                                        <div key={field.name} className="modern-form-field">
-                                                            <label htmlFor={field.name}>{field.label}</label>
-                                                            <input
-                                                                type="password"
-                                                                id={field.name}
-                                                                name={field.name}
-                                                                value={passwordData[field.name as keyof typeof passwordData]}
-                                                                onChange={handlePasswordChange}
-                                                            />
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-                                                <div className="modern-actions">
-                                                    <button
-                                                        type="submit"
-                                                        disabled={isPasswordChanging}
-                                                        className="modern-btn primary"
-                                                    >
-                                                        {isPasswordChanging ? (
-                                                            <>
-                                                                <div className="loading-spinner-lg"></div>
-                                                                <span>Mise à jour...</span>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <i className="bi bi-shield-check"></i>
-                                                                <span>{t('dashboard.profile.security.update')}</span>
-                                                            </>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            </form>
                                         </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    </motion.div>
+                                    </form>
+                                </motion.div>
+                            )}
+
+                            {activeTab === "securite" && (
+                                <motion.div key="securite" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+                                    <div className="figma-card figma-card-security">
+                                        <div className="figma-card-header">
+                                            <div className="figma-card-title-box">
+                                                <h3 className="figma-card-title">Mot de passe</h3>
+                                            </div>
+                                        </div>
+                                        
+                                        <form onSubmit={handlePasswordChange} style={{ width: '100%' }}>
+                                            <div className="figma-form-row">
+                                                <div className="figma-input-field">
+                                                    <label className="figma-input-label">Ancien mot de passe</label>
+                                                    <div className="figma-form-field">
+                                                        <input type={showPassword ? "text" : "password"} placeholder="••••••••••••" value={passwordData.currentPassword} onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} required />
+                                                        <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ cursor: 'pointer', color: '#737373' }} onClick={() => setShowPassword(!showPassword)}></i>
+                                                    </div>
+                                                </div>
+                                                <div className="figma-input-field">
+                                                    <label className="figma-input-label">Nouveau mot de passe</label>
+                                                    <div className="figma-form-field">
+                                                        <input type={showPassword ? "text" : "password"} placeholder="••••••••••••" value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} required />
+                                                        <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ cursor: 'pointer', color: '#737373' }} onClick={() => setShowPassword(!showPassword)}></i>
+                                                    </div>
+                                                </div>
+                                                <div className="figma-input-field">
+                                                    <label className="figma-input-label">Confirmez</label>
+                                                    <div className="figma-form-field">
+                                                        <input type={showPassword ? "text" : "password"} placeholder="••••••••••••" value={passwordData.confirmPassword} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} required />
+                                                        <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ cursor: 'pointer', color: '#737373' }} onClick={() => setShowPassword(!showPassword)}></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <ul className="figma-checklist">
+                                                <li className="figma-checklist-item">
+                                                    <div className="figma-checklist-icon"><i className="bi bi-check-circle"></i></div>
+                                                    <span className="figma-checklist-text">8 characters au minimum.</span>
+                                                </li>
+                                                <li className="figma-checklist-item">
+                                                    <div className="figma-checklist-icon"><i className="bi bi-check-circle"></i></div>
+                                                    <span className="figma-checklist-text">Utilisez une combinaison de majuscule minuscule</span>
+                                                </li>
+                                                <li className="figma-checklist-item">
+                                                    <div className="figma-checklist-icon"><i className="bi bi-check-circle"></i></div>
+                                                    <span className="figma-checklist-text">Utilisez des caractères (e.g., !, @, #, $, %)</span>
+                                                </li>
+                                            </ul>
+                                            
+                                            <div className="figma-cta-group figma-cta-group-security">
+                                                <button type="submit" disabled={isSubmittingPassword} className="figma-btn-password-update">
+                                                    {isSubmittingPassword ? "..." : "Mettre à jour mot de passe"}
+                                                </button>
+                                                <button type="button" onClick={() => setPasswordData({currentPassword: "", newPassword: "", confirmPassword: ""})} className="figma-btn-secondary">Annuler</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {activeTab === "documents" && (
+                                <motion.div key="documents" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+                                    <div className="figma-card figma-card-verification">
+                                        <div className="figma-card-header" style={{ marginBottom: '32px' }}>
+                                            <div className="figma-card-title-box" style={{ flexDirection: 'row', alignItems: 'center', gap: '12px' }}>
+                                                <h3 className="figma-card-title" style={{ fontSize: '24px', fontFamily: 'Inter', fontWeight: 600 }}>Documents obligatoires pour vérification</h3>
+                                                <i className="bi bi-exclamation-diamond-fill" style={{ color: '#F87171', fontSize: '24px' }}></i>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="figma-verify-status-container">
+                                            <div className="figma-status-card active">
+                                                <div className="figma-status-info">
+                                                    <span className="figma-status-step">ÉTAPE 1</span>
+                                                    <h4 className="figma-status-name">VÉRIFIÉ</h4>
+                                                    <p className="figma-status-desc">Passer à Vérifié pour débloquer les ventes de base</p>
+                                                </div>
+                                                <i className="bi bi-patch-check figma-status-icon-v2"></i>
+                                            </div>
+                                            <div className="figma-status-card inactive">
+                                                <div className="figma-status-info">
+                                                    <span className="figma-status-step">ÉTAPE 2</span>
+                                                    <h4 className="figma-status-name">CERTIFIÉ</h4>
+                                                    <p className="figma-status-desc">Passer à Certifié</p>
+                                                </div>
+                                                <i className="bi bi-lock figma-status-icon-v2"></i>
+                                            </div>
+                                        </div>
+
+                                        <div className="figma-alert-box-v3">
+                                            <i className="bi bi-exclamation-circle figma-alert-icon-v3"></i>
+                                            <div className="figma-alert-content-v2">
+                                                <h4 className="figma-alert-title-v3">Vérification</h4>
+                                                <p className="figma-alert-desc-v3">
+                                                    Fournir (RC/ Autres + NIF) ou (Carte Fellah uniquement).<br />
+                                                    Cliquez sur "Soumettre" pour envoyer à l'administrateur.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="figma-doc-grid-v2">
+                                            {requiredDocuments.map((doc, index) => {
+                                                const document = identity ? (identity as any)[doc.key] : null;
+                                                const hasDocument = document && document.url;
+                                                const isUploadingThisField = isUploadingDocument === doc.key;
+                                                
+                                                return (
+                                                    <div className={`figma-doc-card-v2 figma-card-${doc.key.toLowerCase()}`} key={doc.key}>
+                                                        <div className="figma-doc-header-v2">
+                                                            <i className="bi bi-file-earmark-plus figma-doc-icon-v2"></i>
+                                                            <h4 className="figma-doc-title-v2">
+                                                                {doc.label} <span className="required">*</span>
+                                                            </h4>
+                                                        </div>
+                                                        <p className="figma-doc-subtitle-v2">{doc.description}</p>
+                                                        
+                                                        <input
+                                                            ref={el => { documentFileInputRefs.current[doc.key] = el; }}
+                                                            type="file"
+                                                            accept=".jpg,.jpeg,.png,.pdf"
+                                                            onChange={(e) => {
+                                                                const file = e.target.files?.[0];
+                                                                if (file) handleFileSelect(doc.key, file);
+                                                            }}
+                                                            style={{ display: 'none' }}
+                                                        />
+                                                        <button 
+                                                            className="figma-doc-btn-v2"
+                                                            onClick={() => documentFileInputRefs.current[doc.key]?.click()}
+                                                            disabled={isUploadingThisField}
+                                                        >
+                                                            {isUploadingThisField ? '...' : 'Ajouter'}
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                        <div className="figma-cta-group figma-cta-group-verification" style={{ justifyContent: 'center' }}>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </div>
-            </div>
+            </main>
             
+            {/* First-login verification popup */}
+            {showVerificationPopup && (
+                <VerificationPopup
+                    onClose={() => setShowVerificationPopup(false)}
+                    onContinue={() => {
+                        setShowVerificationPopup(false);
+                        router.push('/settings');
+                    }}
+                />
+            )}
+
             {/* Image Cropper Modal */}
-            <AnimatePresence>
-                {showCropper && cropImage && (
-                    <ImageCropper
-                        imageSrc={cropImage}
-                        aspectRatio={cropType === 'avatar' ? 1 : 16 / 9}
-                        cropShape={cropType === 'avatar' ? 'round' : 'rect'}
-                        onCancel={() => setShowCropper(false)}
-                        onCropComplete={handleCropSave}
-                    />
-                )}
-            </AnimatePresence>
-        </main>
+            {isCropping && cropImageSrc && (
+                <ImageCropper
+                    imageSrc={cropImageSrc}
+                    aspectRatio={cropType === 'avatar' ? 1 : 16/9}
+                    cropShape={cropType === 'avatar' ? 'round' : 'rect'}
+                    onCancel={() => setIsCropping(false)}
+                    onCropComplete={handleCropSave}
+                />
+            )}
+        </div>
     );
 }
+
+export default ProfilePageWrapper;

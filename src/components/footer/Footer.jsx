@@ -39,9 +39,14 @@ const Footer = () => {
     <footer
       style={{
         position: 'relative',
-        width: '100%',
+        width: '1440px',
+        height: '568px',
         background: '#FFFFFF',
-        paddingBlock: 'clamp(40px, 6vw, 80px)',
+        margin: '0 auto',
+        display: 'flex',
+        flexDirection: 'column',
+        paddingTop: '80px',
+        paddingBottom: '30px',
       }}
     >
       <div
@@ -52,6 +57,8 @@ const Footer = () => {
           paddingInline: 'clamp(16px, 4vw, 110px)',
           display: 'flex',
           flexDirection: 'column',
+          height: '100%',
+          justifyContent: 'space-between',
           gap: 'clamp(24px, 4vw, 48px)',
         }}
       >

@@ -180,7 +180,7 @@ export default function DirectSaleOrderDetailPage() {
           <div style={card}>
             <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>👤 {isOwner ? 'Acheteur' : 'Vendeur'}</h3>
             {counterparty && cpId ? (
-              <Link href={`/profile/${cpId}`} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
+              <Link href={`/dashboard/profile/${cpId}`} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ width: 56, height: 56, borderRadius: '50%', background: ACCENT_12, color: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', border: `2px solid ${ACCENT_18}`, flexShrink: 0 }}>{cpName.charAt(0).toUpperCase()}</div>
                 <div>
                   <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '1rem' }}>{cpName}</div>
@@ -227,7 +227,7 @@ export default function DirectSaleOrderDetailPage() {
                 <tr key={o._id || i} className="db-row" style={{ ...tableStyles.trHover, background: isCurrent ? ACCENT_03 : undefined }}>
                   <td style={tableStyles.td}>
                     {buyer?._id ? (
-                      <Link href={`/profile/${buyer._id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
+                      <Link href={`/dashboard/profile/${buyer._id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
                         <div style={{ width: 34, height: 34, borderRadius: '50%', background: isCurrent ? ACCENT_12 : '#f1f5f9', color: isCurrent ? ACCENT : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.82rem', flexShrink: 0 }}>{bName.charAt(0).toUpperCase()}</div>
                         <span style={{ fontWeight: isCurrent ? 700 : 500, color: '#1e293b' }}>
                           {bName}

@@ -6,6 +6,7 @@ import { styled } from '@mui/material/styles';
 import { Header } from '../header/Header';
 import DashboardSidebar from './DashboardSidebar';
 import { useLanguage } from '@/contexts/LanguageContext';
+import Footer from '../footer/Footer';
 
 const APP_BAR_MOBILE = 64;
 const APP_BAR_DESKTOP = 196;
@@ -19,10 +20,9 @@ const MainStyle = styled('main', {
   shouldForwardProp: (prop) => prop !== 'isRTL',
 })<MainStyleProps>(({ theme, isRTL }) => ({
   flexGrow: 1,
-  overflow: 'auto',
   minHeight: '100%',
   paddingTop: APP_BAR_MOBILE + 24,
-  paddingBottom: theme.spacing(10),
+  paddingBottom: 0,
   paddingLeft: theme.spacing(1.5),
   paddingRight: theme.spacing(1.5),
   backgroundColor: theme.palette.background.default,
@@ -47,12 +47,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
       <Header />
-      <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex', flexGrow: 1 }}>
         <DashboardSidebar isOpenSidebar={open} onCloseSidebar={() => setOpen(false)} />
         <MainStyle isRTL={isRTL}>
           {children}
         </MainStyle>
       </Box>
+      <Footer />
     </Box>
   );
 }

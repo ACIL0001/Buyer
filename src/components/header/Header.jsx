@@ -421,7 +421,7 @@ export const Header = () => {
                       </div>
                       <button
                         type="button"
-                        onClick={() => { setIsAccountDropdownOpen(false); router.push('/profile'); }}
+                        onClick={() => { setIsAccountDropdownOpen(false); router.push('/dashboard/profile'); }}
                         role="menuitem"
                         style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px', background: 'transparent', border: 'none', color: '#1e293b', textAlign: 'left', fontSize: 14, fontWeight: 500, borderRadius: 10, minHeight: 44, cursor: 'pointer', fontFamily: 'inherit' }}
                       >
@@ -578,7 +578,7 @@ export const Header = () => {
                 <>
                   <button
                     type="button"
-                    onClick={() => { setMenuOpen(false); router.push('/profile'); }}
+                    onClick={() => { setMenuOpen(false); router.push('/dashboard/profile'); }}
                     style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '12px 14px', borderRadius: 12, background: 'transparent', border: 'none', color: '#002896', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     Mon profil
@@ -852,7 +852,7 @@ export const Header = () => {
                       <div style={{ fontSize: '16px', fontWeight: 600, color: '#002896' }}>{auth?.user?.firstName || 'Utilisateur'}</div>
                       <div style={{ fontSize: '13px', color: '#64748b' }}>{auth?.user?.email}</div>
                     </div>
-                    <Link href="/profile" onClick={() => setIsAccountDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', color: '#1e293b', textDecoration: 'none', fontSize: '14px', borderRadius: '12px' }} onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Profil</Link>
+                    <Link href="/dashboard/profile" onClick={() => setIsAccountDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', color: '#1e293b', textDecoration: 'none', fontSize: '14px', borderRadius: '12px' }} onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Profil</Link>
                     <Link href="/dashboard" onClick={() => setIsAccountDropdownOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', color: '#1e293b', textDecoration: 'none', fontSize: '14px', borderRadius: '12px' }} onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Tableau de bord</Link>
                     <button onClick={handleLogout} style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: 'transparent', border: 'none', color: '#ef4444', fontSize: '14px', cursor: 'pointer', borderRadius: '12px', marginTop: '4px' }} onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Déconnexion</button>
                   </div>

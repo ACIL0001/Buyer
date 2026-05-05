@@ -448,7 +448,7 @@ export default function BecomeResellerPage() {
             variant: 'warning',
             autoHideDuration: 5000
           });
-          router.push('/profile');
+          router.push('/dashboard/profile');
           return;
         }
         
@@ -591,7 +591,7 @@ export default function BecomeResellerPage() {
           }
         );
       
-        router.push('/profile');
+        router.push('/dashboard/profile');
         
       } catch (updateError: unknown) {
         console.error('User update failed:', updateError);
@@ -625,7 +625,7 @@ export default function BecomeResellerPage() {
   };
 
   const handleBackToProfile = () => {
-    router.push('/profile');
+    router.push('/dashboard/profile');
   };
 
   return (

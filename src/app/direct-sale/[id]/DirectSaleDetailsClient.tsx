@@ -297,7 +297,7 @@ function DirectSaleDetailContent() {
             <div className="info-grid-mini mt-3">
               <div className="info-item-mini">
                 <span className="info-label-mini">VENDEUR:</span>
-                <Link href={`/profile/${directSale.owner?._id}`} className="info-text-mini hover-link">
+                <Link href={`/dashboard/profile/${directSale.owner?._id}`} className="info-text-mini hover-link">
                   {directSale.owner?.entreprise || directSale.owner?.name || 'Vendeur'}
                 </Link>
               </div>

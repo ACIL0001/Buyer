@@ -96,7 +96,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           });
 
           if (!user.loginCount || user.loginCount <= 1) {
-             router.replace('/profile');
+             router.replace('/dashboard/profile');
           } else {
              router.replace('/');
           }

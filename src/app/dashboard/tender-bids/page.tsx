@@ -207,7 +207,7 @@ export default function TenderBidsPage() {
                   <tr key={_id} className="db-row" onClick={() => (row.tender as any)?._id && router.push(`/dashboard/tenders/${(row.tender as any)._id}/offers/${_id}`)} style={tableStyles.trHover}>
                     <td style={tableStyles.td}>
                       {(bidder as any)?._id ? (
-                        <Link href={`/profile/${(bidder as any)._id}`} onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
+                        <Link href={`/dashboard/profile/${(bidder as any)._id}`} onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
                           <div style={tableStyles.avatar('var(--primary-tender-color)')}>{displayName.charAt(0).toUpperCase()}</div>
                           <div>
                             <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>{displayName}</div>

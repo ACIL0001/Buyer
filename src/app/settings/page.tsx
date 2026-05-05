@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation"
 import { useTranslation } from "react-i18next"
 import { authStore } from "@/contexts/authStore"
 import { useQueryClient } from "@tanstack/react-query" 
-import "../profile/modern-styles.css" 
+import "../dashboard/profile/modern-styles.css" 
 
 // Password field component
 // Password field component

@@ -141,7 +141,7 @@ export default function OTPVerification() {
           set(authData);
           
           setTimeout(() => {
-            router.push("/profile");
+            router.push("/dashboard/profile");
           }, 1500);
         } else {
           setTimeout(() => {

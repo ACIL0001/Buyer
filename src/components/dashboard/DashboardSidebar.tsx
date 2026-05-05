@@ -46,7 +46,6 @@ const getAvatarUrl = (user: any) => {
 
 export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { isOpenSidebar: boolean, onCloseSidebar: () => void }) {
   const pathname = usePathname();
-  const router = useRouter();
   const theme = useTheme();
   const { logoUrl } = useSettingsStore();
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
@@ -62,58 +61,42 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
   }, [pathname]);
 
   const renderContent = (
-    <SimpleBar style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ mt: 4, mb: 5, mx: 2.5 }}>
-         <Box sx={{ 
-             display: 'flex', 
-             alignItems: 'center', 
-             p: '15px 20px', 
-             borderRadius: '16px',
-             bgcolor: 'white',
-             border: '1px solid #E6E6E6',
-             boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.02)',
-             gap: '15px'
-         }}>
-             <Box 
-                component="img"
-                src={logoUrl || "/assets/img/logo.png"}
-                sx={{
-                  width: 32,
-                  height: 32,
-                  objectFit: 'contain'
-                }}
-             />
-             <Box sx={{ flex: 1, minWidth: 0 }}>
-                 <Typography 
-                   sx={{ 
-                     color: '#A0A0A0', 
-                     fontSize: '12px',
-                     fontWeight: 400,
-                     mb: '-2px',
-                     fontFamily: 'Roboto, sans-serif'
-                   }}
-                 >
-                     Entreprise
-                 </Typography>
-                 <Typography 
-                   sx={{ 
-                     color: '#1A1A1A', 
-                     fontSize: '16px',
-                     fontWeight: 700,
-                     fontFamily: 'Roboto, sans-serif',
-                     overflow: 'hidden',
-                     textOverflow: 'ellipsis',
-                     whiteSpace: 'nowrap',
-                   }}
-                 >
-                     {(user as any)?.entreprise || (user as any)?.socialReason || 'Alpha Store'}
-                 </Typography>
-             </Box>
-         </Box>
-      </Box>
+    <div className="figma-dashboard-sidebar">
+      {/* Top Company Card */}
+      <div className="figma-sidebar-company-card">
+        <img 
+          src={getAvatarUrl(user) || "/assets/img/logo.png"} 
+          className="figma-sidebar-avatar" 
+          alt="Profile" 
+        />
+        <div className="figma-sidebar-user-info">
+          <span className="figma-sidebar-user-role">Entreprise</span>
+          <span className="figma-sidebar-user-name">
+            {(user as any)?.entreprise || (user as any)?.socialReason || 'Alpha Store'}
+          </span>
+        </div>
+      </div>
 
-      <NavSection navConfig={navConfig} />
-    </SimpleBar>
+      <div className="figma-sidebar-group">
+        <NavSection navConfig={navConfig} />
+      </div>
+
+      {/* Bottom Account Card */}
+      <div className="figma-sidebar-account-card">
+        <img 
+          src={getAvatarUrl(user) || "/assets/img/avatar.png"} 
+          className="figma-sidebar-avatar" 
+          alt="User" 
+        />
+        <div className="figma-sidebar-user-info">
+          <span className="figma-sidebar-user-name">
+            {user?.name || (user as any)?.firstName || 'Anis A'}
+          </span>
+          <span className="figma-sidebar-user-role">Admin</span>
+        </div>
+        <i className="bi bi-chevron-down" style={{ marginLeft: 'auto', color: '#454545' }}></i>
+      </div>
+    </div>
   );
 
   return (
@@ -127,12 +110,14 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
             sx: {
               width: DRAWER_WIDTH,
               bgcolor: 'white',
-              borderRight: '1px solid #E6E6E6',
-              borderLeft: isRTL ? '1px solid #E6E6E6' : 'none',
-              right: isRTL ? 0 : 'auto',
-              left: isRTL ? 'auto' : 0,
-              top: '196px',
-              height: 'calc(100% - 196px)',
+              borderRight: '1px solid #E7E7E7',
+              borderLeft: isRTL ? '1px solid #E7E7E7' : 'none',
+              position: 'relative',
+              height: '1696px !important',
+              minHeight: '1696px !important',
+              maxHeight: '1696px !important',
+              overflowX: 'hidden',
+              marginTop: '196px', // Clear desktop header
             },
           }}
         >
@@ -144,7 +129,14 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
           onClose={onCloseSidebar}
           anchor={isRTL ? 'right' : 'left'}
           ModalProps={{ keepMounted: true }}
-          PaperProps={{ sx: { width: DRAWER_WIDTH, bgcolor: 'white' } }}
+          PaperProps={{ 
+            sx: { 
+              width: DRAWER_WIDTH, 
+              bgcolor: 'white', 
+              height: '1696px',
+              marginTop: '64px', // Clear mobile header
+            } 
+          }}
         >
           {renderContent}
         </Drawer>

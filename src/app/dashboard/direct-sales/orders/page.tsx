@@ -195,7 +195,7 @@ export default function OrdersPage() {
                     </td>
                     <td style={tableStyles.td}>
                       {profileId ? (
-                        <Link href={`/profile/${profileId}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
+                        <Link href={`/dashboard/profile/${profileId}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
                           <div style={tableStyles.avatar(isPurchase ? 'var(--primary-ds-color)' : '#7c3aed')}>{initials}</div>
                           <div>
                             <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1e293b' }}>{displayName}</div>

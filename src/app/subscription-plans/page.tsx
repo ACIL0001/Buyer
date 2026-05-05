@@ -131,7 +131,7 @@ export default function SubscriptionPlans() {
       console.log('Subscription plan selected:', selectedPlan);
       setTimeout(() => {
         setIsSubmitting(false);
-        router.push('/profile'); 
+        router.push('/dashboard/profile'); 
       }, 500); 
     } else {
       setIsSubmitting(false);

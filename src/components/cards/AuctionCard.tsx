@@ -485,12 +485,12 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                     }}>
                 {auction.owner && !auction.hidden ? (
                     <Link
-                        href={`/profile/${typeof auction.owner === 'object' ? (auction.owner as any)._id : auction.owner}`}
+                        href={`/dashboard/profile/${typeof auction.owner === 'object' ? (auction.owner as any)._id : auction.owner}`}
                         scroll={false}
                         onClick={(e) => {
                             e.stopPropagation();
                             e.preventDefault();
-                            navigateWithScroll(`/profile/${typeof auction.owner === 'object' ? (auction.owner as any)._id : auction.owner}`);
+                            navigateWithScroll(`/dashboard/profile/${typeof auction.owner === 'object' ? (auction.owner as any)._id : auction.owner}`);
                         }}
                         style={{
                             display: 'flex',

@@ -142,7 +142,7 @@ export default function AuctionOfferDetailPage() {
         <div>
           <div style={card}>
             <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>👤 Enchérisseur</h3>
-            <Link href={`/profile/${offerUser._id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
+            <Link href={`/dashboard/profile/${offerUser._id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
               <div style={{ width: 56, height: 56, borderRadius: '50%', background: `${ACCENT}20`, color: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', border: `2px solid ${ACCENT}30`, flexShrink: 0 }}>{displayName.charAt(0).toUpperCase()}</div>
               <div>
                 <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '1rem' }}>{displayName}</div>
@@ -185,7 +185,7 @@ export default function AuctionOfferDetailPage() {
               return (
                 <tr key={p._id || i} className="db-row" style={{ ...tableStyles.trHover, background: isCurrent ? `${ACCENT}06` : undefined }}>
                   <td style={tableStyles.td}>
-                    <Link href={`/profile/${p.user?._id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
+                    <Link href={`/dashboard/profile/${p.user?._id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
                       <div style={{ width: 34, height: 34, borderRadius: '50%', background: isCurrent ? `${ACCENT}20` : '#f1f5f9', color: isCurrent ? ACCENT : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.82rem', flexShrink: 0 }}>{pName.charAt(0).toUpperCase()}</div>
                       <div>
                         <span style={{ fontWeight: isCurrent ? 700 : 500, color: '#1e293b' }}>{pName}</span>

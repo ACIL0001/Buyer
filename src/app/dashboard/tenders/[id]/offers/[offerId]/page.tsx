@@ -230,7 +230,7 @@ export default function TenderOfferDetailPage() {
           <div style={card}>
             <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>👤 Soumissionnaire</h3>
             {bidder && bidderId ? (
-              <Link href={`/profile/${bidderId}`} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
+              <Link href={`/dashboard/profile/${bidderId}`} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ width: 56, height: 56, borderRadius: '50%', background: ACCENT_12, color: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', border: `2px solid ${ACCENT_18}`, flexShrink: 0 }}>{bidderName.charAt(0).toUpperCase()}</div>
                 <div>
                   <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '1rem' }}>{bidderName}</div>
@@ -283,7 +283,7 @@ export default function TenderOfferDetailPage() {
                 return (
                   <tr key={b._id || i} className="db-row" style={{ ...tableStyles.trHover, background: isCurrent ? ACCENT_03 : undefined }}>
                     <td style={tableStyles.td}>
-                      <Link href={`/profile/${bd?._id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
+                      <Link href={`/dashboard/profile/${bd?._id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
                         <div style={{ width: 34, height: 34, borderRadius: '50%', background: isCurrent ? ACCENT_12 : '#f1f5f9', color: isCurrent ? ACCENT : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.82rem', flexShrink: 0 }}>{bName.charAt(0).toUpperCase()}</div>
                         <div>
                           <span style={{ fontWeight: isCurrent ? 700 : 500, color: '#1e293b' }}>{bName}</span>

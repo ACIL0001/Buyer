@@ -10,7 +10,7 @@ export default function UsersRedirect() {
 
   useEffect(() => {
     if (id) {
-      router.replace(`/profile/${id}`);
+      router.replace(`/dashboard/profile/${id}`);
     }
   }, [id, router]);
 

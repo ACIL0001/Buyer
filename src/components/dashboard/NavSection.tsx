@@ -32,102 +32,19 @@ const ListItemIconStyle = styled(ListItemIcon)({
 // ----------------------------------------------------------------------
 
 function NavItem({ item, active }: { item: any; active: (path: string) => boolean }) {
-  const isActiveRoot = active(item.path || '');
-  const { title, path, icon, children } = item;
-  const [open, setOpen] = useState(isActiveRoot);
-
-  const handleOpen = (e: React.MouseEvent) => {
-    if (children) {
-      e.preventDefault();
-      setOpen((prev) => !prev);
-    }
-  };
-
-  const activeRootStyle = {
-    color: '#212B36',
-    fontWeight: 700,
-  };
-
-  const navItemContent = (
-    <ListItemStyle
-      onClick={handleOpen}
-      sx={{
-        ...(isActiveRoot && activeRootStyle),
-      }}
-    >
-      <ListItemIconStyle sx={{ color: isActiveRoot ? '#212B36' : '#919EAB' }}>
-        {icon && icon}
-      </ListItemIconStyle>
-      <Box sx={{ position: 'relative', display: 'inline-block' }}>
-        {isActiveRoot && (
-          <Box 
-            sx={{ 
-              position: 'absolute',
-              bottom: '2px',
-              left: '-4px',
-              right: '-4px',
-              height: '10px',
-              bgcolor: '#FFF200',
-              zIndex: -1,
-              opacity: 0.8
-            }}
-          />
-        )}
-        <ListItemText 
-          disableTypography 
-          primary={title} 
-          sx={{ 
-            fontSize: '14px',
-            fontFamily: 'Inter, sans-serif'
-          }} 
-        />
-      </Box>
-      {children && (
-        <Box sx={{ ml: 'auto', display: 'flex', color: '#919EAB' }}>
-          {open ? <MdExpandLess size={20} /> : <MdExpandMore size={20} />}
-        </Box>
-      )}
-    </ListItemStyle>
-  );
-
-  if (children) {
-    return (
-      <>
-        {navItemContent}
-        <Collapse in={open} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {children.map((child: any) => {
-              const isActiveSub = active(child.path);
-              return (
-                <Link key={child.title} href={child.path} passHref style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <ListItemStyle
-                    sx={{
-                      pl: 7, // Indentation for sub-items
-                      height: 40,
-                      ...(isActiveSub && {
-                        color: 'text.primary',
-                        fontWeight: 600,
-                      }),
-                    }}
-                  >
-                    <ListItemText 
-                      disableTypography 
-                      primary={child.title} 
-                      sx={{ fontSize: '13px' }} 
-                    />
-                  </ListItemStyle>
-                </Link>
-              );
-            })}
-          </List>
-        </Collapse>
-      </>
-    );
-  }
+  const isActive = active(item.path || '');
+  const { title, path, icon } = item;
 
   return (
-    <Link href={path || '#'} passHref style={{ textDecoration: 'none', color: 'inherit' }}>
-      {navItemContent}
+    <Link 
+      href={path || '#'} 
+      className={`figma-sidebar-item ${isActive ? 'active' : ''}`}
+      style={{ textDecoration: 'none' }}
+    >
+      <div className="figma-sidebar-icon">
+        {icon && icon}
+      </div>
+      <span className="figma-sidebar-text">{title}</span>
     </Link>
   );
 }
@@ -145,35 +62,21 @@ export default function NavSection({ navConfig, ...other }: any) {
   );
 
   const renderSection = (title: string, items: any[]) => (
-    <Box sx={{ mb: 4 }}>
-      <Typography 
-        sx={{ 
-          px: 3, 
-          mb: 1.5, 
-          fontSize: '11px', 
-          fontWeight: 700, 
-          color: '#919EAB', 
-          textTransform: 'uppercase',
-          letterSpacing: '1.2px'
-        }}
-      >
-        {title}
-      </Typography>
-      <List disablePadding>
-        {items.map((item: any) => (
-          <NavItem key={item.title} item={item} active={match} />
-        ))}
-      </List>
-    </Box>
+    <div className="figma-sidebar-list">
+      <div className="figma-sidebar-label">{title}</div>
+      {items.map((item: any) => (
+        <NavItem key={item.title} item={item} active={match} />
+      ))}
+    </div>
   );
 
   return (
-    <Box {...other} sx={{ mt: 2 }}>
+    <div {...other} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       {renderSection('GENERAL', generalItems)}
       {renderSection('Outils', toolItems.length > 0 ? toolItems : [
-        { title: 'Comptes et réglages', path: '/dashboard/settings', icon: <MdSettings size={22} />},
-        { title: 'Aide', path: '/dashboard/help', icon: <MdHelpOutline size={22} />}
+        { title: 'Comptes et réglages', path: '/dashboard/settings', icon: <i className="bi bi-gear" style={{ fontSize: '18px' }} />},
+        { title: 'Aide', path: '/dashboard/help', icon: <i className="bi bi-question-circle" style={{ fontSize: '18px' }} />}
       ])}
-    </Box>
+    </div>
   );
 }

@@ -168,7 +168,7 @@ export default function AccountPopover() {
           {/* Profile Link */}
           <MenuItem
             component={Link}
-            href="/profile"
+            href="/dashboard/profile"
             onClick={handleClose}
             sx={{ 
               p: 1,

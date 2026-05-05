@@ -9,7 +9,9 @@ import {
   MdOutlineGroup,
   MdOutlineDescription,
   MdOutlineSettings,
-  MdOutlineHelpOutline
+  MdOutlineHelpOutline,
+  MdOutlineMessage,
+  MdOutlineNotifications
 } from 'react-icons/md';
 
 const getIcon = (IconComponent: React.ComponentType<any>, badgeContent?: number) => {
@@ -98,14 +100,14 @@ const useNavConfig = () => {
       ],
     },
     {
-      title: 'Clients',
-      path: '/dashboard/clients',
-      icon: getIcon(MdOutlineGroup),
+      title: 'Messages',
+      path: '/dashboard/messages',
+      icon: getIcon(MdOutlineMessage),
     },
     {
-      title: 'Transactions',
-      path: '/dashboard/transactions',
-      icon: getIcon(MdOutlineDescription),
+      title: 'Notifications',
+      path: '/dashboard/notifications',
+      icon: getIcon(MdOutlineNotifications),
     },
   ];
 };

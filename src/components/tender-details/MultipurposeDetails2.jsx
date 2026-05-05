@@ -433,7 +433,7 @@ const MultipurposeDetails2 = () => {
               <div className="info-grid-mini mt-3">
                 <div className="info-item-mini">
                   <span className="info-label-mini">VENDEUR:</span>
-                  <Link href={`/profile/${safeOwner?._id || safeOwner}`} className="info-text-mini hover-link">
+                  <Link href={`/dashboard/profile/${safeOwner?._id || safeOwner}`} className="info-text-mini hover-link">
                     {safeOwner?.entreprise || safeOwner?.name || 'Vendeur'}
                   </Link>
                 </div>

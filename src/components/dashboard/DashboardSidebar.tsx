@@ -90,7 +90,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
         />
         <div className="figma-sidebar-user-info">
           <span className="figma-sidebar-user-name">
-            {user?.name || (user as any)?.firstName || 'Anis A'}
+            {(user as any)?.displayName || (user as any)?.firstName || 'Anis A'}
           </span>
           <span className="figma-sidebar-user-role">Admin</span>
         </div>

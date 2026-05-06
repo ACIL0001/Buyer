@@ -9,6 +9,7 @@ import NavSection from './NavSection';
 import useNavConfig from './NavConfig';
 import useAuth from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
+import './DashboardSidebar.css';
 
 const DRAWER_WIDTH = 280;
 
@@ -60,6 +61,27 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
     }
   }, [pathname]);
 
+  const getDisplayRole = (user: any) => {
+    if (!user) return 'Client';
+    const type = user.type?.toUpperCase();
+    if (type === 'PROFESSIONAL' || type === 'RESELLER' || type === 'SELLER') {
+      return 'Entreprise';
+    }
+    return 'Client';
+  };
+
+  const getDisplayName = (user: any) => {
+    if (!user) return 'Alpha Store';
+    const name = user.socialReason || user.companyName || user.entity;
+    if (name && name.trim() !== '') return name;
+    
+    if (user.firstName || user.lastName) {
+      return `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    }
+    
+    return user.name || user.displayName || 'Alpha Store';
+  };
+
   const renderContent = (
     <div className="figma-dashboard-sidebar">
       {/* Top Company Card */}
@@ -70,9 +92,9 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
           alt="Profile" 
         />
         <div className="figma-sidebar-user-info">
-          <span className="figma-sidebar-user-role">Entreprise</span>
+          <span className="figma-sidebar-user-role">{getDisplayRole(user)}</span>
           <span className="figma-sidebar-user-name">
-            {(user as any)?.entreprise || (user as any)?.socialReason || 'Alpha Store'}
+            {getDisplayName(user)}
           </span>
         </div>
       </div>
@@ -90,9 +112,9 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
         />
         <div className="figma-sidebar-user-info">
           <span className="figma-sidebar-user-name">
-            {(user as any)?.displayName || (user as any)?.firstName || 'Anis A'}
+            {getDisplayName(user)}
           </span>
-          <span className="figma-sidebar-user-role">Admin</span>
+          <span className="figma-sidebar-user-role">{getDisplayRole(user)}</span>
         </div>
         <i className="bi bi-chevron-down" style={{ marginLeft: 'auto', color: '#454545' }}></i>
       </div>
@@ -113,9 +135,8 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
               borderRight: '1px solid #E7E7E7',
               borderLeft: isRTL ? '1px solid #E7E7E7' : 'none',
               position: 'relative',
-              height: '1696px !important',
-              minHeight: '1696px !important',
-              maxHeight: '1696px !important',
+              height: 'auto',
+              minHeight: '100%',
               overflowX: 'hidden',
               marginTop: '196px', // Clear desktop header
             },
@@ -133,7 +154,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: { is
             sx: { 
               width: DRAWER_WIDTH, 
               bgcolor: 'white', 
-              height: '1696px',
+              height: 'auto',
               marginTop: '64px', // Clear mobile header
             } 
           }}

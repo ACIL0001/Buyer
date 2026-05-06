@@ -35,6 +35,8 @@ export interface DirectSale {
     category?: any;
     stock?: number;
     ordersCount?: number;
+    brand?: string;
+    viewsCount?: number;
 }
 
 export enum SALE_STATUS {

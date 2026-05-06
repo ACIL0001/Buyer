@@ -14,6 +14,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CardSkeleton from '../skeletons/CardSkeleton';
 import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
+import { formatUserName } from '@/utils/user';
 import { useRouter } from "next/navigation";
 import { useCreateSocket } from '@/contexts/socket';
 import ShareButton from "@/components/common/ShareButton";
@@ -207,7 +208,7 @@ const Home1LiveTenders = () => {
               <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper tender-slider" style={{ padding: '30px 0', margin: '-30px 0', overflow: 'hidden' }}>
                 {liveTenders.map((tender: any) => {
                   const timer = timers[tender.id] || { days: "0", hours: "0", minutes: "0", formattedEnd: "", hasEnded: false };
-                  const companyName = tender.hidden ? 'Anonyme' : (tender.owner?.entreprise || tender.owner?.companyName || tender.owner?.firstName || 'Nom annonceur');
+                  const companyName = tender.hidden ? 'Anonyme' : formatUserName(tender.owner);
                   
                   return (
                     <SwiperSlide key={tender.id} style={{ overflow: 'visible', perspective: '1000px' }}>
@@ -411,48 +412,63 @@ const Home1LiveTenders = () => {
                             }}>
                               {tender.title || 'Nom Produit'}
                             </h4>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                              <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-                                <span style={{ 
-                                  width: 'auto',
-                                  height: '29px',
-                                  fontFamily: 'Inter, sans-serif',
-                                  fontWeight: '700', 
-                                  fontSize: Number(tender.budget || tender.maxBudget || tender.price || 0).toLocaleString().length > 10 ? '16px' : 
-                                            Number(tender.budget || tender.maxBudget || tender.price || 0).toLocaleString().length > 8 ? '20px' : '24px', 
-                                  lineHeight: '29px',
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                                  {tender.evaluationType === 'MIEUX_DISANT' ? (
+                                    <span style={{ 
+                                      fontFamily: 'Inter, sans-serif',
+                                      fontWeight: '700', 
+                                      fontSize: '24px', 
+                                      color: '#002896',
+                                    }}>Offre</span>
+                                  ) : (
+                                    <>
+                                      <span style={{ 
+                                        width: 'auto',
+                                        height: '29px',
+                                        fontFamily: 'Inter, sans-serif',
+                                        fontWeight: '700', 
+                                        fontSize: (Number(tender.maxBudget || 0) || Number(tender.budget || 0) || Number(tender.price || 0) || 0).toLocaleString().length > 10 ? '16px' : 
+                                                  (Number(tender.maxBudget || 0) || Number(tender.budget || 0) || Number(tender.price || 0) || 0).toLocaleString().length > 8 ? '20px' : '24px', 
+                                        lineHeight: '29px',
+                                        color: '#002896',
+                                        transition: 'font-size 0.2s ease'
+                                      }}>
+                                        {(Number(tender.maxBudget || 0) || Number(tender.budget || 0) || Number(tender.price || 0) || 0).toLocaleString()}
+                                      </span>
+                                      <span style={{ 
+                                        fontFamily: 'Inter, sans-serif',
+                                        fontSize: '14px', 
+                                        fontWeight: '700', 
+                                        color: '#002896',
+                                        marginLeft: '1px'
+                                      }}>DA</span>
+                                    </>
+                                  )}
+                                </div>
+
+                              <Link 
+                                href={tender.hidden ? '#' : `/dashboard/profile/${tender.owner?._id || tender.owner}`} 
+                                style={{
+                                  maxWidth: '120px',
+                                  fontFamily: 'Roboto, sans-serif',
+                                  fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
+                                  fontWeight: '400',
+                                  lineHeight: 1.2,
                                   color: '#002896',
-                                  transition: 'font-size 0.2s ease'
-                                }}>
-                                  {(tender.budget || tender.maxBudget || tender.price) ? `${Number(tender.budget || tender.maxBudget || tender.price).toLocaleString()}` : "Offre"}
-                                </span>
-                                {(tender.budget || tender.maxBudget || tender.price) && (
-                                  <span style={{ 
-                                    fontFamily: 'Inter, sans-serif',
-                                    fontSize: '14px', 
-                                    fontWeight: '700', 
-                                    color: '#002896',
-                                    marginLeft: '1px'
-                                  }}>DA</span>
-                                )}
-                              </div>
-                              <span style={{
-                                maxWidth: '120px',
-                                fontFamily: 'Roboto, sans-serif',
-                                fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
-                                fontWeight: '400',
-                                lineHeight: 1.2,
-                                color: '#002896',
-                                display: 'flex',
-                                alignItems: 'center',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                textAlign: 'right',
-                                justifyContent: 'flex-end'
-                              }}>
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  textAlign: 'right',
+                                  justifyContent: 'flex-end',
+                                  textDecoration: 'none',
+                                  cursor: tender.hidden ? 'default' : 'pointer'
+                                }}
+                                onClick={(e) => { if(!tender.hidden) e.stopPropagation(); else e.preventDefault(); }}
+                              >
                                 {companyName}
-                              </span>
+                              </Link>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center' }}>
                               <span style={{ 
@@ -521,7 +537,7 @@ const Home1LiveTenders = () => {
                             {/* Databook rows */}
                             {[
                               { label: 'Désignation', value: tender.title },
-                              ...(tender.evaluationType !== 'MIEUX_DISANT' ? [{ label: 'Budget', value: (tender.budget || tender.maxBudget || tender.price) ? `${Number(tender.budget || tender.maxBudget || tender.price).toLocaleString()} DA` : "Offre" }] : []),
+                              { label: 'Budget', value: tender.evaluationType === 'MIEUX_DISANT' ? 'Offre' : `${(Number(tender.maxBudget || 0) || Number(tender.budget || 0) || Number(tender.price || 0) || 0).toLocaleString()} DA` },
                               { label: 'Quantité', value: tender.quantity || 'N/A' },
                               { label: 'Type', value: (tender.bidType === 'SERVICE' || tender.tenderType === 'SERVICE') ? '🛠️ Service' : '📦 Produit' },
                               { label: 'Catégorie', value: tender.category?.name || tender.productSubCategory?.name || tender.productCategory?.name || tender.categoryName || 'Général' },

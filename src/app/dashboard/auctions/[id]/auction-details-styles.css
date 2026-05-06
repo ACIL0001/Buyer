@@ -1,0 +1,364 @@
+/* Auction Details Modern Styles */
+
+.figma-ad-main {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 40px;
+  gap: 24px;
+  max-width: 1440px;
+  margin: 0 auto;
+  background: #F8FAFC;
+}
+
+.figma-ad-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+}
+
+.figma-ad-product-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  background: #FFFFFF;
+  border: 1px solid #F1F5F9;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  height: 126px;
+}
+
+.figma-ad-product-img-container {
+  width: 126px;
+  height: 126px;
+  background: #F1F5F9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  border-right: 1px solid #F1F5F9;
+}
+
+.figma-ad-product-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  padding: 8px;
+}
+
+.figma-ad-product-content {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  flex: 1;
+}
+
+.figma-ad-product-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 31px;
+  letter-spacing: -0.24px;
+  color: #191B24;
+  margin: 0;
+}
+
+.figma-ad-product-date {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  color: #64748B;
+  margin-top: 4px;
+}
+
+.figma-ad-details-box {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 32px;
+  gap: 32px;
+  background: #FFFFFF;
+  border: 1px solid #F1F5F9;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+}
+
+.figma-ad-proposal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #F1F5F9;
+  padding-bottom: 24px;
+}
+
+.figma-ad-proposal-amount-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.figma-ad-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #64748B;
+}
+
+.figma-ad-amount {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 36px;
+  letter-spacing: -0.72px;
+  color: #0050CB;
+}
+
+.figma-ad-proposal-date {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #94A3B8;
+}
+
+.figma-ad-bidder-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.figma-ad-bidder-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.figma-ad-bidder-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0px 0px 0px 2px #DAE1FF;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.figma-ad-bidder-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #191B24;
+}
+
+.figma-ad-bidder-meta {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #64748B;
+}
+
+.figma-ad-comment-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.figma-ad-comment-box {
+  padding: 16px;
+  background: #F8FAFC;
+  border-left: 4px solid #0050CB;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 26px;
+  color: #424656;
+}
+
+.figma-ad-info-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #EFF6FF;
+  border: 1px solid #DBEAFE;
+  border-radius: 12px;
+  color: #334155;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+}
+
+.figma-ad-footer-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.figma-ad-btn-accept {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 18px;
+  background: #16A34A;
+  border-radius: 12px;
+  color: #FFFFFF;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.figma-ad-btn-reject {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  background: #FFFFFF;
+  border: 2px solid #FEE2E2;
+  border-radius: 12px;
+  color: #E11D48;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Right Column */
+.figma-ad-right-col {
+  width: 343px;
+  height: 628px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.figma-ad-side-card {
+  box-sizing: border-box;
+  padding: 24px;
+  background: #FFFFFF;
+  border: 1px solid #F1F5F9;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+}
+
+.figma-ad-side-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #191B24;
+  margin-bottom: 24px;
+}
+
+.figma-ad-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #F8FAFC;
+}
+
+.figma-ad-stat-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  color: #64748B;
+}
+
+.figma-ad-stat-value {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  color: #191B24;
+}
+
+.figma-ad-stat-value-blue {
+  color: #0050CB;
+  font-weight: 700;
+}
+
+/* History */
+.figma-ad-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  padding-left: 24px;
+}
+
+.figma-ad-history-divider {
+  position: absolute;
+  width: 2px;
+  left: 4px;
+  top: 4px;
+  bottom: 4px;
+  background: #F1F5F9;
+}
+
+.figma-ad-history-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+.figma-ad-history-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  left: -24px;
+  top: 6px;
+  border-radius: 50%;
+  background: #CBD5E1;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.figma-ad-history-dot-active {
+  background: #0050CB;
+}
+
+.figma-ad-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.figma-ad-history-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #191B24;
+}
+
+.figma-ad-history-price {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: #0050CB;
+}
+
+.figma-ad-history-date {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #94A3B8;
+}
+
+.figma-ad-view-more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0;
+  color: #64748B;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
+}

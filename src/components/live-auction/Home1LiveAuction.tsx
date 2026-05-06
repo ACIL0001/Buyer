@@ -14,6 +14,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CardSkeleton from '../skeletons/CardSkeleton';
 import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
+import { formatUserName } from '@/utils/user';
 import { useRouter } from "next/navigation";
 import { useCreateSocket } from '@/contexts/socket';
 import ShareButton from "@/components/common/ShareButton";
@@ -206,7 +207,7 @@ const Home1LiveAuction = () => {
               <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper auction-slider" style={{ padding: '30px 0', margin: '-30px 0', overflow: 'hidden' }}>
                 {liveAuctions.map((auction: any) => {
                   const timer = timers[auction.id] || { days: "0", hours: "0", minutes: "0", formattedEnd: "", hasEnded: false };
-                  const companyName = auction.owner?.entreprise || auction.owner?.firstName || 'Nom Entreprise';
+                  const companyName = formatUserName(auction.owner);
                   
                   return (
                     <SwiperSlide key={auction.id} style={{ overflow: 'visible', perspective: '1000px' }}>
@@ -443,20 +444,25 @@ const Home1LiveAuction = () => {
                               }}>
                                 {auction.participantsCount || 0} enchères
                               </span>
-                              <span style={{
-                                maxWidth: '120px',
-                                fontFamily: 'Roboto, sans-serif',
-                                fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
-                                fontWeight: '400',
-                                lineHeight: 1.2,
-                                color: '#062C90',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                textAlign: 'right'
-                              }}>
+                              <Link 
+                                href={`/dashboard/profile/${auction.owner?._id || auction.owner}`} 
+                                style={{
+                                  maxWidth: '120px',
+                                  fontFamily: 'Roboto, sans-serif',
+                                  fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
+                                  fontWeight: '400',
+                                  lineHeight: 1.2,
+                                  color: '#062C90',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  textAlign: 'right',
+                                  textDecoration: 'none'
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 {companyName}
-                              </span>
+                              </Link>
                             </div>
                           </div>
                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>

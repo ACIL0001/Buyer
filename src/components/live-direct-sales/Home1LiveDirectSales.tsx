@@ -14,6 +14,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CardSkeleton from '../skeletons/CardSkeleton';
 import useAuth from '@/hooks/useAuth';
 import { normalizeImageUrl } from '@/utils/url';
+import { formatUserName } from '@/utils/user';
 import { useRouter } from "next/navigation";
 import { useCreateSocket } from '@/contexts/socket';
 import ShareButton from "@/components/common/ShareButton";
@@ -177,7 +178,7 @@ const Home1LiveDirectSales = () => {
             <div style={{ position: 'relative' }}>
               <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper direct-sale-slider" style={{ padding: '30px 0', margin: '-30px 0', overflow: 'hidden' }}>
                 {directSales.map((sale: any) => {
-                  const companyName = sale.owner?.entreprise || sale.owner?.companyName || sale.owner?.firstName || 'Nom Entreprise';
+                  const companyName = formatUserName(sale.owner);
                   const availableQuantity = sale.quantity > 0 ? (sale.quantity - (sale.soldQuantity || 0)) : 'Illimité';
                   
                   return (
@@ -405,23 +406,28 @@ const Home1LiveDirectSales = () => {
                                   marginLeft: '1px'
                                 }}>DA</span>
                               </div>
-                              <span style={{
-                                maxWidth: '120px',
-                                fontFamily: 'Roboto, sans-serif',
-                                fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
-                                fontWeight: '400',
-                                lineHeight: 1.2,
-                                color: '#002896',
-                                display: 'flex',
-                                alignItems: 'center',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                textAlign: 'right',
-                                justifyContent: 'flex-end'
-                              }}>
+                               <Link 
+                                href={`/dashboard/profile/${sale.owner?._id || sale.owner}`} 
+                                style={{
+                                  maxWidth: '120px',
+                                  fontFamily: 'Roboto, sans-serif',
+                                  fontSize: 'clamp(0.75rem, 1vw, 0.875rem)',
+                                  fontWeight: '400',
+                                  lineHeight: 1.2,
+                                  color: '#002896',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  textAlign: 'right',
+                                  justifyContent: 'flex-end',
+                                  textDecoration: 'none'
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 {companyName}
-                              </span>
+                              </Link>
                             </div>
 
                           </div>

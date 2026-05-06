@@ -39,6 +39,9 @@ export interface Auction {
     contactNumber?: string;
     biddersCount?: number;
     participantsCount?: number;
+    viewsCount?: number;
+    createdAt?: string;
+    updatedAt?: string;
     bidType: 'PRODUCT' | 'SERVICE';
     auctionType: 'CLASSIC' | 'EXPRESS' | 'AUTO_SUB_BID';
     images?: string[];
@@ -50,4 +53,21 @@ export interface Auction {
     logo?: string;
     coverImage?: string;
     mainImage?: string;
+    offers?: Array<{
+        _id: string;
+        user: {
+            _id: string;
+            firstName?: string;
+            lastName?: string;
+            name?: string;
+            companyName?: string;
+            entreprise?: string;
+            profileImage?: { url: string; };
+            avatar?: { url: string; };
+            photoURL?: string;
+        };
+        price: number;
+        createdAt: string;
+        status: string;
+    }>;
 }

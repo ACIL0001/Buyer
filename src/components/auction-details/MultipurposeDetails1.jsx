@@ -25,6 +25,7 @@ import { motion } from "framer-motion";
 import ShareButton from "@/components/common/ShareButton";
 import { normalizeImageUrl } from '@/utils/url';
 import CommentItem from "@/components/common/CommentItem";
+import { formatUserName } from "@/utils/user";
 
 const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-dark.png";
 const DEFAULT_USER_AVATAR = "/assets/images/avatar.jpg";
@@ -523,6 +524,14 @@ const MultipurposeDetails1 = () => {
   // Function to show bid confirmation modal
   const handleBidClick = (e) => {
     e.preventDefault();
+    
+    // Check if user is logged in
+    if (!isLogged || !auth.tokens) {
+      toast.error(t('details.pleaseLoginToBuy'));
+      router.push('/auth/login');
+      return;
+    }
+    
     setShowBidConfirmation(true);
   };
 
@@ -549,15 +558,10 @@ const MultipurposeDetails1 = () => {
   );
 
   try {
-    // Check if user is logged in
-    if (!isLogged || !auth.tokens) {
-      toast.error(t('details.pleaseLoginToBuy'));
-      router.push('/auth/login');
-      return;
-    }
+    // Authentication is now checked in handleBidClick before showing modal
 
     // Get bid amount from the quantity input
-    const bidInput = document.querySelector(".quantity__input");
+    const bidInput = document.querySelector(".quantity__input_v2");
     if (!bidInput || !bidInput.value) {
       toast.error(t('auction.bidError'));
       return;
@@ -1277,7 +1281,7 @@ const MultipurposeDetails1 = () => {
                 <div className="info-item-mini">
                   <span className="info-label-mini">VENDEUR:</span>
                   <Link href={`/dashboard/profile/${safeOwner?._id}`} className="info-text-mini hover-link">
-                    {safeOwner?.entreprise || safeOwner?.name || 'Vendeur'}
+                    {formatUserName(safeOwner) || 'Vendeur'}
                   </Link>
                 </div>
                 <div className="info-item-mini">
@@ -1474,9 +1478,9 @@ const MultipurposeDetails1 = () => {
             </div>
             <div className="seller-info-content">
               <div className="seller-header">
-                <span className="seller-name">
-                  {safeOwner?.entreprise || (safeOwner?.firstName && safeOwner?.lastName ? `${safeOwner.firstName} ${safeOwner.lastName}` : safeOwner?.name || safeOwner?.username || t('common.seller'))}
-                </span>
+                <Link href={`/dashboard/profile/${safeOwner?._id || safeOwner}`} className="seller-name hover-link">
+                  {formatUserName(safeOwner) || t('common.seller')}
+                </Link>
                 <div className="seller-rating">
                   {[...Array(5)].map((_, i) => (
                     <span key={i} className={`star ${i < 4 ? 'filled' : ''}`}>★</span>
@@ -1542,7 +1546,7 @@ const MultipurposeDetails1 = () => {
                         return normalizeImageUrl(url);
                       };
                       const price = auction.currentPrice || auction.startingPrice || 0;
-                      const seller = auction.owner?.entreprise || auction.owner?.firstName || 'Nom Entreprise';
+                      const seller = formatUserName(auction.owner) || 'Annonceur';
                       return (
                         <SwiperSlide key={aid} style={{ overflow: 'visible', perspective: '1000px' }}>
                           <motion.div
@@ -1680,8 +1684,8 @@ const MultipurposeDetails1 = () => {
                   <span className="summary-label">Montant de votre offre</span>
                   <span className="summary-value">
                     {(() => {
-                      const input = document.querySelector('.quantity__input');
-                      return input ? Number(input.value).toLocaleString() : '0';
+                      const input = document.querySelector('.quantity__input_v2');
+                      return input ? Number(input.value.replace(/[^0-9.]/g, '')).toLocaleString() : '0';
                     })()} DA
                   </span>
                 </div>

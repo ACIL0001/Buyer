@@ -7,36 +7,22 @@ import useAuth from '@/hooks/useAuth';
 import { DirectSale, SALE_STATUS } from '@/types/direct-sale';
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { useCreateSocket } from '@/contexts/socket';
-import DashboardPageShell from '@/components/dashboard/DashboardPageShell';
-import {
-  StatusBadge, PillChip, ActionBtn, HeaderAddBtn, tableStyles,
-  DashboardKeyframes, SimplePagination, ConfirmDialog, ListPageSkeleton,
-} from '@/components/dashboard/dashboardHelpers';
-
-function statusConfig(status: SALE_STATUS) {
-  const map: Record<string, any> = {
-    ACTIVE:       { label: 'Actif',       color: '#16a34a', bg: '#dcfce7', dot: true },
-    SOLD:         { label: 'Vendu',        color: '#0284c7', bg: '#e0f2fe' },
-    INACTIVE:     { label: 'Inactif',      color: '#d97706', bg: '#fef3c7' },
-    OUT_OF_STOCK: { label: 'Rupture',      color: '#dc2626', bg: '#fee2e2' },
-    PAUSED:       { label: 'Suspendu',     color: '#7c3aed', bg: '#ede9fe' },
-    ARCHIVED:     { label: 'Archivé',      color: '#64748b', bg: '#f1f5f9' },
-    SOLD_OUT:     { label: 'Épuisé',       color: '#dc2626', bg: '#fee2e2' },
-  };
-  return map[status] || { label: status, color: '#64748b', bg: '#f1f5f9' };
-}
+import { 
+  BsBag, 
+  BsCheckCircle, 
+  BsSend, 
+  BsEye, 
+  BsArrowRightShort,
+  BsPlusLg
+} from 'react-icons/bs';
+import './direct-sales-styles.css';
 
 export default function DirectSalesPage() {
   const router = useRouter();
   const { t } = useTranslation();
   const { isLogged } = useAuth();
   const queryClient = useQueryClient();
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   const { socket } = useCreateSocket() || {};
   useEffect(() => {
@@ -56,11 +42,7 @@ export default function DirectSalesPage() {
       const { DirectSaleAPI } = await import('@/services/direct-sale');
       const response = await DirectSaleAPI.getMyDirectSales();
       const rawData = response.data || (Array.isArray(response) ? response : []);
-      return rawData.map((item: any) => ({
-        ...item,
-        category: typeof item.category === 'object' ? item.category?.name : item.category,
-        productCategory: typeof item.productCategory === 'object' ? item.productCategory?.name : item.productCategory,
-      })) as DirectSale[];
+      return rawData as DirectSale[];
     },
     enabled: isLogged,
     staleTime: 30000,
@@ -70,137 +52,150 @@ export default function DirectSalesPage() {
   const saleList = sales as DirectSale[];
 
   const filtered = useMemo(() => {
-    let list = statusFilter === 'ALL' ? saleList : saleList.filter(s => s.status === statusFilter);
-    if (search.trim()) list = list.filter(s => s.title?.toLowerCase().includes(search.toLowerCase()));
-    return list;
-  }, [saleList, statusFilter, search]);
+    if (statusFilter === 'ALL') return saleList;
+    if (statusFilter === 'ACTIVE') return saleList.filter(s => s.status === SALE_STATUS.ACTIVE);
+    if (statusFilter === 'SOLD') return saleList.filter(s => s.status === SALE_STATUS.SOLD);
+    return saleList;
+  }, [saleList, statusFilter]);
 
-  const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  const activeCount = saleList.filter(s => s.status === SALE_STATUS.ACTIVE).length;
+  const soldCount = saleList.filter(s => s.status === SALE_STATUS.SOLD).length;
+  const requestsCount = 3; // Placeholder as in design
+  const viewsCount = 156; // Placeholder as in design
 
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    setDeleting(true);
-    try {
-      const { DirectSaleAPI } = await import('@/services/direct-sale');
-      await DirectSaleAPI.delete(deleteTarget);
-      queryClient.invalidateQueries({ queryKey: ['direct-sales', 'my'] });
-    } catch (e) { console.error(e); }
-    finally { setDeleting(false); setDeleteTarget(null); }
-  };
-
-  const active = saleList.filter(s => s.status === SALE_STATUS.ACTIVE);
-  const outOfStock = saleList.filter(s => s.status === SALE_STATUS.OUT_OF_STOCK || (s as any).status === 'SOLD_OUT');
-  const sold = saleList.filter(s => s.status === SALE_STATUS.SOLD);
-
-  const stats = [
-    { label: 'Total', value: saleList.length, color: 'var(--primary-ds-color)', icon: '🛍️' },
-    { label: 'Actifs', value: active.length, color: '#10b981', icon: '✅' },
-    { label: 'Rupture de stock', value: outOfStock.length, color: '#ef4444', icon: '⚠️' },
-    { label: 'Vendus', value: sold.length, color: '#0284c7', icon: '💰' },
-  ];
-
-  if (isLoading) return <ListPageSkeleton accentColor="var(--primary-ds-color)" />;
+  if (isLoading) return <div>Chargement...</div>;
 
   return (
-    <>
-      <DashboardKeyframes />
-      <DashboardPageShell
-        title={t('dashboard.list.myDirectSales', 'Mes Ventes Directes')}
-        subtitle={`${saleList.length} vente${saleList.length !== 1 ? 's' : ''} au total`}
-        icon="🛍️"
-        accentColor="var(--primary-ds-color)"
-        stats={stats}
-        headerActions={
-          <HeaderAddBtn label={t('dashboard.list.newSale', 'Nouvelle vente')} href="/dashboard/direct-sales/create/" />
-        }
-      >
-        {/* Toolbar */}
-        <div style={tableStyles.toolbar}>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <PillChip label="Tous" active={statusFilter === 'ALL'} onClick={() => { setStatusFilter('ALL'); setPage(0); }} count={saleList.length} />
-            <PillChip label="Actifs" active={statusFilter === 'ACTIVE'} onClick={() => { setStatusFilter('ACTIVE'); setPage(0); }} count={active.length} color="#10b981" />
-            <PillChip label="Inactifs" active={statusFilter === 'INACTIVE'} onClick={() => { setStatusFilter('INACTIVE'); setPage(0); }} count={saleList.filter(s => (s as any).status === 'INACTIVE').length} color="#d97706" />
-            <PillChip label="Vendus" active={statusFilter === 'SOLD'} onClick={() => { setStatusFilter('SOLD'); setPage(0); }} count={sold.length} color="#0284c7" />
+    <div style={{ padding: '40px 20px', backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
+      {/* Summary Cards */}
+      <div className="figma-ds-summary-container">
+        <div className="figma-ds-card">
+          <div className="figma-ds-icon-circle figma-ds-icon-blue">
+            <BsBag size={18} />
           </div>
-          <div style={tableStyles.searchWrap}>
-            <span style={tableStyles.searchIcon}>🔍</span>
-            <input style={tableStyles.searchInput} placeholder="Rechercher..." value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} />
-          </div>
+          <span className="figma-ds-card-label">Ventes directes actives</span>
+          <span className="figma-ds-card-value">{activeCount}</span>
         </div>
 
-        {filtered.length === 0 ? (
-          <div style={tableStyles.emptyState}>
-            <div style={{ fontSize: '52px', marginBottom: '16px' }}>🛍️</div>
-            <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569', margin: '0 0 8px' }}>Aucune vente directe</p>
-            <p style={{ color: '#94a3b8', margin: '0 0 24px' }}>Créez votre première vente directe</p>
-            <a href="/dashboard/direct-sales/create/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 22px', background: 'var(--primary-ds-color)', color: '#fff', borderRadius: '10px', fontWeight: 700, textDecoration: 'none' }}>
-              ＋ Nouvelle vente
-            </a>
+        <div className="figma-ds-card">
+          <div className="figma-ds-icon-circle figma-ds-icon-green">
+            <BsCheckCircle size={18} />
           </div>
-        ) : (
-          <table style={tableStyles.table}>
-            <thead>
-              <tr>
-                {['Titre', 'Catégorie', 'Prix unitaire', 'Stock', 'Commandes', 'Statut', ''].map(h => (
-                  <th key={h} style={tableStyles.th}>{h}</th>
-                ))}
+          <span className="figma-ds-card-label">Totale vendu</span>
+          <span className="figma-ds-card-value">{soldCount}</span>
+        </div>
+
+        <div className="figma-ds-card">
+          <div className="figma-ds-icon-circle figma-ds-icon-gray">
+            <BsSend size={18} />
+          </div>
+          <span className="figma-ds-card-label">Demandes d’achat</span>
+          <span className="figma-ds-card-value">{requestsCount}</span>
+          <a className="figma-ds-card-link">Voir tout</a>
+        </div>
+
+        <div className="figma-ds-card">
+          <div className="figma-ds-icon-circle figma-ds-icon-orange">
+            <BsEye size={18} />
+          </div>
+          <span className="figma-ds-card-label">Vues sur les annonces</span>
+          <span className="figma-ds-card-value">{viewsCount}</span>
+        </div>
+      </div>
+
+      {/* Main Section */}
+      <div className="figma-ds-main-section">
+        <div className="figma-ds-section-header">
+          <div className="figma-ds-title-group">
+            <h2 className="figma-ds-title">Ventes directes</h2>
+            <p className="figma-ds-subtitle">Gérez vos produits en vente directe à prix fixe.</p>
+          </div>
+          <button 
+            onClick={() => router.push('/dashboard/direct-sales/create/')}
+            style={{ 
+              backgroundColor: '#0050CB', 
+              color: '#fff', 
+              border: 'none', 
+              padding: '10px 20px', 
+              borderRadius: '8px', 
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer'
+            }}
+          >
+            <BsPlusLg /> Nouvelle vente
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="figma-ds-tabs">
+          <button className={`figma-ds-tab-btn ${statusFilter === 'ALL' ? 'active' : ''}`} onClick={() => setStatusFilter('ALL')}>
+            Toutes ({saleList.length})
+          </button>
+          <button className={`figma-ds-tab-btn ${statusFilter === 'ACTIVE' ? 'active' : ''}`} onClick={() => setStatusFilter('ACTIVE')}>
+            En ligne ({activeCount})
+          </button>
+          <button className={`figma-ds-tab-btn ${statusFilter === 'SOLD' ? 'active' : ''}`} onClick={() => setStatusFilter('SOLD')}>
+            Vendues ({soldCount})
+          </button>
+          <button className="figma-ds-tab-btn">Demandes d'achat</button>
+        </div>
+
+        {/* Table */}
+        <table className="figma-ds-table">
+          <thead className="figma-ds-thead">
+            <tr>
+              <th className="figma-ds-th">PRODUIT</th>
+              <th className="figma-ds-th">PRIX</th>
+              <th className="figma-ds-th">STATUT</th>
+              <th className="figma-ds-th">DATE DE PUBLICATION</th>
+              <th className="figma-ds-th" style={{ textAlign: 'right' }}>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((sale) => (
+              <tr key={sale._id} className="figma-ds-tr">
+                <td className="figma-ds-td">
+                  <div className="figma-ds-product-cell">
+                    <img 
+                      src={sale.thumbs?.[0]?.url || '/assets/img/logo.png'} 
+                      alt={sale.title} 
+                      className="figma-ds-product-img" 
+                    />
+                    <div className="figma-ds-product-info">
+                      <span className="figma-ds-product-name">{sale.title}</span>
+                      <span className="figma-ds-product-cat">{typeof sale.category === 'string' ? sale.category : (sale.category as any)?.name || 'Informatique'}</span>
+                    </div>
+                  </div>
+                </td>
+                <td className="figma-ds-td">
+                  <span className="figma-ds-price">{sale.price?.toLocaleString()}</span>
+                </td>
+                <td className="figma-ds-td">
+                  <span className={`figma-ds-status-badge ${sale.status === SALE_STATUS.ACTIVE ? 'figma-ds-status-online' : 'figma-ds-status-sold'}`}>
+                    {sale.status === SALE_STATUS.ACTIVE ? 'EN LIGNE' : 'VENDU'}
+                  </span>
+                </td>
+                <td className="figma-ds-td">
+                  {sale.createdAt ? new Date(sale.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '12 Oct. 2026'}
+                </td>
+                <td className="figma-ds-td" style={{ textAlign: 'right' }}>
+                  <button className="figma-ds-action-btn" onClick={() => router.push(`/dashboard/direct-sales/${sale._id}`)}>Voir</button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {paginated.map(row => {
-                const { _id, title, productCategory, category, price, quantity, stock, ordersCount, status } = row;
-                const catName = (typeof productCategory === 'object' ? (productCategory as any)?.name : productCategory) || (typeof category === 'object' ? (category as any)?.name : category);
-                const displayStock = quantity !== undefined ? quantity : (stock || 0);
-                const displayOrders = ordersCount || 0;
-                return (
-                  <tr key={_id} className="db-row" onClick={() => router.push(`/dashboard/direct-sales/${_id}`)} style={tableStyles.trHover}>
-                    <td style={tableStyles.td}><span style={{ fontWeight: 600, color: '#1e293b' }}>{title}</span></td>
-                    <td style={tableStyles.td}>
-                      <span style={{ padding: '3px 9px', borderRadius: '12px', background: '#f1f5f9', color: '#475569', fontSize: '0.76rem', fontWeight: 600 }}>{catName || 'N/A'}</span>
-                    </td>
-                    <td style={tableStyles.td}>
-                      <span style={{ fontWeight: 700, color: 'var(--primary-ds-color)' }}>{price?.toFixed(2)} DA</span>
-                    </td>
-                    <td style={tableStyles.td}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontWeight: 600, color: displayStock === 0 ? '#ef4444' : '#334155' }}>{displayStock}</span>
-                        {displayStock === 0 && <span style={{ fontSize: '0.7rem', color: '#ef4444', fontWeight: 600 }}>Épuisé</span>}
-                      </div>
-                    </td>
-                    <td style={tableStyles.td}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: '28px', height: '28px', borderRadius: '50%', background: displayOrders > 0 ? '#dcfce7' : '#f1f5f9', color: displayOrders > 0 ? '#16a34a' : '#94a3b8', fontWeight: 700, fontSize: '0.8rem', padding: '0 6px' }}>
-                        {displayOrders}
-                      </span>
-                    </td>
-                    <td style={tableStyles.td}><StatusBadge config={statusConfig(status)} /></td>
-                    <td style={{ ...tableStyles.td, textAlign: 'right' }} onClick={e => e.stopPropagation()}>
-                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                        <ActionBtn label="Voir" icon="👁️" href={`/dashboard/direct-sales/${_id}`} />
-                        <ActionBtn label="Supprimer" icon="🗑️" variant="danger" onClick={() => setDeleteTarget(_id)} />
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
+            ))}
+          </tbody>
+        </table>
 
-        {filtered.length > 0 && (
-          <SimplePagination page={page} rowsPerPage={rowsPerPage} total={filtered.length} onPageChange={setPage} onRowsPerPageChange={setRowsPerPage} />
-        )}
-      </DashboardPageShell>
-
-      <ConfirmDialog
-        open={!!deleteTarget}
-        title="Supprimer la vente directe"
-        message="Êtes-vous sûr de vouloir supprimer cette vente directe ? Cette action est irréversible."
-        confirmLabel={deleting ? 'Suppression...' : 'Supprimer'}
-        cancelLabel="Annuler"
-        danger
-        onCancel={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
-      />
-    </>
+        {/* Footer */}
+        <div className="figma-ds-footer">
+          <a href="#" className="figma-ds-view-all">
+            Voir toutes les ventes directes <BsArrowRightShort size={20} />
+          </a>
+        </div>
+      </div>
+    </div>
   );
 }

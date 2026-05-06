@@ -48,34 +48,34 @@ const useNavConfig = () => {
       icon: getIcon(MdOutlineTrendingUp),
       children: [
         {
-          title: t('dashboard.navigation.myAuctions', 'My Auctions'),
+          title: 'Mes enchères',
           path: '/dashboard/auctions',
         },
         {
-          title: t('dashboard.navigation.createAuction', 'Create Auction'),
+          title: 'Créer une enchère',
           path: '/dashboard/auctions/create/',
         },
         {
-          title: t('dashboard.navigation.offers', 'Offers'),
+          title: 'Mes offres',
           path: '/dashboard/offers',
         },
       ],
     },
     {
-      title: 'Appel d\'offres',
+      title: 'Soumission',
       path: '/dashboard/tenders',
       icon: getIcon(MdOutlineLayers),
       children: [
         {
-          title: t('dashboard.navigation.myTenders', 'My Tenders'),
+          title: 'Mes appels d\'offres',
           path: '/dashboard/tenders',
         },
         {
-          title: t('dashboard.navigation.newTender', 'New Tender'),
+          title: 'Nouvel appel d\'offres',
           path: '/dashboard/tenders/create/',
         },
         {
-          title: t('dashboard.navigation.receivedBids', 'Received Bids'),
+          title: 'Soumissions reçues',
           path: '/dashboard/tender-bids',
         },
       ],
@@ -86,15 +86,15 @@ const useNavConfig = () => {
       icon: getIcon(MdOutlineStorefront),
       children: [
         {
-          title: t('dashboard.navigation.mySales', 'My Sales'),
+          title: 'Mes ventes',
           path: '/dashboard/direct-sales',
         },
         {
-          title: t('dashboard.navigation.createSale', 'Create Sale'),
+          title: 'Créer une vente',
           path: '/dashboard/direct-sales/create/',
         },
         {
-          title: t('dashboard.navigation.orders', 'Orders'),
+          title: 'Commandes',
           path: '/dashboard/direct-sales/orders',
         },
       ],

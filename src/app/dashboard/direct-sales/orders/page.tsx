@@ -12,6 +12,7 @@ import {
   StatusBadge, ActionBtn, tableStyles, DashboardKeyframes,
   SimplePagination, PillTabs, ConfirmDialog, ListPageSkeleton,
 } from '@/components/dashboard/dashboardHelpers';
+import { formatUserName } from '@/utils/user';
 
 interface Order {
   _id: string;
@@ -182,9 +183,7 @@ export default function OrdersPage() {
             <tbody>
               {paginated.map(order => {
                 const counterparty = isPurchase ? (order.seller || order.directSale?.owner) : order.buyer;
-                const displayName = counterparty
-                  ? (counterparty.companyName || counterparty.entreprise || `${counterparty.firstName || ''} ${counterparty.lastName || ''}`.trim())
-                  : (isPurchase ? 'Vendeur inconnu' : 'Acheteur inconnu');
+                const displayName = formatUserName(counterparty);
                 const initials = displayName?.charAt(0).toUpperCase() || '?';
                 const profileId = (counterparty as any)?._id;
 
@@ -248,7 +247,7 @@ export default function OrdersPage() {
       <ConfirmDialog
         open={!!confirmTarget}
         title="Confirmer la commande"
-        message={`Confirmer la commande de "${confirmTarget?.directSale?.title || 'ce produit'}" pour ${confirmTarget?.buyer ? `${confirmTarget.buyer.firstName} ${confirmTarget.buyer.lastName}` : 'cet acheteur'} ? Total : ${confirmTarget?.totalPrice?.toLocaleString() || 0} DA`}
+        message={`Confirmer la commande de "${confirmTarget?.directSale?.title || 'ce produit'}" pour ${formatUserName(confirmTarget?.buyer)} ? Total : ${confirmTarget?.totalPrice?.toLocaleString() || 0} DA`}
         confirmLabel={confirming ? 'Confirmation...' : 'Confirmer'}
         cancelLabel="Annuler"
         onCancel={() => setConfirmTarget(null)}

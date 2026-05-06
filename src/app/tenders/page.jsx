@@ -109,10 +109,10 @@ const TendersPage = () => {
 
     // Filter by Price (Modified for Min/Max fields)
     if (priceRange.min !== '') {
-      transformed = transformed.filter(t => (t.budget || 0) >= parseFloat(priceRange.min));
+      transformed = transformed.filter(t => (t.maxBudget || t.budget || t.price || 0) >= parseFloat(priceRange.min));
     }
     if (priceRange.max !== '') {
-      transformed = transformed.filter(t => (t.budget || 0) <= parseFloat(priceRange.max));
+      transformed = transformed.filter(t => (t.maxBudget || t.budget || t.price || 0) <= parseFloat(priceRange.max));
     }
 
     // Filter by Categories
@@ -132,9 +132,9 @@ const TendersPage = () => {
 
     // Sorting
     if (sortOrder === 'PRICE_ASC') {
-      transformed.sort((a, b) => (a.budget || 0) - (b.budget || 0));
+      transformed.sort((a, b) => (a.maxBudget || a.budget || a.price || 0) - (b.maxBudget || b.budget || b.price || 0));
     } else if (sortOrder === 'PRICE_DESC') {
-      transformed.sort((a, b) => (b.budget || 0) - (a.budget || 0));
+      transformed.sort((a, b) => (b.maxBudget || b.budget || b.price || 0) - (a.maxBudget || a.budget || a.price || 0));
     } else if (sortOrder === 'OLDEST') {
       transformed.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
     } else if (sortOrder === 'NEWEST') {
@@ -467,27 +467,36 @@ const TendersPage = () => {
                         </h4>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-                            <span style={{ 
-                              width: 'auto',
-                              height: '29px',
-                              fontFamily: 'Inter, sans-serif',
-                              fontWeight: '700', 
-                              fontSize: Number(tender.budget || 0).toLocaleString().length > 10 ? '16px' : 
-                                        Number(tender.budget || 0).toLocaleString().length > 8 ? '20px' : '24px', 
-                              lineHeight: '29px',
-                              color: '#002896',
-                              transition: 'font-size 0.2s ease'
-                            }}>
-                              {tender.budget ? `${Number(tender.budget).toLocaleString()}` : "Offre"}
-                            </span>
-                            {tender.budget && (
+                            {tender.evaluationType === 'MIEUX_DISANT' ? (
                               <span style={{ 
                                 fontFamily: 'Inter, sans-serif',
-                                fontSize: '14px', 
                                 fontWeight: '700', 
+                                fontSize: '24px', 
                                 color: '#002896',
-                                marginLeft: '1px'
-                              }}>DA</span>
+                              }}>Offre</span>
+                            ) : (
+                              <>
+                                <span style={{ 
+                                  width: 'auto',
+                                  height: '29px',
+                                  fontFamily: 'Inter, sans-serif',
+                                  fontWeight: '700', 
+                                  fontSize: (Number(tender.maxBudget || 0) || Number(tender.budget || 0) || Number(tender.price || 0) || 0).toLocaleString().length > 10 ? '16px' : 
+                                            (Number(tender.maxBudget || 0) || Number(tender.budget || 0) || Number(tender.price || 0) || 0).toLocaleString().length > 8 ? '20px' : '24px', 
+                                  lineHeight: '29px',
+                                  color: '#002896',
+                                  transition: 'font-size 0.2s ease'
+                                }}>
+                                  {(Number(tender.maxBudget || 0) || Number(tender.budget || 0) || Number(tender.price || 0) || 0).toLocaleString()}
+                                </span>
+                                <span style={{ 
+                                  fontFamily: 'Inter, sans-serif',
+                                  fontSize: '14px', 
+                                  fontWeight: '700', 
+                                  color: '#002896',
+                                  marginLeft: '1px'
+                                }}>DA</span>
+                              </>
                             )}
                           </div>
                           <span style={{ 
@@ -532,51 +541,6 @@ const TendersPage = () => {
                         </div>
                       </div>
 
-                      <button 
-                        disabled={timer.hasEnded}
-                        style={{
-                          width: '268px',
-                          height: '39px',
-                          backgroundColor: '#EB4545',
-                          borderRadius: '10px',
-                          padding: '10px',
-                          border: 'none',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          cursor: timer.hasEnded ? 'default' : 'pointer',
-                          gap: '10px',
-                          opacity: timer.hasEnded ? 0.6 : 1,
-                          transition: 'all 0.3s ease'
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!timer.hasEnded) router.push(`/tender-details/${tender.id}`);
-                        }}
-                        onMouseOver={(e) => {
-                          if (!timer.hasEnded) {
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.filter = 'brightness(1.1)';
-                          }
-                        }}
-                        onMouseOut={(e) => {
-                          if (!timer.hasEnded) {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.filter = 'brightness(1)';
-                          }
-                        }}
-                      >
-                        <span style={{
-                          fontFamily: 'Inter, sans-serif',
-                          fontWeight: '500',
-                          fontSize: '16px',
-                          lineHeight: '100%',
-                          color: '#FFFFFF',
-                          textAlign: 'center'
-                        }}>
-                          Soumission rapide
-                        </span>
-                      </button>
                     </div>
                   </div>
 
@@ -618,9 +582,9 @@ const TendersPage = () => {
 
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {/* Databook rows */}
-                        {[
-                          { label: 'Désignation', value: tender.title },
-                          { label: 'Budget', value: tender.budget ? `${Number(tender.budget).toLocaleString()} DA` : "Offre" },
+                          {[
+                            { label: 'Désignation', value: tender.title },
+                            { label: 'Budget', value: tender.evaluationType === 'MIEUX_DISANT' ? 'Offre' : `${(Number(tender.maxBudget || 0) || Number(tender.budget || 0) || Number(tender.price || 0) || 0).toLocaleString()} DA` },
                           { label: 'Quantité', value: tender.quantity || 'N/A' },
                           { label: 'Type', value: (tender.bidType === 'SERVICE' || tender.tenderType === 'SERVICE') ? '🛠️ Service' : '📦 Produit' },
                           { label: 'Catégorie', value: tender.category?.name || tender.productSubCategory?.name || tender.productCategory?.name || tender.categoryName || 'Général' },

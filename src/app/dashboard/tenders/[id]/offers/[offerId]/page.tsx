@@ -9,6 +9,8 @@ import { useSnackbar } from 'notistack';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCreateSocket } from '@/contexts/socket';
 import { DashboardKeyframes, StatusBadge, ActionBtn, tableStyles, ConfirmDialog, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
+import DocxViewerModal from '@/components/shared/DocxViewerModal';
+import { formatUserName } from '@/utils/user';
 
 const ACCENT = 'var(--primary-tender-color)';
 const ACCENT_80 = 'color-mix(in srgb, var(--primary-tender-color) 80%, transparent)'; // cc in hex
@@ -45,6 +47,7 @@ export default function TenderOfferDetailPage() {
   const [processing, setProcessing] = useState(false);
   const [acceptDialog, setAcceptDialog] = useState(false);
   const [rejectDialog, setRejectDialog] = useState(false);
+  const [viewDoc, setViewDoc] = useState<{ open: boolean; url: string; name: string }>({ open: false, url: '', name: '' });
 
   const queryClient = useQueryClient();
   const { socket } = useCreateSocket() || {};
@@ -121,7 +124,7 @@ export default function TenderOfferDetailPage() {
   const isOwner = tenderOwnerId == auth?.user?._id;
   const bidder = offer.bidder || offer.user;
   const bidderId = typeof bidder === 'object' ? bidder?._id : bidder;
-  const bidderName = bidder?.companyName || bidder?.entreprise || `${bidder?.firstName || ''} ${bidder?.lastName || ''}`.trim() || 'N/A';
+  const bidderName = formatUserName(bidder);
   const budget = tender.maxBudget || tender.budget || tender.estimatedBudget || 0;
   const showActions = isOwner && offer.status === 'pending' && evalType !== 'MOINS_DISANT';
 
@@ -174,20 +177,53 @@ export default function TenderOfferDetailPage() {
                               <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Document PDF / Word</div>
                             </div>
                           </div>
-                          <a href={offer.proposalFile} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 14px', borderRadius: 8, background: ACCENT, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem' }}>Voir</a>
+                          {(() => {
+                            const isDoc = offer.proposalFile.toLowerCase().endsWith('.docx') || offer.proposalFile.toLowerCase().endsWith('.doc');
+                            const fileName = offer.proposalFile.split('/').pop()?.split('-').slice(1).join('-') || 'Proposition technique';
+                            
+                            if (isDoc) {
+                              return (
+                                <button 
+                                  onClick={() => setViewDoc({ open: true, url: offer.proposalFile, name: fileName })}
+                                  style={{ padding: '6px 14px', borderRadius: 8, background: ACCENT, color: '#fff', border: 'none', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}
+                                >
+                                  Voir
+                                </button>
+                              );
+                            }
+                            
+                            return (
+                              <a href={offer.proposalFile} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 14px', borderRadius: 8, background: ACCENT, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem' }}>Voir</a>
+                            );
+                          })()}
                         </div>
                       )}
-                      {Array.isArray(offer.proposalFiles) && offer.proposalFiles.map((file: any, idx: number) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 12, background: '#e0f2fe18', border: '1.5px dashed #0284c740' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 36, height: 36, borderRadius: 10, background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>📎</div>
-                            <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>
-                              {typeof file === 'string' ? file.split('/').pop() : (file.originalname || `Fichier ${idx + 1}`)}
+                      {Array.isArray(offer.proposalFiles) && offer.proposalFiles.map((file: any, idx: number) => {
+                        const fileUrl = typeof file === 'string' ? file : file.url;
+                        const isDoc = fileUrl?.toLowerCase().endsWith('.docx') || fileUrl?.toLowerCase().endsWith('.doc');
+                        const fileName = typeof file === 'string' ? file.split('/').pop() : (file.originalname || `Fichier ${idx + 1}`);
+                        
+                        return (
+                          <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 12, background: '#e0f2fe18', border: '1.5px dashed #0284c740' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <div style={{ width: 36, height: 36, borderRadius: 10, background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>📎</div>
+                              <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>
+                                {fileName}
+                              </div>
                             </div>
+                            {isDoc ? (
+                              <button 
+                                onClick={() => setViewDoc({ open: true, url: fileUrl, name: fileName })}
+                                style={{ padding: '6px 14px', borderRadius: 8, background: ACCENT, color: '#fff', border: 'none', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}
+                              >
+                                Voir
+                              </button>
+                            ) : (
+                              <a href={fileUrl} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 14px', borderRadius: 8, background: ACCENT, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem' }}>Voir</a>
+                            )}
                           </div>
-                          <a href={typeof file === 'string' ? file : file.url} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 14px', borderRadius: 8, background: ACCENT, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem' }}>Voir</a>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -278,7 +314,7 @@ export default function TenderOfferDetailPage() {
             <tbody>
               {allBids.map((b: any, i: number) => {
                 const bd = b.bidder || b.user;
-                const bName = bd?.companyName || bd?.entreprise || `${bd?.firstName || ''} ${bd?.lastName || ''}`.trim() || 'N/A';
+                const bName = formatUserName(bd);
                 const isCurrent = b._id === offerId;
                 return (
                   <tr key={b._id || i} className="db-row" style={{ ...tableStyles.trHover, background: isCurrent ? ACCENT_03 : undefined }}>
@@ -314,6 +350,13 @@ export default function TenderOfferDetailPage() {
 
       <ConfirmDialog open={acceptDialog} title="Accepter la soumission" message={`Accepter l'offre de "${bidderName}" ? Cette action attribuera l'appel d'offres.`} confirmLabel={processing ? '…' : 'Accepter'} onConfirm={handleAccept} onCancel={() => setAcceptDialog(false)} />
       <ConfirmDialog open={rejectDialog} title="Refuser la soumission" message={`Refuser l'offre de "${bidderName}" ?`} confirmLabel={processing ? '…' : 'Refuser'} danger onConfirm={handleReject} onCancel={() => setRejectDialog(false)} />
+      
+      <DocxViewerModal 
+        open={viewDoc.open} 
+        onClose={() => setViewDoc({ ...viewDoc, open: false })}
+        fileUrl={viewDoc.url}
+        fileName={viewDoc.name}
+      />
     </div>
   );
 }

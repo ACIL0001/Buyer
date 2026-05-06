@@ -23,6 +23,7 @@ import app, { getSellerUrl } from "@/config";
 import Link from "next/link";
 import { useTranslation } from 'react-i18next';
 import CommentItem from "@/components/common/CommentItem";
+import { formatUserName } from "@/utils/user";
 
 // Import styles from the reference components
 import "@/components/auction-details/st.css";
@@ -298,7 +299,7 @@ function DirectSaleDetailContent() {
               <div className="info-item-mini">
                 <span className="info-label-mini">VENDEUR:</span>
                 <Link href={`/dashboard/profile/${directSale.owner?._id}`} className="info-text-mini hover-link">
-                  {directSale.owner?.entreprise || directSale.owner?.name || 'Vendeur'}
+                  {formatUserName(directSale.owner) || 'Vendeur'}
                 </Link>
               </div>
               <div className="info-item-mini">
@@ -407,16 +408,11 @@ function DirectSaleDetailContent() {
           <div className="seller-avatar"><img src={directSale.owner?.photoURL || DEFAULT_PROFILE_IMAGE} alt="Seller" /></div>
           <div className="seller-info-content">
             <div className="seller-header">
-              <span className="seller-name">
-                {directSale.owner?.entreprise || directSale.owner?.companyName || directSale.owner?.name || "Vendeur"}
-              </span>
+              <Link href={`/dashboard/profile/${directSale.owner?._id}`} className="seller-name hover-link">
+                {formatUserName(directSale.owner) || "Vendeur"}
+              </Link>
             </div>
             <div className="seller-bio">{directSale.owner?.description || "Ce vendeur n'a pas encore ajouté de description."}</div>
-            {(directSale.owner as any)?.phoneNumber && (
-              <div className="seller-contact-mini mt-2" style={{ fontSize: '14px', color: '#0063B1', fontWeight: 'bold' }}>
-                📞 {(directSale.owner as any).phoneNumber}
-              </div>
-            )}
           </div>
           <div className="seller-actions">
             <Link href={getSellerUrl()} className="seller-btn btn-all-products">Boutique</Link>
@@ -437,7 +433,7 @@ function DirectSaleDetailContent() {
               >
                 {similarDirectSales.map((sale: any) => {
                   const sid = sale._id || sale.id;
-                  const companyName = sale.owner?.entreprise || sale.owner?.companyName || sale.owner?.firstName || 'Nom Entreprise';
+                  const companyName = formatUserName(sale.owner);
                   const availableQuantity = sale.quantity > 0 ? (sale.quantity - (sale.soldQuantity || 0)) : 'Illimité';
                   const images = sale.thumbs || sale.images || [];
                   const curImgIdx = similarCardImageIndexes[sid] || 0;

@@ -24,6 +24,7 @@ import commentsApi from "@/app/api/comments";
 import { useTranslation } from 'react-i18next';
 import ShareButton from "@/components/common/ShareButton";
 import CommentItem from "@/components/common/CommentItem";
+import { formatUserName } from "@/utils/user";
 
 const DEFAULT_AUCTION_IMAGE = "/assets/images/logo-dark.png";
 const DEFAULT_TENDER_IMAGE = "/assets/images/logo-white.png";
@@ -259,13 +260,21 @@ const MultipurposeDetails2 = () => {
 
   const handleThumbnailClick = (index) => { setSelectedImageIndex(index); setShowVideo(false); };
   const handleVideoThumbnailClick = (index) => { setSelectedVideoIndex(index); setShowVideo(true); };
-  const handleBidClick = (e) => { e.preventDefault(); setShowBidConfirmation(true); };
+  const handleBidClick = (e) => { 
+    e.preventDefault(); 
+    if (!isLogged) { 
+      toast.error("Veuillez vous connecter pour soumettre une offre"); 
+      router.push('/auth/login'); 
+      return; 
+    }
+    setShowBidConfirmation(true); 
+  };
   const handleCancelBidSubmit = () => setShowBidConfirmation(false);
   const handleConfirmedBidSubmit = async () => { setShowBidConfirmation(false); await submitBid(); };
 
   const submitBid = async () => {
     try {
-      if (!isLogged) { toast.error("Connectez-vous"); router.push('/auth/login'); return; }
+      // Authentication checked in handleBidClick
       const isMieuxDisant = tenderData?.evaluationType === 'MIEUX_DISANT';
       const bidInput = document.querySelector(".quantity__input_v2");
       const bidAmountRaw = bidInput?.value || "0";
@@ -404,29 +413,41 @@ const MultipurposeDetails2 = () => {
               <h1 className="product-title">{safeTitle}</h1>
               <div className="countdown-info">{formatRemainingTime(safeEndingAt)}</div>
               
-              {safeMaxBudget > 0 && (
-                <div className="budget-display-redesign my-2" style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                  <span className="budget-amount" style={{ 
-                    fontFamily: "'Inter', sans-serif", 
-                    fontSize: '24px', 
-                    fontWeight: '400', 
-                    lineHeight: '24px', 
-                    letterSpacing: '0.03em', 
-                    color: '#000000' 
-                  }}>
-                    {formatPrice(safeMaxBudget).trim()}
-                  </span>
+              <div className="budget-display-redesign my-2" style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                {tenderData?.evaluationType === 'MIEUX_DISANT' ? (
                   <span style={{ 
                     fontFamily: "'Inter', sans-serif", 
                     fontSize: '24px', 
-                    fontWeight: '400', 
+                    fontWeight: '700', 
                     lineHeight: '24px', 
-                    color: '#000000' 
+                    color: '#002896' 
                   }}>
-                    DA
+                    Offre
                   </span>
-                </div>
-              )}
+                ) : safeMaxBudget > 0 && (
+                  <>
+                    <span className="budget-amount" style={{ 
+                      fontFamily: "'Inter', sans-serif", 
+                      fontSize: '24px', 
+                      fontWeight: '400', 
+                      lineHeight: '24px', 
+                      letterSpacing: '0.03em', 
+                      color: '#000000' 
+                    }}>
+                      {formatPrice(safeMaxBudget).trim()}
+                    </span>
+                    <span style={{ 
+                      fontFamily: "'Inter', sans-serif", 
+                      fontSize: '24px', 
+                      fontWeight: '400', 
+                      lineHeight: '24px', 
+                      color: '#000000' 
+                    }}>
+                      DA
+                    </span>
+                  </>
+                )}
+              </div>
               
 
 
@@ -434,7 +455,7 @@ const MultipurposeDetails2 = () => {
                 <div className="info-item-mini">
                   <span className="info-label-mini">VENDEUR:</span>
                   <Link href={`/dashboard/profile/${safeOwner?._id || safeOwner}`} className="info-text-mini hover-link">
-                    {safeOwner?.entreprise || safeOwner?.name || 'Vendeur'}
+                    {formatUserName(safeOwner) || 'Vendeur'}
                   </Link>
                 </div>
                 <div className="info-item-mini">
@@ -655,7 +676,11 @@ const MultipurposeDetails2 = () => {
           <div className="seller-section-card mt-5">
             <div className="seller-avatar"><img src={safeOwner?.photoURL || DEFAULT_PROFILE_IMAGE} alt="Seller" /></div>
             <div className="seller-info-content">
-              <div className="seller-header"><span className="seller-name">{safeOwner?.entreprise || safeOwner?.name || "Vendeur"}</span></div>
+              <div className="seller-header">
+                <Link href={`/dashboard/profile/${safeOwner?._id || safeOwner}`} className="seller-name hover-link">
+                  {formatUserName(safeOwner) || "Vendeur"}
+                </Link>
+              </div>
               <div className="seller-bio">{safeOwner?.description || "Pas de bio."}</div>
             </div>
             <div className="seller-actions">
@@ -686,7 +711,7 @@ const MultipurposeDetails2 = () => {
                       const url = typeof raw === 'string' ? raw : (raw.url || raw.fullUrl || raw);
                       return normalizeImageUrl ? normalizeImageUrl(url) : (url.startsWith('http') ? url : `${app.baseURL}${url.startsWith('/') ? url.substring(1) : url}`);
                     };
-                    const seller = t.hidden ? 'Anonyme' : (t.owner?.entreprise || t.owner?.companyName || t.owner?.firstName || 'Annonceur');
+                    const seller = t.hidden ? 'Anonyme' : (formatUserName(t.owner) || 'Annonceur');
                     const budget = t.budget || t.maxBudget || t.price;
                     const curImgIdx = similarCardImageIndexes[tid] || 0;
                     return (
@@ -814,10 +839,28 @@ const MultipurposeDetails2 = () => {
         <div className="modal-overlay-custom">
           <div className="modal-card-custom animate-zoom">
             <button className="modal-close-btn" onClick={handleCancelBidSubmit}>✕</button>
-            <div className="modal-body-custom text-center">
+            <div className="modal-body-custom">
+              <div className="success-icon-wrapper">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+              </div>
               <h3>Confirmer l'offre</h3>
-              <p>Souhaitez-vous envoyer cette offre ?</p>
-              <div className="modal-actions-custom mt-4">
+              <p>{tenderData?.evaluationType === 'MIEUX_DISANT' ? "Souhaitez-vous envoyer votre proposition technique ?" : "Souhaitez-vous envoyer cette offre financière ?"}</p>
+              
+              {tenderData?.evaluationType !== 'MIEUX_DISANT' && (
+                <div className="bid-summary-card">
+                  <span className="summary-label">Montant de votre offre</span>
+                  <span className="summary-value">
+                    {(() => {
+                      const input = document.querySelector('.quantity__input_v2');
+                      return input ? Number(input.value.replace(/[^0-9.]/g, '')).toLocaleString() : '0';
+                    })()} DA
+                  </span>
+                </div>
+              )}
+
+              <div className="modal-actions-custom">
                 <button className="btn-modal-cancel" onClick={handleCancelBidSubmit}>Annuler</button>
                 <button className="btn-modal-confirm" onClick={handleConfirmedBidSubmit}>Confirmer</button>
               </div>

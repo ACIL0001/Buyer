@@ -3446,8 +3446,8 @@ screen and (-webkit-device-pixel-ratio: 3) {
 }
 
 .figma-cta-group-personal {
-  margin-top: 24px !important;
-  margin-bottom: 20px;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 .figma-cta-group-security {
@@ -3999,140 +3999,6 @@ screen and (-webkit-device-pixel-ratio: 3) {
 .figma-card-registrecommercecarteauto .figma-doc-btn-v2 {
   height: 41.1px !important;
   min-height: 41.1px !important;
-}
-
-/* Sidebar Redesign haute-fidélité */
-.figma-dashboard-sidebar {
-  box-sizing: border-box;
-  width: 280px !important;
-  height: 1696px !important;
-  background: #FFFFFF;
-  position: relative;
-}
-
-.figma-dashboard-sidebar .simplebar-content {
-  padding: 0 !important;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Groupes de Menu */
-.figma-sidebar-group {
-  padding: 58px 16px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-.figma-sidebar-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.figma-sidebar-label {
-  padding: 0 8px;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 150%;
-  color: #727272;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-}
-
-/* Items de Menu */
-.figma-sidebar-item {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 8px;
-  gap: 8px;
-  width: 248px;
-  height: 40px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-decoration: none;
-}
-
-.figma-sidebar-item:hover, .figma-sidebar-item.active {
-  background: #F9FAFB;
-}
-
-.figma-sidebar-icon {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #454545;
-  border: 1.4px solid transparent;
-}
-
-.figma-sidebar-text {
-  flex: 1;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 150%;
-  color: #454545;
-}
-
-/* Cartes Spéciales (Top & Bottom) */
-.figma-sidebar-company-card {
-  box-sizing: border-box;
-  width: 248px;
-  height: 56px;
-  margin: 0 16px;
-  border: 1px solid #E7E7E7;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  padding: 8px;
-  gap: 8px;
-  margin-top: 24px;
-}
-
-.figma-sidebar-account-card {
-  box-sizing: border-box;
-  width: 248px;
-  height: 56px;
-  margin: auto 16px 0;
-  border: 1px solid #E7E7E7;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  padding: 8px;
-  gap: 8px;
-}
-
-.figma-sidebar-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
-  object-fit: cover;
-}
-
-.figma-sidebar-user-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.figma-sidebar-user-name {
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  line-height: 150%;
-  color: #454545;
-}
-
-.figma-sidebar-user-role {
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 140%;
-  color: #B0B0B0;
 }
 
 /* Header Edit Button V2 Refined */

@@ -12,6 +12,7 @@ import useAuth from '@/hooks/useAuth';
 import { useTranslation } from "react-i18next";
 import UserActivitiesSection from "@/components/profile/UserActivitiesSection";
 import { normalizeImageUrl } from "@/utils/url";
+import { formatUserName } from "@/utils/user";
 
 // Helper for image URLs
 // Helper for image URLs
@@ -185,17 +186,10 @@ export default function PublicProfilePage() {
     return (
         <div>
             <Header />
-            <main className="modern-profile-page" style={{ paddingTop: '100px' }}>
-                {/* Animated Background */}
-                <div className="profile-background">
-                    <div className="gradient-orb orb-1"></div>
-                    <div className="gradient-orb orb-2"></div>
-                    <div className="gradient-orb orb-3"></div>
-                </div>
-
-                <div className="modern-profile-container">
+            <main className="figma-profile-page" style={{ paddingTop: '30px' }}>
+                <div className="figma-profile-container">
                     {/* Back Button */}
-                    <div style={{ marginBottom: '1rem' }}>
+                    <div style={{ marginBottom: '1.5rem' }}>
                          <button 
                             onClick={() => router.back()}
                             style={{ 
@@ -211,318 +205,116 @@ export default function PublicProfilePage() {
                             }}
                          >
                             <i className="bi bi-arrow-left"></i>
-                            Back
+                            {t("common.back") || "Retour"}
                          </button>
                     </div>
 
-                    {/* Cover Photo */}
                     <motion.div 
-                        className="profile-cover-wrapper"
+                        className="figma-profile-hero"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
-                        style={{ marginBottom: '1rem', position: 'relative' }}
                     >
-                        <div className="profile-cover-photo" style={{ 
-                            height: '250px', 
-                            width: '100%', 
-                            borderRadius: '16px',
-                            overflow: 'hidden',
-                            position: 'relative',
-                            backgroundColor: '#f3f4f6',
-                            boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                        }}>
-                            {getCoverPhotoSrc() ? (
-                                <img 
-                                    src={getCoverPhotoSrc()}
-                                    alt="Cover" 
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                    onError={(e) => {
-                                        const target = e.currentTarget;
-                                        target.style.display = 'none';
-                                        target.parentElement!.style.background = 'linear-gradient(135deg, #e0e7ff 0%, #fae8ff 100%)';
-                                    }}
-                                />
-                            ) : (
-                                <div style={{ 
-                                    width: '100%', 
-                                    height: '100%', 
-                                    background: 'linear-gradient(135deg, #e0e7ff 0%, #fae8ff 100%)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}></div>
-                            )}
-                        </div>
-
-                        {/* Profile Info Bar */}
-                        <div className="profile-info-bar" style={{
-                            display: 'flex',
-                            alignItems: 'flex-end',
-                            padding: '0 20px',
-                            marginTop: '-60px',
-                            position: 'relative',
-                            zIndex: 20,
-                            flexWrap: 'wrap',
-                            gap: '20px'
-                        }}>
-                            {/* Avatar */}
-                            <div className="profile-avatar-wrapper" style={{ position: 'relative' }}>
-                                <div style={{
-                                    width: '140px',
-                                    height: '140px',
-                                    borderRadius: '50%',
-                                    border: '4px solid #ffffff',
-                                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                                    background: '#ffffff',
-                                    position: 'relative',
-                                    overflow: 'hidden'
-                                }}>
+                        {/* Combined Cover and Avatar Div */}
+                        <div className="figma-hero-header" style={{ marginBottom: '40px' }}>
+                            <div className="figma-cover-dashed">
+                                {getCoverPhotoSrc() ? (
                                     <img 
-                                        src={avatarSrc} 
-                                        alt={user.firstName}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                        onError={(e) => {
-                                            const target = e.currentTarget;
-                                            target.src = '/assets/images/avatar.jpg';
-                                        }}
+                                        src={getCoverPhotoSrc()} 
+                                        alt="Cover" 
+                                        className="figma-cover-img"
                                     />
-                                </div>
-                                {/* Rating Badge */}
-                                {user.rating > 0 && (
-                                     <div style={{
-                                        position: 'absolute',
-                                        top: '0',
-                                        right: '0',
-                                        transform: 'translate(10%, -10%)',
-                                        background: '#ffffff',
-                                        color: '#d97706',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                                        borderRadius: '50%',
-                                        width: '32px',
-                                        height: '32px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        border: '2px solid #fff',
-                                        fontSize: '12px',
-                                        fontWeight: '700',
-                                        zIndex: 25
-                                     }}>
-                                         <span>{Math.round(user.rating * 10) / 10}</span>
-                                     </div>
+                                ) : (
+                                    <div className="figma-cover-placeholder">
+                                        <i className="bi bi-image" style={{ marginRight: '8px', fontSize: '20px' }}></i>
+                                        <span>Photo de couverture</span>
+                                    </div>
                                 )}
                             </div>
 
-                            {/* User Info Text */}
-                            <div style={{ paddingBottom: '50px', flex: 1 }}>
-                                <h1 style={{ 
-                                    fontSize: '28px', 
-                                    fontWeight: '800', 
-                                    color: '#111827',
-                                    margin: 0,
-                                    lineHeight: 1.2,
-                                    textShadow: '0 1px 2px rgba(255,255,255,1)'
-                                }}>
-                                    {user.socialReason || user.entreprise || user.companyName || `${user.firstName} ${user.lastName}`}
-                                </h1>
-                                
-                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginTop: '8px' }}>
-                                    {/* Badges */}
-                                    {user.type === USER_TYPE.PROFESSIONAL && (
-                                        <span className="user-type-badge" style={{ padding: '4px 10px', fontSize: '12px' }}>
-                                            <i className="bi bi-star-fill" style={{ fontSize: '10px' }}></i>
-                                            <span>PRO</span>
-                                        </span>
-                                    )}
-                                    {user.isVerified && (
-                                        <div style={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '4px',
-                                            padding: '4px 10px',
-                                            background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-                                            color: 'white',
-                                            borderRadius: '20px',
-                                            fontSize: '12px',
-                                            fontWeight: '600'
-                                        }}>
-                                            <i className="bi bi-check-circle-fill"></i>
-                                            <span>VERIFIED</span>
-                                        </div>
-                                    )}
-                                    {user.isCertified && (
-                                        <div style={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '4px',
-                                            padding: '4px 10px',
-                                            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                                            color: 'white',
-                                            borderRadius: '20px',
-                                            fontSize: '12px',
-                                            fontWeight: '600'
-                                        }}>
-                                            <i className="bi bi-award-fill"></i>
-                                            <span>CERTIFIED</span>
-                                        </div>
-                                    )}
-                                    {user.isRecommended && (
-                                        <div style={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '4px',
-                                            padding: '4px 10px',
-                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                            color: 'white',
-                                            borderRadius: '20px',
-                                            fontSize: '12px',
-                                            fontWeight: '600'
-                                        }}>
-                                            <i className="bi bi-star-fill"></i>
-                                            <span>RECOMMENDED</span>
-                                        </div>
-                                    )}
+                            <div className="figma-avatar-container">
+                                <div className="figma-avatar-circle">
+                                    <img src={avatarSrc} alt="Avatar" className="figma-avatar-img" onError={(e) => {
+                                        const target = e.currentTarget as HTMLImageElement;
+                                        if (!target.src.includes('avatar.jpg')) target.src = '/assets/images/avatar.jpg';
+                                    }} />
                                 </div>
-                                
-                                {user.bio && (
-                                    <p style={{ marginTop: '0.5rem', color: '#4b5563', fontSize: '0.95rem', maxWidth: '600px' }}>
-                                        {user.bio}
-                                    </p>
-                                )}
+                                <div className="figma-avatar-badges">
+                                    {user.isVerified && <div className="figma-badge top-left"><i className="bi bi-check-circle-fill"></i></div>}
+                                    {user.isRecommended && <div className="figma-badge top-right"><i className="bi bi-stars"></i></div>}
+                                    {user.isCertified && <div className="figma-badge bottom-left"><i className="bi bi-award-fill"></i></div>}
+                                    <div className="figma-badge bottom-right"><i className="bi bi-shield-fill-check"></i></div>
+                                </div>
                             </div>
                         </div>
                     </motion.div>
 
-                    {/* Tabs Section */}
-                    <div className="modern-tabs-section">
-                        <div className="modern-tab-nav">
-                             {[
-                                { id: "activities", icon: "bi-activity", label: t("profile.activities") || "Activités" },
-                                { id: "info", icon: "bi-person-circle", label: t("profile.personalInfo.title") || "Informations" },
-                             ].map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    className={`modern-tab-btn ${activeTab === tab.id ? "active" : ""}`}
-                                    onClick={() => setActiveTab(tab.id)}
-                                >
-                                    <i className={tab.icon}></i>
-                                    <span>{tab.label}</span>
-                                    {activeTab === tab.id && <div className="tab-indicator" />}
-                                </button>
-                             ))}
-                        </div>
-
-                        <div className="modern-tab-content">
-                            <AnimatePresence mode="wait">
-                                {activeTab === "activities" && (
-                                    <motion.div
-                                        key="activities"
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <UserActivitiesSection userId={userId} />
-                                    </motion.div>
-                                )}
-
-                                {activeTab === "info" && (
-                                    <motion.div
-                                        key="info"
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <div className="modern-section-card">
-                                            {canViewInfo ? (
-                                            <div className="modern-form-grid">
-                                                {isOwner && (
-                                                    <div className="modern-form-field">
-                                                        <label>Full Name</label>
-                                                        <div style={{ padding: '0.75rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                                                            {user.firstName} {user.lastName}
-                                                        </div>
+                    <div className="figma-tab-content" style={{ marginTop: '20px' }}>
+                        <AnimatePresence mode="wait">
+                            <motion.div 
+                                key="info" 
+                                initial={{ opacity: 0, y: 10 }} 
+                                animate={{ opacity: 1, y: 0 }} 
+                                exit={{ opacity: 0, y: -10 }} 
+                                transition={{ duration: 0.3 }}
+                            >
+                                    <div className="figma-card figma-card-personal" style={{ marginBottom: '24px' }}>
+                                        <div className="figma-card-header">
+                                            <div className="figma-card-title-box">
+                                                <h3 className="figma-card-title">Informations personnelles</h3>
+                                                <p className="figma-card-description">Détails du profil de l'utilisateur</p>
+                                            </div>
+                                        </div>
+                                        
+                                        {(user.companyName || user.entreprise || user.socialReason) ? (
+                                            <div className="figma-input-field" style={{ width: '100%' }}>
+                                                <label className="figma-input-label">Nom de l'entreprise</label>
+                                                <div className="figma-form-field readonly">
+                                                    <input type="text" value={user.companyName || user.entreprise || user.socialReason || ""} disabled />
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="figma-form-row">
+                                                <div className="figma-input-field">
+                                                    <label className="figma-input-label">Nom</label>
+                                                    <div className="figma-form-field readonly">
+                                                        <input type="text" value={user.lastName || ""} disabled />
                                                     </div>
-                                                )}
-                                                {user.email && (
-                                                    <div className="modern-form-field">
-                                                        <label>Email</label>
-                                                         <div style={{ padding: '0.75rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                                                            {/* Obfuscate email if needed, or show if public profile allows */}
-                                                            {user.email}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {(user.contactNumber || user.phone) && (
-                                                    <div className="modern-form-field">
-                                                        <label>Phone</label>
-                                                         <div style={{ padding: '0.75rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                                                            {user.contactNumber || user.phone}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {user.wilaya && (
-                                                    <div className="modern-form-field">
-                                                        <label>Wilaya</label>
-                                                         <div style={{ padding: '0.75rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                                                            {user.wilaya}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                {user.location && (
-                                                     <div className="modern-form-field">
-                                                        <label>Location</label>
-                                                         <div style={{ padding: '0.75rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                                                            {user.location}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                
-                                                {(user.socialReason || user.entreprise) && (
-                                                     <div className="modern-form-field">
-                                                        <label>Company / Social Reason</label>
-                                                         <div style={{ padding: '0.75rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                                                            {user.socialReason || user.entreprise}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                                
-                                                {user.secteur && (
-                                                     <div className="modern-form-field">
-                                                        <label>Sector</label>
-                                                         <div style={{ padding: '0.75rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                                                            {typeof user.secteur === 'string' ? user.secteur : user.secteur.name}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                <div className="modern-form-field">
-                                                    <label>Member Since</label>
-                                                     <div style={{ padding: '0.75rem', background: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                                                        {new Date(user.joinDate).toLocaleDateString()}
+                                                </div>
+                                                <div className="figma-input-field">
+                                                    <label className="figma-input-label">Prénom</label>
+                                                    <div className="figma-form-field readonly">
+                                                        <input type="text" value={user.firstName || ""} disabled />
                                                     </div>
                                                 </div>
                                             </div>
-                                            ) : (
-                                                <div style={{ 
-                                                    padding: '2rem', 
-                                                    textAlign: 'center', 
-                                                    color: '#6b7280', 
-                                                    background: '#f9fafb', 
-                                                    borderRadius: '8px',
-                                                    border: '1px dashed #e5e7eb'
-                                                }}>
-                                                    <i className="bi bi-lock-fill" style={{ fontSize: '2rem', marginBottom: '1rem', display: 'block', color: '#9ca3af' }}></i>
-                                                    <p>{t("profile.privateProfile") || "Cet utilisateur a choisi de garder ses informations personnelles privées."}</p>
-                                                </div>
-                                            )}
+                                        )}
+                                    </div>
+
+                                <div className="figma-card figma-card-additional">
+                                    <div className="figma-card-header">
+                                        <div className="figma-card-title-box">
+                                            <h3 className="figma-card-title">Details supplementaires</h3>
                                         </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
+                                    </div>
+                                    
+                                    <div className="figma-form-row">
+                                        <div className="figma-input-field">
+                                            <label className="figma-input-label">Pays / Wilaya</label>
+                                            <div className="figma-form-field readonly">
+                                                <input type="text" value={user.wilaya || ""} disabled />
+                                            </div>
+                                        </div>
+                                        <div className="figma-input-field">
+                                            <label className="figma-input-label">Addresse / Secteur</label>
+                                            <div className="figma-form-field readonly">
+                                                <input type="text" value={typeof user.secteur === 'string' ? user.secteur : (user.secteur as any)?.name || ""} disabled />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
                     </div>
                 </div>
             </main>
@@ -530,3 +322,4 @@ export default function PublicProfilePage() {
         </div>
     );
 }
+

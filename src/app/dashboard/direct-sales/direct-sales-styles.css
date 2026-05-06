@@ -1,0 +1,277 @@
+/* Direct Sales Modern Styles */
+
+.figma-ds-summary-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 24px;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  width: 100%;
+  max-width: 1116px;
+}
+
+.figma-ds-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 24px 24px 25px;
+  gap: 4px;
+  flex: 1;
+  height: 167px;
+  background: #FFFFFF;
+  border: 1px solid #F8FAFC;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+}
+
+.figma-ds-icon-circle {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 9999px;
+  margin-bottom: 8px;
+}
+
+.figma-ds-icon-blue { background: rgba(0, 40, 150, 0.1); color: #002896; }
+.figma-ds-icon-gray { background: rgba(71, 85, 105, 0.1); color: #475569; }
+.figma-ds-icon-orange { background: rgba(234, 88, 12, 0.1); color: #EA580C; }
+.figma-ds-icon-green { background: #ECFDF5; color: #059669; }
+
+.figma-ds-card-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  color: #64748B;
+}
+
+.figma-ds-card-value {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 36px;
+  color: #0F172A;
+  margin: 4px 0;
+}
+
+.figma-ds-card-link {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  color: #059669;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Main Section */
+.figma-ds-main-section {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  width: 100%;
+  max-width: 1116px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.figma-ds-section-header {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  width: 100%;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.figma-ds-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.figma-ds-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 31px;
+  letter-spacing: -0.24px;
+  color: #191B24;
+  margin: 0;
+}
+
+.figma-ds-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: #64748B;
+  margin: 4px 0 0 0;
+}
+
+/* Tabs */
+.figma-ds-tabs {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 0 24px;
+  width: 100%;
+  border-bottom: 1px solid #F1F5F9;
+  gap: 32px;
+}
+
+.figma-ds-tab-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 0px;
+  border-bottom: 2px solid transparent;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  color: #64748B;
+  transition: all 0.2s;
+}
+
+.figma-ds-tab-btn.active {
+  border-bottom-color: #0050CB;
+  color: #0050CB;
+  font-weight: 600;
+}
+
+/* Table */
+.figma-ds-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.figma-ds-thead {
+  background: rgba(248, 250, 252, 0.5);
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.figma-ds-th {
+  padding: 16px 24px;
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 13px;
+  letter-spacing: 0.55px;
+  text-transform: uppercase;
+  color: #94A3B8;
+}
+
+.figma-ds-tr {
+  border-bottom: 1px solid #F1F5F9;
+  transition: background 0.2s;
+}
+
+.figma-ds-tr:hover {
+  background: #F8FAFC;
+}
+
+.figma-ds-td {
+  padding: 16px 24px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #0F172A;
+}
+
+.figma-ds-product-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+.figma-ds-product-img {
+  width: 48px;
+  height: 48px;
+  background: #F1F5F9;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.figma-ds-product-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.figma-ds-product-name {
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.figma-ds-product-cat {
+  font-size: 12px;
+  color: #64748B;
+}
+
+.figma-ds-price {
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.figma-ds-status-badge {
+  display: inline-flex;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.figma-ds-status-online { background: #F0FDF4; color: #16A34A; }
+.figma-ds-status-sold { background: #F1F5F9; color: #475569; }
+
+.figma-ds-action-btn {
+  padding: 6px 12px;
+  background: #EFF6FF;
+  border-radius: 8px;
+  color: #0050CB;
+  font-weight: 600;
+  font-size: 12px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Footer */
+.figma-ds-footer {
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid #F1F5F9;
+}
+
+.figma-ds-view-all {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #0050CB;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

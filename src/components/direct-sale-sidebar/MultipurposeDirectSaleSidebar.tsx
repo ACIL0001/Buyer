@@ -450,46 +450,6 @@ const MultipurposeDirectSaleSidebar = () => {
                           </span>
                         </div>
 
-                        <button
-                          style={{
-                            width: '100%',
-                            minHeight: '44px',
-                            backgroundColor: '#EB4545',
-                            borderRadius: '10px',
-                            padding: '10px',
-                            border: 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            gap: '10px',
-                            marginTop: '12px',
-                            transition: 'all 0.3s ease'
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/direct-sale/${sale.id}`);
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.filter = 'brightness(1.1)';
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.filter = 'brightness(1)';
-                          }}
-                        >
-                          <span style={{
-                            fontFamily: 'Inter, sans-serif',
-                            fontWeight: '500',
-                            fontSize: '16px',
-                            lineHeight: '100%',
-                            color: '#FFFFFF',
-                            textAlign: 'center'
-                          }}>
-                            Acheter rapide
-                          </span>
-                        </button>
                       </div>
                     </div>
                   </div>

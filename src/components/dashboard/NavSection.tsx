@@ -32,20 +32,59 @@ const ListItemIconStyle = styled(ListItemIcon)({
 // ----------------------------------------------------------------------
 
 function NavItem({ item, active }: { item: any; active: (path: string) => boolean }) {
+  const [open, setOpen] = useState(false);
   const isActive = active(item.path || '');
-  const { title, path, icon } = item;
+  const { title, path, icon, children } = item;
+
+  const hasChildren = children && children.length > 0;
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (hasChildren) {
+      e.preventDefault();
+      setOpen(!open);
+    }
+  };
 
   return (
-    <Link 
-      href={path || '#'} 
-      className={`figma-sidebar-item ${isActive ? 'active' : ''}`}
-      style={{ textDecoration: 'none' }}
-    >
-      <div className="figma-sidebar-icon">
-        {icon && icon}
-      </div>
-      <span className="figma-sidebar-text">{title}</span>
-    </Link>
+    <>
+      <Link 
+        href={hasChildren ? '#' : (path || '#')} 
+        className={`figma-sidebar-item ${isActive ? 'active' : ''}`}
+        style={{ textDecoration: 'none' }}
+        onClick={handleClick}
+      >
+        <div className="figma-sidebar-icon">
+          {icon && icon}
+        </div>
+        <span className="figma-sidebar-text">{title}</span>
+        {hasChildren && (
+          <i 
+            className={`bi bi-chevron-down figma-sidebar-expand-icon ${open ? 'expanded' : ''}`} 
+            style={{ fontSize: '12px', marginLeft: 'auto', transition: 'transform 0.2s' }}
+          ></i>
+        )}
+      </Link>
+      
+      {hasChildren && open && (
+        <div className="figma-sidebar-sub-list" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {children.map((child: any) => {
+             const isChildActive = active(child.path);
+             return (
+               <Link 
+                 key={child.title}
+                 href={child.path} 
+                 className={`figma-sidebar-item figma-sidebar-sub-item ${isChildActive ? 'active' : ''}`}
+                 style={{ textDecoration: 'none', paddingLeft: '40px', height: '36px' }}
+               >
+                 <span className="figma-sidebar-text figma-sidebar-sub-text" style={{ fontSize: '13px', color: '#727272' }}>
+                   {child.title}
+                 </span>
+               </Link>
+             );
+          })}
+        </div>
+      )}
+    </>
   );
 }
 

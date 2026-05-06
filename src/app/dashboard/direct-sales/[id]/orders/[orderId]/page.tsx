@@ -10,6 +10,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCreateSocket } from '@/contexts/socket';
 import { normalizeImageUrl } from '@/utils/url';
 import { DashboardKeyframes, StatusBadge, tableStyles, ConfirmDialog, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
+import { formatUserName } from '@/utils/user';
 
 const ACCENT = 'var(--primary-ds-color)';
 const ACCENT_80 = 'color-mix(in srgb, var(--primary-ds-color) 80%, transparent)'; // cc in hex
@@ -105,7 +106,7 @@ export default function DirectSaleOrderDetailPage() {
   const isConfirmed = order.status === 'CONFIRMED' || order.status === 'COMPLETED';
   const counterparty = isOwner ? (order.buyer) : (order.seller || sale.owner);
   const cpId = typeof counterparty === 'object' ? counterparty?._id : counterparty;
-  const cpName = counterparty?.companyName || counterparty?.entreprise || `${counterparty?.firstName || ''} ${counterparty?.lastName || ''}`.trim() || 'N/A';
+  const cpName = formatUserName(counterparty);
 
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
@@ -222,7 +223,7 @@ export default function DirectSaleOrderDetailPage() {
             {allOrders.map((o: any, i: number) => {
               const isCurrent = o._id === orderId;
               const buyer = o.buyer;
-              const bName = buyer?.companyName || `${buyer?.firstName || ''} ${buyer?.lastName || ''}`.trim() || 'N/A';
+              const bName = formatUserName(buyer);
               return (
                 <tr key={o._id || i} className="db-row" style={{ ...tableStyles.trHover, background: isCurrent ? ACCENT_03 : undefined }}>
                   <td style={tableStyles.td}>

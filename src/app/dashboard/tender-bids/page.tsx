@@ -12,6 +12,8 @@ import {
   StatusBadge, ActionBtn, HeaderAddBtn, tableStyles, DashboardKeyframes,
   SimplePagination, PillTabs, PillChip, ListPageSkeleton,
 } from '@/components/dashboard/dashboardHelpers';
+import { formatUserName } from '@/utils/user';
+import DocxViewerModal from '@/components/shared/DocxViewerModal';
 
 enum TenderBidStatus { PENDING = 'pending', ACCEPTED = 'accepted', DECLINED = 'declined' }
 interface Bidder { _id: string; firstName: string; lastName: string; email: string; phone?: string; companyName?: string; entreprise?: string; }
@@ -55,6 +57,7 @@ export default function TenderBidsPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [isMutating, setIsMutating] = useState(false);
+  const [viewDoc, setViewDoc] = useState<{ open: boolean; url: string; name: string }>({ open: false, url: '', name: '' });
 
   const queryClient = useQueryClient();
   const { socket } = useCreateSocket() || {};
@@ -202,7 +205,7 @@ export default function TenderBidsPage() {
             <tbody>
               {paginated.map(row => {
                 const { _id, bidder, tender, bidAmount, createdAt, status, proposal, proposalFile } = row;
-                const displayName = bidder?.companyName || bidder?.entreprise || `${bidder?.firstName || ''} ${bidder?.lastName || ''}`.trim() || 'N/A';
+                const displayName = formatUserName(bidder);
                 return (
                   <tr key={_id} className="db-row" onClick={() => (row.tender as any)?._id && router.push(`/dashboard/tenders/${(row.tender as any)._id}/offers/${_id}`)} style={tableStyles.trHover}>
                     <td style={tableStyles.td}>
@@ -228,11 +231,28 @@ export default function TenderBidsPage() {
                       {tender?.evaluationType === 'MIEUX_DISANT' ? (
                         <div>
                           {proposal && <div style={{ fontSize: '0.82rem', color: '#334155', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={proposal}>{proposal}</div>}
-                          {proposalFile && (
-                            <a href={proposalFile} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '8px', background: '#e0f2fe', color: '#0284c7', textDecoration: 'none', fontSize: '0.72rem', fontWeight: 600, marginTop: '4px' }}>
-                              📎 {proposalFile.toLowerCase().endsWith('.pdf') ? 'PDF' : 'Fichier'}
-                            </a>
-                          )}
+                          {proposalFile && (() => {
+                             const isDoc = proposalFile.toLowerCase().endsWith('.docx') || proposalFile.toLowerCase().endsWith('.doc');
+                             const isPdf = proposalFile.toLowerCase().endsWith('.pdf');
+                             const fileName = proposalFile.split('/').pop()?.split('-').slice(1).join('-') || 'Proposition';
+                             
+                             if (isDoc) {
+                               return (
+                                 <button 
+                                   onClick={(e) => { e.stopPropagation(); setViewDoc({ open: true, url: proposalFile, name: fileName }); }}
+                                   style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '8px', background: '#fef2f2', color: '#dc2626', border: 'none', fontSize: '0.72rem', fontWeight: 600, marginTop: '4px', cursor: 'pointer' }}
+                                 >
+                                   📝 DOCX
+                                 </button>
+                               );
+                             }
+                             
+                             return (
+                               <a href={proposalFile} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '8px', background: '#e0f2fe', color: '#0284c7', textDecoration: 'none', fontSize: '0.72rem', fontWeight: 600, marginTop: '4px' }}>
+                                 📄 PDF
+                               </a>
+                             );
+                           })()}
                           {!proposal && !proposalFile && <span style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: '0.82rem' }}>Aucune proposition</span>}
                         </div>
                       ) : (
@@ -265,6 +285,13 @@ export default function TenderBidsPage() {
         {filtered.length > 0 && (
           <SimplePagination page={page} rowsPerPage={rowsPerPage} total={filtered.length} onPageChange={setPage} onRowsPerPageChange={setRowsPerPage} />
         )}
+
+        <DocxViewerModal 
+          open={viewDoc.open} 
+          onClose={() => setViewDoc({ ...viewDoc, open: false })}
+          fileUrl={viewDoc.url}
+          fileName={viewDoc.name}
+        />
       </DashboardPageShell>
     </>
   );

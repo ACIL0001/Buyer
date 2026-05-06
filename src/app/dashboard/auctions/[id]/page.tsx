@@ -5,39 +5,24 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCreateSocket } from '@/contexts/socket';
 import useAuth from '@/hooks/useAuth';
-import { DashboardKeyframes, StatusBadge, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
-
-const ACCENT = 'var(--primary-auction-color)';
-const ACCENT_80 = 'color-mix(in srgb, var(--primary-auction-color) 80%, transparent)'; // cc in hex
-const ACCENT_25 = 'color-mix(in srgb, var(--primary-auction-color) 25%, transparent)'; // 40 in hex
-const ACCENT_10 = 'color-mix(in srgb, var(--primary-auction-color) 10%, transparent)'; // 18 in hex
-
-enum BID_STATUS { OPEN = 'OPEN', CLOSED = 'CLOSED', ON_AUCTION = 'ACCEPTED', ARCHIVED = 'ARCHIVED' }
-enum AUCTION_TYPE { CLASSIC = 'CLASSIC', EXPRESS = 'EXPRESS', AUTO_SUB_BID = 'AUTO_SUB_BID' }
-
-function statusCfg(s: string) {
-  const map: Record<string, any> = {
-    OPEN:     { label: 'Ouvert',   color: '#0284c7', bg: '#e0f2fe', dot: true },
-    ACCEPTED: { label: 'En cours', color: '#16a34a', bg: '#dcfce7', dot: true },
-    CLOSED:   { label: 'Clôturé', color: '#dc2626', bg: '#fee2e2' },
-    ARCHIVED: { label: 'Archivé', color: '#64748b', bg: '#f1f5f9' },
-  };
-  return map[s] || { label: s, color: '#64748b', bg: '#f1f5f9' };
-}
-
-function fmtDate(d: any) {
-  if (!d) return 'N/A';
-  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
-function fmtPrice(n: number) { return `${(n || 0).toLocaleString('fr-FR')} DA`; }
-
-const card: React.CSSProperties = { background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid rgba(0,0,0,0.06)', padding: 24, marginBottom: 20 };
+import { DashboardKeyframes, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
+import { 
+  BsChatSquareQuote, 
+  BsInfoCircle, 
+  BsCheckCircle, 
+  BsXCircle, 
+  BsBarChart, 
+  BsClockHistory,
+  BsArrowLeft
+} from 'react-icons/bs';
+import './auction-details-styles.css';
+import { normalizeImageUrl } from '@/utils/url';
 
 export default function AuctionDetailPage() {
   const params = useParams();
   const id = params?.id as string;
   const router = useRouter();
-  const { auth, isLogged } = useAuth();
+  const { isLogged } = useAuth();
   const queryClient = useQueryClient();
   const { socket } = useCreateSocket() || {};
 
@@ -67,110 +52,207 @@ export default function AuctionDetailPage() {
 
   if (!auction) return (
     <div style={{ textAlign: 'center', padding: '60px 24px' }}>
-      <div style={{ fontSize: 52, marginBottom: 16 }}>🏷️</div>
-      <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569' }}>Enchère non trouvée</p>
-      <button onClick={() => router.push('/dashboard/auctions')} style={{ marginTop: 16, padding: '10px 22px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>← Retour</button>
+      <p>Enchère non trouvée</p>
+      <button onClick={() => router.push('/dashboard/auctions')}>Retour</button>
     </div>
   );
 
-  const auctionWinnerId = typeof auction.winner === 'object' ? auction.winner?._id : auction.winner;
-  const isWinner = (u: any) => {
-    const uId = typeof u === 'object' ? u?._id : u;
-    return auctionWinnerId && uId && auctionWinnerId === uId;
+  const offers = auction.offers || [];
+  const latestBid = offers[0];
+  const views = auction.viewsCount || 0;
+
+  const getDisplayName = (user: any) => {
+    if (user?.companyName || user?.entreprise) {
+      return user.companyName || user.entreprise;
+    }
+    if (user?.firstName || user?.lastName) {
+      return `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    }
+    return user?.name || 'Utilisateur';
+  };
+
+  const getInitials = (user: any): string => {
+    const name = getDisplayName(user);
+    if (!name || name === 'Utilisateur') return '?';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  // Renders avatar image with initials fallback — never shows product image
+  const BidderAvatar = ({ user }: { user: any }) => {
+    const avatarUrl = user?.avatar?.fullUrl || user?.avatar?.url || user?.profileImage?.url || user?.photoURL;
+    const resolvedUrl = avatarUrl ? normalizeImageUrl(avatarUrl) : null;
+    const initials = getInitials(user);
+    const colors = ['#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#F59E0B', '#EF4444'];
+    const colorIndex = initials.charCodeAt(0) % colors.length;
+    const bgColor = colors[colorIndex];
+
+    if (!resolvedUrl) {
+      return (
+        <div className="figma-ad-bidder-avatar" style={{ backgroundColor: bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px', fontWeight: 700, fontFamily: 'Inter, sans-serif', flexShrink: 0 }}>
+          {initials}
+        </div>
+      );
+    }
+
+    return (
+      <img
+        src={resolvedUrl}
+        alt={getDisplayName(user)}
+        className="figma-ad-bidder-avatar"
+        onError={(e) => {
+          const target = e.currentTarget;
+          target.style.display = 'none';
+          const parent = target.parentElement;
+          if (parent && !parent.querySelector('.avatar-fallback')) {
+            const fallback = document.createElement('div');
+            fallback.className = 'avatar-fallback figma-ad-bidder-avatar';
+            fallback.textContent = initials;
+            fallback.style.cssText = `background-color:${bgColor};display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;font-family:Inter,sans-serif;flex-shrink:0;`;
+            parent.insertBefore(fallback, target.nextSibling);
+          }
+        }}
+      />
+    );
+  };
+
+  // Use the app's existing normalizeImageUrl utility — same as profile page
+  const getImageUrl = (item: any): string => {
+    if (!item) return '/assets/img/logo.png';
+    const url = item.fullUrl || item.url;
+    return normalizeImageUrl(url) || '/assets/img/logo.png';
+  };
+
+  const getAvatar = (user: any): string => {
+    if (!user) return '/assets/img/logo.png';
+    // Server now provides fullUrl after transformAttachment; fall back through other fields
+    const url = user.avatar?.fullUrl || user.avatar?.url || user.profileImage?.url || user.photoURL;
+    return normalizeImageUrl(url) || '/assets/img/logo.png';
   };
 
   return (
-    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div style={{ backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
       <DashboardKeyframes />
-      {/* Winner Banner */}
-      {auction.winner && typeof auction.winner === 'object' && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '18px 24px', borderRadius: 14, background: 'linear-gradient(90deg, #f59e0b, #fbbf24)', color: '#fff', marginBottom: 20, boxShadow: '0 8px 24px rgba(245,158,11,0.3)' }}>
-          <span style={{ fontSize: 36 }}>🏆</span>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.04em' }}>GAGNANT</div>
-            <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{auction.winner.firstName} {auction.winner.lastName}</div>
-            {auction.winner.phone && <div style={{ opacity: 0.85, fontSize: '0.875rem' }}>📞 {auction.winner.phone}</div>}
-          </div>
-        </div>
-      )}
-
-      {/* Hero Header */}
-      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT_80})`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT_25}`, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08), transparent 60%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <button onClick={() => router.push('/dashboard/auctions')} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, marginBottom: 14 }}>← Retour aux enchères</button>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-            <div>
-              <h1 style={{ color: '#fff', fontSize: 'clamp(1.2rem, 3vw, 1.8rem)', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>{auction.title}</h1>
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', margin: '6px 0 0' }}>🏷️ Détails de l'enchère</p>
+      <div className="figma-ad-main">
+        {/* Left Column */}
+        <div className="figma-ad-left-col">
+          <button 
+            onClick={() => router.push('/dashboard/auctions')}
+            style={{ 
+              background: 'none', border: 'none', color: '#64748B', display: 'flex', 
+              alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '-8px',
+              padding: 0, fontSize: '14px'
+            }}
+          >
+            <BsArrowLeft /> Retour aux enchères
+          </button>
+          
+          <div className="figma-ad-product-card">
+            <div className="figma-ad-product-img-container">
+              <img src={getImageUrl(auction.thumbs?.[0])} alt={auction.title} className="figma-ad-product-img" />
             </div>
-            <StatusBadge config={statusCfg(auction.status)} />
-          </div>
-        </div>
-      </div>
-
-      {/* Metric tiles */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 20 }}>
-        {[
-          { label: 'Prix de départ', value: fmtPrice(auction.startingPrice), color: '#64748b', icon: '💰' },
-          { label: 'Prix actuel', value: fmtPrice(auction.currentPrice || auction.startingPrice), color: '#10b981', icon: '📈' },
-          { label: 'Offres estimées', value: (auction as any).offersCount || (auction as any).offers?.length || 'N/A', color: ACCENT, icon: '👥' },
-        ].map(t => (
-          <div key={t.label} style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', borderLeft: `4px solid ${t.color}`, display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: t.color.startsWith('var(') ? ACCENT_10 : `${t.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{t.icon}</div>
-            <div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: t.color, lineHeight: 1 }}>{t.value}</div>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 4 }}>{t.label}</div>
+            <div className="figma-ad-product-content">
+              <h2 className="figma-ad-product-title">{auction.title}</h2>
+              <span className="figma-ad-product-date">Publié le {auction.createdAt ? new Date(auction.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</span>
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* Main grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20, alignItems: 'start' }}>
-        {/* Left: Description */}
-        <div style={{ ...card, gridColumn: 'span 2' } as any}>
-          <h3 style={{ margin: '0 0 12px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📝 Description</h3>
-          <p style={{ color: '#475569', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>{auction.description || 'Aucune description fournie.'}</p>
-        </div>
-
-        {/* Info card */}
-        <div style={card}>
-          <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>ℹ️ Informations</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div>
-              <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Type</div>
-              <span style={{ padding: '3px 10px', borderRadius: 12, background: '#f1f5f9', color: '#475569', fontSize: '0.78rem', fontWeight: 600 }}>{auction.bidType === 'PRODUCT' ? '📦 Produit' : '🔧 Service'}</span>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Mode</div>
-              <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: '0.78rem', fontWeight: 600, background: auction.auctionType === 'EXPRESS' ? '#fef3c7' : '#f1f5f9', color: auction.auctionType === 'EXPRESS' ? '#d97706' : '#475569' }}>
-                {auction.auctionType === 'EXPRESS' ? '⚡ Express' : auction.auctionType === 'AUTO_SUB_BID' ? '🤖 Auto' : '🏛️ Classique'}
-              </span>
-            </div>
-            {auction.contactNumber && (
-              <div>
-                <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Contact</div>
-                <div style={{ fontWeight: 600, color: '#1e293b' }}>📞 {auction.contactNumber}</div>
+          <div className="figma-ad-details-box">
+            {latestBid ? (
+              <div className="figma-ad-proposal-header">
+                <div className="figma-ad-proposal-amount-group">
+                  <span className="figma-ad-label">MONTANT PROPOSÉ</span>
+                  <span className="figma-ad-amount">{latestBid.price.toLocaleString()} Da</span>
+                  <span className="figma-ad-proposal-date">Enchère reçue le {new Date(latestBid.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} à {new Date(latestBid.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <div className="figma-ad-bidder-profile">
+                  <span className="figma-ad-label">PROFIL DE L’ENCHÉRISSEUR</span>
+                  <div className="figma-ad-bidder-info">
+                    <BidderAvatar user={latestBid.user} />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span className="figma-ad-bidder-name">{getDisplayName(latestBid.user)}</span>
+                      <span className="figma-ad-bidder-meta">Dernière activité : {new Date(latestBid.createdAt).toLocaleDateString('fr-FR')}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="figma-ad-proposal-header" style={{ justifyContent: 'center', padding: '40px 0' }}>
+                <span className="figma-ad-label">Aucune offre pour le moment</span>
               </div>
             )}
+
+            <div className="figma-ad-comment-section">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BsChatSquareQuote />
+                <span className="figma-ad-bidder-name">Détails de l'annonce</span>
+              </div>
+              <div className="figma-ad-comment-box" style={{ whiteSpace: 'pre-wrap' }}>
+                {auction.description || "Aucune description supplémentaire."}
+              </div>
+            </div>
+
+            <div className="figma-ad-info-banner">
+              <BsInfoCircle size={20} color="#0050CB" />
+              <span>{auction.status === 'OPEN' ? 'Cette enchère est actuellement en cours. Vous recevrez une notification à la fin de la période.' : 'Cette enchère est terminée.'}</span>
+            </div>
           </div>
         </div>
 
-        {/* Timeline card */}
-        <div style={card}>
-          <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📅 Chronologie</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {[{ label: 'Début', value: fmtDate(auction.startingAt) }, { label: 'Fin', value: fmtDate(auction.endingAt) }].map(r => (
-              <div key={r.label}>
-                <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{r.label}</div>
-                <div style={{ fontWeight: 600, color: '#334155', fontSize: '0.9rem' }}>{r.value}</div>
-              </div>
-            ))}
+        {/* Right Column */}
+        <div className="figma-ad-right-col">
+          <div className="figma-ad-side-card">
+            <h3 className="figma-ad-side-title"><BsBarChart color="#0050CB" /> Statistiques de l’annonce</h3>
+            <div className="figma-ad-stat-row">
+              <span className="figma-ad-stat-label">Prix de départ</span>
+              <span className="figma-ad-stat-value">{auction.startingPrice.toLocaleString()} Da</span>
+            </div>
+            <div className="figma-ad-stat-row">
+              <span className="figma-ad-stat-label">Meilleure offre actuelle</span>
+              <span className="figma-ad-stat-value figma-ad-stat-value-blue">{(auction.currentPrice || auction.startingPrice).toLocaleString()} Da</span>
+            </div>
+            <div className="figma-ad-stat-row">
+              <span className="figma-ad-stat-label">Date de fin</span>
+              <span className="figma-ad-stat-value">{new Date(auction.endingAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            </div>
+            <div className="figma-ad-stat-row" style={{ borderBottom: 'none' }}>
+              <span className="figma-ad-stat-label">Vues</span>
+              <span className="figma-ad-stat-value">{views}</span>
+            </div>
+          </div>
+
+          <div className="figma-ad-side-card">
+            <h3 className="figma-ad-side-title"><BsClockHistory color="#0050CB" /> Historique des offres ({offers.length})</h3>
+            <div className="figma-ad-history-list">
+              <div className="figma-ad-history-divider"></div>
+              {offers.length > 0 ? (
+                offers.map((offer, idx) => (
+                  <div key={offer._id} className="figma-ad-history-item">
+                    <div className={`figma-ad-history-dot ${idx === 0 ? 'figma-ad-history-dot-active' : ''}`}></div>
+                    <div className="figma-ad-history-header">
+                      <span className="figma-ad-history-name" style={{ color: idx === 0 ? '#002896' : '#475569', fontWeight: idx === 0 ? 700 : 500 }}>
+                        {getDisplayName(offer.user)}
+                      </span>
+                      <span className="figma-ad-history-price" style={{ color: idx === 0 ? '#002896' : '#64748B', fontWeight: 600 }}>
+                        {offer.price.toLocaleString()} Da
+                      </span>
+                    </div>
+                    <span className="figma-ad-history-date">
+                      {new Date(offer.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}, {new Date(offer.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div style={{ textAlign: 'center', padding: '20px', color: '#64748B', fontSize: '14px' }}>
+                  Aucune offre enregistrée
+                </div>
+              )}
+            </div>
+            <div className="figma-ad-view-more">Voir tout l'historique</div>
           </div>
         </div>
       </div>
-
     </div>
   );
 }

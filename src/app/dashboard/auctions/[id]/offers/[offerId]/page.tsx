@@ -10,6 +10,7 @@ import { useSnackbar } from 'notistack';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCreateSocket } from '@/contexts/socket';
 import { DashboardKeyframes, StatusBadge, tableStyles, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
+import { formatUserName } from '@/utils/user';
 
 const ACCENT = 'var(--primary-auction-color)';
 
@@ -78,7 +79,7 @@ export default function AuctionOfferDetailPage() {
   const isWinner = auctionWinnerId && offerUserId && auctionWinnerId === offerUserId;
   const isClosed = auction.status === 'CLOSED' || auction.status === 'ACCEPTED';
   const offerUser = offer.user || {};
-  const displayName = offerUser.companyName || offerUser.entreprise || `${offerUser.firstName || ''} ${offerUser.lastName || ''}`.trim() || 'N/A';
+  const displayName = formatUserName(offerUser);
 
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
@@ -181,7 +182,7 @@ export default function AuctionOfferDetailPage() {
               const isCurrent = p._id === offerId;
               const pUserId = typeof p.user === 'object' ? p.user?._id : p.user;
               const isWinnerP = auctionWinnerId && pUserId && auctionWinnerId === pUserId;
-              const pName = p.user?.companyName || `${p.user?.firstName || ''} ${p.user?.lastName || ''}`.trim() || 'N/A';
+              const pName = formatUserName(p.user);
               return (
                 <tr key={p._id || i} className="db-row" style={{ ...tableStyles.trHover, background: isCurrent ? `${ACCENT}06` : undefined }}>
                   <td style={tableStyles.td}>

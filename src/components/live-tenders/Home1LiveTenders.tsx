@@ -597,7 +597,7 @@ const Home1LiveTenders = () => {
               {/* Custom Navigation Buttons - Oval Style */}
               <div className="tender-prev" style={{
                 position: 'absolute',
-                top: '50%',
+                top: '35%',
                 left: 'clamp(4px, 1vw, 10px)',
                 transform: 'translateY(-50%)',
                 width: 'clamp(40px, 5vw, 60px)',
@@ -618,7 +618,7 @@ const Home1LiveTenders = () => {
               </div>
               <div className="tender-next" style={{
                 position: 'absolute',
-                top: '50%',
+                top: '35%',
                 right: 'clamp(4px, 1vw, 10px)',
                 transform: 'translateY(-50%)',
                 width: 'clamp(40px, 5vw, 60px)',

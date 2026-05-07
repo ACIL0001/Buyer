@@ -630,20 +630,20 @@ export const Header = () => {
           href={getFrontendUrl()} 
           style={{ 
             position: 'absolute',
-            top: '57px',
-            left: '42px',
+            top: '52px',
+            left: '0px',
             width: '193px',
             height: '45px',
-            opacity: 1,
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             textDecoration: 'none'
           }}
         >
           <img 
             src={logoUrl || '/assets/img/logo.png'} 
             alt="MazadClick" 
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+            style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
           />
         </Link>
 
@@ -658,7 +658,7 @@ export const Header = () => {
             height: '65px',
             opacity: 1,
             borderRadius: '24px',
-            background: 'rgba(244, 245, 249, 0.4)',
+            background: '#F0F1F5',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             boxShadow: '0px 20px 40px 0px #0000001A, 0px 4px 4px 0px #00000040',

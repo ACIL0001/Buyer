@@ -533,7 +533,7 @@ const Home1LiveDirectSales = () => {
               {/* Custom Navigation Buttons - Oval Style */}
               <div className="direct-sale-prev" style={{
                 position: 'absolute',
-                top: '50%',
+                top: '35%',
                 left: 'clamp(4px, 1vw, 10px)',
                 transform: 'translateY(-50%)',
                 width: 'clamp(40px, 5vw, 60px)',
@@ -554,7 +554,7 @@ const Home1LiveDirectSales = () => {
               </div>
               <div className="direct-sale-next" style={{
                 position: 'absolute',
-                top: '50%',
+                top: '35%',
                 right: 'clamp(4px, 1vw, 10px)',
                 transform: 'translateY(-50%)',
                 width: 'clamp(40px, 5vw, 60px)',

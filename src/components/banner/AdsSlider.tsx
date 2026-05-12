@@ -51,8 +51,6 @@ const AdsSlider: React.FC = () => {
     width: '100%',
     maxWidth: '1218px',
     aspectRatio: '1218 / 315',
-    maxHeight: '315px',
-    margin: '68px auto 0',
     position: 'relative',
     overflow: 'hidden',
   };
@@ -79,7 +77,7 @@ const AdsSlider: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{
+      <div className="ads-slider-container" style={{
         ...adsContainerStyle,
         background: 'linear-gradient(135deg, #0f1c2e 0%, #1a3050 40%, #1e3a5f 70%, #2b5496 100%)',
         display: 'flex',
@@ -163,13 +161,13 @@ const AdsSlider: React.FC = () => {
           max-height: 315px;
           position: relative;
           overflow: hidden;
-          margin: 68px auto 0;
+          margin: 12px auto 0;
           opacity: 1;
           border-radius: 0px;
         }
-        @media (max-width: 768px) {
+        @media (max-width: 767px) {
           .ads-slider-container {
-            margin: 70px 0 0;
+            margin: 0;
           }
         }
 

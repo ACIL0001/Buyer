@@ -7,12 +7,21 @@ import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-quer
 import { useCreateSocket } from '@/contexts/socket';
 import useAuth from '@/hooks/useAuth';
 import Link from 'next/link';
-import DashboardPageShell from '@/components/dashboard/DashboardPageShell';
-import {
-  StatusBadge, ActionBtn, tableStyles, DashboardKeyframes,
-  SimplePagination, PillTabs, ConfirmDialog, ListPageSkeleton,
-} from '@/components/dashboard/dashboardHelpers';
+import { 
+  BsHammer, 
+  BsCheckCircle, 
+  BsXCircle, 
+  BsClock, 
+  BsChevronLeft, 
+  BsChevronRight,
+  BsThreeDotsVertical,
+  BsPlusLg,
+  BsBoxSeam,
+  BsSearch
+} from 'react-icons/bs';
 import { formatUserName } from '@/utils/user';
+import { ConfirmDialog } from '@/components/dashboard/dashboardHelpers';
+import './orders-styles.css';
 
 interface Order {
   _id: string;
@@ -26,25 +35,12 @@ interface Order {
   createdAt: string;
 }
 
-function statusConfig(s: string) {
-  const map: Record<string, any> = {
-    CONFIRMED: { label: 'Confirmé',  color: '#16a34a', bg: '#dcfce7' },
-    PENDING:   { label: 'En attente', color: '#d97706', bg: '#fef3c7', dot: true },
-    CANCELLED: { label: 'Annulé',     color: '#dc2626', bg: '#fee2e2' },
-    COMPLETED: { label: 'Complété',   color: '#0284c7', bg: '#e0f2fe' },
-  };
-  return map[s] || { label: s, color: '#64748b', bg: '#f1f5f9' };
-}
-
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
-
 export default function OrdersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t, i18n } = useTranslation();
-  const { isLogged } = useAuth();
+  const { auth, isLogged } = useAuth();
+  const user = auth?.user;
 
   const [tabValue, setTabValue] = useState(0);
   const [search, setSearch] = useState('');
@@ -123,126 +119,236 @@ export default function OrdersPage() {
   const confirmed = current.filter(o => o.status === 'CONFIRMED').length;
   const cancelled = current.filter(o => o.status === 'CANCELLED').length;
 
-  const totalRevenue = orders.reduce((sum, o) => sum + (o.status !== 'CANCELLED' ? o.totalPrice : 0), 0);
-
-  const stats = [
-    { label: 'Total commandes', value: current.length, color: 'var(--primary-ds-color)', icon: '📦' },
-    { label: 'En attente', value: pending, color: '#f59e0b', icon: '⏳' },
-    { label: 'Confirmées', value: confirmed, color: '#10b981', icon: '✅' },
-    { label: 'Annulées', value: cancelled, color: '#ef4444', icon: '❌' },
-  ];
-
-  if (isQueryLoading && (!orders.length && !purchases.length)) return <ListPageSkeleton accentColor="var(--primary-ds-color)" />;
+  if (isQueryLoading && (!orders.length && !purchases.length)) return <div style={{ padding: '40px', textAlign: 'center' }}>Chargement...</div>;
 
   return (
-    <>
-      <DashboardKeyframes />
-      <DashboardPageShell
-        title={t('dashboard.orders.title', 'Gestion des commandes')}
-        subtitle={t('dashboard.orders.subtitle', 'Suivez toutes vos commandes')}
-        icon="📦"
-        accentColor="var(--primary-ds-color)"
-        stats={stats}
-      >
-        {/* Tabs */}
-        <div style={{ padding: '16px 20px 0' }}>
-          <PillTabs
-            value={tabValue === 0 ? 'received' : 'made'}
-            onChange={(v) => { setTabValue(v === 'received' ? 0 : 1); router.push(`/dashboard/direct-sales/orders?tab=${v}`); }}
-            tabs={[
-              { value: 'received', label: t('dashboard.orders.tabs.received', 'Commandes reçues'), count: orders.length },
-              { value: 'made', label: t('dashboard.orders.tabs.made', 'Mes achats'), count: purchases.length },
-            ]}
-          />
+    <div style={{ padding: '40px 20px', backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
+      <div style={{ maxWidth: '1116px', margin: '0 auto' }}>
+        
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+          <div>
+            <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#0F172A', margin: 0 }}>
+              Bienvenue {(user as any)?.companyName || (user as any)?.entreprise || (user as any)?.firstName || 'Utilisateur'}
+            </h1>
+            <p style={{ color: '#64748B', fontSize: '14px', marginTop: '4px' }}>Suivez toutes vos commandes et achats directs</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button 
+              onClick={() => router.push('/dashboard/direct-sales/create/')}
+              style={{ backgroundColor: '#0050CB', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <BsPlusLg /> Créer une Vente Directe
+            </button>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', fontSize: '20px' }}>🔔</button>
+              <button style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', fontSize: '20px' }}>✉️</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bento Stats Grid */}
+        <div className="figma-auc-summary-grid">
+          <div className="figma-auc-card">
+            <div className="figma-auc-icon-circle figma-auc-icon-blue">
+              <BsBoxSeam size={20} />
+            </div>
+            <div className="figma-auc-card-content">
+              <span className="figma-auc-card-label">Commandes</span>
+              <span className="figma-auc-card-value">{current.length}</span>
+            </div>
+          </div>
+
+          <div className="figma-auc-card">
+            <div className="figma-auc-icon-circle figma-auc-icon-orange">
+              <BsClock size={20} />
+            </div>
+            <div className="figma-auc-card-content">
+              <span className="figma-auc-card-label">En attente</span>
+              <span className="figma-auc-card-value">{pending}</span>
+            </div>
+          </div>
+
+          <div className="figma-auc-card">
+            <div className="figma-auc-icon-circle figma-auc-icon-green">
+              <BsCheckCircle size={20} />
+            </div>
+            <div className="figma-auc-card-content">
+              <span className="figma-auc-card-label">Confirmées</span>
+              <span className="figma-auc-card-value">{confirmed}</span>
+            </div>
+          </div>
+
+          <div className="figma-auc-card">
+            <div className="figma-auc-icon-circle figma-auc-icon-red">
+              <BsXCircle size={20} />
+            </div>
+            <div className="figma-auc-card-content">
+              <span className="figma-auc-card-label">Annulées</span>
+              <span className="figma-auc-card-value">{cancelled}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs - Segmented Control */}
+        <div className="offers-tabs-wrapper">
+          <div className="offers-segmented-control">
+            <button 
+              className={`offers-tab-item ${tabValue === 0 ? 'active' : ''}`}
+              onClick={() => { setTabValue(0); router.push('/dashboard/direct-sales/orders?tab=received'); }}
+            >
+              Commandes reçues <span className="offers-tab-count">{orders.length}</span>
+            </button>
+            <button 
+              className={`offers-tab-item ${tabValue === 1 ? 'active' : ''}`}
+              onClick={() => { setTabValue(1); router.push('/dashboard/direct-sales/orders?tab=made'); }}
+            >
+              Mes achats <span className="offers-tab-count">{purchases.length}</span>
+            </button>
+          </div>
         </div>
 
         {/* Toolbar */}
-        <div style={tableStyles.toolbar}>
-          <span style={{ color: '#64748b', fontSize: '0.85rem' }}>{filtered.length} commande{filtered.length !== 1 ? 's' : ''}</span>
-          <div style={tableStyles.searchWrap}>
-            <span style={tableStyles.searchIcon}>🔍</span>
-            <input style={tableStyles.searchInput} placeholder="Rechercher..." value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', padding: '0 24px' }}>
+          <div style={{ fontSize: '14px', color: '#64748B' }}>
+            {filtered.length} commande{filtered.length !== 1 ? 's' : ''}
+          </div>
+          <div style={{ position: 'relative' }}>
+            <BsSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+            <input 
+              type="text" 
+              placeholder="Rechercher..." 
+              value={search} 
+              onChange={e => setSearch(e.target.value)}
+              style={{ padding: '8px 12px 8px 36px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '14px', width: '240px' }}
+            />
           </div>
         </div>
 
-        {filtered.length === 0 ? (
-          <div style={tableStyles.emptyState}>
-            <div style={{ fontSize: '52px', marginBottom: '16px' }}>📦</div>
-            <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569', margin: '0 0 8px' }}>Aucune commande</p>
-            <p style={{ color: '#94a3b8', margin: 0 }}>{isPurchase ? "Vous n'avez pas encore passé de commandes." : "Vous n'avez pas encore reçu de commandes."}</p>
+        {/* Main Table Section */}
+        <div className="figma-auc-section">
+          <div className="figma-auc-header">
+            <h3 className="figma-auc-title">
+              {isPurchase ? 'Historique de mes achats' : 'Commandes à traiter'}
+            </h3>
           </div>
-        ) : (
-          <table style={tableStyles.table}>
-            <thead>
+
+          <table className="figma-auc-table">
+            <thead className="figma-auc-thead">
               <tr>
-                {['Produit', isPurchase ? 'Vendeur' : 'Acheteur', 'Qté', 'Prix unitaire', 'Total', 'Statut', 'Date', ''].map(h => (
-                  <th key={h} style={tableStyles.th}>{h}</th>
-                ))}
+                <th className="figma-auc-th">PRODUIT</th>
+                <th className="figma-auc-th">{isPurchase ? 'VENDEUR' : 'ACHETEUR'}</th>
+                <th className="figma-auc-th">QTÉ</th>
+                <th className="figma-auc-th">TOTAL</th>
+                <th className="figma-auc-th">STATUS</th>
+                <th className="figma-auc-th" style={{ textAlign: 'right' }}>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
-              {paginated.map(order => {
-                const counterparty = isPurchase ? (order.seller || order.directSale?.owner) : order.buyer;
-                const displayName = formatUserName(counterparty);
-                const initials = displayName?.charAt(0).toUpperCase() || '?';
-                const profileId = (counterparty as any)?._id;
-
-                return (
-                  <tr key={order._id} className="db-row" style={tableStyles.trHover}>
-                    <td style={tableStyles.td}>
-                      <span style={{ fontWeight: 600, color: '#1e293b' }}>{order.directSale?.title || 'Produit inconnu'}</span>
-                    </td>
-                    <td style={tableStyles.td}>
-                      {profileId ? (
-                        <Link href={`/dashboard/profile/${profileId}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
-                          <div style={tableStyles.avatar(isPurchase ? 'var(--primary-ds-color)' : '#7c3aed')}>{initials}</div>
-                          <div>
-                            <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1e293b' }}>{displayName}</div>
-                            {counterparty?.phone && <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{counterparty.phone}</div>}
-                          </div>
-                        </Link>
-                      ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={tableStyles.avatar()}>{initials}</div>
-                          <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#1e293b' }}>{displayName}</div>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>
+                    Aucune commande trouvée.
+                  </td>
+                </tr>
+              ) : (
+                paginated.map((order) => {
+                  const counterparty = isPurchase ? (order.seller || order.directSale?.owner) : order.buyer;
+                  const displayName = formatUserName(counterparty);
+                  const initials = displayName?.charAt(0).toUpperCase() || '?';
+                  
+                  return (
+                    <tr key={order._id} className="figma-auc-tr">
+                      <td className="figma-auc-td">
+                        <div className="figma-auc-product-info">
+                          <span className="figma-auc-product-name">{order.directSale?.title || 'Produit inconnu'}</span>
+                          <span className="figma-auc-product-cat">ID: {order._id.slice(-6).toUpperCase()}</span>
                         </div>
-                      )}
-                    </td>
-                    <td style={{ ...tableStyles.td, textAlign: 'center' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '50%', background: '#f1f5f9', color: '#475569', fontWeight: 700, fontSize: '0.8rem' }}>{order.quantity}</span>
-                    </td>
-                    <td style={tableStyles.td}>{order.unitPrice?.toLocaleString(i18n.language)} DA</td>
-                    <td style={tableStyles.td}>
-                      <span style={{ fontWeight: 700, color: 'var(--primary-ds-color)', fontSize: '0.95rem' }}>{order.totalPrice?.toLocaleString(i18n.language)} DA</span>
-                    </td>
-                    <td style={tableStyles.td}><StatusBadge config={statusConfig(order.status)} /></td>
-                    <td style={{ ...tableStyles.td, color: '#64748b', fontSize: '0.82rem' }}>{formatDate(order.createdAt)}</td>
-                    <td style={{ ...tableStyles.td, textAlign: 'right' }} onClick={e => e.stopPropagation()}>
-                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                        <ActionBtn
-                          label="Détails"
-                          icon="👁️"
-                          onClick={() => {
-                            if (order.directSale?._id && order._id)
-                              router.push(`/dashboard/direct-sales/${order.directSale._id}/orders/${order._id}`);
-                          }}
-                        />
-                        {!isPurchase && order.status === 'PENDING' && (
-                          <ActionBtn label="Confirmer" icon="✅" variant="success" onClick={() => setConfirmTarget(order)} />
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td className="figma-auc-td">
+                        <div className="figma-auc-user-cell">
+                          <div className="figma-auc-avatar" style={{ backgroundColor: '#DBEAFE', color: '#2563EB' }}>
+                            {initials}
+                          </div>
+                          <div className="figma-auc-product-info">
+                            <span className="figma-auc-user-name">{displayName}</span>
+                            <span className="figma-auc-product-cat">{counterparty?.phone || 'N/A'}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="figma-auc-td">
+                         <span style={{ fontWeight: 600, color: '#475569' }}>x{order.quantity}</span>
+                      </td>
+                      <td className="figma-auc-td">
+                        <span className="figma-auc-price">{order.totalPrice?.toLocaleString(i18n.language)} DA</span>
+                      </td>
+                      <td className="figma-auc-td">
+                        <span className={`figma-auc-status-badge ${
+                          order.status === 'CANCELLED' ? 'figma-auc-status-rejected' : 
+                          order.status === 'CONFIRMED' ? 'figma-auc-status-accepted' : 
+                          order.status === 'COMPLETED' ? 'figma-auc-status-completed' : 
+                          'figma-auc-status-pending'
+                        }`}>
+                          {order.status === 'CONFIRMED' ? 'CONFIRMÉ' : 
+                           order.status === 'CANCELLED' ? 'ANNULÉ' : 
+                           order.status === 'COMPLETED' ? 'COMPLÉTÉ' : 
+                           'EN ATTENTE'}
+                        </span>
+                      </td>
+                      <td className="figma-auc-td" style={{ textAlign: 'right' }}>
+                        <div className="figma-auc-actions">
+                          <button 
+                            className="figma-auc-btn-details"
+                            onClick={() => {
+                              if (order.directSale?._id && order._id)
+                                router.push(`/dashboard/direct-sales/${order.directSale._id}/orders/${order._id}`);
+                            }}
+                          >
+                            Détails
+                          </button>
+                          {!isPurchase && order.status === 'PENDING' && (
+                            <button className="figma-auc-btn-success" onClick={() => setConfirmTarget(order)}>Confirmer</button>
+                          )}
+                          <button style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}>
+                            <BsThreeDotsVertical />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
-        )}
 
-        {filtered.length > 0 && (
-          <SimplePagination page={page} rowsPerPage={rowsPerPage} total={filtered.length} onPageChange={setPage} onRowsPerPageChange={setRowsPerPage} />
-        )}
-      </DashboardPageShell>
+          {/* Pagination */}
+          <div className="figma-auc-pagination">
+            <button 
+              className="figma-auc-pg-btn"
+              onClick={() => setPage(prev => Math.max(0, prev - 1))}
+              disabled={page === 0}
+            >
+              <BsChevronLeft />
+            </button>
+            {[...Array(Math.ceil(filtered.length / rowsPerPage))].map((_, i) => (
+              <button 
+                key={i}
+                className={`figma-auc-pg-btn ${page === i ? 'active' : ''}`}
+                onClick={() => setPage(i)}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button 
+              className="figma-auc-pg-btn"
+              onClick={() => setPage(prev => Math.min(Math.ceil(filtered.length / rowsPerPage) - 1, prev + 1))}
+              disabled={page >= Math.ceil(filtered.length / rowsPerPage) - 1}
+            >
+              <BsChevronRight />
+            </button>
+          </div>
+        </div>
+      </div>
 
       <ConfirmDialog
         open={!!confirmTarget}
@@ -253,6 +359,6 @@ export default function OrdersPage() {
         onCancel={() => setConfirmTarget(null)}
         onConfirm={handleConfirm}
       />
-    </>
+    </div>
   );
 }

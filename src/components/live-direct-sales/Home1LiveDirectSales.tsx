@@ -84,10 +84,10 @@ const Home1LiveDirectSales = () => {
       prevEl: '.direct-sale-prev',
     },
     breakpoints: {
-      0: { slidesPerView: 1, spaceBetween: 12 },
-      475: { slidesPerView: 1.2, spaceBetween: 14 },
-      640: { slidesPerView: 2, spaceBetween: 16 },
-      768: { slidesPerView: 2, spaceBetween: 18 },
+      0: { slidesPerView: 1.15, spaceBetween: 10 },
+      475: { slidesPerView: 1.5, spaceBetween: 12 },
+      640: { slidesPerView: 2.2, spaceBetween: 14 },
+      768: { slidesPerView: 2.5, spaceBetween: 16 },
       1024: { slidesPerView: 3, spaceBetween: 20 },
       1280: { slidesPerView: 4, spaceBetween: 20 },
     },
@@ -102,12 +102,36 @@ const Home1LiveDirectSales = () => {
     <div className="direct-sales-section-wrapper" style={{ width: '100%', position: 'relative', overflow: 'visible' }}>
       {/* SECTION HEADER - REMOVED OVERFLOW HIDDEN */}
       <style jsx>{`
+        .image-nav-arrow:hover {
+          transform: translateY(-50%) scale(1.12) !important;
+          background: rgba(255, 255, 255, 0.85) !important;
+        }
+        .image-nav-arrow:active {
+          transform: translateY(-50%) scale(0.95) !important;
+        }
+        .carousel-nav-btn:hover {
+          transform: translateY(-50%) scale(1.08) !important;
+          box-shadow: 0 12px 32px rgba(0, 40, 150, 0.24), 0 4px 10px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(0, 40, 150, 0.12) !important;
+        }
+        .carousel-nav-btn:active {
+          transform: translateY(-50%) scale(0.96) !important;
+        }
+        @media (max-width: 767px) {
+          .carousel-nav-btn {
+            width: 38px !important;
+            height: 38px !important;
+          }
+          .carousel-nav-btn svg {
+            width: 16px !important;
+            height: 16px !important;
+          }
+        }
         .live-section-header {
           width: 100%;
           max-width: 1240px;
           margin: 0 auto;
           position: relative;
-          padding: clamp(32px, 6vw, 60px) clamp(16px, 4vw, 20px) clamp(20px, 4vw, 40px);
+          padding: clamp(20px, 4vw, 60px) clamp(16px, 4vw, 20px) clamp(14px, 3vw, 40px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -116,12 +140,13 @@ const Home1LiveDirectSales = () => {
         .live-section-voirtout {
           position: absolute;
           right: clamp(12px, 3vw, 35px);
-          top: clamp(40px, 8vw, 75px);
+          top: clamp(28px, 6vw, 75px);
         }
-        @media (max-width: 640px) {
+        @media (max-width: 767px) {
           .live-section-header {
             flex-direction: column;
-            gap: 12px;
+            gap: 6px;
+            padding-bottom: 8px;
           }
           .live-section-voirtout {
             position: static;
@@ -139,7 +164,7 @@ const Home1LiveDirectSales = () => {
             style={{
               color: '#002896',
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: 'clamp(1.75rem, 5vw, 3rem)',
+              fontSize: 'clamp(1.4rem, 4vw, 3rem)',
               fontWeight: '700',
               margin: 0,
               letterSpacing: '0px',
@@ -149,7 +174,7 @@ const Home1LiveDirectSales = () => {
           >
             Marchés et ventes en cours
           </motion.h2>
-          <motion.div initial={{ width: 0 }} whileInView={{ width: '100px' }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 1 }} style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #002896, transparent)', marginTop: '15px', borderRadius: '10px' }} />
+          <motion.div initial={{ width: 0 }} whileInView={{ width: '100px' }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 1 }} style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #002896, transparent)', marginTop: 'clamp(8px, 1.5vw, 15px)', borderRadius: '10px' }} />
         </div>
 
         <div className="live-section-voirtout">
@@ -237,25 +262,27 @@ const Home1LiveDirectSales = () => {
                           {/* Image Navigation Arrows */}
                           {(sale.thumbs?.length > 1 || sale.images?.length > 1) && (
                             <>
-                              <div 
-                                className="image-nav-arrow"
+                              <div
+                                className="image-nav-arrow image-nav-arrow-left"
                                 style={{
                                   position: 'absolute',
-                                  top: '45%',
-                                  left: '8px',
+                                  top: '50%',
+                                  left: '10px',
                                   transform: 'translateY(-50%)',
-                                  width: '26px',
-                                  height: '26px',
+                                  width: '34px',
+                                  height: '34px',
                                   borderRadius: '50%',
-                                  backgroundColor: 'rgba(255,255,255,0.9)',
+                                  background: 'rgba(255, 255, 255, 0.55)',
+                                  backdropFilter: 'blur(14px) saturate(160%)',
+                                  WebkitBackdropFilter: 'blur(14px) saturate(160%)',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   cursor: 'pointer',
                                   zIndex: 25,
-                                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                  boxShadow: '0 4px 14px rgba(0, 40, 150, 0.18), 0 1px 3px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.6)',
                                   border: 'none',
-                                  transition: 'all 0.2s ease'
+                                  transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s ease'
                                 }}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -264,27 +291,29 @@ const Home1LiveDirectSales = () => {
                                   setCardImageIndexes({ ...cardImageIndexes, [sale.id]: (current - 1 + total) % total });
                                 }}
                               >
-                                <i className="bi bi-chevron-left" style={{ color: '#002896', fontSize: '12px' }}></i>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                               </div>
-                              <div 
-                                className="image-nav-arrow"
+                              <div
+                                className="image-nav-arrow image-nav-arrow-right"
                                 style={{
                                   position: 'absolute',
-                                  top: '45%',
-                                  right: '8px',
+                                  top: '50%',
+                                  right: '10px',
                                   transform: 'translateY(-50%)',
-                                  width: '26px',
-                                  height: '26px',
+                                  width: '34px',
+                                  height: '34px',
                                   borderRadius: '50%',
-                                  backgroundColor: 'rgba(255,255,255,0.9)',
+                                  background: 'rgba(255, 255, 255, 0.55)',
+                                  backdropFilter: 'blur(14px) saturate(160%)',
+                                  WebkitBackdropFilter: 'blur(14px) saturate(160%)',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   cursor: 'pointer',
                                   zIndex: 25,
-                                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                  boxShadow: '0 4px 14px rgba(0, 40, 150, 0.18), 0 1px 3px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.6)',
                                   border: 'none',
-                                  transition: 'all 0.2s ease'
+                                  transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s ease'
                                 }}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -293,9 +322,9 @@ const Home1LiveDirectSales = () => {
                                   setCardImageIndexes({ ...cardImageIndexes, [sale.id]: (currentIdx + 1) % total });
                                 }}
                               >
-                                <i className="bi bi-chevron-right" style={{ color: '#002896', fontSize: '12px' }}></i>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                               </div>
-                              
+
                               {/* Dots indicator */}
                               <div style={{
                                 position: 'absolute',
@@ -530,52 +559,52 @@ const Home1LiveDirectSales = () => {
                 })}
               </Swiper>
   
-              {/* Custom Navigation Buttons - Oval Style */}
-              <div className="direct-sale-prev" style={{
+              {/* Custom Navigation Buttons - Modern Glass Pills */}
+              <div className="direct-sale-prev carousel-nav-btn" style={{
                 position: 'absolute',
                 top: '35%',
                 left: 'clamp(4px, 1vw, 10px)',
                 transform: 'translateY(-50%)',
-                width: 'clamp(40px, 5vw, 60px)',
-                height: 'clamp(32px, 4vw, 40px)',
-                backgroundColor: 'white',
-                borderRadius: '25px',
+                width: 'clamp(44px, 5vw, 56px)',
+                height: 'clamp(44px, 5vw, 56px)',
+                background: 'linear-gradient(135deg, #ffffff 0%, #f4f7fc 100%)',
+                borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                boxShadow: '0 8px 24px rgba(0, 40, 150, 0.16), 0 2px 6px rgba(0, 0, 0, 0.06), inset 0 0 0 1px rgba(0, 40, 150, 0.08)',
                 cursor: 'pointer',
                 zIndex: 100,
                 color: '#002896',
-                border: '1px solid #f0f0f0',
-                transition: 'all 0.3s ease'
+                border: 'none',
+                transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease'
               }}>
-                <i className="bi bi-chevron-left" style={{ fontSize: '20px' }}></i>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
               </div>
-              <div className="direct-sale-next" style={{
+              <div className="direct-sale-next carousel-nav-btn" style={{
                 position: 'absolute',
                 top: '35%',
                 right: 'clamp(4px, 1vw, 10px)',
                 transform: 'translateY(-50%)',
-                width: 'clamp(40px, 5vw, 60px)',
-                height: 'clamp(32px, 4vw, 40px)',
-                backgroundColor: 'white',
-                borderRadius: '25px',
+                width: 'clamp(44px, 5vw, 56px)',
+                height: 'clamp(44px, 5vw, 56px)',
+                background: 'linear-gradient(135deg, #ffffff 0%, #f4f7fc 100%)',
+                borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                boxShadow: '0 8px 24px rgba(0, 40, 150, 0.16), 0 2px 6px rgba(0, 0, 0, 0.06), inset 0 0 0 1px rgba(0, 40, 150, 0.08)',
                 cursor: 'pointer',
                 zIndex: 100,
                 color: '#002896',
-                border: '1px solid #f0f0f0',
-                transition: 'all 0.3s ease'
+                border: 'none',
+                transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease'
               }}>
-                <i className="bi bi-chevron-right" style={{ fontSize: '20px' }}></i>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
               </div>
             </div>
             
-            <div style={{ height: '40px' }} />
+            <div style={{ height: 'clamp(16px, 3vw, 40px)' }} />
           </div>
         ) : (
           <div style={{ color: '#002896', textAlign: 'center', padding: '40px', fontWeight: 'bold' }}>Aucune vente en cours</div>

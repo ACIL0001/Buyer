@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const faqs = [
@@ -28,22 +28,52 @@ const faqs = [
 
 const FAQSection = () => {
   const [activeId, setActiveId] = useState<number | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 768);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  const visibleFaqs = isMobile && !showAll ? faqs.slice(0, 4) : faqs;
+  const hasMore = isMobile && faqs.length > 4;
 
   return (
-    <div style={{ width: '100%', background: '#ffffff', padding: 'clamp(40px, 8vw, 80px) clamp(16px, 4vw, 20px) clamp(60px, 12vw, 140px)', fontFamily: '"DM Sans", sans-serif' }}>
+    <div className="faq-section" style={{ width: '100%', background: '#ffffff', padding: 'clamp(40px, 8vw, 80px) clamp(16px, 4vw, 20px) clamp(60px, 12vw, 140px)', fontFamily: '"DM Sans", sans-serif' }}>
+      <style jsx>{`
+        @media (max-width: 767px) {
+          .faq-section {
+            padding: 28px 16px 40px !important;
+          }
+          .faq-section h2 {
+            font-size: 22px !important;
+            margin-bottom: 8px !important;
+          }
+          .faq-section .faq-subtitle {
+            font-size: 13px !important;
+            line-height: 1.4 !important;
+          }
+          .faq-list {
+            gap: 10px !important;
+          }
+        }
+      `}</style>
       <div style={{ width: '100%', maxWidth: '714px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 'clamp(28px, 6vw, 60px)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(18px, 4vw, 60px)' }}>
           <h2 style={{
             color: '#002896',
             fontFamily: '"DM Sans", sans-serif',
             fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
             fontWeight: '700',
             lineHeight: 1.25,
-            marginBottom: 'clamp(12px, 2vw, 20px)',
+            marginBottom: 'clamp(8px, 2vw, 20px)',
           }}>
             Tout Mazadclic en un clic
           </h2>
-          <p style={{
+          <p className="faq-subtitle" style={{
             color: '#757575',
             fontFamily: '"DM Sans", sans-serif',
             fontSize: 'clamp(1rem, 2.2vw, 1.5rem)',
@@ -59,13 +89,13 @@ const FAQSection = () => {
           </p>
         </div>
 
-        <div style={{
+        <div className="faq-list" style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 'clamp(16px, 3vw, 32px)',
+          gap: 'clamp(10px, 2vw, 32px)',
           width: '100%',
         }}>
-          {faqs.map((faq) => (
+          {visibleFaqs.map((faq) => (
             <div key={faq.id} style={{ width: '100%' }}>
               <div
                 onClick={() => setActiveId(activeId === faq.id ? null : faq.id)}
@@ -148,6 +178,28 @@ const FAQSection = () => {
             </div>
           ))}
         </div>
+
+        {hasMore && (
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <button
+              onClick={() => setShowAll(!showAll)}
+              style={{
+                background: 'transparent',
+                border: '1px solid #002896',
+                color: '#002896',
+                fontFamily: '"DM Sans", sans-serif',
+                fontWeight: 600,
+                fontSize: '14px',
+                borderRadius: '24px',
+                padding: '10px 22px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {showAll ? 'Voir moins' : 'Voir toutes les questions'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

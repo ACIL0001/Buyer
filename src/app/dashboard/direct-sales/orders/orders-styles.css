@@ -1,4 +1,4 @@
-/* Auctions Modern Styles */
+/* Direct Sales Orders Modern Styles - High Fidelity */
 
 .figma-auc-summary-grid {
   display: flex;
@@ -110,7 +110,7 @@
   text-align: left;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.6px;
   text-transform: uppercase;
   color: #64748B;
@@ -119,6 +119,7 @@
 .figma-auc-tr {
   border-bottom: 1px solid #F8FAFC;
   transition: background 0.2s;
+  cursor: pointer;
 }
 
 .figma-auc-tr:hover {
@@ -142,6 +143,10 @@
   background: #F1F5F9;
   border-radius: 6px;
   object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
 }
 
 .figma-auc-product-info {
@@ -158,7 +163,7 @@
 
 .figma-auc-product-cat {
   font-family: 'Inter', sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   color: #94A3B8;
 }
 
@@ -199,12 +204,14 @@
   border-radius: 9999px;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
+  text-transform: uppercase;
 }
 
 .figma-auc-status-pending { background: #FFFBEB; color: #B45309; }
 .figma-auc-status-accepted { background: #ECFDF5; color: #047857; }
 .figma-auc-status-rejected { background: #FFF1F2; color: #BE123C; }
+.figma-auc-status-completed { background: #EFF6FF; color: #1D4ED8; }
 
 .figma-auc-actions {
   display: flex;
@@ -216,18 +223,96 @@
   background: #EFF6FF;
   color: #0050CB;
   border: none;
-  padding: 6px 16px;
+  padding: 6px 12px;
   border-radius: 8px;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   text-decoration: none;
   transition: background 0.2s;
 }
 
-.figma-auc-btn-details:hover {
-  background: #DBEAFE;
+.figma-auc-btn-success {
+  background: #ECFDF5;
+  color: #059669;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.figma-auc-btn-danger {
+  background: #FFF1F2;
+  color: #E11D48;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* Premium Segmented Tabs Styling */
+.offers-tabs-wrapper {
+  padding: 0 24px;
+  margin-bottom: 24px;
+}
+
+.offers-segmented-control {
+  display: inline-flex;
+  background: #F1F5F9;
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+}
+
+.offers-tab-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  background: transparent;
+  user-select: none;
+}
+
+.offers-tab-item:hover {
+  color: #0F172A;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.offers-tab-item.active {
+  background: #FFFFFF;
+  color: #0050CB;
+  box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.offers-tab-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #E2E8F0;
+  color: #475569;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.offers-tab-item.active .offers-tab-count {
+  background: rgba(0, 80, 203, 0.1);
+  color: #0050CB;
 }
 
 /* Pagination */

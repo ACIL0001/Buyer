@@ -24,7 +24,7 @@ export interface Tender {
   requirements: string[];
   category: any;
   subCategory?: any;
-  attachments: Array<{ _id?: string; url: string; filename?: string; fullUrl?: string }>;
+  attachments: Array<{ _id?: string; url: string; filename?: string; fullUrl?: string; path?: string }>;
   startingAt: string;
   endingAt: string;
   tenderType: TENDER_TYPE;
@@ -59,6 +59,8 @@ export interface Tender {
   logo?: string;
   coverImage?: string;
   mainImage?: string;
+  imageUrl?: string;
+  participantsCount?: number;
 }
 
 export enum TenderBidStatus {

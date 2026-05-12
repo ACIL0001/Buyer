@@ -1,4 +1,4 @@
-/* Auctions Modern Styles */
+/* Offers Modern Styles - Matching Figma Design */
 
 .figma-auc-summary-grid {
   display: flex;
@@ -8,8 +8,8 @@
   gap: 20px;
   width: 100%;
   max-width: 1116px;
-  margin-top: 60px;
-  margin-bottom: 60px;
+  margin-top: 40px;
+  margin-bottom: 40px;
 }
 
 .figma-auc-card {
@@ -230,6 +230,32 @@
   background: #DBEAFE;
 }
 
+.figma-auc-btn-success {
+  background: #ECFDF5;
+  color: #059669;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.figma-auc-btn-danger {
+  background: #FFF1F2;
+  color: #E11D48;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
 /* Pagination */
 .figma-auc-pagination {
   display: flex;
@@ -259,4 +285,63 @@
 .figma-auc-pg-btn.active {
   background: #0050CB;
   color: #FFFFFF;
+}
+
+/* Premium Segmented Tabs Styling */
+.offers-tabs-wrapper {
+  padding: 0 24px;
+  margin-bottom: 32px;
+}
+
+.offers-segmented-control {
+  display: inline-flex;
+  background: #F1F5F9;
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+}
+
+.offers-tab-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  background: transparent;
+  user-select: none;
+}
+
+.offers-tab-item:hover {
+  color: #0F172A;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.offers-tab-item.active {
+  background: #FFFFFF;
+  color: #0050CB;
+  box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.offers-tab-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #E2E8F0;
+  color: #475569;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  transition: all 0.25s;
+}
+
+.offers-tab-item.active .offers-tab-count {
+  background: rgba(0, 80, 203, 0.1);
+  color: #0050CB;
 }

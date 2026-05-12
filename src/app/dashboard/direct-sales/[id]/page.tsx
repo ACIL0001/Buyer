@@ -78,19 +78,17 @@ export default function DirectSaleDetailPage() {
     <div className="figma-dsd-main">
       <DashboardKeyframes />
       
+      {/* Back Button */}
+      <button 
+        className="figma-dsd-back-btn"
+        onClick={() => router.push('/dashboard/direct-sales')}
+      >
+        <BsArrowLeft /> Retour aux ventes
+      </button>
+
       {/* Header Area */}
       <header className="figma-dsd-header">
         <div className="figma-dsd-title-group">
-          <button 
-            onClick={() => router.push('/dashboard/direct-sales')}
-            style={{ 
-              background: 'none', border: 'none', color: '#64748B', display: 'flex', 
-              alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '8px',
-              padding: 0, fontSize: '14px'
-            }}
-          >
-            <BsArrowLeft /> Retour aux ventes
-          </button>
           <h1 className="figma-dsd-title">{sale.title}</h1>
           <div className="figma-dsd-status-badge">
             <span className="figma-dsd-status-dot"></span>
@@ -146,42 +144,46 @@ export default function DirectSaleDetailPage() {
         {/* Right Column */}
         <div className="figma-dsd-right-col">
           <div className="figma-dsd-info-card">
-            <h3 className="figma-dsd-section-title">Informations de la vente</h3>
-            
-            <div className="figma-dsd-stats">
-              <div className="figma-dsd-stat-row">
-                <span className="figma-dsd-stat-label">Prix de vente</span>
-                <span className="figma-dsd-stat-value">{(sale.price || 0).toLocaleString()} Da</span>
-              </div>
-              <div className="figma-dsd-stat-row">
-                <span className="figma-dsd-stat-label">Statut</span>
-                <span className="figma-dsd-stat-value figma-dsd-stat-value-green">En ligne</span>
-              </div>
-              <div className="figma-dsd-stat-row">
-                <span className="figma-dsd-stat-label">Date de publication</span>
-                <span className="figma-dsd-stat-value">
-                  {sale.createdAt ? new Date(sale.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '12 Mai 2026'}
-                </span>
-              </div>
-              <div className="figma-dsd-stat-row" style={{ borderBottom: 'none' }}>
-                <span className="figma-dsd-stat-label">Vues</span>
-                <span className="figma-dsd-stat-value">{views} personnes</span>
+            <div className="figma-dsd-card-section">
+              <h3 className="figma-dsd-section-title">Informations de la vente</h3>
+              
+              <div className="figma-dsd-stats" style={{ marginTop: '24px' }}>
+                <div className="figma-dsd-stat-row">
+                  <span className="figma-dsd-stat-label">Prix de vente</span>
+                  <span className="figma-dsd-stat-value">{(sale.price || 0).toLocaleString()} Da</span>
+                </div>
+                <div className="figma-dsd-stat-row">
+                  <span className="figma-dsd-stat-label">Statut</span>
+                  <span className="figma-dsd-stat-value figma-dsd-stat-value-green">En ligne</span>
+                </div>
+                <div className="figma-dsd-stat-row">
+                  <span className="figma-dsd-stat-label">Date de publication</span>
+                  <span className="figma-dsd-stat-value">
+                    {sale.createdAt ? new Date(sale.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '12 Mai 2026'}
+                  </span>
+                </div>
+                <div className="figma-dsd-stat-row" style={{ borderBottom: 'none' }}>
+                  <span className="figma-dsd-stat-label">Vues</span>
+                  <span className="figma-dsd-stat-value">{views} personnes</span>
+                </div>
               </div>
             </div>
 
-            <div className="figma-dsd-actions">
-              <button 
-                className="figma-dsd-btn-edit"
-                onClick={() => router.push(`/dashboard/direct-sales/edit/${id}`)}
-              >
-                Modifier l'annonce
-              </button>
-              <button 
-                className="figma-dsd-btn-delete"
-                onClick={() => setDeleteDialogOpen(true)}
-              >
-                Supprimer l'annonce
-              </button>
+            <div className="figma-dsd-card-section" style={{ marginTop: 'auto' }}>
+              <div className="figma-dsd-actions">
+                <button 
+                  className="figma-dsd-btn-edit"
+                  onClick={() => router.push(`/dashboard/direct-sales/edit/${id}`)}
+                >
+                  Modifier l'annonce
+                </button>
+                <button 
+                  className="figma-dsd-btn-delete"
+                  onClick={() => setDeleteDialogOpen(true)}
+                >
+                  Supprimer l'annonce
+                </button>
+              </div>
             </div>
           </div>
         </div>

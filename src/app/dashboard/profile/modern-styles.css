@@ -4048,3 +4048,344 @@ screen and (-webkit-device-pixel-ratio: 3) {
 .figma-card-personal .figma-form-field.readonly {
   background: #FFFFFF;
 }
+
+/* ============================================================
+   Mobile/Tablet responsive fixes for the profile dashboard
+   ============================================================ */
+
+/* Universal: cap any fixed-width element to viewport (prevents 1097/1060px overflow) */
+.figma-card,
+.figma-card-verification,
+.figma-tabs-pill,
+.figma-doc-grid-v2,
+.figma-verify-status-container {
+  width: 100% !important;
+  max-width: 1097px !important;
+}
+.figma-card-verification {
+  height: auto !important;
+}
+.figma-doc-grid-v2 {
+  height: auto !important;
+}
+/* Trap any overflow on the page body to keep horizontal scroll at bay */
+.figma-profile-page {
+  overflow-x: hidden;
+}
+.figma-profile-container {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1023px) {
+  .figma-profile-container {
+    padding: 0 16px !important;
+    max-width: 100% !important;
+  }
+  .figma-profile-hero {
+    margin-bottom: 24px;
+  }
+  .figma-hero-header {
+    height: auto;
+    margin-bottom: 80px;
+  }
+  .figma-cover-dashed {
+    height: clamp(140px, 25vw, 229px);
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .figma-doc-grid-v2 {
+    width: 100%;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .figma-doc-card-v2 {
+    width: calc(50% - 8px);
+    height: auto;
+    min-height: 220px;
+    padding: 20px;
+  }
+  .figma-verify-status-container {
+    width: 100%;
+    gap: 16px;
+  }
+  .figma-status-card {
+    padding: 24px;
+    height: auto;
+    min-height: 140px;
+  }
+  .figma-status-info {
+    width: auto;
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Cap entire profile page so nothing horizontally overflows */
+  .figma-profile-page {
+    overflow-x: hidden;
+    padding-bottom: 40px;
+  }
+  .figma-profile-container {
+    padding: 0 12px !important;
+    width: 100%;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+  .figma-profile-hero {
+    margin-bottom: 20px;
+    width: 100%;
+  }
+  .figma-hero-header {
+    height: auto;
+    margin-bottom: 70px;
+    width: 100%;
+  }
+  .figma-cover-dashed {
+    height: clamp(120px, 30vw, 180px);
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 18px;
+    box-sizing: border-box;
+  }
+  .figma-avatar-container {
+    top: auto !important;
+    bottom: -50px !important;
+    left: 20px !important;
+    width: 80px !important;
+    height: 80px !important;
+  }
+  .figma-badge {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  .figma-badge i {
+    font-size: 11px !important;
+  }
+  .figma-badge.top-left { left: -10px !important; top: -8px !important; }
+  .figma-badge.top-right { left: 68px !important; top: -8px !important; }
+  .figma-badge.bottom-left { left: -10px !important; top: 66px !important; }
+  .figma-badge.bottom-right { left: 68px !important; top: 66px !important; }
+  .figma-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+    box-sizing: border-box;
+  }
+  .figma-card-personal,
+  .figma-card-security,
+  .figma-card-additional,
+  .figma-card-verification {
+    min-height: 0 !important;
+  }
+  .figma-card-description {
+    font-size: 12.5px !important;
+    line-height: 1.45 !important;
+    white-space: normal !important;
+  }
+  .figma-card-title-box {
+    width: 100%;
+    min-width: 0;
+  }
+  .figma-form-row {
+    flex-direction: column !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
+  .figma-form-row > *,
+  .figma-input-field {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .figma-form-field {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+  .figma-checklist {
+    width: 100% !important;
+    height: auto !important;
+  }
+  .figma-btn-password-update,
+  .figma-btn-primary,
+  .figma-btn-cancel {
+    width: 100% !important;
+  }
+
+  /* Document grid → single column on mobile */
+  .figma-doc-grid-v2 {
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .figma-doc-card-v2 {
+    width: 100%;
+    height: auto;
+    min-height: 180px;
+    padding: 18px;
+    border-radius: 14px;
+  }
+  .figma-doc-icon-v2 {
+    font-size: 22px;
+  }
+  .figma-doc-title-v2 {
+    font-size: 14px;
+    line-height: 18px;
+  }
+  .figma-doc-subtitle-v2 {
+    font-size: 13px;
+    line-height: 17px;
+    height: auto;
+    margin-bottom: 14px;
+  }
+  .figma-doc-btn-v2 {
+    width: 100%;
+    height: 42px !important;
+    min-height: 42px !important;
+  }
+
+  /* Verification status cards → stacked on mobile */
+  .figma-verify-status-container {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+  .figma-status-card {
+    padding: 18px 20px;
+    height: auto;
+    min-height: 110px;
+    border-radius: 14px;
+  }
+  .figma-status-info {
+    width: auto;
+    flex: 1;
+    min-width: 0;
+  }
+  .figma-status-step,
+  .figma-status-name,
+  .figma-status-desc {
+    font-size: 13.5px;
+    line-height: 18px;
+  }
+  .figma-status-icon-v2 {
+    width: 26px;
+    height: 26px;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+
+  /* Alert/info box */
+  .figma-alert-box-v3 {
+    padding: 16px;
+    gap: 12px;
+    min-height: 0;
+    margin: 16px 0;
+  }
+  .figma-alert-title-v3 {
+    font-size: 14px;
+  }
+  .figma-alert-desc-v3 {
+    font-size: 12.5px;
+    line-height: 17px;
+  }
+
+  /* Section titles */
+  .figma-card-title {
+    font-size: 17px !important;
+    line-height: 22px;
+  }
+  .figma-card-header {
+    margin-bottom: 18px !important;
+  }
+
+  /* Edit button */
+  .figma-btn-edit-v2 {
+    width: auto;
+    min-width: 64px;
+    padding: 6px 10px;
+    height: 34px;
+  }
+  .figma-btn-edit-v2 span {
+    font-size: 11.5px;
+  }
+  .figma-btn-edit-v2 i {
+    width: 18px;
+    height: 18px;
+    font-size: 14px;
+  }
+
+  /* CTA group buttons stack */
+  .figma-cta-group {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  .figma-cta-group > * {
+    width: 100% !important;
+  }
+
+  /* Tab nav: horizontal scroll instead of wrap to keep tabs on one row */
+  .modern-tab-nav,
+  .figma-tabs-pill {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 6px 8px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    box-sizing: border-box;
+  }
+  .modern-tab-nav::-webkit-scrollbar,
+  .figma-tabs-pill::-webkit-scrollbar {
+    display: none;
+  }
+  .modern-tab-btn,
+  .figma-tab-btn {
+    flex: 0 0 auto;
+    min-width: 0;
+    white-space: nowrap;
+    padding: 8px 14px;
+    font-size: 12.5px;
+    height: auto;
+  }
+  .figma-tabs-container {
+    margin-top: 24px !important;
+    margin-bottom: 18px !important;
+    width: 100%;
+  }
+
+  /* Generic card padding inside tabs */
+  .figma-card {
+    padding: 16px !important;
+    border-radius: 14px;
+  }
+
+  /* Form input fields */
+  .figma-input-field,
+  .figma-form-field {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .figma-doc-card-v2 {
+    padding: 16px;
+  }
+  .figma-status-card {
+    padding: 14px 16px;
+  }
+  .figma-doc-title-v2 {
+    font-size: 13.5px;
+  }
+}
+

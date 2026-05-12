@@ -57,11 +57,10 @@ export default function AuctionsPage() {
 
   const auctions = auctionsData as any[];
   
-  // Mocking stats as in design
-  const receivedCount = 7;
-  const pendingCount = 3;
-  const acceptedCount = 2;
-  const rejectedCount = 2;
+  const receivedCount = auctions.length;
+  const pendingCount = auctions.filter(row => row.status !== 'CLOSED' && row.status !== 'ON_AUCTION').length;
+  const acceptedCount = auctions.filter(row => row.status === 'ON_AUCTION').length;
+  const rejectedCount = auctions.filter(row => row.status === 'CLOSED').length;
 
   if (isLoading) return <div>Chargement...</div>;
 
@@ -95,7 +94,7 @@ export default function AuctionsPage() {
               <BsHammer size={20} />
             </div>
             <div className="figma-auc-card-content">
-              <span className="figma-auc-card-label">Reçues</span>
+              <span className="figma-auc-card-label">Total</span>
               <span className="figma-auc-card-value">{receivedCount}</span>
             </div>
           </div>
@@ -134,23 +133,23 @@ export default function AuctionsPage() {
         {/* Detailed List Section */}
         <div className="figma-auc-section">
           <div className="figma-auc-header">
-            <h3 className="figma-auc-title">Enchères reçues</h3>
+            <h3 className="figma-auc-title">Mes enchères</h3>
           </div>
 
           <table className="figma-auc-table">
             <thead className="figma-auc-thead">
               <tr>
                 <th className="figma-auc-th">PRODUIT</th>
-                <th className="figma-auc-th">UTILISATEUR</th>
                 <th className="figma-auc-th">PRIX ACTUEL</th>
                 <th className="figma-auc-th">STATUS</th>
+                <th className="figma-auc-th">DATE</th>
                 <th className="figma-auc-th" style={{ textAlign: 'right' }}>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               {auctions.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>Aucune enchère reçue pour le moment.</td>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: '#64748B' }}>Aucune enchère publiée pour le moment.</td>
                 </tr>
               ) : (
                 auctions.map((row) => (
@@ -169,20 +168,15 @@ export default function AuctionsPage() {
                       </div>
                     </td>
                     <td className="figma-auc-td">
-                      <div className="figma-auc-user-cell">
-                        <div className="figma-auc-avatar" style={{ backgroundColor: '#DBEAFE', color: '#2563EB' }}>
-                          {(row.lastBidder?.nom?.[0] || 'A')}
-                        </div>
-                        <span className="figma-auc-user-name">{row.lastBidder?.nom || 'Utilisateur'}</span>
-                      </div>
-                    </td>
-                    <td className="figma-auc-td">
                       <span className="figma-auc-price">{(row.currentPrice || row.startingPrice || 0).toLocaleString()} Da</span>
                     </td>
                     <td className="figma-auc-td">
                       <span className={`figma-auc-status-badge ${row.status === 'CLOSED' ? 'figma-auc-status-rejected' : row.status === 'ON_AUCTION' ? 'figma-auc-status-accepted' : 'figma-auc-status-pending'}`}>
                         {row.status === 'CLOSED' ? 'REJETÉ' : row.status === 'ON_AUCTION' ? 'ACCEPTÉ' : 'EN ATTENTE'}
                       </span>
+                    </td>
+                    <td className="figma-auc-td" style={{ color: '#64748B', fontSize: '13px', fontWeight: 500 }}>
+                      {row.createdAt ? new Date(row.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
                     </td>
                     <td className="figma-auc-td" style={{ textAlign: 'right' }} onClick={e => e.stopPropagation()}>
                       <div className="figma-auc-actions">

@@ -72,8 +72,9 @@ const CategoryItem = ({ cat, router }: { cat: any; router: any }) => {
   const subCategories = subData?.data || [];
 
   return (
-    <div style={{ borderBottom: '2px solid #002896', width: '100%', minWidth: 0 }}>
+    <div className="cat-item">
       <motion.div
+        className="cat-row"
         whileHover={{ x: 5 }}
         style={{
           display: 'flex',
@@ -85,23 +86,25 @@ const CategoryItem = ({ cat, router }: { cat: any; router: any }) => {
         }}
       >
         <div
+          className="cat-clickable"
           onClick={() => router.push(`/auction-sidebar?category=${cat._id}`)}
           style={{ display: 'flex', alignItems: 'center', gap: 'clamp(12px, 2vw, 22px)', flex: 1, minWidth: 0 }}
         >
-          <div style={{ color: '#002896', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div className="cat-icon" style={{ color: '#002896', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {iconMap[cat.name] || <DefaultIcon />}
           </div>
-          <span style={{ color: '#002896', fontSize: 'clamp(0.95rem, 1.5vw, 1.25rem)', fontWeight: '700', fontFamily: 'Roboto, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <span className="cat-name" style={{ color: '#002896', fontSize: 'clamp(0.95rem, 1.5vw, 1.25rem)', fontWeight: '700', fontFamily: 'Roboto, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {cat.name}
           </span>
         </div>
-        <div 
+        <div
+          className="cat-chevron"
           onClick={(e) => {
             e.stopPropagation();
             setIsExpanded(!isExpanded);
           }}
-          style={{ 
-            color: '#002896', 
+          style={{
+            color: '#002896',
             cursor: 'pointer',
             padding: '10px',
             transition: 'transform 0.3s ease',
@@ -116,6 +119,7 @@ const CategoryItem = ({ cat, router }: { cat: any; router: any }) => {
 
       {isExpanded && (
         <motion.div
+          className="cat-expandable"
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           style={{ overflow: 'hidden', paddingBottom: '20px' }}
@@ -125,12 +129,12 @@ const CategoryItem = ({ cat, router }: { cat: any; router: any }) => {
           ) : subCategories.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingLeft: '44px' }}>
               {subCategories.map((sub: any) => (
-                <div 
+                <div
                   key={sub._id}
                   onClick={() => router.push(`/auction-sidebar?category=${sub._id}`)}
-                  style={{ 
-                    color: '#002896', 
-                    fontSize: '16px', 
+                  style={{
+                    color: '#002896',
+                    fontSize: '16px',
                     fontWeight: '500',
                     cursor: 'pointer',
                     display: 'flex',
@@ -155,9 +159,9 @@ const CategoryItem = ({ cat, router }: { cat: any; router: any }) => {
 const CategoryGrid = () => {
   const router = useRouter();
   const { isLogged, isReady } = useAuth();
-  const { data, isLoading } = useQuery({ 
-    queryKey: ['categories', 'roots'], 
-    queryFn: () => CategoryAPI.getRootCategories() 
+  const { data, isLoading } = useQuery({
+    queryKey: ['categories', 'roots'],
+    queryFn: () => CategoryAPI.getRootCategories()
   });
 
   const categories = data?.data || [];
@@ -179,15 +183,84 @@ const CategoryGrid = () => {
   }
 
   return (
-    <div style={{ width: '100%', background: '#ffffff', padding: 'clamp(48px, 8vw, 100px) 0', fontFamily: '"DM Sans", sans-serif' }}>
+    <div className="cat-section" style={{ width: '100%', background: '#ffffff', padding: 'clamp(48px, 8vw, 100px) 0', fontFamily: '"DM Sans", sans-serif' }}>
+      <style jsx global>{`
+        .cat-item { border-bottom: 2px solid #002896; width: 100%; min-width: 0; }
+
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .cat-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+          }
+        }
+
+        @media (max-width: 767px) {
+          .cat-section {
+            padding: 24px 16px !important;
+          }
+          .cat-section h2 {
+            font-size: 18px !important;
+            line-height: 1.3 !important;
+          }
+          .cat-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            column-gap: 10px !important;
+            row-gap: 10px !important;
+            padding: 0 !important;
+          }
+          .cat-item {
+            background: #ffffff;
+            border: 1px solid rgba(0, 40, 150, 0.12) !important;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(0, 40, 150, 0.06);
+            padding: 14px 8px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+          }
+          .cat-item:active {
+            transform: scale(0.97);
+            box-shadow: 0 1px 4px rgba(0, 40, 150, 0.08);
+          }
+          .cat-item .cat-row {
+            flex-direction: column !important;
+            gap: 8px !important;
+            min-height: auto !important;
+            justify-content: center !important;
+          }
+          .cat-item .cat-clickable {
+            flex-direction: column !important;
+            gap: 8px !important;
+            text-align: center;
+            width: 100%;
+          }
+          .cat-item .cat-icon svg {
+            width: 28px;
+            height: 28px;
+          }
+          .cat-item .cat-name {
+            font-size: 12.5px !important;
+            text-align: center;
+            white-space: normal !important;
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          .cat-item .cat-chevron {
+            display: none !important;
+          }
+          .cat-item .cat-expandable {
+            display: none !important;
+          }
+        }
+      `}</style>
       <div className="container-responsive" style={{ maxWidth: '1258px', margin: '0 auto', width: '100%' }}>
-        <div style={{ textAlign: 'center', marginBottom: 'clamp(28px, 5vw, 60px)' }}>
-          <h2 style={{ color: '#002896', fontSize: 'clamp(1.4rem, 4vw, 2.4rem)', fontWeight: '700', margin: 0, letterSpacing: '-1px', lineHeight: 1.2 }}>
+        <div style={{ textAlign: 'center', marginBottom: 'clamp(16px, 4vw, 60px)' }}>
+          <h2 style={{ color: '#002896', fontSize: 'clamp(1.2rem, 4vw, 2.4rem)', fontWeight: '700', margin: 0, letterSpacing: '-1px', lineHeight: 1.2 }}>
             {displayTitle}
           </h2>
         </div>
 
-        <div style={{
+        <div className="cat-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
           columnGap: 'clamp(16px, 3vw, 40px)',

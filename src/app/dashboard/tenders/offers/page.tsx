@@ -21,7 +21,7 @@ import {
 } from 'react-icons/bs';
 import { formatUserName } from '@/utils/user';
 import DocxViewerModal from '@/components/shared/DocxViewerModal';
-import '../tenders/offers/tender-bids-styles.css';
+import './tender-bids-styles.css';
 
 enum TenderBidStatus { PENDING = 'pending', ACCEPTED = 'accepted', DECLINED = 'declined' }
 interface Bidder { _id: string; firstName: string; lastName: string; email: string; phone?: string; companyName?: string; entreprise?: string; }
@@ -268,7 +268,7 @@ export default function TenderBidsPage() {
                   const initials = displayName.charAt(0).toUpperCase();
                   
                   return (
-                    <tr key={_id} className="figma-auc-tr">
+                    <tr key={_id} className="figma-auc-tr" onClick={() => (tender as any)?._id && router.push(`/dashboard/tenders/${(tender as any)._id}/offers/${_id}`)}>
                       <td className="figma-auc-td">
                         <div className="figma-auc-user-cell">
                           <div className="figma-auc-avatar" style={{ backgroundColor: '#DBEAFE', color: '#2563EB' }}>
@@ -316,7 +316,7 @@ export default function TenderBidsPage() {
                         <div className="figma-auc-actions">
                           <button 
                             className="figma-auc-btn-details"
-                            onClick={() => (tender as any)?._id && router.push(`/dashboard/tenders/${(tender as any)._id}/offers/${_id}`)}
+                            onClick={() => tender?._id && router.push(`/dashboard/tenders/${tender._id}/offers/${_id}`)}
                           >
                             Détails
                           </button>

@@ -14,7 +14,7 @@ import CTARegistration from "@/components/cta/CTARegistration";
 import FAQSection from "@/components/faq/FAQSection";
 import RequestProvider from "@/contexts/RequestContext";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SnackbarProvider } from 'notistack';
 import useAuth from '@/hooks/useAuth';
 import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
@@ -36,6 +36,17 @@ export default function Home() {
   const router = useRouter();
   
   const [headerHeight, setHeaderHeight] = useState(112);
+  const actionCardsRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const el = actionCardsRef.current;
+    if (!el) return;
+    const reset = () => { el.scrollLeft = 0; };
+    reset();
+    const id = window.setTimeout(reset, 50);
+    return () => window.clearTimeout(id);
+  }, [isLogged]);
   
   useEffect(() => {
     const checkMobile = () => {
@@ -135,7 +146,7 @@ export default function Home() {
           height: 356px;
           border-radius: 24px;
           padding: 0px 24px 25px;
-          background: 
+          background:
             linear-gradient(127.45deg, rgba(220, 225, 235, 0.78) 2.15%, rgba(190, 195, 210, 0.28) 63.05%) padding-box,
             linear-gradient(127.23deg, rgba(255, 255, 255, 0.45) 2.46%, rgba(255, 255, 255, 0.25) 97.36%) border-box;
           border: 1px solid transparent;
@@ -153,11 +164,70 @@ export default function Home() {
           transform: translateY(-5px);
           box-shadow: 0 15px 40px rgba(0, 40, 150, 0.2);
         }
-        @media (max-width: 768px) {
-          .grey-glass-card {
-            max-width: 100%;
+
+        /* Que voulez-vous faire section */
+        @media (max-width: 767px) {
+          .qvf-section {
+            padding: 24px 16px !important;
+          }
+          .qvf-section h2 {
+            font-size: 24px !important;
+            line-height: 30px !important;
+            margin-bottom: 8px !important;
+          }
+          .qvf-section > div > p {
+            font-size: 14px !important;
+            line-height: 20px !important;
+            margin-bottom: 18px !important;
+          }
+        }
+
+        /* Action cards layout */
+        .action-cards-wrap {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 25px;
+          justify-content: center;
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .action-cards-wrap {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+          }
+        }
+        @media (max-width: 767px) {
+          .action-cards-wrap {
+            display: flex;
+            direction: ltr;
+            flex-direction: row;
+            grid-template-columns: none;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-padding-inline-start: 16px;
+            gap: 14px;
+            padding: 4px 16px 16px;
+            margin: 0 -16px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            justify-content: flex-start;
+          }
+          .action-cards-wrap::-webkit-scrollbar {
+            display: none;
+          }
+          .action-cards-wrap > .grey-glass-card {
+            flex: 0 0 86%;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            max-width: 86%;
             height: auto;
-            min-height: 280px;
+            min-height: 320px;
+          }
+          .grey-glass-card .btn-3d-blue {
+            width: auto;
+            min-width: 0;
+            flex: 1 1 0;
+            font-size: 16px;
+            padding: 0 8px;
           }
         }
       `}</style>
@@ -193,9 +263,9 @@ export default function Home() {
                     </div>
 
                     {/* Que voulez-vous faire? Section with ambient background for glass effect */}
-                    <div style={{
-                      position: 'relative', zIndex: 3, width: '100%', margin: '0 auto', 
-                      padding: '40px 20px', textAlign: 'center', 
+                    <div className="qvf-section" style={{
+                      position: 'relative', zIndex: 3, width: '100%', margin: '0 auto',
+                      padding: '40px 20px', textAlign: 'center',
                       background: '#ffffff', overflow: 'hidden'
                     }}>
                       
@@ -214,11 +284,8 @@ export default function Home() {
                           </>
                         )}
 
-                        {/* Grid of 3 Grey Glassmorphism Cards */}
-                        <div style={{ 
-                          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-                          gap: '25px', justifyContent: 'center' 
-                        }}>
+                        {/* Grid of 3 Grey Glassmorphism Cards (mobile: horizontal carousel) */}
+                        <div className="action-cards-wrap" ref={actionCardsRef}>
                           
                           {/* CARD 1: Enchères */}
                           <div className="grey-glass-card">

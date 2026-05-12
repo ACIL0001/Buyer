@@ -6,8 +6,7 @@
   align-items: flex-start;
   padding: 0px;
   gap: 24px;
-  margin-top: 40px;
-  margin-bottom: 40px;
+  margin: 60px 0;
   width: 100%;
   max-width: 1116px;
 }
@@ -70,22 +69,24 @@
   cursor: pointer;
 }
 
-/* Main Section */
+/* Main Direct Sales Section */
 .figma-ds-main-section {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 0;
-  width: 100%;
-  max-width: 1116px;
+  padding: 8px 0px 0px;
+  width: 1116px;
+  min-height: 200px;
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
   box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
   border-radius: 12px;
   overflow: hidden;
+  margin: 0 auto;
 }
 
+/* HorizontalBorder */
 .figma-ds-section-header {
   box-sizing: border-box;
   display: flex;
@@ -93,98 +94,225 @@
   justify-content: space-between;
   align-items: center;
   padding: 24px;
-  width: 100%;
+  width: 1114px;
+  min-height: 101px;
   border-bottom: 1px solid #F1F5F9;
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
 }
 
 .figma-ds-title-group {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  padding: 0px;
+  width: 308.11px;
+  min-height: 52px;
+  flex: none;
+  order: 0;
+  flex-grow: 0;
 }
 
 .figma-ds-title {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter';
+  font-style: normal;
   font-weight: 600;
   font-size: 24px;
-  line-height: 31px;
+  line-height: 1.2;
   letter-spacing: -0.24px;
   color: #191B24;
   margin: 0;
+  display: flex;
+  align-items: center;
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
 }
 
 .figma-ds-subtitle {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter';
+  font-style: normal;
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
   color: #64748B;
   margin: 4px 0 0 0;
+  display: flex;
+  align-items: center;
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
 }
 
 /* Tabs */
 .figma-ds-tabs {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px 24px;
+  width: 1114px;
+  height: 55px;
+  border-bottom: 1px solid #F1F5F9;
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+.figma-ds-tabs-container {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  padding: 0 24px;
-  width: 100%;
-  border-bottom: 1px solid #F1F5F9;
+  padding: 0px;
   gap: 32px;
+  width: 100%;
+  height: 54px;
 }
 
 .figma-ds-tab-btn {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 16px 0px;
-  border-bottom: 2px solid transparent;
   background: none;
-  border-top: none;
-  border-left: none;
-  border-right: none;
+  border: none;
   cursor: pointer;
-  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+  height: 54px;
+  flex: none;
+}
+
+/* Specific tab widths from spec */
+.figma-ds-tabs-container button:nth-child(1) { width: 74.64px; }
+.figma-ds-tabs-container button:nth-child(2) { width: 75.86px; }
+.figma-ds-tabs-container button:nth-child(3) { width: 81.16px; }
+.figma-ds-tabs-container button:nth-child(4) { width: 139px; }
+
+.figma-ds-tab-btn span {
+  font-family: 'Inter';
+  font-style: normal;
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
+  display: flex;
+  align-items: center;
+  text-align: center;
   color: #64748B;
-  transition: all 0.2s;
 }
 
 .figma-ds-tab-btn.active {
-  border-bottom-color: #0050CB;
-  color: #0050CB;
+  border-bottom: 2px solid #0050CB;
+}
+
+.figma-ds-tab-btn.active span {
   font-weight: 600;
+  color: #0050CB;
 }
 
 /* Table */
 .figma-ds-table {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  width: 1114px;
+  flex: none;
+  order: 2;
+  align-self: stretch;
+  flex-grow: 0;
   border-collapse: collapse;
 }
 
 .figma-ds-thead {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  width: 1114px;
+  height: 47px;
   background: rgba(248, 250, 252, 0.5);
   border-bottom: 1px solid #F1F5F9;
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+.figma-ds-thead tr {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start; /* Changed from center to align with body */
+  align-items: flex-start;
+  padding: 0px;
+  width: 1114px;
+  height: 46px;
 }
 
 .figma-ds-th {
-  padding: 16px 24px;
-  text-align: left;
-  font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0px 24px;
+  height: 46px;
+  font-family: 'Inter';
+  font-style: normal;
   font-weight: 700;
   font-size: 11px;
   line-height: 13px;
   letter-spacing: 0.55px;
   text-transform: uppercase;
-  color: #94A3B8;
+  color: #64748B; /* Darker color for better contrast */
+  flex: none;
+}
+
+/* Harmonized Column Widths */
+.col-prod { width: 364.09px; }
+.col-price { width: 156.28px; }
+.col-status { width: 161.17px; }
+.col-date { width: 243.08px; }
+.col-actions { width: 181px; }
+
+.figma-ds-th:nth-child(1) { width: 364.09px; }
+.figma-ds-th:nth-child(2) { width: 156.28px; }
+.figma-ds-th:nth-child(3) { width: 161.17px; }
+.figma-ds-th:nth-child(4) { width: 243.08px; }
+.figma-ds-th:nth-child(5) { width: 181px; justify-content: flex-end; text-align: right; }
+
+.figma-ds-tbody {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  width: 1114px;
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
 }
 
 .figma-ds-tr {
-  border-bottom: 1px solid #F1F5F9;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 0px;
+  width: 1114px;
+  height: 81px;
+  flex: none;
+  align-self: stretch;
+  flex-grow: 0;
   transition: background 0.2s;
+  border-bottom: 1px solid #F1F5F9;
 }
 
 .figma-ds-tr:hover {
@@ -192,17 +320,32 @@
 }
 
 .figma-ds-td {
-  padding: 16px 24px;
-  font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px 24px;
+  height: 81px;
+  justify-content: center;
+  font-family: 'Inter';
+  font-style: normal;
   font-size: 14px;
   color: #0F172A;
+  flex: none;
 }
+
+.figma-ds-td:nth-child(1) { width: 364.09px; flex-direction: row; align-items: center; justify-content: flex-start; gap: 16px; }
+.figma-ds-td:nth-child(2) { width: 156.28px; font-weight: 600; }
+.figma-ds-td:nth-child(3) { width: 161.17px; }
+.figma-ds-td:nth-child(4) { width: 243.08px; color: #64748B; }
+.figma-ds-td:nth-child(5) { width: 181px; flex-direction: row; justify-content: flex-end; align-items: center; gap: 8px; }
 
 .figma-ds-product-cell {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 16px;
+  height: 48px;
 }
 
 .figma-ds-product-img {
@@ -216,25 +359,26 @@
 .figma-ds-product-info {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
 }
 
 .figma-ds-product-name {
   font-weight: 600;
   color: #0F172A;
+  line-height: 20px;
 }
 
 .figma-ds-product-cat {
   font-size: 12px;
   color: #64748B;
-}
-
-.figma-ds-price {
-  font-weight: 600;
-  color: #0F172A;
+  line-height: 16px;
 }
 
 .figma-ds-status-badge {
-  display: inline-flex;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
   padding: 4px 12px;
   border-radius: 9999px;
   font-weight: 700;
@@ -246,7 +390,13 @@
 .figma-ds-status-sold { background: #F1F5F9; color: #475569; }
 
 .figma-ds-action-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   padding: 6px 12px;
+  width: 47.27px;
+  height: 28px;
   background: #EFF6FF;
   border-radius: 8px;
   color: #0050CB;
@@ -257,21 +407,34 @@
   cursor: pointer;
 }
 
-/* Footer */
+/* Pagination/Footer */
 .figma-ds-footer {
-  padding: 24px;
+  box-sizing: border-box;
   display: flex;
+  flex-direction: row;
   justify-content: center;
+  align-items: center;
+  padding: 24px;
+  width: 1114px;
+  height: 69px;
   border-top: 1px solid #F1F5F9;
+  flex: none;
+  order: 3;
+  align-self: stretch;
+  flex-grow: 0;
 }
 
 .figma-ds-view-all {
-  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+  gap: 8px;
+  font-family: 'Inter';
+  font-style: normal;
   font-weight: 600;
   font-size: 14px;
+  line-height: 20px;
   color: #0050CB;
   text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }

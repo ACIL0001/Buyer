@@ -35,8 +35,8 @@ export default function Register() {
   return (
     <Box
       sx={{
-        width: '100vw',
-        height: '100vh',
+        width: '100%',
+        minHeight: '100vh',
         display: 'flex',
         flexDirection: 'row',
         backgroundColor: '#FFFFFF',
@@ -48,29 +48,30 @@ export default function Register() {
     >
       {step === 0 ? (
         /* ── STEP 0: FULL SCREEN PROFILE SELECTION ── */
-        <Box 
-          sx={{ 
-            width: '100%', 
-            height: '100%', 
-            backgroundColor: '#FFFFFF', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
+        <Box
+          sx={{
+            width: '100%',
+            minHeight: '100vh',
+            backgroundColor: '#FFFFFF',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
             justifyContent: 'center',
-            py: 4,
+            py: { xs: 3, md: 4 },
+            px: { xs: 2, md: 3 },
             overflowY: 'auto'
           }}
         >
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 6, px: 2, textAlign: 'center' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: { xs: 3, sm: 4, md: 6 }, px: { xs: 1, md: 2 }, textAlign: 'center' }}>
             <Typography
               sx={{
                 fontFamily: '"DM Sans", sans-serif',
                 fontWeight: 700,
-                fontSize: { xs: '28px', md: '40px' },
-                lineHeight: '140%',
+                fontSize: 'clamp(20px, 4.5vw, 40px)',
+                lineHeight: 1.3,
                 letterSpacing: '-0.02em',
                 color: '#002896',
-                mb: 2,
+                mb: { xs: 1, md: 2 },
                 maxWidth: '1022px'
               }}
             >
@@ -81,8 +82,8 @@ export default function Register() {
               sx={{
                 fontFamily: '"Inter", sans-serif',
                 fontWeight: 600,
-                fontSize: '19.7568px',
-                lineHeight: '140%',
+                fontSize: 'clamp(13px, 2vw, 19.75px)',
+                lineHeight: 1.4,
                 letterSpacing: '-0.02em',
                 color: '#757575',
               }}
@@ -91,118 +92,74 @@ export default function Register() {
             </Typography>
           </Box>
 
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 2, md: 4 }, px: 2, width: '100%', maxWidth: '1100px', justifyContent: 'center' }}>
-            {/* Enterprise Card */}
-            <Box
-              onClick={() => handleSelectProfile(CLIENT_TYPE.PROFESSIONAL)}
-              sx={{
-                boxSizing: 'border-box',
-                position: 'relative',
-                width: '100%',
-                maxWidth: '500px',
-                aspectRatio: '500 / 355',
-                background: '#FFFFFF',
-                border: '1px solid #DBDADE',
-                boxShadow: '0px 5px 30px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25)',
-                borderRadius: '35px',
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-                padding: 'clamp(20px, 5vw, 94px) clamp(20px, 5vw, 94px)',
-                gap: 'clamp(16px, 3vw, 36px)',
-                '&:hover': { transform: 'scale(1.02)' },
-              }}
-            >
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 2, sm: 2.5, md: 4 }, px: { xs: 0, md: 2 }, width: '100%', maxWidth: '1100px', justifyContent: 'center', alignItems: 'center' }}>
+            {[
+              { type: CLIENT_TYPE.PROFESSIONAL, img: '/assets/images/company.svg', label: 'Je suis une entreprise' },
+              { type: CLIENT_TYPE.CLIENT, img: '/assets/images/businessman.svg', label: 'Je suis un particulier' },
+            ].map((card) => (
               <Box
+                key={card.type}
+                onClick={() => handleSelectProfile(card.type)}
                 sx={{
-                  width: 'clamp(64px, 12vw, 100px)',
-                  height: 'clamp(64px, 12vw, 100px)',
-                  color: '#000000',
+                  boxSizing: 'border-box',
+                  position: 'relative',
+                  width: '100%',
+                  maxWidth: { xs: '420px', md: '500px' },
+                  aspectRatio: { xs: '500 / 220', sm: '500 / 280', md: '500 / 355' },
+                  background: '#FFFFFF',
+                  border: '1px solid #DBDADE',
+                  boxShadow: '0px 5px 30px rgba(0, 0, 0, 0.18), 0px 4px 4px rgba(0, 0, 0, 0.18)',
+                  borderRadius: { xs: '22px', md: '35px' },
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s',
                   display: 'flex',
-                  alignItems: 'center',
+                  flexDirection: 'column',
                   justifyContent: 'center',
+                  alignItems: 'flex-start',
+                  padding: 'clamp(18px, 5vw, 94px)',
+                  gap: 'clamp(12px, 3vw, 36px)',
+                  '&:hover': { transform: 'scale(1.02)' },
+                  '&:active': { transform: 'scale(0.99)' },
                 }}
               >
-                <Box component="img" src="/assets/images/company.svg" sx={{ width: '100%', height: '100%' }} />
+                <Box
+                  sx={{
+                    width: 'clamp(48px, 11vw, 100px)',
+                    height: 'clamp(48px, 11vw, 100px)',
+                    color: '#000000',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Box component="img" src={card.img} sx={{ width: '100%', height: '100%' }} />
+                </Box>
+                <Typography
+                  sx={{
+                    fontFamily: '"Inter", sans-serif',
+                    fontWeight: 700,
+                    fontSize: 'clamp(0.95rem, 2.4vw, 1.5rem)',
+                    lineHeight: 1.3,
+                    letterSpacing: '-0.02em',
+                    color: '#757575',
+                  }}
+                >
+                  {card.label}
+                </Typography>
               </Box>
-              <Typography
-                sx={{
-                  fontFamily: '"Inter", sans-serif',
-                  fontWeight: 700,
-                  fontSize: 'clamp(1rem, 2.5vw, 1.5rem)',
-                  lineHeight: '140%',
-                  letterSpacing: '-0.02em',
-                  color: '#757575',
-                }}
-              >
-                Je suis une entreprise
-              </Typography>
-            </Box>
-
-            {/* Individual Card (Particulier) */}
-            <Box
-              onClick={() => handleSelectProfile(CLIENT_TYPE.CLIENT)}
-              sx={{
-                boxSizing: 'border-box',
-                position: 'relative',
-                width: '100%',
-                maxWidth: '500px',
-                aspectRatio: '500 / 355',
-                background: '#FFFFFF',
-                border: '1px solid #DBDADE',
-                boxShadow: '0px 5px 30px rgba(0, 0, 0, 0.25), 0px 4px 4px rgba(0, 0, 0, 0.25)',
-                borderRadius: '35px',
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-                padding: 'clamp(20px, 5vw, 94px) clamp(20px, 5vw, 94px)',
-                gap: 'clamp(16px, 3vw, 36px)',
-                '&:hover': { transform: 'scale(1.02)' },
-              }}
-            >
-              <Box
-                sx={{
-                  width: 'clamp(64px, 12vw, 100px)',
-                  height: 'clamp(64px, 12vw, 100px)',
-                  color: '#000000',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Box component="img" src="/assets/images/businessman.svg" sx={{ width: '100%', height: '100%' }} />
-              </Box>
-              <Typography
-                sx={{
-                  fontFamily: '"Inter", sans-serif',
-                  fontWeight: 700,
-                  fontSize: 'clamp(1rem, 2.5vw, 1.5rem)',
-                  lineHeight: '140%',
-                  letterSpacing: '-0.02em',
-                  color: '#757575',
-                }}
-              >
-                Je suis un particulier
-              </Typography>
-            </Box>
+            ))}
           </Box>
         </Box>
       ) : (
         /* ── STEP 1: REGISTRATION FORM WITH BACKGROUND IMAGE ── */
-        <Box 
-          sx={{ 
-            position: 'relative', 
-            width: '100%', 
-            height: '100%', 
-            backgroundColor: '#FFFFFF', 
-            display: 'flex', 
-            flexDirection: 'row', 
+        <Box
+          sx={{
+            position: 'relative',
+            width: '100%',
+            minHeight: '100vh',
+            backgroundColor: '#FFFFFF',
+            display: 'flex',
+            flexDirection: 'row',
           }}
         >
           {/* Left Panel: Image */}
@@ -211,8 +168,10 @@ export default function Register() {
               width: { xs: '0', md: '50%', lg: '55%', xl: '701px' },
               minWidth: { xs: 0, md: '320px' },
               maxWidth: { xl: '701px' },
-              height: '100%',
-              position: 'relative',
+              minHeight: '100vh',
+              position: 'sticky',
+              top: 0,
+              alignSelf: 'flex-start',
               overflow: 'hidden',
               flexShrink: 0,
               display: { xs: 'none', md: 'flex' },
@@ -280,29 +239,28 @@ export default function Register() {
           <Box
             sx={{
               flex: 1,
-              height: '100%',
+              minHeight: '100vh',
               backgroundColor: '#FFFFFF',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
               position: 'relative',
-              overflowY: 'auto',
-              px: { xs: 2, sm: 4, md: 4 },
-              py: { xs: 4, md: 0 },
+              px: { xs: 2, sm: 3, md: 4 },
+              py: { xs: 3, sm: 4, md: 5 },
             }}
           >
             <Box
               sx={{
                 width: '100%',
                 maxWidth: '640px',
-                py: '20px',
+                py: { xs: '8px', md: '20px' },
               }}
             >
               <Box
                 sx={{
-                  mt: '24px',
-                  mb: '32px',
+                  mt: { xs: '8px', md: '24px' },
+                  mb: { xs: '20px', md: '32px' },
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '4px'
@@ -316,8 +274,8 @@ export default function Register() {
                     sx={{
                       fontFamily: '"DM Sans", sans-serif',
                       fontWeight: 600,
-                      fontSize: '30px',
-                      lineHeight: '140%',
+                      fontSize: 'clamp(20px, 4.5vw, 30px)',
+                      lineHeight: 1.3,
                       letterSpacing: '-0.02em',
                       color: '#757575',
                     }}
@@ -329,11 +287,11 @@ export default function Register() {
                   sx={{
                     fontFamily: '"Inter", sans-serif',
                     fontWeight: 400,
-                    fontSize: '16px',
-                    lineHeight: '140%',
+                    fontSize: 'clamp(13px, 2vw, 16px)',
+                    lineHeight: 1.4,
                     letterSpacing: '-0.02em',
                     color: '#757575',
-                    ml: '34px'
+                    ml: { xs: '30px', md: '34px' }
                   }}
                 >
                   {selectedProfile === CLIENT_TYPE.PROFESSIONAL ? 'Entreprise' : 'Particulier'}
@@ -344,7 +302,7 @@ export default function Register() {
                 sx={{
                   width: '100%',
                   '& .MuiOutlinedInput-root': {
-                    height: '44px',
+                    minHeight: { xs: '46px', md: '44px' },
                     borderRadius: '25px',
                     backgroundColor: '#FFFFFF',
                     '& fieldset': {
@@ -356,7 +314,7 @@ export default function Register() {
                   },
                   '& .MuiInputBase-input': {
                     fontFamily: '"Poppins", sans-serif',
-                    fontSize: '13px',
+                    fontSize: { xs: '14px', md: '13px' },
                     color: '#2D3748',
                     padding: '0 14px',
                   },
@@ -368,18 +326,20 @@ export default function Register() {
 
               <Typography
                 sx={{
-                  mt: '28px',
+                  mt: { xs: '20px', md: '28px' },
                   width: '100%',
                   fontFamily: '"Poppins", sans-serif',
                   fontWeight: 400,
-                  fontSize: '14px',
-                  lineHeight: '140%',
+                  fontSize: 'clamp(13px, 1.6vw, 14px)',
+                  lineHeight: 1.4,
                   letterSpacing: '-0.02em',
                   color: '#757575',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  flexWrap: 'wrap',
                   gap: '4px',
+                  textAlign: 'center',
                 }}
               >
                 Vous avez déjà un compte ?{' '}
@@ -390,7 +350,7 @@ export default function Register() {
                     color: '#007AFF',
                     fontWeight: 400,
                     textDecoration: 'none',
-                    fontSize: '14px',
+                    fontSize: 'clamp(13px, 1.6vw, 14px)',
                     fontFamily: '"Poppins", sans-serif',
                     letterSpacing: '-0.02em',
                     '&:hover': { textDecoration: 'underline' },

@@ -135,121 +135,119 @@ export default function AuctionDetailPage() {
     <div style={{ backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
       <DashboardKeyframes />
       <div className="figma-ad-main">
-        {/* Left Column */}
-        <div className="figma-ad-left-col">
-          <button 
-            onClick={() => router.push('/dashboard/auctions')}
-            style={{ 
-              background: 'none', border: 'none', color: '#64748B', display: 'flex', 
-              alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '-8px',
-              padding: 0, fontSize: '14px'
-            }}
-          >
-            <BsArrowLeft /> Retour aux enchères
-          </button>
-          
-          <div className="figma-ad-product-card">
-            <div className="figma-ad-product-img-container">
-              <img src={getImageUrl(auction.thumbs?.[0])} alt={auction.title} className="figma-ad-product-img" />
-            </div>
-            <div className="figma-ad-product-content">
-              <h2 className="figma-ad-product-title">{auction.title}</h2>
-              <span className="figma-ad-product-date">Publié le {auction.createdAt ? new Date(auction.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</span>
-            </div>
-          </div>
+        <button 
+          className="figma-ad-back-btn"
+          onClick={() => router.push('/dashboard/auctions')}
+        >
+          <BsArrowLeft /> Retour aux enchères
+        </button>
 
-          <div className="figma-ad-details-box">
-            {latestBid ? (
-              <div className="figma-ad-proposal-header">
-                <div className="figma-ad-proposal-amount-group">
-                  <span className="figma-ad-label">MONTANT PROPOSÉ</span>
-                  <span className="figma-ad-amount">{latestBid.price.toLocaleString()} Da</span>
-                  <span className="figma-ad-proposal-date">Enchère reçue le {new Date(latestBid.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} à {new Date(latestBid.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
-                </div>
-                <div className="figma-ad-bidder-profile">
-                  <span className="figma-ad-label">PROFIL DE L’ENCHÉRISSEUR</span>
-                  <div className="figma-ad-bidder-info">
-                    <BidderAvatar user={latestBid.user} />
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span className="figma-ad-bidder-name">{getDisplayName(latestBid.user)}</span>
-                      <span className="figma-ad-bidder-meta">Dernière activité : {new Date(latestBid.createdAt).toLocaleDateString('fr-FR')}</span>
+        <div className="figma-ad-grid">
+          {/* Left Column */}
+          <div className="figma-ad-left-col">
+            <div className="figma-ad-product-card">
+              <div className="figma-ad-product-img-container">
+                <img src={getImageUrl(auction.thumbs?.[0])} alt={auction.title} className="figma-ad-product-img" />
+              </div>
+              <div className="figma-ad-product-content">
+                <h2 className="figma-ad-product-title">{auction.title}</h2>
+                <span className="figma-ad-product-date">Publié le {auction.createdAt ? new Date(auction.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</span>
+              </div>
+            </div>
+
+            <div className="figma-ad-details-box">
+              {latestBid ? (
+                <div className="figma-ad-proposal-header">
+                  <div className="figma-ad-proposal-amount-group">
+                    <span className="figma-ad-label">MONTANT PROPOSÉ</span>
+                    <span className="figma-ad-amount">{latestBid.price.toLocaleString()} Da</span>
+                    <span className="figma-ad-proposal-date">Enchère reçue le {new Date(latestBid.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} à {new Date(latestBid.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                  <div className="figma-ad-bidder-profile">
+                    <span className="figma-ad-label">PROFIL DE L’ENCHÉRISSEUR</span>
+                    <div className="figma-ad-bidder-info">
+                      <BidderAvatar user={latestBid.user} />
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span className="figma-ad-bidder-name">{getDisplayName(latestBid.user)}</span>
+                        <span className="figma-ad-bidder-meta">Dernière activité : {new Date(latestBid.createdAt).toLocaleDateString('fr-FR')}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="figma-ad-proposal-header" style={{ justifyContent: 'center', padding: '40px 0' }}>
-                <span className="figma-ad-label">Aucune offre pour le moment</span>
-              </div>
-            )}
-
-            <div className="figma-ad-comment-section">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <BsChatSquareQuote />
-                <span className="figma-ad-bidder-name">Détails de l'annonce</span>
-              </div>
-              <div className="figma-ad-comment-box" style={{ whiteSpace: 'pre-wrap' }}>
-                {auction.description || "Aucune description supplémentaire."}
-              </div>
-            </div>
-
-            <div className="figma-ad-info-banner">
-              <BsInfoCircle size={20} color="#0050CB" />
-              <span>{auction.status === 'OPEN' ? 'Cette enchère est actuellement en cours. Vous recevrez une notification à la fin de la période.' : 'Cette enchère est terminée.'}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column */}
-        <div className="figma-ad-right-col">
-          <div className="figma-ad-side-card">
-            <h3 className="figma-ad-side-title"><BsBarChart color="#0050CB" /> Statistiques de l’annonce</h3>
-            <div className="figma-ad-stat-row">
-              <span className="figma-ad-stat-label">Prix de départ</span>
-              <span className="figma-ad-stat-value">{auction.startingPrice.toLocaleString()} Da</span>
-            </div>
-            <div className="figma-ad-stat-row">
-              <span className="figma-ad-stat-label">Meilleure offre actuelle</span>
-              <span className="figma-ad-stat-value figma-ad-stat-value-blue">{(auction.currentPrice || auction.startingPrice).toLocaleString()} Da</span>
-            </div>
-            <div className="figma-ad-stat-row">
-              <span className="figma-ad-stat-label">Date de fin</span>
-              <span className="figma-ad-stat-value">{new Date(auction.endingAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-            </div>
-            <div className="figma-ad-stat-row" style={{ borderBottom: 'none' }}>
-              <span className="figma-ad-stat-label">Vues</span>
-              <span className="figma-ad-stat-value">{views}</span>
-            </div>
-          </div>
-
-          <div className="figma-ad-side-card">
-            <h3 className="figma-ad-side-title"><BsClockHistory color="#0050CB" /> Historique des offres ({offers.length})</h3>
-            <div className="figma-ad-history-list">
-              <div className="figma-ad-history-divider"></div>
-              {offers.length > 0 ? (
-                offers.map((offer, idx) => (
-                  <div key={offer._id} className="figma-ad-history-item">
-                    <div className={`figma-ad-history-dot ${idx === 0 ? 'figma-ad-history-dot-active' : ''}`}></div>
-                    <div className="figma-ad-history-header">
-                      <span className="figma-ad-history-name" style={{ color: idx === 0 ? '#002896' : '#475569', fontWeight: idx === 0 ? 700 : 500 }}>
-                        {getDisplayName(offer.user)}
-                      </span>
-                      <span className="figma-ad-history-price" style={{ color: idx === 0 ? '#002896' : '#64748B', fontWeight: 600 }}>
-                        {offer.price.toLocaleString()} Da
-                      </span>
-                    </div>
-                    <span className="figma-ad-history-date">
-                      {new Date(offer.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}, {new Date(offer.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                ))
               ) : (
-                <div style={{ textAlign: 'center', padding: '20px', color: '#64748B', fontSize: '14px' }}>
-                  Aucune offre enregistrée
+                <div className="figma-ad-proposal-header" style={{ justifyContent: 'center', padding: '40px 0' }}>
+                  <span className="figma-ad-label">Aucune offre pour le moment</span>
                 </div>
               )}
+
+              <div className="figma-ad-comment-section">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BsChatSquareQuote />
+                  <span className="figma-ad-bidder-name">Commentaire de l’enchérisseur</span>
+                </div>
+                <div className="figma-ad-comment-box" style={{ whiteSpace: 'pre-wrap' }}>
+                  {auction.description || "Aucune description supplémentaire."}
+                </div>
+              </div>
+
+              <div className="figma-ad-info-banner">
+                <BsInfoCircle size={20} color="#0050CB" />
+                <span>En acceptant cette enchère, vous vous engagez à vendre l'article au prix indiqué.</span>
+              </div>
             </div>
-            <div className="figma-ad-view-more">Voir tout l'historique</div>
+          </div>
+
+          {/* Right Column */}
+          <div className="figma-ad-right-col">
+            <div className="figma-ad-side-card">
+              <h3 className="figma-ad-side-title"><BsBarChart color="#0050CB" /> Statistiques de l’annonce</h3>
+              <div className="figma-ad-stat-row">
+                <span className="figma-ad-stat-label">Prix de départ</span>
+                <span className="figma-ad-stat-value">{auction.startingPrice.toLocaleString()} Da</span>
+              </div>
+              <div className="figma-ad-stat-row">
+                <span className="figma-ad-stat-label">Meilleure offre actuelle</span>
+                <span className="figma-ad-stat-value figma-ad-stat-value-blue">{(auction.currentPrice || auction.startingPrice).toLocaleString()} Da</span>
+              </div>
+              <div className="figma-ad-stat-row">
+                <span className="figma-ad-stat-label">Date de fin</span>
+                <span className="figma-ad-stat-value">{new Date(auction.endingAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              </div>
+              <div className="figma-ad-stat-row" style={{ borderBottom: 'none' }}>
+                <span className="figma-ad-stat-label">Vues</span>
+                <span className="figma-ad-stat-value">{views}</span>
+              </div>
+            </div>
+
+            <div className="figma-ad-side-card figma-ad-history-card-height">
+              <h3 className="figma-ad-side-title"><BsClockHistory color="#0050CB" /> Historique des offres ({offers.length})</h3>
+              <div className="figma-ad-history-list">
+                <div className="figma-ad-history-divider"></div>
+                {offers.length > 0 ? (
+                  offers.map((offer, idx) => (
+                    <div key={offer._id} className="figma-ad-history-item">
+                      <div className={`figma-ad-history-dot ${idx === 0 ? 'figma-ad-history-dot-active' : ''}`}></div>
+                      <div className="figma-ad-history-header">
+                        <span className="figma-ad-history-name" style={{ color: idx === 0 ? '#002896' : '#475569', fontWeight: idx === 0 ? 700 : 500 }}>
+                          {getDisplayName(offer.user)}
+                        </span>
+                        <span className="figma-ad-history-price" style={{ color: idx === 0 ? '#002896' : '#64748B', fontWeight: 600 }}>
+                          {offer.price.toLocaleString()} Da
+                        </span>
+                      </div>
+                      <span className="figma-ad-history-date">
+                        {new Date(offer.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}, {new Date(offer.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#64748B', fontSize: '14px' }}>
+                    Aucune offre enregistrée
+                  </div>
+                )}
+              </div>
+              <div className="figma-ad-view-more">Voir tout l'historique</div>
+            </div>
           </div>
         </div>
       </div>

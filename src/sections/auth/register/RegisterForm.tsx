@@ -265,7 +265,8 @@ function TermsModal({
 /* ─── Figma token helpers ─── */
 const FIELD_HEIGHT = '44px';
 const COL_WIDTH = '300px';
-const COL_GAP = '24px';
+const COL_GAP = { xs: '12px', md: '24px' };
+const RESPONSIVE_COL_WIDTH = { xs: '100%', md: COL_WIDTH };
 
 const fieldSx = {
   '& .MuiOutlinedInput-root': {
@@ -308,11 +309,11 @@ const labelSx = {
 /* Figma "Entry field" wrapper */
 function EntryField({
   label,
-  width = COL_WIDTH,
+  width = RESPONSIVE_COL_WIDTH as any,
   children,
 }: {
   label: string;
-  width?: string;
+  width?: any;
   children: React.ReactNode;
 }) {
   const parts = label.split(' *');
@@ -625,7 +626,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                   placeholder="Entrez un code promo"
                 />
               </EntryField>
-              <Box sx={{ display: { xs: 'none', md: 'block' }, width: COL_WIDTH }} />
+              <Box sx={{ display: { xs: 'none', md: 'block' }, width: RESPONSIVE_COL_WIDTH }} />
             </Box>
 
 
@@ -640,7 +641,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                   sx={figmaRadius25Sx}
                 />
               </EntryField>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', width: COL_WIDTH }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', width: RESPONSIVE_COL_WIDTH }}>
                 <Typography component="label" sx={{ ...labelSx, color: '#454545' }}>
                   Secteur d'activité <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
                 </Typography>
@@ -708,7 +709,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                   helperText={touched.jobTitle && errors.jobTitle}
                 />
               </EntryField>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', width: COL_WIDTH }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', width: RESPONSIVE_COL_WIDTH }}>
                 <Typography component="label" sx={{ ...labelSx, color: '#454545' }}>
                   Wilaya <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
                 </Typography>
@@ -753,7 +754,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                   placeholder="Entrez un code promo"
                 />
               </EntryField>
-              <Box sx={{ display: { xs: 'none', md: 'block' }, width: COL_WIDTH }} />
+              <Box sx={{ display: { xs: 'none', md: 'block' }, width: RESPONSIVE_COL_WIDTH }} />
             </Box>
 
 
@@ -823,7 +824,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
                   helperText={touched.phone && errors.phone}
                 />
               </EntryField>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', width: COL_WIDTH }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: '4px', width: RESPONSIVE_COL_WIDTH }}>
                 <Typography component="label" sx={{ ...labelSx, color: '#454545' }}>
                   Wilaya de résidence <span style={{ color: '#d32f2f', fontSize: '16px' }}>*</span>
                 </Typography>
@@ -975,7 +976,7 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
             variant="contained"
             loading={isSubmitting}
             sx={{
-              width: COL_WIDTH,
+              width: RESPONSIVE_COL_WIDTH,
               height: FIELD_HEIGHT,
               borderRadius: '25px',
               background: '#002896',

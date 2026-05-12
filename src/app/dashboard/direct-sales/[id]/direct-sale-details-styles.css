@@ -1,10 +1,35 @@
 /* Direct Sale Details Modern Styles */
+.figma-dsd-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #E2E8F0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: #64748B;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 0;
+  width: fit-content;
+}
+
+.figma-dsd-back-btn:hover {
+  background: #F8FAFC;
+  color: #0050CB;
+  border-color: #0050CB;
+  transform: translateX(-4px);
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
+}
 
 .figma-dsd-main {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 24px;
+  padding: 60px 120px 240px 48px;
   gap: 40px;
   max-width: 1280px;
   margin: 0 auto;
@@ -82,7 +107,7 @@
 }
 
 .figma-dsd-hero-img {
-  width: 100%;
+  width: 559.33px;
   height: 100%;
   object-fit: cover;
 }
@@ -163,34 +188,107 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding: 24px;
-  gap: 24px;
+  padding: 24px 24px 16px;
+  gap: 20px;
   background: #FFFFFF;
-  border: 1px solid #F1F5F9;
-  box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
+  width: 392.67px;
+  height: 496px;
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  z-index: 0;
+}
+
+.figma-dsd-card-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  width: 342.67px;
+  align-self: stretch;
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+  z-index: 1;
+}
+
+.figma-dsd-section-title {
+  width: 342.67px;
+  height: 28px;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 28px;
+  display: flex;
+  align-items: center;
+  letter-spacing: -0.2px;
+  color: #191B24;
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+  margin: 0;
+}
+
+.figma-dsd-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 16px;
+  width: 342.67px;
+  height: 244px;
+  flex: none;
+  order: 2;
+  align-self: stretch;
+  flex-grow: 0;
+  z-index: 2;
 }
 
 .figma-dsd-stat-row {
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+  padding: 12px 0px;
+  width: 342.67px;
+  height: 49px;
   border-bottom: 1px solid #F8FAFC;
+  flex: none;
+  align-self: stretch;
+  flex-grow: 0;
 }
 
 .figma-dsd-stat-label {
   font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 400;
   font-size: 16px;
+  line-height: 24px;
+  display: flex;
+  align-items: center;
   color: #505F76;
+  flex: none;
+  order: 0;
+  flex-grow: 0;
 }
 
 .figma-dsd-stat-value {
   font-family: 'Inter', sans-serif;
+  font-style: normal;
   font-weight: 700;
   font-size: 16px;
+  line-height: 24px;
+  display: flex;
+  align-items: center;
   color: #191B24;
+  flex: none;
+  order: 1;
+  flex-grow: 0;
 }
 
 .figma-dsd-stat-value-green {
@@ -202,41 +300,70 @@
 .figma-dsd-actions {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  padding: 16px 0px 0px;
   gap: 12px;
-  margin-top: 16px;
+  width: 342.67px;
+  height: 126px;
+  margin-top: auto;
+  flex: none;
+  order: 3;
+  align-self: stretch;
+  flex-grow: 0;
+  z-index: 3;
 }
 
 .figma-dsd-btn-edit {
   display: flex;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 12px;
+  padding: 12px 0px;
+  gap: 8px;
+  isolation: isolate;
+  width: 342.67px;
+  height: 48px;
   background: #0050CB;
   border-radius: 8px;
+  border: none;
   color: #FFFFFF;
   font-family: 'Inter', sans-serif;
-  font-weight: 600;
+  font-style: normal;
+  font-weight: 400;
   font-size: 16px;
-  border: none;
+  line-height: 24px;
   cursor: pointer;
-  box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: opacity 0.2s;
+  box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.1);
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
 }
 
 .figma-dsd-btn-delete {
+  box-sizing: border-box;
   display: flex;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
-  padding: 12px;
-  background: transparent;
+  padding: 12px 0px;
+  gap: 8px;
+  width: 342.67px;
+  height: 50px;
   border: 1px solid #BA1A1A;
   border-radius: 8px;
+  background: transparent;
   color: #BA1A1A;
   font-family: 'Inter', sans-serif;
-  font-weight: 600;
+  font-style: normal;
+  font-weight: 400;
   font-size: 16px;
+  line-height: 24px;
   cursor: pointer;
-  transition: background 0.2s;
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
 }
 
 .figma-dsd-btn-delete:hover {

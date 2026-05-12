@@ -5,47 +5,18 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCreateSocket } from '@/contexts/socket';
 import useAuth from '@/hooks/useAuth';
-import { DashboardKeyframes, StatusBadge, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
-
-const ACCENT = 'var(--primary-tender-color)';
-const ACCENT_80 = 'color-mix(in srgb, var(--primary-tender-color) 80%, transparent)'; // cc in hex
-const ACCENT_25 = 'color-mix(in srgb, var(--primary-tender-color) 25%, transparent)'; // 40 in hex
-const ACCENT_10 = 'color-mix(in srgb, var(--primary-tender-color) 10%, transparent)'; // 18 in hex
-
-function statusCfg(s: string) {
-  const map: Record<string, any> = {
-    OPEN: { label: 'Ouvert', color: '#0284c7', bg: '#e0f2fe', dot: true },
-    AWARDED: { label: 'Attribué', color: '#16a34a', bg: '#dcfce7' },
-    CLOSED: { label: 'Clôturé', color: '#d97706', bg: '#fef3c7' },
-    CANCELLED: { label: 'Annulé', color: '#dc2626', bg: '#fee2e2' },
-    ARCHIVED: { label: 'Archivé', color: '#64748b', bg: '#f1f5f9' },
-  };
-  return map[s] || { label: s, color: '#64748b', bg: '#f1f5f9' };
-}
-
+import { DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
+import { getAbsoluteUrl } from '@/utils/url';
 
 function fmtDate(d: any) {
   if (!d) return 'N/A';
-  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
-
-function timeRemaining(endAt: string) {
-  const diff = new Date(endAt).getTime() - Date.now();
-  if (diff <= 0) return 'Terminé';
-  const d = Math.floor(diff / 86400000), h = Math.floor((diff % 86400000) / 3600000), m = Math.floor((diff % 3600000) / 60000);
-  if (d > 0) return `${d}j ${h}h ${m}m`;
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
-}
-
-const card: React.CSSProperties = { background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid rgba(0,0,0,0.06)', padding: 24, marginBottom: 20 };
 
 export default function TenderDetailPage() {
   const params = useParams();
   const id = params?.id as string;
   const router = useRouter();
-
-
   const { isLogged } = useAuth();
   const queryClient = useQueryClient();
   const { socket } = useCreateSocket() || {};
@@ -78,98 +49,173 @@ export default function TenderDetailPage() {
     <div style={{ textAlign: 'center', padding: '60px 24px' }}>
       <div style={{ fontSize: 52, marginBottom: 16 }}>📄</div>
       <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569' }}>Appel d'offres non trouvé</p>
-      <button onClick={() => router.push('/dashboard/tenders')} style={{ marginTop: 16, padding: '10px 22px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>← Retour</button>
+      <button onClick={() => router.push('/dashboard/tenders')} style={{ marginTop: 16, padding: '10px 22px', background: 'var(--primary-tender-color)', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>← Retour</button>
     </div>
   );
 
-  const evalType = tender.evaluationType || 'MOINS_DISANT';
   const category = typeof tender.category === 'object' ? tender.category?.name : tender.category;
-  const budget = tender.maxBudget || tender.budget || 0;
 
   return (
-    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
-      <DashboardKeyframes />
-
-      {/* Hero */}
-      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT_80})`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT_25}`, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08), transparent 60%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <button onClick={() => router.push('/dashboard/tenders')} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, marginBottom: 14 }}>← Retour</button>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-            <div>
-              <h1 style={{ color: '#fff', fontSize: 'clamp(1.2rem, 3vw, 1.8rem)', fontWeight: 800, margin: 0 }}>{tender.title}</h1>
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', margin: '6px 0 0' }}>📄 Détails de l'appel d'offres</p>
-            </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-              {tender.status === 'OPEN' && tender.endingAt && (
-                <span style={{ padding: '4px 12px', borderRadius: 20, background: 'rgba(255,255,255,0.2)', color: '#fff', fontSize: '0.78rem', fontWeight: 600, border: '1px solid rgba(255,255,255,0.3)' }}>⏱ {timeRemaining(tender.endingAt)}</span>
-              )}
-              <StatusBadge config={statusCfg(tender.status)} />
+    <div style={{ 
+      position: 'relative', 
+      width: '100%', 
+      height: '1150px', 
+      fontFamily: "'Inter', sans-serif",
+      background: '#F8FAFC'
+    }}>
+      
+      {/* --- Breadcrumb / Header Area --- */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        padding: '0px',
+        position: 'absolute',
+        width: '976px',
+        height: '100px',
+        left: '31px',
+        top: '20px',
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '0px', gap: '8px', width: '347.14px' }}>
+          <h1 style={{ width: '100%', fontWeight: 700, fontSize: '36px', lineHeight: '44px', margin: 0, color: '#191B24', letterSpacing: '-0.72px', display: 'flex', alignItems: 'center' }}>
+            {tender.title}
+          </h1>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '2px 0px 0px', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '4px 12px', background: '#DCFCE7', borderRadius: '9999px', height: '22px', gap: '6px' }}>
+              <div style={{ width: '8px', height: '8px', background: '#15803D', borderRadius: '50%' }} />
+              <span style={{ fontWeight: 600, fontSize: '12px', lineHeight: '12px', color: '#15803D', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+                {tender.status === 'OPEN' ? 'En ligne' : 
+                 tender.status === 'AWARDED' ? 'Attribué' : 
+                 tender.status === 'CLOSED' ? 'Fermé' : tender.status}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Metric tiles */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14, marginBottom: 20 }}>
-        {[
-          { label: 'Budget max.', value: budget > 0 ? `${budget.toLocaleString('fr-FR')} DA` : 'N/A', color: '#0284c7', icon: '💰' },
-          { label: 'Évaluation', value: evalType === 'MIEUX_DISANT' ? 'Mieux Disant' : 'Moins Disant', color: evalType === 'MIEUX_DISANT' ? '#0284c7' : ACCENT, icon: evalType === 'MIEUX_DISANT' ? '✨' : '💰' },
-        ].map(t => (
-          <div key={t.label} style={{ background: '#fff', borderRadius: 12, padding: '16px 20px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', borderLeft: `4px solid ${t.color}`, display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: t.color === ACCENT ? ACCENT_10 : `${t.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{t.icon}</div>
-            <div>
-              <div style={{ fontSize: typeof t.value === 'number' ? '1.6rem' : '0.95rem', fontWeight: 800, color: t.color, lineHeight: 1 }}>{t.value}</div>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 4 }}>{t.label}</div>
-            </div>
-          </div>
-        ))}
+      {/* --- Left Column: Product Visuals --- */}
+      <div style={{
+        position: 'absolute',
+        width: '559.33px',
+        height: '400px',
+        left: '31px',
+        top: '160px',
+        background: '#FFFFFF',
+        boxShadow: '0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.1)',
+        borderRadius: '12px',
+        overflow: 'hidden'
+      }}>
+        <img 
+          src={getAbsoluteUrl(tender.attachments?.[0]?.url || tender.attachments?.[0]?.path || tender.imageUrl, '/assets/images/Home.png')} 
+          alt={tender.title} 
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+        />
       </div>
 
-      {/* Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 20, alignItems: 'start' }}>
-        <div>
-          <div style={card}>
-            <h3 style={{ margin: '0 0 12px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📝 Description</h3>
-            <p style={{ color: '#475569', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>{tender.description || (tender as any).about || 'Aucune description.'}</p>
+      {/* --- Right Column: Sidebar Info & Actions --- */}
+      <div style={{
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        padding: '24px',
+        gap: '24px',
+        position: 'absolute',
+        width: '392.67px',
+        height: 'auto', // Adjusted after removing buttons
+        left: '614px',
+        top: '160px',
+        background: '#FFFFFF',
+        border: '1px solid #F1F5F9',
+        boxShadow: '0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.1)',
+        borderRadius: '12px',
+      }}>
+        <h3 style={{ width: '342.67px', height: '28px', fontWeight: 600, fontSize: '20px', lineHeight: '28px', margin: 0, color: '#191B24', letterSpacing: '-0.2px', marginBottom: '8px' }}>
+          Informations sur l’offre
+        </h3>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', width: '342.67px', gap: '12px' }}>
+          {/* Demandes */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '52px', borderBottom: '1px solid #F8FAFC', padding: '8px 0' }}>
+            <span style={{ fontWeight: 400, fontSize: '16px', color: '#505F76' }}>Demandes</span>
+            <span style={{ fontWeight: 700, fontSize: '16px', color: '#191B24' }}>{tender.participantsCount || 0}</span>
           </div>
-          <div style={card}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📋 Détails</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))', gap: 16 }}>
-              {[
-                { label: 'Date de début', value: fmtDate(tender.startingAt) },
-                { label: 'Date de fin', value: fmtDate(tender.endingAt) },
-                { label: 'Localisation', value: [tender.place || tender.location, tender.wilaya].filter(Boolean).join(', ') || 'N/A' },
-                { label: 'Catégorie', value: category || 'N/A' },
-                ...(tender.contactNumber ? [{ label: 'Contact', value: tender.contactNumber }] : []),
-              ].map(r => (
-                <div key={r.label}>
-                  <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{r.label}</div>
-                  <div style={{ fontWeight: 600, color: '#334155', fontSize: '0.9rem' }}>{r.value}</div>
-                </div>
-              ))}
+          {/* Budget */}
+          {tender.maxBudget && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '52px', borderBottom: '1px solid #F8FAFC', padding: '8px 0' }}>
+              <span style={{ fontWeight: 400, fontSize: '16px', color: '#505F76' }}>Budget</span>
+              <span style={{ fontWeight: 700, fontSize: '16px', color: '#0050CB' }}>{tender.maxBudget.toLocaleString()} DA</span>
             </div>
+          )}
+          {/* Quantité */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '52px', borderBottom: '1px solid #F8FAFC', padding: '8px 0' }}>
+            <span style={{ fontWeight: 400, fontSize: '16px', color: '#505F76' }}>Quantité</span>
+            <span style={{ fontWeight: 400, fontSize: '16px', color: '#191B24' }}>{tender.quantity || 'N/A'}</span>
+          </div>
+          {/* Statut */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '52px', borderBottom: '1px solid #F8FAFC', padding: '8px 0' }}>
+            <span style={{ fontWeight: 400, fontSize: '16px', color: '#505F76' }}>Statut</span>
+            <span style={{ fontWeight: 500, fontSize: '16px', color: '#16A34A' }}>
+              {tender.status === 'OPEN' ? 'En ligne' : 
+               tender.status === 'AWARDED' ? 'Attribué' : 
+               tender.status === 'CLOSED' ? 'Fermé' : tender.status}
+            </span>
+          </div>
+          {/* Date de publication */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '52px', borderBottom: '1px solid #F8FAFC', padding: '8px 0' }}>
+            <span style={{ fontWeight: 400, fontSize: '16px', color: '#505F76' }}>Date de publication</span>
+            <span style={{ fontWeight: 400, fontSize: '16px', color: '#191B24' }}>{fmtDate(tender.createdAt)}</span>
           </div>
         </div>
-        <div>
-          <div style={{ ...card, borderLeft: `4px solid ${evalType === 'MIEUX_DISANT' ? '#0284c7' : ACCENT}` }}>
-            <h3 style={{ margin: '0 0 12px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>Type d'évaluation</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 12, background: evalType === 'MIEUX_DISANT' ? '#e0f2fe' : '#dcfce7' }}>
-              <span style={{ fontSize: 28 }}>{evalType === 'MIEUX_DISANT' ? '✨' : '💰'}</span>
-              <div>
-                <div style={{ fontWeight: 700, color: evalType === 'MIEUX_DISANT' ? '#0284c7' : ACCENT }}>{evalType === 'MIEUX_DISANT' ? 'Mieux Disant' : 'Moins Disant'}</div>
-                <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: 2 }}>{evalType === 'MIEUX_DISANT' ? 'Sélection sur la qualité' : 'Sélection sur le prix'}</div>
-              </div>
+      </div>
+
+      {/* --- Details Card --- */}
+      <div style={{
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        padding: '32px 24px',
+        gap: '24px',
+        position: 'absolute',
+        width: '559.33px',
+        minHeight: '431px',
+        left: '31px',
+        top: '584px',
+        background: '#FFFFFF',
+        border: '1px solid #F1F5F9',
+        boxShadow: '0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.1)',
+        borderRadius: '12px',
+      }}>
+        <h3 style={{ width: '100%', fontWeight: 700, fontSize: '24px', lineHeight: '32px', color: '#191B24', margin: 0, letterSpacing: '-0.2px' }}>
+          {tender.title}
+        </h3>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <span style={{ fontWeight: 600, fontSize: '12px', color: '#64748B', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+            CATÉGORIE
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0050CB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
             </div>
+            <span style={{ fontWeight: 500, fontSize: '18px', color: '#191B24' }}>{category || 'N/A'}</span>
           </div>
-          <div style={card}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📅 Chronologie</h3>
-            {[{ label: 'Début', value: fmtDate(tender.startingAt) }, { label: 'Fin', value: fmtDate(tender.endingAt) }].map(r => (
-              <div key={r.label} style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{r.label}</div>
-                <div style={{ fontWeight: 600, color: '#334155', fontSize: '0.9rem' }}>{r.value}</div>
-              </div>
-            ))}
+        </div>
+
+        <div style={{ width: '100%', height: '1px', background: '#F1F5F9' }} />
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+          <span style={{ fontWeight: 600, fontSize: '12px', color: '#64748B', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+            DESCRIPTION
+          </span>
+          <div style={{ fontWeight: 400, fontSize: '16px', lineHeight: '28px', color: '#505F76', whiteSpace: 'pre-wrap' }}>
+            {tender.description || 'Aucune description fournie pour cet appel d\'offres.'}
           </div>
         </div>
       </div>

@@ -633,7 +633,7 @@ export const Header = () => {
             top: '52px',
             left: '0px',
             width: '193px',
-            height: '45px',
+            height: '56px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -665,7 +665,8 @@ export const Header = () => {
             border: '1px solid transparent',
             borderImageSource: 'linear-gradient(127.23deg, rgba(255, 255, 255, 0.42) 2.46%, rgba(255, 255, 255, 0.24) 97.36%)',
             borderImageSlice: 1,
-            overflow: 'visible'
+            overflow: 'visible',
+            zIndex: 10000
           }}
         >
           <form onSubmit={handleSearchSubmit} style={{ margin: 0, width: '100%', height: '100%' }}>
@@ -745,19 +746,101 @@ export const Header = () => {
           {/* Results Dropdown */}
           {showSearchResults && searchResults.length > 0 && (
             <div style={{ 
-              position: 'absolute', top: 'calc(100% + 10px)', left: 0, right: 0, 
-              background: 'white', borderRadius: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.1)', 
-              maxHeight: '400px', overflowY: 'auto', zIndex: 1000, border: '1px solid #f1f5f9', padding: '10px'
+              position: 'absolute', top: 'calc(100% + 12px)', left: 0, right: 0, 
+              background: '#FFFFFF', 
+              borderRadius: '24px', 
+              boxShadow: '0 24px 48px rgba(0,0,0,0.18)', 
+              maxHeight: '450px', 
+              overflowY: 'auto', 
+              zIndex: 10001, 
+              border: '1px solid rgba(0, 40, 150, 0.08)', 
+              padding: '12px',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
             }}>
               {searchResults.map((item, idx) => (
-                <div key={idx} onClick={() => handleSearchSelect(item)} style={{ padding: '12px 16px', cursor: 'pointer', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '15px', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f0f4f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {item.type === 'category' ? <img src={getCategoryImageUrl(item)} alt="" style={{ width: '100%', height: '100%', borderRadius: '8px', objectFit: 'cover' }} /> : 
-                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2"><path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3Z"/></svg>}
+                <div 
+                  key={idx} 
+                  onClick={() => handleSearchSelect(item)} 
+                  style={{ 
+                    padding: '14px 18px', 
+                    cursor: 'pointer', 
+                    borderRadius: '16px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '16px', 
+                    transition: 'all 0.2s ease',
+                    marginBottom: idx === searchResults.length - 1 ? 0 : '4px'
+                  }} 
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = 'rgba(0, 40, 150, 0.04)';
+                    e.currentTarget.style.transform = 'translateX(4px)';
+                  }} 
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.transform = 'translateX(0)';
+                  }}
+                >
+                  <div style={{ 
+                    width: '40px', 
+                    height: '40px', 
+                    borderRadius: '12px', 
+                    background: '#F5F5FA', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: 'inset 0 0 0 1px rgba(0, 40, 150, 0.05)'
+                  }}>
+                    {item.type === 'category' ? 
+                      <img src={getCategoryImageUrl(item)} alt="" style={{ width: '100%', height: '100%', borderRadius: '12px', objectFit: 'cover' }} /> : 
+                      <div style={{ color: '#002896', display: 'flex' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          {item.type === 'auction' && <path d="M20.5 7l-4.5 4.5l-4.5-4.5l4.5-4.5l4.5 4.5zM9 11l-4.5 4.5l-4.5-4.5l4.5-4.5l4.5 4.5zM15 17l-4.5 4.5l-4.5-4.5l4.5-4.5l4.5 4.5z"/>}
+                          {item.type === 'tender' && (
+                            <>
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                            </>
+                          )}
+                          {item.type === 'directSale' && (
+                            <>
+                              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                            </>
+                          )}
+                          {!['auction', 'tender', 'directSale'].includes(item.type) && <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3Z"/>}
+                        </svg>
+                      </div>
+                    }
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '15px', color: '#002896' }}>{item.name || item.title || item.term}</div>
-                    <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{item.type}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ 
+                      fontSize: '16px', 
+                      fontWeight: 600, 
+                      color: '#002896', 
+                      whiteSpace: 'nowrap', 
+                      overflow: 'hidden', 
+                      textOverflow: 'ellipsis',
+                      fontFamily: '"DM Sans", sans-serif'
+                    }}>
+                      {item.name || item.title || item.term}
+                    </div>
+                    <div style={{ 
+                      fontSize: '11px', 
+                      color: '#7878AB', 
+                      textTransform: 'uppercase', 
+                      letterSpacing: '1px', 
+                      fontWeight: 700,
+                      marginTop: '2px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#002896', opacity: 0.4 }}></span>
+                      {item.type}
+                    </div>
+                  </div>
+                  <div style={{ color: '#002896', opacity: 0.3 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
                 </div>
               ))}

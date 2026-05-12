@@ -6,48 +6,49 @@ import { CategoryAPI } from '@/app/api/category';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import useAuth from '@/hooks/useAuth';
+import { getAbsoluteUrl } from '@/utils/url';
 
 const iconMap: Record<string, React.ReactNode> = {
   'Batiment': (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="33" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 21v-4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v4M3 7l9-4 9 4M4 7v14M20 7v14M9 11h6" />
     </svg>
   ),
   'Industrie': (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="33" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 21h18M3 7v14M21 7v14M3 7l5-4 5 4 5-4 3 4M7 11h2M7 15h2M15 11h2M15 15h2" />
     </svg>
   ),
   'Artisanat': (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="33" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 19l7-7 3 3-7 7-3-3zM18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5zM2 2l5 5M11 11l1 1" />
     </svg>
   ),
   'Pour les entreprises': (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="33" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
       <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
     </svg>
   ),
   'Recyclage': (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="33" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M7 11l5-5 5 5M7 11h10M17 13l-5 5-5-5M17 13H7" />
     </svg>
   ),
   'Transport': (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="33" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="10" width="18" height="9" rx="2" />
       <path d="M7 10l3-5h4l3 5M6 19v2M18 19v2" />
     </svg>
   ),
   'Agriculture': (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="33" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 21h18M5 14a7 7 0 0 1 14 0M12 14v7" />
       <path d="M12 7l-2 2M12 7l2 2" />
     </svg>
   ),
   'Commerce': (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="33" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
       <path d="M3 6h18M16 10a4 4 0 0 1-8 0" />
     </svg>
@@ -55,7 +56,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const DefaultIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="33" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10" />
     <path d="M12 16v-4M12 8h.01" />
   </svg>
@@ -91,7 +92,16 @@ const CategoryItem = ({ cat, router }: { cat: any; router: any }) => {
           style={{ display: 'flex', alignItems: 'center', gap: 'clamp(12px, 2vw, 22px)', flex: 1, minWidth: 0 }}
         >
           <div className="cat-icon" style={{ color: '#002896', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            {iconMap[cat.name] || <DefaultIcon />}
+            {cat.thumb?.url ? (
+              <img 
+                src={getAbsoluteUrl(cat.thumb.url)} 
+                alt={cat.name} 
+                className="category-dynamic-icon"
+                style={{ width: '33px', height: '30px', objectFit: 'contain' }} 
+              />
+            ) : (
+              iconMap[cat.name] || <DefaultIcon />
+            )}
           </div>
           <span className="cat-name" style={{ color: '#002896', fontSize: 'clamp(0.95rem, 1.5vw, 1.25rem)', fontWeight: '700', fontFamily: 'Roboto, sans-serif', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {cat.name}
@@ -231,9 +241,10 @@ const CategoryGrid = () => {
             text-align: center;
             width: 100%;
           }
-          .cat-item .cat-icon svg {
-            width: 28px;
-            height: 28px;
+          .cat-item .cat-icon svg,
+          .cat-item .cat-icon .category-dynamic-icon {
+            width: 33px;
+            height: 30px;
           }
           .cat-item .cat-name {
             font-size: 12.5px !important;

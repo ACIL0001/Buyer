@@ -1,318 +1,23 @@
 'use client';
 
-import { Container, Grid, Typography, Paper, Box, ButtonBase, Zoom } from '@mui/material';
+import { Container, Grid, Typography, Paper, Box, Avatar, ButtonBase } from '@mui/material';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { 
     MdGavel, 
-    MdEmail, 
     MdStore, 
-    MdRocketLaunch, 
-    MdTrendingUp, 
-    MdTrendingFlat,
-    MdAddCircleOutline,
-    MdVisibility,
-    MdAdd,
-    MdCheckCircleOutline,
-    MdPaid,             // Hand/Coin
-    MdPendingActions,   // Clock/Waiting
-    MdOutbox,           // Email sent/response
-    MdDescription,      // File/Paper
-    MdMonetizationOn,   // Money
-    MdShowChart,        // Chart
-    MdTimeline,         // Line chart alternate
-    MdInsertChartOutlined
+    MdEmail,
+    MdShoppingCart,
+    MdArrowForward,
+    MdCircle,
+    MdHourglassEmpty,
+    MdInventory
 } from 'react-icons/md';
 import useAuth from '@/hooks/useAuth';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCreateSocket } from '@/contexts/socket';
 import { ListPageSkeleton, DashboardKeyframes } from '@/components/dashboard/dashboardHelpers';
-
-// ----------- Design Constants & Mock Data -----------
-
-const COLORS = {
-    submission: { bg: 'color-mix(in srgb, var(--primary-tender-color) 10%, transparent)', main: 'var(--primary-tender-color)', light: 'color-mix(in srgb, var(--primary-tender-color) 20%, transparent)' },
-    auction: { bg: 'color-mix(in srgb, var(--primary-auction-color) 10%, transparent)', main: 'var(--primary-auction-color)', light: 'color-mix(in srgb, var(--primary-auction-color) 20%, transparent)' },
-    direct: { bg: 'color-mix(in srgb, var(--primary-ds-color) 10%, transparent)', main: 'var(--primary-ds-color)', light: 'color-mix(in srgb, var(--primary-ds-color) 20%, transparent)' },
-    
-    // New Colors
-    offer: { bg: 'color-mix(in srgb, var(--primary-auction-color) 10%, transparent)', main: 'var(--primary-auction-color)', light: 'color-mix(in srgb, var(--primary-auction-color) 20%, transparent)' },
-    pending: { bg: '#FFFDE7', main: '#FBC02D', light: '#FFF9C4' },      // Yellow
-    response: { bg: 'color-mix(in srgb, var(--primary-tender-color) 10%, transparent)', main: 'var(--primary-tender-color)', light: 'color-mix(in srgb, var(--primary-tender-color) 20%, transparent)' },
-    waiting: { bg: '#FDFBF7', main: '#FFECB3', light: '#FFE0B2' },      // Beige/Pale
-    finance_green: { bg: '#E8F5E9', main: '#43A047', light: '#C8E6C9' },// Money Green
-    finance_blue: { bg: '#E3F2FD', main: '#1976D2', light: '#BBDEFB' }, // Chart Blue
-    finance_indigo: { bg: '#E8EAF6', main: '#3F51B5', light: '#C5CAE9' },// Indigo
-};
-
-function buildStatsPerformance(data: any = {}) {
-    return [
-        { label: "dashboard.stats.totalAuctions", value: data.auctionsTotal || 0, trend: null, trendColor: null, category: "auction", icon: MdGavel },
-        { label: "dashboard.stats.activeAuctions", value: data.auctionsActive || 0, trend: null, trendColor: null, category: "auction", icon: MdGavel },
-        { label: "dashboard.stats.totalTenders", value: data.tendersTotal || 0, trend: null, trendColor: null, category: "submission", icon: MdEmail },
-        { label: "dashboard.stats.activeTenders", value: data.tendersActive || 0, trend: null, trendColor: null, category: "submission", icon: MdEmail },
-        { label: "dashboard.stats.totalSales", value: data.salesTotal || 0, trend: null, trendColor: null, category: "direct", icon: MdStore },
-        { label: "dashboard.stats.activeSales", value: data.salesActive || 0, trend: null, trendColor: null, category: "direct", icon: MdStore },
-    ];
-}
-
-function buildStatsOffers(data: any = {}) {
-    return [
-        { label: "dashboard.stats.totalOffers", value: data.offersTotal || 0, trend: null, trendColor: null, category: "offer", icon: MdPaid },
-        { label: "dashboard.stats.pendingOffers", value: data.offersPending || 0, trend: null, trendColor: null, category: "pending", icon: MdPendingActions },
-        { label: "dashboard.stats.tenderSubmissions", value: data.tenderSubmissionsTotal || 0, trend: null, trendColor: null, category: "response", icon: MdOutbox },
-        { label: "dashboard.stats.pendingTenderSubmissions", value: data.tenderSubmissionsPending || 0, trend: null, trendColor: null, category: "waiting", icon: MdDescription },
-    ];
-}
-
-function buildStatsFinance(data: any = {}) {
-    return [
-        { label: "dashboard.stats.totalEarnings", value: `${data.totalEarnings || 0} DA`, trend: null, trendColor: null, category: "finance_green", icon: MdMonetizationOn },
-        { label: "dashboard.stats.averagePrice", value: `${data.avgPrice || 0} DA`, trend: null, trendColor: null, category: "finance_blue", icon: MdShowChart },
-        { label: "dashboard.stats.totalViews", value: data.totalViews || 0, trend: null, trendColor: null, category: "finance_blue", icon: MdVisibility },
-        { label: "dashboard.stats.conversionRate", value: `${data.conversionRate || "0.0"}%`, trend: null, trendColor: null, category: "finance_indigo", icon: MdTrendingUp },
-    ];
-}
-
-const QUICK_ACTIONS = [
-    { 
-        title: "dashboard.navigation.myTenders", 
-        category: "submission",
-        icon: MdEmail,
-        actions: [
-            { label: "common.view", link: "/dashboard/tenders", icon: MdVisibility },
-            { label: "common.create", link: "/dashboard/tenders/create/", icon: MdAdd, isCreate: true }
-        ]
-    },
-    { 
-        title: "dashboard.navigation.auctions", 
-        category: "auction",
-        icon: MdGavel,
-        actions: [
-            { label: "common.view", link: "/dashboard/auctions", icon: MdVisibility },
-            { label: "common.create", link: "/dashboard/auctions/create/", icon: MdAdd, isCreate: true }
-        ]
-    },
-    { 
-        title: "dashboard.navigation.mySales", 
-        category: "direct",
-        icon: MdStore,
-        actions: [
-            { label: "common.view", link: "/dashboard/direct-sales", icon: MdVisibility },
-            { label: "common.create", link: "/dashboard/direct-sales/create/", icon: MdAdd, isCreate: true }
-        ]
-    },
-];
-
-// ----------- Components -----------
-
-const SectionHeader = ({ icon: Icon, title }: { icon: any, title: string }) => (
-    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, mt: 2 }}>
-        <Icon size={20} style={{ marginRight: 8, opacity: 0.8 }} />
-        <Typography variant="subtitle1" component="h2" sx={{ fontWeight: 700, fontSize: '0.95rem' }}>
-            {title}
-        </Typography>
-    </Box>
-);
-
-const ActionCard = ({ item }: { item: typeof QUICK_ACTIONS[0] }) => {
-    const { t } = useTranslation();
-    const theme = COLORS[item.category as keyof typeof COLORS];
-    
-    return (
-        <Paper
-            elevation={0}
-            sx={{
-                width: '100%',
-                minHeight: 180,
-                bgcolor: theme.bg,
-                color: theme.main,
-                borderRadius: 4,
-                position: 'relative',
-                overflow: 'hidden',
-                transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
-                border: '1px solid',
-                borderColor: 'transparent',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                p: 2,
-                gap: 1.5,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: `0 12px 24px rgba(0,0,0,0.08)`, 
-                    '& .icon-bot': {
-                        transform: 'scale(1.1)',
-                        bgcolor: 'rgba(255,255,255,0.9)',
-                    }
-                }
-            }}
-        >
-            <Box 
-                className="icon-bot"
-                sx={{ 
-                    position: 'relative', 
-                    p: 2,
-                    borderRadius: '50%',
-                    bgcolor: 'rgba(255,255,255,0.6)', 
-                    color: theme.main,
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-                }}
-            >
-                <item.icon size={32} />
-            </Box>
-            
-            <Typography variant="body1" sx={{ fontWeight: 700, fontSize: '1rem', mb: 1, textAlign: 'center' }}>
-                {t(item.title)}
-            </Typography>
-
-            <Box sx={{ display: 'flex', gap: 1.5, width: '100%', px: 1 }}>
-                {item.actions.map((action, idx) => (
-                    <ButtonBase
-                        key={idx}
-                        component={Link}
-                        href={action.link}
-                        sx={{
-                            flex: 1,
-                            py: 1,
-                            px: 1.5,
-                            borderRadius: 3,
-                            bgcolor: action.isCreate ? theme.main : 'rgba(255,255,255,0.6)',
-                            color: action.isCreate ? '#fff' : theme.main,
-                            fontSize: '0.8rem',
-                            fontWeight: 600,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 0.5,
-                            transition: 'all 0.2s',
-                            boxShadow: action.isCreate ? '0 4px 10px rgba(0,0,0,0.1)' : 'none',
-                            '&:hover': {
-                                bgcolor: action.isCreate ? theme.main : 'rgba(255,255,255,0.9)',
-                                opacity: action.isCreate ? 0.9 : 1,
-                                transform: 'translateY(-2px)',
-                                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-                            }
-                        }}
-                    >
-                        {/* Translate standard keys or fallback */}
-                        {t(action.label) === action.label && action.label === 'common.view' ? 'Voir' : 
-                         t(action.label) === action.label && action.label === 'common.create' ? 'Créer' : 
-                         t(action.label)}
-                        {action.isCreate && <MdAdd size={14} />}
-                    </ButtonBase>
-                ))}
-            </Box>
-        </Paper>
-    );
-};
-
-const StatCard = ({ item }: { item: any }) => {
-    const { t } = useTranslation();
-    const theme = COLORS[item.category as keyof typeof COLORS];
-    const Icon = item.icon;
-
-    return (
-        <Paper
-            elevation={0}
-            sx={{
-                px: { xs: 1.5, sm: 2, md: 3 },
-                py: { xs: 1.5, sm: 2 },
-                minHeight: 140,
-                borderRadius: 4,
-                border: '1px solid',
-                borderColor: 'divider',
-                display: 'flex',
-                alignItems: 'center',
-                gap: { xs: 1.5, sm: 2, md: 3 },
-                position: 'relative',
-                overflow: 'hidden',
-                transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                background: 'rgba(255, 255, 255, 0.8)',
-                backdropFilter: 'blur(20px)', // Glassmorphism
-                '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    width: '100px',
-                    height: '100%',
-                    background: `linear-gradient(90deg, transparent, ${theme.bg})`,
-                    opacity: 0.5,
-                    transform: 'skewX(-20deg) translateX(150%)',
-                    transition: 'transform 0.5s',
-                },
-                '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: `0 20px 40px -10px ${theme.main}20`, // Colored shadow glow
-                    borderColor: 'transparent',
-                    '&::after': {
-                        transform: 'skewX(-20deg) translateX(50%)',
-                    },
-                    '& .stat-icon': {
-                        transform: 'scale(1.1) rotate(-10deg)',
-                        boxShadow: `0 8px 16px ${theme.main}40`,
-                    }
-                }
-            }}
-        >
-            {/* Icon Bubble - Left Side */}
-            <Box
-                className="stat-icon"
-                sx={{
-                    width: { xs: 44, sm: 52, md: 56 },
-                    height: { xs: 44, sm: 52, md: 56 },
-                    borderRadius: '20px',
-                    bgcolor: theme.bg,
-                    color: theme.main,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    transition: 'all 0.3s ease',
-                    boxShadow: `0 4px 10px ${theme.bg}`,
-                }}
-            >
-                <Icon size={24} />
-            </Box>
-
-            {/* Content - Right Side */}
-            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', zIndex: 1 }}>
-                <Typography variant="h3" sx={{ fontWeight: 800, color: '#1a1a1a', lineHeight: 1, fontSize: 'clamp(1.5rem, 3vw, 2rem)' }}>
-                    {item.value}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, mt: 0.5, letterSpacing: '0.02em', textTransform: 'uppercase', fontSize: 'clamp(0.7rem, 1.5vw, 0.85rem)' }}>
-                    {t(item.label)}
-                </Typography>
-                
-                 {/* Trend */}
-                 {item.trend && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1, bgcolor: item.trendColor === 'success.main' ? '#E8F5E9' : '#F5F5F5', borderRadius: '12px', width: 'fit-content', px: 1, py: 0.2 }}>
-                        <MdTrendingUp 
-                            size={14} 
-                            color={item.trendColor === 'success.main' ? '#2e7d32' : '#757575'} 
-                            style={{ transform: item.trend.includes('-') ? 'rotate(180deg)' : 'none' }}
-                        />
-                        <Typography 
-                            variant="caption" 
-                            sx={{ 
-                                color: item.trendColor === 'success.main' ? '#2e7d32' : '#757575', 
-                                fontWeight: 700,
-                                fontSize: '0.7rem'
-                            }}
-                        >
-                            {item.trend}
-                        </Typography>
-                    </Box>
-                 )}
-            </Box>
-        </Paper>
-    );
-};
 
 export default function DashboardPage() {
     const { t } = useTranslation();
@@ -355,47 +60,81 @@ export default function DashboardPage() {
             const sales = sr.status === 'fulfilled' ? ((sr.value as any)?.data || (Array.isArray(sr.value) ? sr.value : [])) : [];
             const offers = or.status === 'fulfilled' ? ((or.value as any)?.data || (Array.isArray(or.value) ? or.value : [])) : [];
             const orders = pr.status === 'fulfilled' ? ((pr.value as any)?.data || (Array.isArray(pr.value) ? pr.value : [])) : [];
-            const tenderBids = tbr.status === 'fulfilled' ? ((tbr.value as any)?.data || (Array.isArray(tbr.value) ? tbr.value : [])) : [];
 
-            const auctionsTotal = auctions.length;
             const auctionsActive = auctions.filter((a: any) => new Date(a.endingAt) > new Date() && a.status !== 'CLOSED' && a.status !== 'ARCHIVED').length;
-            const tendersTotal = tenders.length;
             const tendersActive = tenders.filter((t: any) => t.status === 'OPEN').length;
-            const salesTotal = sales.length;
             const salesActive = sales.filter((s: any) => s.status === 'ACTIVE').length;
-
-            const currentUserId = auth?.user?._id;
-            if (!currentUserId) return null;
-
-            const myOffers = offers.filter((o: any) => o.user?._id === currentUserId || (o.bid && (o.bid as any).user === currentUserId));
-            const offersTotal = myOffers.length;
-            const offersPending = myOffers.filter((o: any) => o.status === 'PENDING' || !o.status).length;
             
-            const tenderSubmissionsTotal = tenderBids.length;
-            const tenderSubmissionsPending = tenderBids.filter((b: any) => b.status === 'pending').length;
+            const annoncesActives = auctionsActive + tendersActive + salesActive;
 
-            const confirmedOrders = orders.filter((o: any) => o.status === 'CONFIRMED' || o.status === 'COMPLETED');
-            const totalEarnings = confirmedOrders.reduce((acc: number, o: any) => acc + (o.totalPrice || o.total || 0), 0);
-            const avgPrice = confirmedOrders.length ? Math.round(totalEarnings / confirmedOrders.length) : 0;
-            const totalViews = sales.reduce((acc: number, s: any) => acc + (s.views || 0), 0) + auctions.reduce((acc: number, a: any) => acc + (a.views || 0), 0) + tenders.reduce((acc: number, t: any) => acc + (t.views || 0), 0);
-            const conversionRate = (salesTotal > 0 ? (confirmedOrders.length / salesTotal) * 100 : 0).toFixed(1);
+            const timeAgo = (dateStr: string) => {
+                const date = new Date(dateStr);
+                const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+                let interval = seconds / 31536000;
+                if (interval > 1) return "Il y a " + Math.floor(interval) + " an(s)";
+                interval = seconds / 2592000;
+                if (interval > 1) return "Il y a " + Math.floor(interval) + " mois";
+                interval = seconds / 86400;
+                if (interval > 1) return "Il y a " + Math.floor(interval) + " jour(s)";
+                interval = seconds / 3600;
+                if (interval > 1) return "Il y a " + Math.floor(interval) + " heure(s)";
+                interval = seconds / 60;
+                if (interval > 1) return "Il y a " + Math.floor(interval) + " min";
+                return "À l'instant";
+            };
+
+            const recentActivity = [
+                ...auctions.map((a: any) => ({
+                    _id: a._id,
+                    rawDate: new Date(a.createdAt || new Date()),
+                    type: 'ENCHÈRE', color: '#C34B4E', bg: 'rgba(195, 75, 78, 0.3)',
+                    title: a.title || 'Enchère',
+                    user: a.creator?.firstName ? `${a.creator.firstName} ${a.creator.lastName?.charAt(0) || ''}.` : 'Inconnu',
+                    userImage: a.creator?.profilePicture || '',
+                    amount: `${(a.currentBid || a.startingPrice || 0).toLocaleString('fr-FR')} Da`,
+                    status: a.status === 'ACTIVE' ? 'En cours' : a.status === 'CLOSED' ? 'Fermée' : 'En attente',
+                    statusColor: a.status === 'ACTIVE' ? '#0050CB' : a.status === 'CLOSED' ? '#64748B' : '#EA580C',
+                    time: timeAgo(a.createdAt || new Date())
+                })),
+                ...sales.map((s: any) => ({
+                    _id: s._id,
+                    rawDate: new Date(s.createdAt || new Date()),
+                    type: 'VENTE', color: '#70D979', bg: 'rgba(112, 217, 121, 0.3)',
+                    title: s.productName || s.title || 'Vente Directe',
+                    user: s.seller?.firstName ? `${s.seller.firstName} ${s.seller.lastName?.charAt(0) || ''}.` : 'Inconnu',
+                    userImage: s.seller?.profilePicture || '',
+                    amount: `${(s.price || 0).toLocaleString('fr-FR')} Da`,
+                    status: s.status === 'ACTIVE' ? 'Disponible' : s.status === 'SOLD' ? 'Vendue' : 'En attente',
+                    statusColor: s.status === 'ACTIVE' ? '#0050CB' : s.status === 'SOLD' ? '#059669' : '#EA580C',
+                    time: timeAgo(s.createdAt || new Date())
+                })),
+                ...offers.map((o: any) => ({
+                    _id: o._id,
+                    rawDate: new Date(o.createdAt || new Date()),
+                    type: 'OFFRE', color: '#EFCB6E', bg: 'rgba(239, 203, 110, 0.3)',
+                    title: o.target?.title || 'Offre de service',
+                    user: o.user?.firstName ? `${o.user.firstName} ${o.user.lastName?.charAt(0) || ''}.` : 'Moi',
+                    userImage: o.user?.profilePicture || '',
+                    amount: o.amount ? `${o.amount.toLocaleString('fr-FR')} Da` : '-',
+                    status: o.status === 'ACCEPTED' ? 'Acceptée' : o.status === 'REJECTED' ? 'Refusée' : 'En attente',
+                    statusColor: o.status === 'ACCEPTED' ? '#059669' : o.status === 'REJECTED' ? '#C34B4E' : '#EA580C',
+                    icon: (o.status === 'PENDING' || !o.status) ? MdHourglassEmpty : null,
+                    time: timeAgo(o.createdAt || new Date())
+                }))
+            ].sort((a, b) => b.rawDate.getTime() - a.rawDate.getTime()).slice(0, 5);
 
             return {
-                auctionsTotal, auctionsActive, tendersTotal, tendersActive, salesTotal, salesActive,
-                offersTotal, offersPending, tenderSubmissionsTotal, tenderSubmissionsPending,
-                totalEarnings: totalEarnings.toLocaleString('fr-FR'),
-                avgPrice: avgPrice.toLocaleString('fr-FR'),
-                totalViews: totalViews.toLocaleString('fr-FR'),
-                conversionRate
+                annoncesActives,
+                encheresRecues: offers.length,
+                ventesDirectes: sales.length,
+                offresServices: tenders.length,
+                mesAchats: orders.length,
+                recentActivity
             };
         },
         enabled: isLogged && !!auth?.user?._id,
         staleTime: 60000,
     });
-
-    const statsPerformance = buildStatsPerformance(statsData || {});
-    const statsOffers = buildStatsOffers(statsData || {});
-    const statsFinance = buildStatsFinance(statsData || {});
 
     if (isLoading && isLogged) return (
         <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -404,60 +143,374 @@ export default function DashboardPage() {
         </Container>
     );
 
+    const formatNumber = (num: number | undefined) => {
+        if (num === undefined) return '00';
+        return num < 10 ? `0${num}` : num.toString();
+    };
+
+    const MOCK_ACTIVITY = statsData?.recentActivity || [];
+
+    const topCards = [
+        { label: 'ANNONCES\nACTIVES', value: formatNumber(statsData?.annoncesActives || 12), icon: MdInventory, color: '#0050CB', bg: 'rgba(0, 102, 255, 0.1)', className: 'annonces-actives-card' },
+        { label: 'ENCHÈRES\nREÇUES', value: formatNumber(statsData?.encheresRecues || 8), icon: MdGavel, color: '#C34B4E', bg: 'rgba(195, 75, 78, 0.3)', className: 'encheres-recues-card' },
+        { label: 'VENTES\nDIRECTES', value: formatNumber(statsData?.ventesDirectes || 3), icon: MdStore, color: '#70D979', bg: 'rgba(112, 217, 121, 0.3)', className: 'ventes-directes-card' },
+        { label: 'OFFRES &\nSERVICES', value: formatNumber(statsData?.offresServices || 5), icon: MdEmail, color: '#EFCB6E', bg: 'rgba(239, 203, 110, 0.3)', className: 'offres-services-card-mini' },
+        { label: 'MES\nACHATS', value: formatNumber(statsData?.mesAchats || 3), icon: MdShoppingCart, color: '#424656', bg: 'rgba(66, 70, 86, 0.1)', className: 'mes-achats-card' },
+    ];
+
+    const navigationCards = [
+        { 
+            title: 'Enchères', 
+            desc: 'Gérez vos ventes aux enchères en temps réel.', 
+            linkText: 'Voir mes enchères', 
+            href: '/dashboard/auctions', 
+            icon: MdGavel, 
+            color: '#C34B4E',
+            className: 'enchere-card'
+        },
+        { 
+            title: 'Vente directe', 
+            desc: 'Configurez vos articles à prix fixe.', 
+            linkText: 'Voir mes ventes', 
+            href: '/dashboard/direct-sales', 
+            icon: MdStore, 
+            color: '#70D979',
+            className: 'vente-directe-card'
+        },
+        { 
+            title: 'Offres & services', 
+            desc: 'Consultez et négociez des offres et proposez votre expertise .', 
+            linkText: 'Mes offres & services', 
+            href: '/dashboard/tenders', 
+            icon: MdEmail, 
+            color: '#EFCB6E',
+            className: 'offres-services-card'
+        },
+    ];
+
     return (
-        <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 1.5, sm: 3 } }}>
+        <Container maxWidth="xl" sx={{ py: 4, px: { xs: 2, md: 4 }, bgcolor: '#fafafa', minHeight: '100vh' }}>
             <DashboardKeyframes />
-            {/* Quick Actions Section */}
-            <SectionHeader icon={MdRocketLaunch} title={t('dashboard.quickActions')} />
-
-            <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: { xs: 4, md: 6 } }}>
-                {QUICK_ACTIONS.map((action, index) => (
-                    <Zoom in={true} style={{ transitionDelay: `${index * 50}ms` }} key={index}>
-                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                            <ActionCard item={action} />
-                        </Grid>
-                    </Zoom>
-                ))}
-            </Grid>
-
-            {/* Performance Section */}
-            <SectionHeader icon={MdTrendingUp} title={t('dashboard.performance')} />
             
-            <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: { xs: 4, md: 6 } }}>
-                {statsPerformance.map((stat, index) => (
-                    <Zoom in={true} style={{ transitionDelay: `${index * 50}ms` }} key={index}>
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                            <StatCard item={stat} />
-                        </Grid>
-                    </Zoom>
+            {/* Header */}
+            <Box sx={{ mb: 5 }}>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#191B24', mb: 1, fontSize: '24px' }}>
+                    Bienvenue {auth?.user?.firstName || 'Anis'}
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#64748B', fontSize: '15px' }}>
+                    Voici un aperçu de votre activité
+                </Typography>
+            </Box>
+
+            {/* Top Cards Row */}
+            <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 6, justifyContent: 'center' }}>
+                {topCards.map((card, idx) => (
+                    <Paper
+                        key={idx}
+                        elevation={0}
+                        className={card.className}
+                        sx={{
+                            flex: '1 1 0',
+                            minWidth: '170px',
+                            height: '110px',
+                            boxSizing: 'border-box',
+                            display: 'flex',
+                            alignItems: 'center',
+                            p: '24px',
+                            gap: '16px',
+                            borderRadius: '16px',
+                            border: '1px solid #C2C6D8',
+                            bgcolor: '#FFFFFF',
+                            boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)'
+                        }}
+                    >
+                        <Box sx={{
+                            width: '32px',
+                            height: '48px',
+                            bgcolor: card.bg,
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: card.color,
+                            flexShrink: 0
+                        }}>
+                            <card.icon size={20} />
+                        </Box>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
+                            <Typography sx={{ 
+                                fontFamily: 'DM Sans', 
+                                fontWeight: 400, 
+                                fontSize: '12px', 
+                                lineHeight: '14px', 
+                                textTransform: 'uppercase', 
+                                color: '#424656',
+                                whiteSpace: 'pre-line'
+                            }}>
+                                {card.label}
+                            </Typography>
+                            <Typography sx={{ fontFamily: 'Inter', fontWeight: 400, fontSize: '16px', lineHeight: '24px', color: '#191B24' }}>
+                                {card.value}
+                            </Typography>
+                        </Box>
+                    </Paper>
+                ))}
+            </Box>
+
+            {/* Navigation Cards Row */}
+            <Grid container spacing={3} sx={{ justifyContent: 'center', mb: 6 }}>
+                {navigationCards.map((card, idx) => (
+                    <Grid size={{ xs: 12, sm: 'auto' }} key={idx} className={card.className}>
+                        <Paper
+                            elevation={0}
+                            className={card.className}
+                            sx={{
+                                width: { xs: '100%', sm: '222px' },
+                                boxSizing: 'border-box',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                p: '24px',
+                                height: '224px',
+                                bgcolor: '#FFFFFF',
+                                border: '1px solid #C2C6D8',
+                                boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
+                                borderRadius: '16px',
+                                transition: 'all 0.2s',
+                                '&:hover': {
+                                    borderColor: card.color,
+                                    boxShadow: `0px 4px 12px ${card.color}20`,
+                                    transform: 'translateY(-2px)'
+                                }
+                            }}
+                        >
+                            <Box sx={{ width: '100%' }}>
+                                <Box sx={{ mb: 1.5, color: card.color, display: 'flex', alignItems: 'center' }}>
+                                    <card.icon size={24} />
+                                </Box>
+                                <Typography sx={{ 
+                                    fontFamily: 'DM Sans', 
+                                    fontWeight: 400, 
+                                    fontSize: '16px', 
+                                    lineHeight: '24px', 
+                                    color: '#191B24', 
+                                    mb: 1,
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                }}>
+                                    {card.title}
+                                </Typography>
+                                <Typography sx={{ 
+                                    fontFamily: 'Inter', 
+                                    fontWeight: 400, 
+                                    fontSize: '16px', 
+                                    lineHeight: '24px', 
+                                    color: '#424656',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden'
+                                }}>
+                                    {card.desc}
+                                </Typography>
+                            </Box>
+                            <ButtonBase
+                                component={Link}
+                                href={card.href}
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1,
+                                    fontFamily: 'Inter',
+                                    fontWeight: 400,
+                                    fontSize: '16px',
+                                    lineHeight: '24px',
+                                    color: card.color,
+                                    '&:hover': { textDecoration: 'underline' }
+                                }}
+                            >
+                                <Typography sx={{ 
+                                    fontFamily: 'Inter',
+                                    fontWeight: 400,
+                                    fontSize: '16px',
+                                    lineHeight: '24px',
+                                    color: 'inherit',
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                    {card.linkText}
+                                </Typography>
+                                <MdArrowForward size={16} />
+                            </ButtonBase>
+                        </Paper>
+                    </Grid>
                 ))}
             </Grid>
 
-            {/* Offers & Submissions Section */}
-            <SectionHeader icon={MdEmail} title={t('dashboard.offersOverview')} />
-            
-            <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }} sx={{ mb: { xs: 4, md: 6 } }}>
-                {statsOffers.map((stat, index) => (
-                    <Zoom in={true} style={{ transitionDelay: `${index * 50}ms` }} key={index}>
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                            <StatCard item={stat} />
-                        </Grid>
-                    </Zoom>
-                ))}
-            </Grid>
+            {/* Recent Activity Table */}
+            <Box sx={{ mb: 2 }}>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        boxSizing: 'border-box',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        p: 0,
+                        width: '100%',
+                        bgcolor: '#FFFFFF',
+                        border: '1px solid #C2C6D8',
+                        boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
+                        borderRadius: '16px',
+                        overflow: 'hidden'
+                    }}
+                >
+                    {/* HorizontalBorder (Header) */}
+                    <Box sx={{
+                        boxSizing: 'border-box',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        px: '24px',
+                        py: '16px',
+                        width: '100%',
+                        height: '57px',
+                        borderBottom: '1px solid #C2C6D8'
+                    }}>
+                        <Typography sx={{ fontFamily: 'Inter', fontStyle: 'normal', fontWeight: 400, fontSize: '16px', lineHeight: '24px', color: '#191B24' }}>
+                            Activité récente
+                        </Typography>
+                        <Box sx={{ width: '151.86px', height: '24px' }} /> {/* Placeholder for Button */}
+                    </Box>
 
-            {/* Financial Section */}
-            <SectionHeader icon={MdMonetizationOn} title={t('dashboard.financialOverview')} />
+                    {/* Table Header Row */}
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        width: '100%',
+                        height: '52px',
+                        bgcolor: '#F2F3FF',
+                        borderBottom: '1px solid #C2C6D8'
+                    }}>
+                        <Typography sx={{ width: '11%', px: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', textTransform: 'uppercase', color: '#424656' }}>TYPE</Typography>
+                        <Typography sx={{ width: '23%', px: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', textTransform: 'uppercase', color: '#424656' }}>TITRE</Typography>
+                        <Typography sx={{ width: '16%', px: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', textTransform: 'uppercase', color: '#424656' }}>UTILISATEUR</Typography>
+                        <Typography sx={{ width: '18%', pl: '48px', pr: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', textTransform: 'uppercase', color: '#424656' }}>MONTANT</Typography>
+                        <Typography sx={{ width: '12%', px: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', textTransform: 'uppercase', color: '#424656' }}>ETAT</Typography>
+                        <Typography sx={{ width: '20%', pl: '48px', pr: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', textTransform: 'uppercase', color: '#424656' }}>TEMPS</Typography>
+                    </Box>
 
-            <Grid container spacing={{ xs: 1.5, sm: 2, md: 3 }}>
-                {statsFinance.map((stat, index) => (
-                    <Zoom in={true} style={{ transitionDelay: `${index * 50}ms` }} key={index}>
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                            <StatCard item={stat} />
-                        </Grid>
-                    </Zoom>
-                ))}
-            </Grid>
+                    {/* Table Rows */}
+                    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                        {MOCK_ACTIVITY.map((row, idx) => (
+                            <Box key={idx} sx={{
+                                boxSizing: 'border-box',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                width: '100%',
+                                minHeight: '72.5px',
+                                borderBottom: idx < MOCK_ACTIVITY.length - 1 ? '1px solid #C2C6D8' : 'none',
+                                '&:hover': { bgcolor: 'rgba(0,0,0,0.01)' }
+                            }}>
+                                {/* Type */}
+                                <Box sx={{ width: '11%', px: '24px', py: '25px', display: 'flex', alignItems: 'flex-start' }}>
+                                    <Box sx={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        alignItems: 'flex-start',
+                                        padding: '4px 12px',
+                                        bgcolor: row.bg,
+                                        borderRadius: '9999px'
+                                    }}>
+                                        <Typography sx={{ fontFamily: 'Inter', fontWeight: 400, fontSize: '11px', lineHeight: '13px', textTransform: 'uppercase', color: row.color }}>
+                                            {row.type}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                                
+                                {/* Titre */}
+                                <Box sx={{ width: '23%', px: '24px', py: '26px' }}>
+                                    <Typography sx={{ fontFamily: 'Inter', fontWeight: 500, fontSize: '16px', lineHeight: '19px', color: '#191B24', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {row.title}
+                                    </Typography>
+                                </Box>
+                                
+                                {/* Utilisateur */}
+                                <Box sx={{ width: '16%', pl: '24px', pr: '24px', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px' }}>
+                                    <Avatar sx={{ width: '32px', height: '32px', bgcolor: '#e2e8f0', color: '#64748b', fontSize: '14px', border: '1px solid #C2C6D8' }}>
+                                        {row.user.charAt(0)}
+                                    </Avatar>
+                                    <Typography sx={{ fontFamily: 'Inter', fontWeight: 400, fontSize: '16px', lineHeight: '19px', color: '#191B24' }}>
+                                        {row.user}
+                                    </Typography>
+                                </Box>
+                                
+                                {/* Montant */}
+                                <Box sx={{ width: '18%', pl: '48px', pr: '24px', py: '26px' }}>
+                                    <Typography sx={{ fontFamily: 'Inter', fontWeight: 600, fontSize: '16px', lineHeight: '19px', color: '#191B24' }}>
+                                        {row.amount}
+                                    </Typography>
+                                </Box>
+                                
+                                {/* Etat */}
+                                <Box sx={{ width: '12%', pl: '24px', pr: '24px', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '6px' }}>
+                                    {row.icon ? (
+                                        <row.icon size={11.67} color={row.statusColor} />
+                                    ) : (
+                                        <Box sx={{ width: '8px', height: '8px', bgcolor: row.statusColor, borderRadius: '9999px' }} />
+                                    )}
+                                    <Typography sx={{ fontFamily: 'Inter', fontWeight: 400, fontSize: '12px', lineHeight: '15px', color: row.statusColor }}>
+                                        {row.status}
+                                    </Typography>
+                                </Box>
+                                
+                                {/* Temps */}
+                                <Box sx={{ width: '20%', pl: '48px', pr: '24px', py: '26px' }}>
+                                    <Typography sx={{ fontFamily: 'Inter', fontWeight: 400, fontSize: '16px', lineHeight: '19px', color: '#424656' }}>
+                                        {row.time}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        ))}
+                    </Box>
+
+                    {/* Table Footer */}
+                    <Box sx={{
+                        boxSizing: 'border-box',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        p: '16px 24px',
+                        width: '100%',
+                        height: '57px',
+                        bgcolor: '#F2F3FF',
+                        borderTop: '1px solid #C2C6D8'
+                    }}>
+                        <ButtonBase sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            fontFamily: 'Inter',
+                            fontWeight: 400,
+                            fontSize: '16px',
+                            lineHeight: '24px',
+                            color: '#424656',
+                            textAlign: 'center',
+                            borderRadius: '4px',
+                            py: 0.5,
+                            px: 1,
+                            '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+                        }}>
+                            Charger plus d'activités
+                        </ButtonBase>
+                    </Box>
+                </Paper>
+            </Box>
         </Container>
     );
 }

@@ -378,19 +378,23 @@ export default function CreateDirectSalePage() {
                                     </Typography>
 
                                     <Grid container spacing={3}>
-
-
                                         <Grid size={{ xs: 12 }}>
-                                            <Typography sx={fieldLabelStyle}>{t('createDirectSale.descriptionLabel', 'Description')}</Typography>
+                                            <Typography sx={fieldLabelStyle}>Statut de produit</Typography>
                                             <TextField
+                                                select
                                                 fullWidth
-                                                placeholder="description"
-                                                variant="outlined" multiline rows={4}
-                                                {...formik.getFieldProps('description')}
-                                                error={(formik.touched.description || formik.submitCount > 0) && !!formik.errors.description}
-                                                helperText={(formik.touched.description || formik.submitCount > 0) && formik.errors.description}
+                                                variant="outlined"
+                                                placeholder="Produit ou Service"
+                                                {...formik.getFieldProps('saleType')}
+                                                error={(formik.touched.saleType || formik.submitCount > 0) && !!formik.errors.saleType}
+                                                helperText={(formik.touched.saleType || formik.submitCount > 0) && formik.errors.saleType}
                                                 sx={inputStyle}
-                                            />
+                                                SelectProps={{ displayEmpty: true }}
+                                            >
+                                                <MenuItem value="" disabled>Produit ou Service</MenuItem>
+                                                <MenuItem value={DIRECT_SALE_TYPES.PRODUCT}>Produit</MenuItem>
+                                                <MenuItem value={DIRECT_SALE_TYPES.SERVICE}>Service</MenuItem>
+                                            </TextField>
                                         </Grid>
 
                                         <Grid size={{ xs: 12 }}>
@@ -406,6 +410,18 @@ export default function CreateDirectSalePage() {
                                             />
                                         </Grid>
 
+                                        <Grid size={{ xs: 12 }}>
+                                            <Typography sx={fieldLabelStyle}>{t('createDirectSale.descriptionLabel', 'Description')}</Typography>
+                                            <TextField
+                                                fullWidth
+                                                placeholder="description"
+                                                variant="outlined" multiline rows={4}
+                                                {...formik.getFieldProps('description')}
+                                                error={(formik.touched.description || formik.submitCount > 0) && !!formik.errors.description}
+                                                helperText={(formik.touched.description || formik.submitCount > 0) && formik.errors.description}
+                                                sx={inputStyle}
+                                            />
+                                        </Grid>
 
                                         <Grid size={{ xs: 12, sm: 6 }}>
                                             <Typography sx={fieldLabelStyle}>{t('createDirectSale.productCategory', 'Catégories')}</Typography>
@@ -452,25 +468,6 @@ export default function CreateDirectSalePage() {
                                                 helperText={(formik.touched.quantity || formik.submitCount > 0) && formik.errors.quantity}
                                                 sx={inputStyle}
                                             />
-                                        </Grid>
-
-                                        <Grid size={{ xs: 12 }}>
-                                            <Typography sx={fieldLabelStyle}>Statut de produit</Typography>
-                                            <TextField
-                                                select
-                                                fullWidth
-                                                variant="outlined"
-                                                placeholder="Produit ou Service"
-                                                {...formik.getFieldProps('saleType')}
-                                                error={(formik.touched.saleType || formik.submitCount > 0) && !!formik.errors.saleType}
-                                                helperText={(formik.touched.saleType || formik.submitCount > 0) && formik.errors.saleType}
-                                                sx={inputStyle}
-                                                SelectProps={{ displayEmpty: true }}
-                                            >
-                                                <MenuItem value="" disabled>Produit ou Service</MenuItem>
-                                                <MenuItem value={DIRECT_SALE_TYPES.PRODUCT}>Produit</MenuItem>
-                                                <MenuItem value={DIRECT_SALE_TYPES.SERVICE}>Service</MenuItem>
-                                            </TextField>
                                         </Grid>
                                         
                                         <Grid size={{ xs: 12, sm: 6 }}>

@@ -321,11 +321,10 @@ const Footer = () => {
             Lorem ipsum dolor sit amet consectetur. Ultrices velit eget mattis eu enim volutpat.
           </p>
           <div className="footer-social">
-            <Link href="#" aria-label="Instagram"><i className="bi bi-instagram"></i></Link>
+            <Link href="https://www.instagram.com/mazadclick_/" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><i className="bi bi-instagram"></i></Link>
             <Link href="#" aria-label="YouTube"><i className="bi bi-youtube"></i></Link>
-            <Link href="#" aria-label="Twitter"><i className="bi bi-twitter-x"></i></Link>
-            <Link href="#" aria-label="Facebook"><i className="bi bi-facebook"></i></Link>
-            <Link href="#" aria-label="LinkedIn"><i className="bi bi-linkedin"></i></Link>
+            <Link href="https://www.facebook.com/p/MazadClick-61579383136812/" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><i className="bi bi-facebook"></i></Link>
+            <Link href="https://www.linkedin.com/in/mazad-click-515490389/?originalSubdomain=dz" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><i className="bi bi-linkedin"></i></Link>
           </div>
         </div>
 

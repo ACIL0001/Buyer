@@ -229,86 +229,18 @@ export default function CreateTenderPage() {
                                 <Grid size={{ xs: 12, md: 7.5 }}>
                                     <Stack spacing={4}>
                                         <Box sx={cardStyle}>
-                                            <Typography variant="h5" sx={{ color: '#002795', fontWeight: 700, fontSize: '24px', mb: 1 }}>
-                                                Détails de l'offre
-                                            </Typography>
-                                            <Typography variant="body2" sx={{ color: '#64748b', mb: 4 }}>
-                                                {!formik.values.evaluationType 
-                                                    ? "Veuillez choisir une méthode et un type pour configurer votre offre."
-                                                    : formik.values.evaluationType === 'MOINS_DISANT' 
-                                                        ? "Appel d'offre basé sur le critère du prix." 
-                                                        : "Appel d'offre basé sur la qualité de l'expertise."}
-                                            </Typography>
+                                             <Typography variant="h5" sx={{ color: '#002795', fontWeight: 700, fontSize: '24px', mb: 1 }}>
+                                                 Détails de l'offre
+                                             </Typography>
+                                             <Typography variant="body2" sx={{ color: '#64748b', mb: 4 }}>
+                                                 {!formik.values.evaluationType 
+                                                     ? "Veuillez choisir une méthode et un type pour configurer votre offre."
+                                                     : formik.values.evaluationType === 'MOINS_DISANT' 
+                                                         ? "Appel d'offre basé sur le critère du prix." 
+                                                         : "Appel d'offre basé sur la qualité de l'expertise."}
+                                             </Typography>
 
-                                            {/* MODERN INTEGRATED SELECTORS */}
-                                            <Box sx={{ display: 'flex', gap: 4, mb: 5, flexWrap: 'wrap' }}>
-                                                <Box>
-                                                    <Typography sx={{ color: '#002795', fontWeight: 700, fontSize: '0.9rem', mb: 1.5 }}>Méthode d'offre</Typography>
-                                                    <Box sx={{ display: 'flex', backgroundColor: '#F8FAFC', p: 0.75, borderRadius: '16px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
-                                                        {[
-                                                            { id: 'MOINS_DISANT', label: 'Moins disant', icon: '✨' },
-                                                            { id: 'MIEUX_DISANT', label: 'Mieux disant', icon: '🏆' }
-                                                        ].map((m) => (
-                                                            <Box
-                                                                key={m.id}
-                                                                onClick={() => formik.setFieldValue('evaluationType', m.id)}
-                                                                sx={{
-                                                                    px: 2.5, py: 1, borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1,
-                                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                                    backgroundColor: formik.values.evaluationType === m.id ? '#ffffff' : 'transparent',
-                                                                    color: formik.values.evaluationType === m.id ? '#002795' : '#64748b',
-                                                                    boxShadow: formik.values.evaluationType === m.id ? '0 4px 12px rgba(0,39,149,0.1)' : 'none',
-                                                                }}
-                                                            >
-                                                                <Typography sx={{ fontSize: '1rem' }}>{m.icon}</Typography>
-                                                                <Typography sx={{ fontSize: '0.85rem', fontWeight: formik.values.evaluationType === m.id ? 700 : 500 }}>{m.label}</Typography>
-                                                            </Box>
-                                                        ))}
-                                                    </Box>
-                                                </Box>
-
-                                                <Box>
-                                                    <Typography sx={{ color: '#002795', fontWeight: 700, fontSize: '0.9rem', mb: 1.5 }}>Type d'appel d'offre</Typography>
-                                                    <Box sx={{ display: 'flex', backgroundColor: '#F8FAFC', p: 0.75, borderRadius: '16px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
-                                                        {[
-                                                            { id: 'CLASSIC', label: 'Classique', icon: '⚖️' },
-                                                            { id: 'EXPRESS', label: 'Express', icon: '⚡' }
-                                                        ].map((t) => (
-                                                            <Box
-                                                                key={t.id}
-                                                                onClick={() => formik.setFieldValue('auctionType', t.id)}
-                                                                sx={{
-                                                                    px: 2.5, py: 1, borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1,
-                                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                                    backgroundColor: formik.values.auctionType === t.id ? '#ffffff' : 'transparent',
-                                                                    color: formik.values.auctionType === t.id ? '#002795' : '#64748b',
-                                                                    boxShadow: formik.values.auctionType === t.id ? '0 4px 12px rgba(0,39,149,0.1)' : 'none',
-                                                                }}
-                                                            >
-                                                                <Typography sx={{ fontSize: '1rem' }}>{t.icon}</Typography>
-                                                                <Typography sx={{ fontSize: '0.85rem', fontWeight: formik.values.auctionType === t.id ? 700 : 500 }}>{t.label}</Typography>
-                                                            </Box>
-                                                        ))}
-                                                    </Box>
-                                                </Box>
-                                            </Box>
-
-                                            <Grid container spacing={3}>
-                                                <Grid size={{ xs: 12 }}>
-                                                    <Typography sx={fieldLabelStyle}>Titre</Typography>
-                                                    <TextField fullWidth placeholder="Titre" {...formik.getFieldProps('title')} sx={inputStyle} error={(formik.touched.title || formik.submitCount > 0) && !!formik.errors.title} helperText={(formik.touched.title || formik.submitCount > 0) && formik.errors.title} />
-                                                </Grid>
-                                                <Grid size={{ xs: 12 }}>
-                                                    <Typography sx={fieldLabelStyle}>Catégorie</Typography>
-                                                    <TextField select fullWidth {...formik.getFieldProps('category')} sx={inputStyle} SelectProps={{ displayEmpty: true }} error={(formik.touched.category || formik.submitCount > 0) && !!formik.errors.category} helperText={(formik.touched.category || formik.submitCount > 0) && formik.errors.category}>
-                                                        <MenuItem value="" disabled>Categories</MenuItem>
-                                                        {categories.map(c => <MenuItem key={c._id} value={c._id}>{c.name}</MenuItem>)}
-                                                    </TextField>
-                                                </Grid>
-                                                <Grid size={{ xs: 12 }}>
-                                                    <Typography sx={fieldLabelStyle}>Description</Typography>
-                                                    <TextField fullWidth multiline rows={8} placeholder="Description offre" {...formik.getFieldProps('description')} sx={inputStyle} error={(formik.touched.description || formik.submitCount > 0) && !!formik.errors.description} helperText={(formik.touched.description || formik.submitCount > 0) && formik.errors.description} />
-                                                </Grid>
+                                             <Grid container spacing={3} sx={{ mb: 4 }}>
                                                 <Grid size={{ xs: 12 }}>
                                                     <Typography sx={fieldLabelStyle}>Statut de produit</Typography>
                                                     <TextField select fullWidth {...formik.getFieldProps('tenderType')} sx={inputStyle} SelectProps={{ displayEmpty: true }} error={(formik.touched.tenderType || formik.submitCount > 0) && !!formik.errors.tenderType} helperText={(formik.touched.tenderType || formik.submitCount > 0) && formik.errors.tenderType}>
@@ -317,8 +249,79 @@ export default function CreateTenderPage() {
                                                         <MenuItem value="SERVICE">Service</MenuItem>
                                                     </TextField>
                                                 </Grid>
+                                                <Grid size={{ xs: 12 }}>
+                                                    <Typography sx={fieldLabelStyle}>Titre</Typography>
+                                                    <TextField fullWidth placeholder="Titre" {...formik.getFieldProps('title')} sx={inputStyle} error={(formik.touched.title || formik.submitCount > 0) && !!formik.errors.title} helperText={(formik.touched.title || formik.submitCount > 0) && formik.errors.title} />
+                                                </Grid>
+                                                <Grid size={{ xs: 12 }}>
+                                                    <Typography sx={fieldLabelStyle}>Description</Typography>
+                                                    <TextField fullWidth multiline rows={8} placeholder="Description offre" {...formik.getFieldProps('description')} sx={inputStyle} error={(formik.touched.description || formik.submitCount > 0) && !!formik.errors.description} helperText={(formik.touched.description || formik.submitCount > 0) && formik.errors.description} />
+                                                </Grid>
                                             </Grid>
-                                        </Box>
+
+                                             {/* MODERN INTEGRATED SELECTORS */}
+                                             <Box sx={{ display: 'flex', gap: 4, mb: 5, flexWrap: 'wrap' }}>
+                                                 <Box>
+                                                     <Typography sx={{ color: '#002795', fontWeight: 700, fontSize: '0.9rem', mb: 1.5 }}>Méthode d'offre</Typography>
+                                                     <Box sx={{ display: 'flex', backgroundColor: '#F8FAFC', p: 0.75, borderRadius: '16px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
+                                                         {[
+                                                             { id: 'MOINS_DISANT', label: 'Moins disant', icon: '✨' },
+                                                             { id: 'MIEUX_DISANT', label: 'Mieux disant', icon: '🏆' }
+                                                         ].map((m) => (
+                                                             <Box
+                                                                 key={m.id}
+                                                                 onClick={() => formik.setFieldValue('evaluationType', m.id)}
+                                                                 sx={{
+                                                                     px: 2.5, py: 1, borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1,
+                                                                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                                     backgroundColor: formik.values.evaluationType === m.id ? '#ffffff' : 'transparent',
+                                                                     color: formik.values.evaluationType === m.id ? '#002795' : '#64748b',
+                                                                     boxShadow: formik.values.evaluationType === m.id ? '0 4px 12px rgba(0,39,149,0.1)' : 'none',
+                                                                 }}
+                                                             >
+                                                                 <Typography sx={{ fontSize: '1rem' }}>{m.icon}</Typography>
+                                                                 <Typography sx={{ fontSize: '0.85rem', fontWeight: formik.values.evaluationType === m.id ? 700 : 500 }}>{m.label}</Typography>
+                                                             </Box>
+                                                         ))}
+                                                     </Box>
+                                                 </Box>
+
+                                                 <Box>
+                                                     <Typography sx={{ color: '#002795', fontWeight: 700, fontSize: '0.9rem', mb: 1.5 }}>Type d'appel d'offre</Typography>
+                                                     <Box sx={{ display: 'flex', backgroundColor: '#F8FAFC', p: 0.75, borderRadius: '16px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
+                                                         {[
+                                                             { id: 'CLASSIC', label: 'Classique', icon: '⚖️' },
+                                                             { id: 'EXPRESS', label: 'Express', icon: '⚡' }
+                                                         ].map((t) => (
+                                                             <Box
+                                                                 key={t.id}
+                                                                 onClick={() => formik.setFieldValue('auctionType', t.id)}
+                                                                 sx={{
+                                                                     px: 2.5, py: 1, borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1,
+                                                                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                                     backgroundColor: formik.values.auctionType === t.id ? '#ffffff' : 'transparent',
+                                                                     color: formik.values.auctionType === t.id ? '#002795' : '#64748b',
+                                                                     boxShadow: formik.values.auctionType === t.id ? '0 4px 12px rgba(0,39,149,0.1)' : 'none',
+                                                                 }}
+                                                             >
+                                                                 <Typography sx={{ fontSize: '1rem' }}>{t.icon}</Typography>
+                                                                 <Typography sx={{ fontSize: '0.85rem', fontWeight: formik.values.auctionType === t.id ? 700 : 500 }}>{t.label}</Typography>
+                                                             </Box>
+                                                         ))}
+                                                     </Box>
+                                                 </Box>
+                                             </Box>
+
+                                             <Grid container spacing={3}>
+                                                 <Grid size={{ xs: 12 }}>
+                                                     <Typography sx={fieldLabelStyle}>Catégorie</Typography>
+                                                     <TextField select fullWidth {...formik.getFieldProps('category')} sx={inputStyle} SelectProps={{ displayEmpty: true }} error={(formik.touched.category || formik.submitCount > 0) && !!formik.errors.category} helperText={(formik.touched.category || formik.submitCount > 0) && formik.errors.category}>
+                                                         <MenuItem value="" disabled>Categories</MenuItem>
+                                                         {categories.map(c => <MenuItem key={c._id} value={c._id}>{c.name}</MenuItem>)}
+                                                     </TextField>
+                                                 </Grid>
+                                             </Grid>
+                                         </Box>
 
                                         <Box sx={cardStyle}>
                                             <Typography variant="h5" sx={{ color: '#002795', fontWeight: 700, fontSize: '22px', mb: 3 }}>

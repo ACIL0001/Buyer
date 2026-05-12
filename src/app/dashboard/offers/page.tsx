@@ -7,20 +7,23 @@ import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-quer
 import { useCreateSocket } from '@/contexts/socket';
 import useAuth from '@/hooks/useAuth';
 import Link from 'next/link';
-import DashboardPageShell from '@/components/dashboard/DashboardPageShell';
-import {
-  StatusBadge, ActionBtn, tableStyles, DashboardKeyframes,
-  SimplePagination, PillTabs, ListPageSkeleton,
-} from '@/components/dashboard/dashboardHelpers';
+import { ListPageSkeleton, DashboardKeyframes } from '@/components/dashboard/dashboardHelpers';
+import './offers-styles.css';
+import { 
+  BsArrowLeft, BsDownload, BsClock, BsCheckCircle, BsXCircle, 
+  BsThreeDotsVertical, BsChevronLeft, BsChevronRight, BsSearch, BsPlusLg
+} from 'react-icons/bs';
 
 interface Bid {
   _id: string; title: string; currentPrice: number;
   status: 'active' | 'pending' | 'expired' | 'completed';
   endDate: string; category?: string;
+  thumbs?: any[];
 }
 interface User {
   _id: string; firstName: string; lastName: string; username?: string;
   email: string; phone: string; companyName?: string; entreprise?: string;
+  avatar?: any;
 }
 interface Offer {
   _id: string; price: number; createdAt: string;
@@ -31,17 +34,14 @@ interface Offer {
 function offerStatusConfig(offer: Offer) {
   const isExpired = offer.bid?.endDate && new Date(offer.bid.endDate) < new Date();
   const s = offer.status;
-  if (isExpired || s === 'DECLINED') return { label: 'Décliné', color: '#dc2626', bg: '#fee2e2' };
+  if (isExpired || s === 'DECLINED') return { label: 'Rejeté', color: '#dc2626', bg: '#fee2e2' };
   if (s === 'ACCEPTED') return { label: 'Accepté', color: '#16a34a', bg: '#dcfce7' };
   return { label: 'En attente', color: '#d97706', bg: '#fef3c7', dot: true as boolean };
 }
 
 function formatDate(d: string) {
   if (!d) return 'N/A';
-  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
-function formatPrice(n: number) {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'DZD', minimumFractionDigits: 0 }).format(n);
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
 }
 
 export default function OffersPage() {
@@ -50,7 +50,7 @@ export default function OffersPage() {
   const { auth, isLogged } = useAuth();
   const { t } = useTranslation();
 
-  const [filterTab, setFilterTab] = useState<'received' | 'my'>('my');
+  const [filterTab, setFilterTab] = useState<'received' | 'my'>('received');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -63,17 +63,6 @@ export default function OffersPage() {
     const tab = searchParams.get('tab');
     if (tab === 'received' || tab === 'my') setFilterTab(tab as 'received' | 'my');
   }, [searchParams]);
-
-  useEffect(() => {
-    if (!socket) return;
-    const handleRefetch = () => queryClient.invalidateQueries({ queryKey: ['offers', 'my'] });
-    socket.on('newListingCreated', handleRefetch);
-    socket.on('notification', handleRefetch);
-    return () => {
-      socket.off('newListingCreated', handleRefetch);
-      socket.off('notification', handleRefetch);
-    };
-  }, [socket, queryClient]);
 
   const { data: offersData = [], isLoading: isQueryLoading, error, refetch } = useQuery({
     queryKey: ['offers', 'my'],
@@ -102,11 +91,6 @@ export default function OffersPage() {
     try { const { OffersAPI } = await import('@/services/offers'); await OffersAPI.rejectOffer(id); await refetch(); }
     catch {} finally { setIsMutating(false); }
   };
-  const handleDelete = async (id: string) => {
-    setIsMutating(true);
-    try { const { OffersAPI } = await import('@/services/offers'); await OffersAPI.deleteOffer(id); await refetch(); }
-    catch {} finally { setIsMutating(false); }
-  };
 
   const userId = auth?.user?._id;
   const received = useMemo(() => offers.filter(o => o.user._id !== userId), [offers, userId]);
@@ -126,130 +110,201 @@ export default function OffersPage() {
 
   const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
-  const pending = current.filter(o => !o.status || o.status === 'PENDING').length;
-  const accepted = current.filter(o => o.status === 'ACCEPTED').length;
-  const declined = current.filter(o => o.status === 'DECLINED').length;
+  const pendingCount = current.filter(o => !o.status || o.status === 'PENDING').length;
+  const acceptedCount = current.filter(o => o.status === 'ACCEPTED').length;
+  const declinedCount = current.filter(o => o.status === 'DECLINED').length;
 
-  const stats = [
-    { label: 'Total', value: current.length, color: 'var(--primary-auction-color)', icon: '📋' },
-    { label: 'En attente', value: pending, color: '#f59e0b', icon: '⏳' },
-    { label: 'Acceptées', value: accepted, color: '#10b981', icon: '✅' },
-    { label: 'Déclinées', value: declined, color: '#ef4444', icon: '❌' },
-  ];
+  const getImageUrl = (item: any) => {
+    if (!item) return '/assets/img/logo.png';
+    const url = item.fullUrl || item.url || (item.thumbs?.[0]?.url);
+    return url || '/assets/img/logo.png';
+  };
 
-  if (isQueryLoading && !offers.length) return <ListPageSkeleton accentColor="var(--primary-auction-color)" />;
+  const getAvatarInitials = (user: User) => {
+    const name = user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username || 'U';
+    return name.charAt(0).toUpperCase();
+  };
+
+  if (isQueryLoading && !offers.length) return <ListPageSkeleton accentColor="#0050CB" />;
 
   return (
-    <>
+    <div className="figma-offers-main">
       <DashboardKeyframes />
-      <DashboardPageShell
-        title={filterTab === 'received' ? 'Offres Reçues' : 'Mes Offres'}
-        subtitle="Gestion des offres d'enchères"
-        icon="💼"
-        stats={stats}
-      >
-        {/* Tabs */}
-        <div style={{ padding: '16px 20px 0' }}>
-          <PillTabs
-            value={filterTab}
-            onChange={(v) => { setFilterTab(v as 'received' | 'my'); setPage(0); router.push(`/dashboard/offers?tab=${v}`); }}
-            tabs={[
-              { value: 'received', label: 'Offres Reçues', count: received.length },
-              { value: 'my', label: 'Mes Offres', count: myOffers.length },
-            ]}
-          />
+      
+      {/* Header Section */}
+      <div className="figma-offers-header">
+        <div className="figma-offers-welcome">
+          <h1>Bienvenue {auth?.user?.firstName || 'Utilisateur'}</h1>
+          <p>Voici un aperçu de votre activité</p>
         </div>
+        <button className="figma-offers-publish-btn" onClick={() => router.push('/dashboard/auctions/create')}>
+          <BsPlusLg /> Publier une Enchère
+        </button>
+      </div>
 
-        {/* Toolbar */}
-        <div style={tableStyles.toolbar}>
-          <span style={{ color: '#64748b', fontSize: '0.85rem', fontWeight: 500 }}>
-            {filtered.length} offre{filtered.length !== 1 ? 's' : ''}
-          </span>
-          <div style={tableStyles.searchWrap}>
-            <span style={tableStyles.searchIcon}>🔍</span>
-            <input style={tableStyles.searchInput} placeholder="Rechercher..." value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} />
+      {/* Stats Bento Grid */}
+      <div className="figma-offers-stats-grid">
+        <div className="figma-offers-stat-card">
+          <div className="figma-offers-stat-icon-wrapper" style={{ background: '#EFF6FF', color: '#0050CB' }}>
+            <BsDownload />
+          </div>
+          <div className="figma-offers-stat-info">
+            <span className="figma-offers-stat-label">Reçues</span>
+            <span className="figma-offers-stat-value">{current.length}</span>
           </div>
         </div>
-
-        {error && (
-          <div style={{ margin: '16px 20px', padding: '12px 16px', background: '#fee2e2', borderRadius: '10px', color: '#dc2626', fontSize: '0.875rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>⚠️ {(error as any)?.message || 'Erreur'}</span>
-            <button onClick={() => refetch()} style={{ background: 'none', border: 'none', color: '#dc2626', fontWeight: 700, cursor: 'pointer' }}>Réessayer</button>
+        <div className="figma-offers-stat-card">
+          <div className="figma-offers-stat-icon-wrapper" style={{ background: '#FFFBEB', color: '#D97706' }}>
+            <BsClock />
           </div>
-        )}
-
-        {filtered.length === 0 ? (
-          <div style={tableStyles.emptyState}>
-            <div style={{ fontSize: '52px', marginBottom: '16px' }}>💼</div>
-            <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569', margin: '0 0 8px' }}>Aucune offre trouvée</p>
-            <p style={{ color: '#94a3b8', margin: 0 }}>{filterTab === 'received' ? "Vous n'avez pas encore reçu d'offres." : "Vous n'avez pas encore fait d'offres."}</p>
+          <div className="figma-offers-stat-info">
+            <span className="figma-offers-stat-label">En attente</span>
+            <span className="figma-offers-stat-value">{pendingCount}</span>
           </div>
-        ) : (
-          <table style={tableStyles.table}>
-            <thead>
+        </div>
+        <div className="figma-offers-stat-card">
+          <div className="figma-offers-stat-icon-wrapper" style={{ background: '#ECFDF5', color: '#10B981' }}>
+            <BsCheckCircle />
+          </div>
+          <div className="figma-offers-stat-info">
+            <span className="figma-offers-stat-label">Acceptées</span>
+            <span className="figma-offers-stat-value">{acceptedCount}</span>
+          </div>
+        </div>
+        <div className="figma-offers-stat-card">
+          <div className="figma-offers-stat-icon-wrapper" style={{ background: '#FEF2F2', color: '#EF4444' }}>
+            <BsXCircle />
+          </div>
+          <div className="figma-offers-stat-info">
+            <span className="figma-offers-stat-label">Rejetés</span>
+            <span className="figma-offers-stat-value">{declinedCount}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs / Filter Section */}
+      <div className="figma-offers-tabs-container">
+        <button 
+          className={`figma-offers-tab ${filterTab === 'received' ? 'active' : ''}`}
+          onClick={() => { setFilterTab('received'); setPage(0); router.push('/dashboard/offers?tab=received'); }}
+        >
+          Offres Reçues
+        </button>
+        <button 
+          className={`figma-offers-tab ${filterTab === 'my' ? 'active' : ''}`}
+          onClick={() => { setFilterTab('my'); setPage(0); router.push('/dashboard/offers?tab=my'); }}
+        >
+          Mes Offres
+        </button>
+      </div>
+
+      {/* Main Table Card */}
+      <div className="figma-offers-table-card">
+        <div className="figma-offers-table-header">
+          <h2>{filterTab === 'received' ? 'Enchères reçues' : 'Mes Enchères'}</h2>
+        </div>
+        
+        <table className="figma-offers-table">
+          <thead>
+            <tr>
+              <th className="figma-offers-th">Produit</th>
+              <th className="figma-offers-th">Utilisateur</th>
+              <th className="figma-offers-th">Prix Actuel</th>
+              <th className="figma-offers-th">Status</th>
+              <th className="figma-offers-th" style={{ textAlign: 'right' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginated.length === 0 ? (
               <tr>
-                {['Utilisateur', 'Téléphone', 'Enchère', 'Montant', 'Statut', 'Date', ''].map(h => (
-                  <th key={h} style={tableStyles.th}>{h}</th>
-                ))}
+                <td colSpan={5} style={{ padding: '60px', textAlign: 'center', color: '#64748B' }}>
+                  Aucune offre trouvée
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {paginated.map(row => {
-                const { _id, user, price, createdAt, bid } = row;
-                const displayName = user?.companyName || user?.entreprise || (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username || 'N/A');
-                const initials = displayName.charAt(0).toUpperCase();
+            ) : (
+              paginated.map((row) => {
+                const { _id, user, price, bid } = row;
+                const config = offerStatusConfig(row);
+                const displayName = user.companyName || user.entreprise || `${user.firstName} ${user.lastName}`;
+                
                 return (
-                  <tr key={_id} className="db-row" style={tableStyles.trHover}>
-                    <td style={tableStyles.td}>
-                      <Link href={`/dashboard/profile/${user?._id}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}>
-                        <div style={tableStyles.avatar('var(--primary-auction-color)')}>{initials}</div>
-                        <div>
-                          <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>{displayName}</div>
-                          {user?.email && <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{user.email}</div>}
+                  <tr key={_id} className="figma-offers-tr">
+                    <td className="figma-offers-td">
+                      <Link href={`/dashboard/auctions/${bid?._id}`} style={{ textDecoration: 'none' }}>
+                        <div className="figma-offers-product-info">
+                          <img src={getImageUrl(bid)} className="figma-offers-product-img" alt="" />
+                          <div className="figma-offers-product-text">
+                            <span className="figma-offers-product-name">{bid?.title || 'N/A'}</span>
+                            <span className="figma-offers-product-cat">{bid?.category || 'Catégorie'}</span>
+                          </div>
                         </div>
                       </Link>
                     </td>
-                    <td style={{ ...tableStyles.td, color: '#64748b' }}>{user?.phone || 'N/A'}</td>
-                    <td style={tableStyles.td}>
-                      <div style={{ fontWeight: 600, color: '#1e293b' }}>{bid?.title || 'N/A'}</div>
-                      {bid?.category && <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{bid.category}</div>}
+                    <td className="figma-offers-td">
+                      <div className="figma-offers-user-info">
+                        <div className="figma-offers-user-avatar" style={{ background: 'linear-gradient(135deg, #0050CB, #002896)' }}>
+                          {getAvatarInitials(user)}
+                        </div>
+                        <span className="figma-offers-user-name">{displayName}</span>
+                      </div>
                     </td>
-                    <td style={tableStyles.td}>
-                      <span style={{ fontWeight: 700, color: '#10b981', fontSize: '0.95rem' }}>{formatPrice(price)}</span>
+                    <td className="figma-offers-td">
+                      <span className="figma-offers-price">{price.toLocaleString()} Da</span>
                     </td>
-                    <td style={tableStyles.td}><StatusBadge config={offerStatusConfig(row)} /></td>
-                    <td style={{ ...tableStyles.td, color: '#64748b', fontSize: '0.82rem' }}>{formatDate(createdAt)}</td>
-                    <td style={{ ...tableStyles.td, textAlign: 'right' }}>
-                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                        {bid?._id && (
-                          <ActionBtn
-                            label="Voir"
-                            icon="👁️"
-                            href={filterTab === 'received' ? `/dashboard/auctions/${bid._id}/offers/${_id}` : `/dashboard/auctions/${bid._id}`}
-                          />
-                        )}
+                    <td className="figma-offers-td">
+                      <div style={{ 
+                        display: 'flex', alignItems: 'center', gap: '6px', 
+                        padding: '4px 12px', borderRadius: '999px', width: 'fit-content',
+                        background: config.bg, color: config.color, fontSize: '12px', fontWeight: 600
+                      }}>
+                        {config.dot && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: config.color }}></span>}
+                        {config.label}
+                      </div>
+                    </td>
+                    <td className="figma-offers-td" style={{ textAlign: 'right' }}>
+                      <div className="figma-offers-actions">
+                        <Link 
+                          href={filterTab === 'received' ? `/dashboard/auctions/${bid?._id}/offers/${_id}` : `/dashboard/auctions/${bid?._id}`}
+                          className="figma-offers-btn-details"
+                        >
+                          Détails
+                        </Link>
                         {filterTab === 'received' && (!row.status || row.status === 'PENDING') && (
                           <>
-                            <ActionBtn label="Accepter" icon="✅" variant="success" onClick={() => handleAccept(_id)} disabled={isLoading} />
-                            <ActionBtn label="Refuser" icon="❌" variant="danger" onClick={() => handleReject(_id)} disabled={isLoading} />
+                            <button className="figma-offers-btn-accept" onClick={() => handleAccept(_id)}>Accepter</button>
+                            <button className="figma-offers-btn-reject" onClick={() => handleReject(_id)}>Rejeter</button>
                           </>
-                        )}
-                        {filterTab === 'my' && (
-                          <ActionBtn label="Supprimer" icon="🗑️" variant="danger" onClick={() => handleDelete(_id)} disabled={isLoading} />
                         )}
                       </div>
                     </td>
                   </tr>
                 );
-              })}
-            </tbody>
-          </table>
-        )}
+              })
+            )}
+          </tbody>
+        </table>
 
-        {filtered.length > 0 && (
-          <SimplePagination page={page} rowsPerPage={rowsPerPage} total={filtered.length} onPageChange={setPage} onRowsPerPageChange={setRowsPerPage} />
+        {/* Pagination */}
+        {filtered.length > rowsPerPage && (
+          <div className="figma-offers-pagination">
+            <button className="figma-offers-page-btn" disabled={page === 0} onClick={() => setPage(page - 1)}>
+              <BsChevronLeft />
+            </button>
+            {[...Array(Math.ceil(filtered.length / rowsPerPage))].map((_, i) => (
+              <button 
+                key={i} 
+                className={`figma-offers-page-btn ${page === i ? 'active' : ''}`}
+                onClick={() => setPage(i)}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button className="figma-offers-page-btn" disabled={(page + 1) * rowsPerPage >= filtered.length} onClick={() => setPage(page + 1)}>
+              <BsChevronRight />
+            </button>
+          </div>
         )}
-      </DashboardPageShell>
-    </>
+      </div>
+    </div>
   );
 }

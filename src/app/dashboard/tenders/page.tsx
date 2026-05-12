@@ -33,10 +33,12 @@ function formatDate(d: string) {
   return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
+import { BsBell, BsEnvelope, BsPlusLg } from 'react-icons/bs';
+
 export default function TendersPage() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { isLogged } = useAuth();
+  const { auth, isLogged } = useAuth();
   const [statusFilter, setStatusFilter] = useState('ALL');
   const queryClient = useQueryClient();
   const { socket } = useCreateSocket() || {};
@@ -81,71 +83,105 @@ export default function TendersPage() {
     <div style={{ 
       position: 'relative', 
       width: '100%', 
-      height: '920px', // Calculated: Top (308) + Height (602) + small buffer
+      padding: '32px 40px',
       fontFamily: "'Inter', sans-serif",
+      minHeight: '100vh',
+      background: '#F8FAFC'
     }}>
       
-      {/* --- STATS CARDS --- */}
-      {/* Offres et services publiés */}
+      {/* --- HEADER --- */}
       <div style={{
-        boxSizing: 'border-box',
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        padding: '24px 24px 25px',
-        gap: '4px',
-        position: 'absolute',
-        width: '245px',
-        height: '167px',
-        left: '33px', // 313 (viewport) - 280 (sidebar)
-        top: '20px',  // Relative to content start
-        background: '#FFFFFF',
-        border: '1px solid #F8FAFC',
-        boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)',
-        borderRadius: '12px',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        width: '100%',
+        marginBottom: '32px'
       }}>
-        <PublishedIcon />
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '12px 0px 0px', width: '188px', height: '32px' }}>
-          <span style={{ width: '188px', height: '20px', fontWeight: 500, fontSize: '14px', lineHeight: '20px', color: '#64748B' }}>
-            Offres et services publiés
-          </span>
-        </div>
-        <div style={{ width: '188px', height: '36px', fontWeight: 700, fontSize: '30px', lineHeight: '36px', color: '#0F172A' }}>
-          {tenders.length}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button 
+            onClick={() => router.push('/dashboard/tenders/create')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: '#0050CB',
+              color: '#FFFFFF',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              fontWeight: 600,
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+          >
+            <BsPlusLg /> Publier une annonce
+          </button>
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#FFFFFF', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid #F1F5F9', color: '#64748B', cursor: 'pointer' }}>
+            <BsBell size={18} />
+          </div>
+          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#FFFFFF', display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid #F1F5F9', color: '#64748B', cursor: 'pointer' }}>
+            <BsEnvelope size={18} />
+          </div>
         </div>
       </div>
 
-      {/* Demandes reçu */}
-      <div style={{
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        padding: '24px 24px 25px',
-        gap: '4px',
-        position: 'absolute',
-        width: '245px',
-        height: '167px',
-        left: '308px', // 588 (viewport) - 280 (sidebar)
-        top: '20px',  // Relative to content start
-        background: '#FFFFFF',
-        border: '1px solid #F8FAFC',
-        boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)',
-        borderRadius: '12px',
-      }}>
-        <ReceivedIcon />
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '12px 0px 0px', width: '188px', height: '32px' }}>
-          <span style={{ width: '188px', height: '20px', fontWeight: 500, fontSize: '14px', lineHeight: '20px', color: '#64748B' }}>
-            Demandes reçu
-          </span>
+      {/* --- STATS GRID --- */}
+      <div style={{ display: 'flex', gap: '24px', marginBottom: '32px' }}>
+        {/* Offres et services publiés */}
+        <div style={{
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          padding: '24px',
+          gap: '4px',
+          width: '245px',
+          height: '167px',
+          background: '#FFFFFF',
+          border: '1px solid #F8FAFC',
+          boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)',
+          borderRadius: '12px',
+        }}>
+          <PublishedIcon />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '12px 0px 0px', width: '100%' }}>
+            <span style={{ fontWeight: 500, fontSize: '14px', lineHeight: '20px', color: '#64748B' }}>
+              Offres et services publiés
+            </span>
+          </div>
+          <div style={{ fontWeight: 700, fontSize: '30px', lineHeight: '36px', color: '#0F172A' }}>
+            {tenders.length}
+          </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '188px', height: '36px' }}>
-          <span style={{ fontWeight: 700, fontSize: '30px', lineHeight: '36px', color: '#0F172A' }}>
-            {tenders.reduce((acc, t) => acc + (t.participantsCount || 0), 0)}
-          </span>
-          <span style={{ fontWeight: 500, fontSize: '14px', lineHeight: '20px', color: '#EFCB6E', cursor: 'pointer' }}>
-            Voir tout
-          </span>
+
+        {/* Demandes reçu */}
+        <div style={{
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          padding: '24px',
+          gap: '4px',
+          width: '245px',
+          height: '167px',
+          background: '#FFFFFF',
+          border: '1px solid #F8FAFC',
+          boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)',
+          borderRadius: '12px',
+        }}>
+          <ReceivedIcon />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '12px 0px 0px', width: '100%' }}>
+            <span style={{ fontWeight: 500, fontSize: '14px', lineHeight: '20px', color: '#64748B' }}>
+              Demandes reçu
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <span style={{ fontWeight: 700, fontSize: '30px', lineHeight: '36px', color: '#0F172A' }}>
+              {tenders.reduce((acc, t) => acc + (t.participantsCount || 0), 0)}
+            </span>
+            <span style={{ fontWeight: 500, fontSize: '14px', lineHeight: '20px', color: '#EFCB6E', cursor: 'pointer' }}>
+              Voir tout
+            </span>
+          </div>
         </div>
       </div>
 
@@ -156,11 +192,9 @@ export default function TendersPage() {
         flexDirection: 'column',
         alignItems: 'flex-start',
         padding: '8px 0px 0px',
-        position: 'absolute',
-        width: '1116px',
-        height: '602px',
-        left: '26px', // 306 (viewport) - 280 (sidebar)
-        top: '230px', // 308 (viewport) - 196 (header) + buffer
+        width: '100%',
+        maxWidth: '1116px',
+        minHeight: '602px',
         background: '#FFFFFF',
         border: '1px solid #E2E8F0',
         boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',

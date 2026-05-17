@@ -85,7 +85,8 @@ const MultipurposeDirectSaleSidebar = () => {
     // Type Filter (Product/Service)
     if (selectedTypes.length > 0) {
       filtered = filtered.filter(s => {
-        const type = (s.saleType || s.type || s.tenderType || '').toUpperCase();
+        const rawType = s.saleType || s.type || s.tenderType || '';
+        const type = String(rawType).toUpperCase();
         return selectedTypes.includes(type);
       });
     }
@@ -100,12 +101,34 @@ const MultipurposeDirectSaleSidebar = () => {
 
     // Category Filter
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter(s => selectedCategories.includes(s.categoryId || s.category?._id));
+      filtered = filtered.filter(s => {
+        const catObj = s.productCategory || s.category;
+        const catId = s.categoryId || (typeof catObj === 'object' ? catObj?._id : catObj);
+        return selectedCategories.includes(catId);
+      });
     }
 
     // Wilaya Filter
     if (selectedWilaya) {
-      filtered = filtered.filter(s => s.wilaya === selectedWilaya);
+      filtered = filtered.filter(s => {
+        const rawWilaya = s.wilaya || s.location || (s.owner && s.owner.wilaya) || '';
+        return String(rawWilaya).trim().toLowerCase() === String(selectedWilaya).trim().toLowerCase();
+      });
+    }
+
+    // Availability Filter
+    if (availability.inStock) {
+      filtered = filtered.filter(s => (s.quantity - (s.soldQuantity || 0)) > 0);
+    }
+    if (availability.recentlyPublished) {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      filtered = filtered.filter(s => new Date(s.createdAt) > oneWeekAgo);
+    }
+
+    // Rating Filter
+    if (rating !== null) {
+      filtered = filtered.filter(s => (s.rating || s.owner?.rating || 0) >= rating);
     }
 
     // Search Filter
@@ -125,7 +148,7 @@ const MultipurposeDirectSaleSidebar = () => {
     }
 
     return filtered;
-  }, [allDirectSalesResponse, auth.user, selectedTypes, priceRange, selectedCategories, selectedWilaya, searchQuery, sortOrder]);
+  }, [allDirectSalesResponse, auth.user, selectedTypes, priceRange, selectedCategories, selectedWilaya, availability, rating, searchQuery, sortOrder]);
 
   const itemsPerPage = 12;
   const totalPages = Math.max(1, Math.ceil(allDirectSales.length / itemsPerPage));
@@ -158,7 +181,7 @@ const MultipurposeDirectSaleSidebar = () => {
             margin: '80px auto 0 auto', 
             letterSpacing: '0px'
           }}>
-            Marchés et ventes en cours
+            Vente et Service
           </h1>
         </div>
 
@@ -632,27 +655,19 @@ const MultipurposeDirectSaleSidebar = () => {
           onClose={() => setIsFilterOpen(false)}
           categories={categories}
           selectedCategories={selectedCategories}
-          onToggleCategory={(id: string) => setSelectedCategories(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])}
           priceRange={priceRange}
-          onPriceChange={(key: string, val: string) => setPriceRange(prev => ({ ...prev, [key]: val }))}
           wilayas={WILAYAS}
           selectedWilaya={selectedWilaya}
-          onWilayaChange={setSelectedWilaya}
           selectedTypes={selectedTypes}
-          onToggleType={(type: string) => setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])}
           availability={availability}
-          onToggleAvailability={(key: string) => { const k = key as 'inStock' | 'recentlyPublished'; setAvailability(prev => ({ ...prev, [k]: !prev[k] })); }}
-          rating={rating}
-          onToggleRating={(r: number) => setRating(prev => prev === r ? null : r)}
-          onClear={() => {
-            setPriceRange({ min: '', max: '' });
-            setSelectedCategories([]);
-            setSelectedWilaya('');
-            setSelectedTypes([]);
-            setAvailability({ inStock: false, recentlyPublished: false });
-            setRating(null);
-          }}
-          onApply={() => {
+          onApply={(data) => {
+            if (data) {
+              setSelectedCategories(data.categories || []);
+              setPriceRange(data.priceRange || { min: '', max: '' });
+              setSelectedWilaya(data.wilaya || '');
+              setSelectedTypes(data.types || []);
+              setAvailability(data.availability || { inStock: false, recentlyPublished: false });
+            }
             setIsFilterOpen(false);
             setCurrentPage(1);
           }}

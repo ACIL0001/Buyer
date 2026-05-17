@@ -71,7 +71,7 @@ const useNavConfig = () => {
           path: '/dashboard/tenders',
         },
         {
-          title: 'Nouvel appel d\'offres',
+          title: 'Créer une soumission',
           path: '/dashboard/tenders/create/',
         },
         {
@@ -81,16 +81,16 @@ const useNavConfig = () => {
       ],
     },
     {
-      title: 'Vente directe',
+      title: 'Vente et Service',
       path: '/dashboard/direct-sales',
       icon: getIcon(MdOutlineStorefront),
       children: [
         {
-          title: 'Mes ventes',
+          title: 'Mes Ventes et Services',
           path: '/dashboard/direct-sales',
         },
         {
-          title: 'Créer une vente',
+          title: 'Créer Vente et Service',
           path: '/dashboard/direct-sales/create/',
         },
         {

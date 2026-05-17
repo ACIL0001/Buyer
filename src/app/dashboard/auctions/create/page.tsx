@@ -444,8 +444,8 @@ export default function CreateAuctionPage() {
                                                             <MenuItem key={v} value={v}>{v} {v === 1 ? 'heure' : 'heures'}</MenuItem>
                                                         ))
                                                     ) : (
-                                                        [1, 2, 3, 5, 7, 10, 15, 30].map(v => (
-                                                            <MenuItem key={v} value={v}>{v} {v === 1 ? 'jour' : 'jours'}</MenuItem>
+                                                        [2, 3, 5, 7, 10, 15, 30].map(v => (
+                                                            <MenuItem key={v} value={v}>{v} jours</MenuItem>
                                                         ))
                                                     )}
                                                 </TextField>
@@ -468,7 +468,7 @@ export default function CreateAuctionPage() {
                                             </Grid>
 
                                             <Grid size={{ xs: 12, sm: 6 }}>
-                                                <Typography sx={fieldLabelStyle}>Prix</Typography>
+                                                <Typography sx={fieldLabelStyle}>Prix de départ</Typography>
                                                 <TextField
                                                     fullWidth type="number" placeholder="Prix" variant="outlined"
                                                     {...formik.getFieldProps('startingPrice')}
@@ -490,6 +490,9 @@ export default function CreateAuctionPage() {
                                                     helperText={(formik.touched.reservePrice || formik.submitCount > 0) && formik.errors.reservePrice}
                                                     sx={inputStyle} 
                                                 />
+                                                <Typography variant="caption" sx={{ color: '#64748b', mt: 0.5, display: 'block', fontStyle: 'italic' }}>
+                                                    Ce prix sera uniquement visible par le propriétaire de l'annonce
+                                                </Typography>
                                             </Grid>
 
                                             <Grid size={{ xs: 12 }}>

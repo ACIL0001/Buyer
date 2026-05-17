@@ -57,9 +57,7 @@ export default function Login() {
         {/* ── Left Section: Background Image (responsive) ── */}
         <Box
           sx={{
-            width: { xs: '0', md: '50%', lg: '55%', xl: '701px' },
-            minWidth: { xs: 0, md: '320px' },
-            maxWidth: { xl: '701px' },
+            width: { xs: '0', md: '50%' },
             height: '100%',
             position: 'relative',
             overflow: 'hidden',

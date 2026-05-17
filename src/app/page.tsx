@@ -20,15 +20,9 @@ import useAuth from '@/hooks/useAuth';
 import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
 import './style.css'
 import SocketProvider from "@/contexts/socket";
-import { CategoryAPI } from '@/app/api/category';
-import { AuctionsAPI } from '@/app/api/auctions';
-import { TendersAPI } from '@/app/api/tenders';
-import { DirectSaleAPI } from '@/app/api/direct-sale';
 import { useRouter } from 'next/navigation';
 import ResponsiveTest from '@/components/common/ResponsiveTest';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
-import PageSkeleton from '@/components/skeletons/PageSkeleton';
 
 export default function Home() {
   const { t } = useTranslation();
@@ -37,6 +31,33 @@ export default function Home() {
   
   const [headerHeight, setHeaderHeight] = useState(112);
   const actionCardsRef = useRef<HTMLDivElement | null>(null);
+  const [openCardIdx, setOpenCardIdx] = useState<number | null>(null);
+
+  // Close the expanded card when the user taps outside of the cards row.
+  useEffect(() => {
+    if (openCardIdx === null) return;
+    const handler = (e: MouseEvent | TouchEvent) => {
+      if (!actionCardsRef.current?.contains(e.target as Node)) {
+        setOpenCardIdx(null);
+      }
+    };
+    document.addEventListener('click', handler);
+    document.addEventListener('touchstart', handler);
+    return () => {
+      document.removeEventListener('click', handler);
+      document.removeEventListener('touchstart', handler);
+    };
+  }, [openCardIdx]);
+
+  const toggleCard = (idx: number) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOpenCardIdx((prev) => (prev === idx ? null : idx));
+  };
+
+  const goTo = (path: string) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    router.push(path);
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -67,19 +88,10 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const { isLoading: categoriesLoading } = useQuery({ queryKey: ['categories', 'all'], queryFn: () => CategoryAPI.getCategories() });
-  const { isLoading: auctionsLoading } = useQuery({ queryKey: ['auctions', 'all'], queryFn: () => AuctionsAPI.getAuctions() });
-  const { isLoading: tendersLoading } = useQuery({ queryKey: ['tenders', 'active'], queryFn: () => TendersAPI.getActiveTenders() });
-  const { isLoading: directSalesLoading } = useQuery({ queryKey: ['direct-sales', 'all'], queryFn: () => DirectSaleAPI.getDirectSales() });
-
   useEffect(() => { initializeAuth(); }, [initializeAuth]);
 
   return (
     <>
-      {(categoriesLoading || auctionsLoading || tendersLoading || directSalesLoading) ? (
-        <PageSkeleton />
-      ) : (
-        <>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@700&display=swap" rel="stylesheet" />
       <style jsx global>{`
         :root {
@@ -197,37 +209,72 @@ export default function Home() {
         }
         @media (max-width: 767px) {
           .action-cards-wrap {
-            display: flex;
-            direction: ltr;
-            flex-direction: row;
-            grid-template-columns: none;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scroll-padding-inline-start: 16px;
-            gap: 14px;
-            padding: 4px 16px 16px;
-            margin: 0 -16px;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            justify-content: flex-start;
-          }
-          .action-cards-wrap::-webkit-scrollbar {
-            display: none;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            padding: 0 6px;
+            margin: 0;
+            align-items: start;
           }
           .action-cards-wrap > .grey-glass-card {
-            flex: 0 0 86%;
-            scroll-snap-align: start;
-            scroll-snap-stop: always;
-            max-width: 86%;
-            height: auto;
-            min-height: 320px;
+            width: 100% !important;
+            max-width: 100%;
+            height: auto !important;
+            min-height: 150px;
+            padding: 14px 6px !important;
+            border-radius: 14px !important;
+            cursor: pointer;
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
           }
-          .grey-glass-card .btn-3d-blue {
-            width: auto;
-            min-width: 0;
-            flex: 1 1 0;
-            font-size: 16px;
-            padding: 0 8px;
+          .action-cards-wrap > .grey-glass-card.open {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(0, 40, 150, 0.18) !important;
+          }
+          .action-cards-wrap > .grey-glass-card > div:first-child {
+            height: 58px !important;
+            margin-top: 0 !important;
+            margin-bottom: 4px !important;
+            pointer-events: none;
+          }
+          .action-cards-wrap > .grey-glass-card h3 {
+            font-size: 11px !important;
+            line-height: 14px !important;
+            margin-bottom: 0 !important;
+            pointer-events: none;
+          }
+          .action-cards-wrap > .grey-glass-card p {
+            display: none !important;
+          }
+          /* Buttons row: hidden by default, revealed (stacked) when card is open */
+          .action-cards-wrap > .grey-glass-card > div:last-child {
+            display: none !important;
+          }
+          .action-cards-wrap > .grey-glass-card.open > div:last-child {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 4px !important;
+            margin-top: 8px !important;
+            width: 100% !important;
+            animation: cardButtonsReveal 0.2s ease-out;
+          }
+          .action-cards-wrap > .grey-glass-card .btn-3d-blue {
+            width: 100% !important;
+            min-width: 0 !important;
+            flex: 0 0 auto !important;
+            height: 16px !important;
+            min-height: 16px !important;
+            font-size: 8px !important;
+            font-weight: 600 !important;
+            padding: 0 4px !important;
+            letter-spacing: 0 !important;
+            border-radius: 100px !important;
+            line-height: 1 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+          }
+          @keyframes cardButtonsReveal {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
           }
         }
       `}</style>
@@ -288,7 +335,7 @@ export default function Home() {
                         <div className="action-cards-wrap" ref={actionCardsRef}>
                           
                           {/* CARD 1: Enchères */}
-                          <div className="grey-glass-card">
+                          <div className={`grey-glass-card${openCardIdx === 0 ? ' open' : ''}`} onClick={toggleCard(0)}>
                             <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px' }}>
                               <img src="/assets/images/icon 1.png" alt="Enchères" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
@@ -298,29 +345,29 @@ export default function Home() {
                             </p>
 
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
-                              <button onClick={() => router.push('/auction-sidebar')} className="btn-3d-blue">Enchérir</button>
-                              <button onClick={() => router.push('/dashboard/auctions/create')} className="btn-3d-blue">Poster</button>
+                              <button onClick={goTo('/auction-sidebar')} className="btn-3d-blue">Enchérir</button>
+                              <button onClick={goTo('/dashboard/auctions/create')} className="btn-3d-blue">Poster</button>
                             </div>
                           </div>
 
                           {/* CARD 2: Vente directe */}
-                          <div className="grey-glass-card">
+                          <div className={`grey-glass-card${openCardIdx === 1 ? ' open' : ''}`} onClick={toggleCard(1)}>
                             <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px' }}>
                               <img src="/assets/images/icon 2.png" alt="Vente directe" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '10px' }}>Vente directe</h3>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '10px' }}>Vente et Service</h3>
                             <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', margin: '0 0 15px' }}>
                               Lorem ipsum dolor sit amet consectetur. Fringilla ulla.
                             </p>
 
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
-                              <button onClick={() => router.push('/dashboard/direct-sales/create')} className="btn-3d-blue">Vendre</button>
-                              <button onClick={() => router.push('/direct-sale')} className="btn-3d-blue">Acheter</button>
+                              <button onClick={goTo('/dashboard/direct-sales/create')} className="btn-3d-blue">Vendre</button>
+                              <button onClick={goTo('/direct-sale')} className="btn-3d-blue">Acheter</button>
                             </div>
                           </div>
 
                           {/* CARD 3: Soumission d'offre */}
-                          <div className="grey-glass-card">
+                          <div className={`grey-glass-card${openCardIdx === 2 ? ' open' : ''}`} onClick={toggleCard(2)}>
                             <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px' }}>
                               <img src="/assets/images/icon 3.png" alt="Soumission" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
@@ -330,8 +377,8 @@ export default function Home() {
                             </p>
 
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
-                              <button onClick={() => router.push('/dashboard/tenders/create')} className="btn-3d-blue">Publier</button>
-                              <button onClick={() => router.push('/tenders')} className="btn-3d-blue">Postuler</button>
+                              <button onClick={goTo('/dashboard/tenders/create')} className="btn-3d-blue">Publier</button>
+                              <button onClick={goTo('/tenders')} className="btn-3d-blue">Postuler</button>
                             </div>
                           </div>
 
@@ -384,8 +431,6 @@ export default function Home() {
           </SnackbarProvider>
         </div>
       </SocketProvider>
-        </>
-      )}
     </>
   );
 }

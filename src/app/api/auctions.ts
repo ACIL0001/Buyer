@@ -32,20 +32,32 @@ auctionInstance.interceptors.request.use((config) => {
   return config;
 });
 
+// Network-level failures (no error.response) are transient during dev (backend not yet
+// ready, offline, CORS). Log them as warn so the Next.js dev overlay doesn't block the
+// page. Real HTTP errors (4xx/5xx) still log as error.
+const logAuctionFailure = (label: string, error: any) => {
+  const payload = {
+    url: error.config?.url,
+    method: error.config?.method,
+    status: error.response?.status,
+    statusText: error.response?.statusText,
+    data: error.response?.data,
+    message: error.message,
+    code: error.code,
+  };
+  if (!error.response) {
+    console.warn(`⚠️ ${label} (network):`, payload);
+  } else {
+    console.error(`❌ ${label}:`, payload);
+  }
+};
+
 // Add response interceptor for better error handling
 auctionInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message,
-      code: error.code
-    });
-    
+    logAuctionFailure('Auctions API Error', error);
+
     // Enhance error object with more context
     error.apiContext = {
       baseURL: app.baseURL,
@@ -53,7 +65,7 @@ auctionInstance.interceptors.response.use(
       method: error.config?.method,
       timestamp: new Date().toISOString()
     };
-    
+
     throw error;
   }
 );
@@ -84,76 +96,19 @@ interface ApiResponse<T> {
 
 export const AuctionsAPI = {
   getAuctions: async (): Promise<ApiResponse<Auction[]>> => {
-    try {
-      console.log('Fetching auctions from:', `${app.baseURL}/bid`);
-      const response = await auctionInstance.get('bid');
-      console.log('Auctions fetched successfully:', response.data);
-      return responseBody(response);
-    } catch (error: any) {
-      console.error('Error fetching auctions:', error);
-      
-      // Enhanced error logging
-      if (error.response) {
-        console.error('Response error:', {
-          status: error.response.status,
-          statusText: error.response.statusText,
-          data: error.response.data,
-          headers: error.response.headers
-        });
-      } else if (error.request) {
-        console.error('Request error:', {
-          message: error.message,
-          code: error.code,
-          config: error.config
-        });
-      } else {
-        console.error('Other error:', error.message);
-      }
-      
-      throw error;
-    }
+    // Logging on failure is handled by the response interceptor above.
+    const response = await auctionInstance.get('bid');
+    return responseBody(response);
   },
-  
-  getAuctionById: async (id: string): Promise<ApiResponse<Auction>> => {
-    try {
-      if (!id) {
-        throw new Error('Auction ID is required');
-      }
-      
-      console.log('Fetching auction by ID:', id);
-      console.log('Full URL:', `${app.baseURL}bid/${id}`);
-      
-      const response = await auctionInstance.get(`bid/${id}`);
-      console.log('Auction fetched successfully:', response.data);
-      
-      // Validate response structure
-      if (!response.data) {
-        throw new Error('Empty response from server');
-      }
-      
-      return responseBody(response);
-    } catch (error: any) {
-      console.error('Error fetching auction by ID:', error);
-      
-      // Enhanced error logging
-      if (error.response) {
-        console.error('Response error:', {
-          status: error.response.status,
-          statusText: error.response.statusText,
-          data: error.response.data,
-          headers: error.response.headers
-        });
-      } else if (error.request) {
-        console.error('Request error:', {
-          message: error.message,
-          code: error.code,
-          config: error.config
-        });
-      } else {
-        console.error('Other error:', error.message);
-      }
 
-      throw error;
+  getAuctionById: async (id: string): Promise<ApiResponse<Auction>> => {
+    if (!id) {
+      throw new Error('Auction ID is required');
     }
+    const response = await auctionInstance.get(`bid/${id}`);
+    if (!response.data) {
+      throw new Error('Empty response from server');
+    }
+    return responseBody(response);
   },
 };

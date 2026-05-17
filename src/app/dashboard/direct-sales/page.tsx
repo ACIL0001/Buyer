@@ -66,8 +66,8 @@ export default function DirectSalesPage() {
   if (isLoading) return <div>Chargement...</div>;
 
   return (
-    <div style={{ backgroundColor: '#F8FAFC', minHeight: '100vh', padding: '0 20px' }}>
-      <div style={{ maxWidth: '1116px', margin: '0 auto', padding: '40px 0 220px' }}>
+    <div className="dashboard-direct-sales-page" style={{ backgroundColor: '#F8FAFC', minHeight: '100vh', padding: '0 20px' }}>
+      <div className="dashboard-direct-sales-inner" style={{ maxWidth: '1116px', margin: '0 auto', padding: '40px 0 220px' }}>
         {/* Summary Cards */}
         <div className="figma-ds-summary-container">
           <div className="figma-ds-card">

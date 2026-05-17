@@ -180,6 +180,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </I18nProvider>
           </MobileOptimizer>
         </QueryClientProvider>
+        <div id="filter-popup-root"></div>
       </body>
     </html>
   );

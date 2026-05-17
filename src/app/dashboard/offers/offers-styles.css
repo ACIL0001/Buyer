@@ -349,3 +349,126 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ============================================================
+   Mobile responsive overrides (≤768px)
+   ============================================================ */
+@media (max-width: 768px) {
+  .figma-offers-main {
+    padding: 16px 14px 80px 14px;
+    gap: 18px;
+  }
+
+  .figma-offers-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .figma-offers-welcome h1 {
+    font-size: 20px;
+    line-height: 26px;
+  }
+  .figma-offers-welcome p {
+    font-size: 13px;
+  }
+  .figma-offers-publish-btn {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .figma-offers-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin: 8px 0;
+  }
+  .figma-offers-stat-card {
+    padding: 12px;
+    gap: 10px;
+  }
+  .figma-offers-stat-icon-wrapper {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  .figma-offers-stat-label {
+    font-size: 11px;
+  }
+  .figma-offers-stat-value {
+    font-size: 18px;
+  }
+
+  .figma-offers-tabs-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+  .figma-offers-tab {
+    padding: 6px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .figma-offers-table-card {
+    border-radius: 8px;
+  }
+  .figma-offers-table-header {
+    padding: 14px;
+  }
+  .figma-offers-table-header h2 {
+    font-size: 16px;
+  }
+
+  /* Stack each row as a card; hide column header */
+  .figma-offers-table thead {
+    display: none;
+  }
+  .figma-offers-table,
+  .figma-offers-table tbody,
+  .figma-offers-tr,
+  .figma-offers-td {
+    display: block;
+    width: 100%;
+  }
+  .figma-offers-tr {
+    padding: 12px 14px;
+    border-bottom: 1px solid #F1F5F9;
+  }
+  .figma-offers-td {
+    padding: 4px 0;
+    font-size: 13px;
+  }
+  .figma-offers-product-info {
+    gap: 10px;
+  }
+  .figma-offers-product-img {
+    width: 36px;
+    height: 36px;
+  }
+  .figma-offers-product-name {
+    font-size: 13px;
+  }
+  .figma-offers-actions {
+    gap: 6px;
+    justify-content: flex-start;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  .figma-offers-btn-accept,
+  .figma-offers-btn-reject,
+  .figma-offers-btn-details {
+    padding: 5px 12px;
+    font-size: 11px;
+  }
+  .figma-offers-pagination {
+    padding: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .figma-offers-page-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+}

@@ -65,10 +65,10 @@ export default function AuctionsPage() {
   if (isLoading) return <div>Chargement...</div>;
 
   return (
-    <div style={{ padding: '40px 20px', backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
-      <div style={{ maxWidth: '1116px', margin: '0 auto' }}>
+    <div className="dashboard-auctions-page" style={{ padding: '40px 20px', backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
+      <div className="dashboard-auctions-inner" style={{ maxWidth: '1116px', margin: '0 auto' }}>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+        <div className="dashboard-auctions-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
           <div>
             <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#0F172A', margin: 0 }}>Bienvenue {(user as any)?.companyName || (user as any)?.entreprise || (user as any)?.firstName || 'Anis'}</h1>
             <p style={{ color: '#64748B', fontSize: '14px', marginTop: '4px' }}>Voici un aperçu de votre activité</p>

@@ -101,7 +101,8 @@ const MultipurposeAuctionSidebar = () => {
     // Type Filter (Product/Service)
     if (selectedTypes.length > 0) {
       filtered = filtered.filter(a => {
-        const type = (a.bidType || a.tenderType || a.type || '').toUpperCase();
+        const rawType = a.bidType || a.type || a.tenderType || '';
+        const type = String(rawType).toUpperCase();
         return selectedTypes.includes(type);
       });
     }
@@ -116,12 +117,31 @@ const MultipurposeAuctionSidebar = () => {
 
     // Category Filter
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter(a => selectedCategories.includes(a.categoryId || a.category?._id));
+      filtered = filtered.filter(a => {
+        const catObj = a.productCategory || a.category;
+        const catId = a.categoryId || (typeof catObj === 'object' ? catObj?._id : catObj);
+        return selectedCategories.includes(catId);
+      });
     }
 
     // Wilaya Filter
     if (selectedWilaya) {
-      filtered = filtered.filter(a => a.wilaya === selectedWilaya);
+      filtered = filtered.filter(a => {
+        const rawWilaya = a.wilaya || a.location || (a.owner && a.owner.wilaya) || '';
+        return String(rawWilaya).trim().toLowerCase() === String(selectedWilaya).trim().toLowerCase();
+      });
+    }
+
+    // Availability Filter (Recently Published)
+    if (availability.recentlyPublished) {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      filtered = filtered.filter(a => new Date(a.createdAt) > oneWeekAgo);
+    }
+
+    // Rating Filter
+    if (rating !== null) {
+      filtered = filtered.filter(a => (a.rating || a.owner?.rating || 0) >= rating);
     }
 
     // Search Filter
@@ -136,6 +156,8 @@ const MultipurposeAuctionSidebar = () => {
       filtered.sort((a, b) => (b.currentPrice || b.startingPrice || 0) - (a.currentPrice || a.startingPrice || 0));
     } else if (sortOrder === 'NEWEST') {
       filtered.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    } else if (sortOrder === 'OLDEST') {
+      filtered.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
     }
 
     // Active Filter (Exclude Expired)
@@ -145,7 +167,7 @@ const MultipurposeAuctionSidebar = () => {
     });
 
     return filtered;
-  }, [allAuctionsResponse, auth.user, selectedTypes, priceRange, selectedCategories, selectedWilaya, searchQuery, sortOrder]);
+  }, [allAuctionsResponse, auth.user, selectedTypes, priceRange, selectedCategories, selectedWilaya, availability, rating, searchQuery, sortOrder]);
 
   const [timers, setTimers] = useState({});
   const [flippedId, setFlippedId] = useState(null);
@@ -749,20 +771,22 @@ const MultipurposeAuctionSidebar = () => {
           onClose={() => setIsFilterOpen(false)}
           categories={categories}
           selectedCategories={selectedCategories}
-          onToggleCategory={(id) => setSelectedCategories(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])}
           priceRange={priceRange}
-          onPriceChange={(key, val) => setPriceRange(prev => ({ ...prev, [key]: val }))}
           wilayas={WILAYAS}
           selectedWilaya={selectedWilaya}
-          onWilayaChange={setSelectedWilaya}
           selectedTypes={selectedTypes}
-          onToggleType={handleToggleType}
           availability={availability}
-          onToggleAvailability={(key) => setAvailability(prev => ({ ...prev, [key]: !prev[key] }))}
           rating={rating}
-          onToggleRating={(r) => setRating(prev => prev === r ? null : r)}
           onClear={handleClearFilters}
-          onApply={() => {
+          onApply={(data) => {
+            if (data) {
+              setSelectedCategories(data.categories || []);
+              setPriceRange(data.priceRange || { min: '', max: '' });
+              setSelectedWilaya(data.wilaya || '');
+              setSelectedTypes(data.types || []);
+              setAvailability(data.availability || { inStock: false, recentlyPublished: false });
+              setRating(data.rating || null);
+            }
             setIsFilterOpen(false);
             setCurrentPage(1);
           }}

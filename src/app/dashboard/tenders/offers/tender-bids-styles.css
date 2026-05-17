@@ -344,3 +344,151 @@
   background: #0050CB;
   color: #FFFFFF;
 }
+
+/* ============================================================
+   Mobile responsive overrides (≤768px)
+   ============================================================ */
+@media (max-width: 768px) {
+  .dashboard-tender-bids-page {
+    padding: 14px !important;
+  }
+  .dashboard-tender-bids-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px;
+    margin-bottom: 16px !important;
+  }
+  .dashboard-tender-bids-header > div:first-child > h1 {
+    font-size: 18px !important;
+    line-height: 24px !important;
+  }
+  .dashboard-tender-bids-header > div:first-child > p {
+    font-size: 12px !important;
+  }
+  .dashboard-tender-bids-header > div:nth-child(2) {
+    width: 100%;
+    justify-content: space-between !important;
+  }
+  .dashboard-tender-bids-header button {
+    font-size: 12px !important;
+    padding: 8px 14px !important;
+  }
+  .dashboard-tender-bids-header > div:nth-child(2) > button:first-child {
+    flex: 1;
+    justify-content: center;
+  }
+
+  /* Sub-filters row: wrap and put search on its own line, full width */
+  .dashboard-tender-bids-subfilters {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px;
+    padding: 0 4px !important;
+    margin-bottom: 14px !important;
+  }
+  .dashboard-tender-bids-subfilters > div:first-child {
+    flex-wrap: wrap;
+    gap: 6px !important;
+  }
+  .dashboard-tender-bids-subfilters > div:first-child > span {
+    width: 100%;
+    margin-bottom: 2px;
+  }
+  .dashboard-tender-bids-subfilters > div:first-child > button {
+    padding: 5px 10px !important;
+    font-size: 11px !important;
+  }
+  .dashboard-tender-bids-subfilters > div:last-child {
+    width: 100%;
+  }
+  .dashboard-tender-bids-subfilters input {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .figma-auc-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 16px;
+    margin-bottom: 20px;
+  }
+  .figma-auc-card {
+    padding: 12px;
+    gap: 10px;
+    height: auto;
+    min-height: 68px;
+  }
+  .figma-auc-icon-circle {
+    width: 36px;
+    height: 36px;
+  }
+  .figma-auc-card-label {
+    font-size: 10px;
+    letter-spacing: 0.4px;
+  }
+  .figma-auc-card-value {
+    font-size: 18px;
+  }
+
+  .figma-auc-section {
+    border-radius: 8px;
+  }
+  .figma-auc-header {
+    padding: 12px 14px;
+  }
+  .figma-auc-title {
+    font-size: 15px;
+  }
+
+  .figma-auc-thead {
+    display: none;
+  }
+  .figma-auc-table,
+  .figma-auc-table tbody,
+  .figma-auc-tr,
+  .figma-auc-td {
+    display: block;
+    width: 100%;
+  }
+  .figma-auc-tr {
+    padding: 12px 14px;
+    border-bottom: 1px solid #F1F5F9;
+  }
+  .figma-auc-td {
+    padding: 4px 0;
+    font-size: 13px;
+  }
+  .figma-auc-product-cell {
+    gap: 10px;
+  }
+  .figma-auc-product-img {
+    width: 36px;
+    height: 36px;
+  }
+  .figma-auc-product-name {
+    font-size: 13px;
+  }
+  .figma-auc-actions {
+    gap: 6px;
+    justify-content: flex-start;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  .figma-auc-btn-details,
+  .figma-auc-btn-success,
+  .figma-auc-btn-danger {
+    padding: 5px 12px;
+    font-size: 11px;
+  }
+  .figma-auc-pagination {
+    padding: 12px 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .figma-auc-pg-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+}

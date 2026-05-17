@@ -80,17 +80,202 @@ export default function TendersPage() {
   if (isLoading) return <ListPageSkeleton accentColor="var(--primary-tender-color)" />;
 
   return (
-    <div style={{ 
-      position: 'relative', 
-      width: '100%', 
+    <div className="dashboard-tenders-page" style={{
+      position: 'relative',
+      width: '100%',
       padding: '32px 40px',
       fontFamily: "'Inter', sans-serif",
       minHeight: '100vh',
       background: '#F8FAFC'
     }}>
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          /* Page-level overflow guard: stops any rogue child width from forcing horizontal scroll */
+          .dashboard-tenders-page {
+            width: 100% !important;
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+            box-sizing: border-box !important;
+            padding: 14px 12px !important;
+          }
+
+          /* HEADER region */
+          .dt-header {
+            flex-wrap: wrap !important;
+            gap: 10px;
+            margin-bottom: 16px !important;
+            justify-content: flex-start !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+          }
+          .dt-header > div {
+            width: 100% !important;
+            min-width: 0 !important;
+            justify-content: space-between !important;
+            flex-wrap: wrap;
+          }
+          .dt-header button {
+            font-size: 12px !important;
+            padding: 8px 12px !important;
+          }
+
+          /* STATS region: 2-column grid on mobile (was 245px fixed) */
+          .dt-stats {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 8px !important;
+            margin-bottom: 16px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+          }
+          .dt-stats > div {
+            width: auto !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            height: auto !important;
+            min-height: 110px;
+            padding: 12px !important;
+            box-sizing: border-box !important;
+            overflow: hidden;
+          }
+          /* Numeric value (the last div in each card) */
+          .dt-stats > div > div:last-child,
+          .dt-stats > div > div:last-child > span:first-child {
+            font-size: 22px !important;
+            line-height: 28px !important;
+            word-break: break-word;
+          }
+          /* Label text */
+          .dt-stats > div > div:nth-child(2) > span {
+            font-size: 11px !important;
+            line-height: 14px !important;
+            word-break: break-word;
+          }
+
+          /* MAIN table card */
+          .dt-main {
+            min-height: auto !important;
+            border-radius: 8px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+            overflow: hidden;
+          }
+          .dt-main-header {
+            padding: 14px !important;
+            height: auto !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 4px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+          }
+          .dt-main-header h3 {
+            width: auto !important;
+            max-width: 100% !important;
+            font-size: 16px !important;
+            line-height: 20px !important;
+            word-break: break-word;
+          }
+          .dt-main-header span {
+            width: auto !important;
+            max-width: 100% !important;
+            font-size: 12px !important;
+            word-break: break-word;
+          }
+
+          /* Tabs row */
+          .dt-tabs {
+            padding: 0 !important;
+            height: auto !important;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+          }
+          .dt-tabs > div {
+            padding: 0 14px !important;
+            gap: 16px !important;
+            height: 44px !important;
+            width: max-content !important;
+            min-width: 100%;
+          }
+          .dt-tabs > div > div {
+            padding: 12px 0 !important;
+            height: 44px !important;
+            min-width: max-content !important;
+          }
+          .dt-tabs span {
+            font-size: 13px !important;
+            white-space: nowrap;
+          }
+
+          /* Table section wrapper: drop the fixed 367px height that traps stacked rows */
+          .dt-table-section {
+            height: auto !important;
+            overflow: visible !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+          }
+
+          /* Hide column-header row */
+          .dt-table-head {
+            display: none !important;
+          }
+
+          /* Each table row stacks vertically */
+          .dt-row {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            height: auto !important;
+            padding: 12px !important;
+            gap: 6px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+          }
+          .dt-row > div {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            padding: 0 !important;
+            justify-content: flex-start !important;
+            box-sizing: border-box !important;
+            word-break: break-word;
+          }
+          .dt-row > div:last-child {
+            margin-top: 4px;
+          }
+          .dt-row button {
+            font-size: 12px !important;
+            padding: 6px 12px !important;
+          }
+
+          /* Footer */
+          .dt-footer {
+            padding: 14px !important;
+            height: auto !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+          }
+        }
+      `}</style>
       
       {/* --- HEADER --- */}
-      <div style={{
+      <div className="dt-header" style={{
         display: 'flex',
         justifyContent: 'flex-end',
         alignItems: 'center',
@@ -126,7 +311,7 @@ export default function TendersPage() {
       </div>
 
       {/* --- STATS GRID --- */}
-      <div style={{ display: 'flex', gap: '24px', marginBottom: '32px' }}>
+      <div className="dt-stats" style={{ display: 'flex', gap: '24px', marginBottom: '32px' }}>
         {/* Offres et services publiés */}
         <div style={{
           boxSizing: 'border-box',
@@ -186,7 +371,7 @@ export default function TendersPage() {
       </div>
 
       {/* --- MAIN CONTAINER --- */}
-      <div style={{
+      <div className="dt-main" style={{
         boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
@@ -200,9 +385,9 @@ export default function TendersPage() {
         boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
         borderRadius: '12px',
       }}>
-        
+
         {/* Header Section */}
-        <div style={{
+        <div className="dt-main-header" style={{
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'row',
@@ -228,7 +413,7 @@ export default function TendersPage() {
         </div>
 
         {/* Tabs Section */}
-        <div style={{
+        <div className="dt-tabs" style={{
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
@@ -275,9 +460,9 @@ export default function TendersPage() {
         </div>
 
         {/* Table Section */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: 0, width: '100%', height: '367px', overflowY: 'auto' }}>
+        <div className="dt-table-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: 0, width: '100%', height: '367px', overflowY: 'auto' }}>
           {/* Table Header */}
-          <div style={{
+          <div className="dt-table-head" style={{
             boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'row',
@@ -315,7 +500,7 @@ export default function TendersPage() {
               <div style={{ padding: '40px', textAlign: 'center', color: '#64748B' }}>Aucun résultat trouvé</div>
             ) : (
               filtered.map((row: any) => (
-                <div key={row._id} style={{
+                <div key={row._id} className="dt-row" style={{
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -397,7 +582,7 @@ export default function TendersPage() {
         </div>
 
         {/* Footer Section */}
-        <div style={{
+        <div className="dt-footer" style={{
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'row',

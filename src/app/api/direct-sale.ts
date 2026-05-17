@@ -30,18 +30,24 @@ directSaleInstance.interceptors.request.use((config) => {
   return config;
 });
 
-// Add response interceptor for better error handling
+// Network-level failures (no error.response) are transient during dev — warn so the
+// Next.js dev overlay doesn't block the page. Real HTTP errors stay as error.
 directSaleInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('Direct Sale API Error:', {
+    const payload = {
       url: error.config?.url,
       method: error.config?.method,
       status: error.response?.status,
       statusText: error.response?.statusText,
       data: error.response?.data,
       message: error.message,
-    });
+    };
+    if (!error.response) {
+      console.warn('⚠️ Direct Sale API Error (network):', payload);
+    } else {
+      console.error('❌ Direct Sale API Error:', payload);
+    }
     throw error;
   }
 );
@@ -106,27 +112,18 @@ interface Purchase {
 }
 
 export const DirectSaleAPI = {
+  // Logging on failure is handled by the response interceptor above.
   getDirectSales: async (): Promise<DirectSale[]> => {
-    try {
-      const response = await directSaleInstance.get('direct-sale');
-      return responseBody(response);
-    } catch (error: any) {
-      console.error('Error fetching direct sales:', error);
-      throw error;
-    }
+    const response = await directSaleInstance.get('direct-sale');
+    return responseBody(response);
   },
 
   getDirectSaleById: async (id: string): Promise<DirectSale> => {
-    try {
-      if (!id) {
-        throw new Error('Direct sale ID is required');
-      }
-      const response = await directSaleInstance.get(`direct-sale/${id}`);
-      return responseBody(response);
-    } catch (error: any) {
-      console.error('Error fetching direct sale by ID:', error);
-      throw error;
+    if (!id) {
+      throw new Error('Direct sale ID is required');
     }
+    const response = await directSaleInstance.get(`direct-sale/${id}`);
+    return responseBody(response);
   },
 
   purchase: async (data: {
@@ -135,23 +132,13 @@ export const DirectSaleAPI = {
     paymentMethod?: string;
     paymentReference?: string;
   }): Promise<Purchase> => {
-    try {
-      const response = await directSaleInstance.post('direct-sale/purchase', data);
-      return responseBody(response);
-    } catch (error: any) {
-      console.error('Error purchasing direct sale:', error);
-      throw error;
-    }
+    const response = await directSaleInstance.post('direct-sale/purchase', data);
+    return responseBody(response);
   },
 
   getMyPurchases: async (): Promise<Purchase[]> => {
-    try {
-      const response = await directSaleInstance.get('direct-sale/my-purchases');
-      return responseBody(response);
-    } catch (error: any) {
-      console.error('Error fetching my purchases:', error);
-      throw error;
-    }
+    const response = await directSaleInstance.get('direct-sale/my-purchases');
+    return responseBody(response);
   },
 };
 

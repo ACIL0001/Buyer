@@ -76,7 +76,8 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 8px 0px 0px;
-  width: 1116px;
+  width: 100%;
+  max-width: 1116px;
   min-height: 200px;
   background: #FFFFFF;
   border: 1px solid #E2E8F0;
@@ -94,7 +95,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 24px;
-  width: 1114px;
+  width: 100%;
   min-height: 101px;
   border-bottom: 1px solid #F1F5F9;
   flex: none;
@@ -155,7 +156,7 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 0px 24px;
-  width: 1114px;
+  width: 100%;
   height: 55px;
   border-bottom: 1px solid #F1F5F9;
   flex: none;
@@ -222,7 +223,7 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 0px;
-  width: 1114px;
+  width: 100%;
   flex: none;
   order: 2;
   align-self: stretch;
@@ -236,7 +237,7 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 0px;
-  width: 1114px;
+  width: 100%;
   height: 47px;
   background: rgba(248, 250, 252, 0.5);
   border-bottom: 1px solid #F1F5F9;
@@ -252,7 +253,7 @@
   justify-content: flex-start; /* Changed from center to align with body */
   align-items: flex-start;
   padding: 0px;
-  width: 1114px;
+  width: 100%;
   height: 46px;
 }
 
@@ -293,7 +294,7 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 0px;
-  width: 1114px;
+  width: 100%;
   flex: none;
   order: 1;
   align-self: stretch;
@@ -306,7 +307,7 @@
   justify-content: flex-start;
   align-items: center;
   padding: 0px;
-  width: 1114px;
+  width: 100%;
   height: 81px;
   flex: none;
   align-self: stretch;
@@ -415,7 +416,7 @@
   justify-content: center;
   align-items: center;
   padding: 24px;
-  width: 1114px;
+  width: 100%;
   height: 69px;
   border-top: 1px solid #F1F5F9;
   flex: none;
@@ -437,4 +438,207 @@
   line-height: 20px;
   color: #0050CB;
   text-decoration: none;
+}
+
+/* ============================================================
+   Mobile responsive overrides (≤768px)
+   ============================================================ */
+@media (max-width: 768px) {
+  /* Page-level overflow guard: stops any rogue child width from forcing horizontal scroll */
+  .dashboard-direct-sales-page,
+  .dashboard-direct-sales-inner {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+  .dashboard-direct-sales-page {
+    padding: 0 !important;
+  }
+  .dashboard-direct-sales-inner {
+    padding: 14px 12px 60px !important;
+    margin: 0 !important;
+  }
+
+  .figma-ds-summary-container {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    margin: 12px 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  .figma-ds-card {
+    padding: 12px !important;
+    height: auto !important;
+    min-height: 100px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden;
+  }
+  .figma-ds-card-label,
+  .figma-ds-card-value {
+    word-break: break-word;
+  }
+  .figma-ds-icon-circle {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 4px;
+  }
+  .figma-ds-card-label {
+    font-size: 11px;
+    line-height: 16px;
+  }
+  .figma-ds-card-value {
+    font-size: 22px;
+    line-height: 28px;
+  }
+  .figma-ds-card-link {
+    font-size: 11px;
+  }
+
+  /* Main section card: prevent overflow */
+  .figma-ds-main-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden;
+  }
+  .figma-ds-section-header {
+    padding: 14px !important;
+    min-height: auto !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .figma-ds-section-header > button {
+    width: 100% !important;
+    justify-content: center;
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+  }
+  .figma-ds-title-group {
+    width: 100%;
+    min-height: auto;
+  }
+  .figma-ds-title {
+    font-size: 16px;
+  }
+  .figma-ds-subtitle {
+    font-size: 12px;
+  }
+
+  .figma-ds-tabs {
+    padding: 0 !important;
+    height: auto !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .figma-ds-tabs-container {
+    padding: 0 14px !important;
+    gap: 16px !important;
+    width: max-content !important;
+    min-width: 100%;
+    height: 44px !important;
+  }
+  .figma-ds-tab-btn {
+    padding: 12px 0;
+    height: 44px;
+    width: auto !important;
+    min-width: max-content;
+  }
+  .figma-ds-tab-btn span {
+    font-size: 13px;
+  }
+
+  /* Stack table rows as cards; hide column header */
+  .figma-ds-thead {
+    display: none !important;
+  }
+  .figma-ds-table {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+  }
+  .figma-ds-tbody {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .figma-ds-tr {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    padding: 12px !important;
+    gap: 6px !important;
+    border-bottom: 1px solid #F1F5F9;
+    box-sizing: border-box !important;
+  }
+  .figma-ds-td {
+    width: 100% !important;
+    height: auto !important;
+    padding: 0 !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+  }
+  .figma-ds-td:nth-child(1),
+  .figma-ds-td:nth-child(2),
+  .figma-ds-td:nth-child(3),
+  .figma-ds-td:nth-child(4),
+  .figma-ds-td:nth-child(5) {
+    width: 100% !important;
+  }
+  .figma-ds-td:nth-child(5) {
+    justify-content: flex-start !important;
+    margin-top: 4px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .figma-ds-product-cell {
+    gap: 10px;
+    height: auto;
+  }
+  .figma-ds-product-img {
+    width: 36px;
+    height: 36px;
+  }
+  .figma-ds-product-name {
+    font-size: 13px;
+  }
+  .figma-ds-action-btn {
+    width: auto;
+    padding: 5px 12px;
+    font-size: 11px;
+  }
+
+  .figma-ds-footer {
+    padding: 14px !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .figma-ds-view-all {
+    font-size: 13px !important;
+  }
 }

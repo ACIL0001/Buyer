@@ -1360,9 +1360,18 @@ function ProfilePage() {
                                         {isUploadingCover ? (
                                             <motion.i className="bi bi-arrow-repeat" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
                                         ) : (
-                                            <i className="bi bi-image" style={{ marginRight: '8px', fontSize: '20px' }}></i>
+                                            <img src="/assets/images/photo-edit-svgrepo-com.svg" style={{ width: '30px', height: '35.9px', marginRight: '8px' }} alt="edit" />
                                         )}
-                                        <span>{t("profile.addCoverPhoto") || "Cliquez pour ajouter une photo de couverture"}</span>
+                                        <span style={{ 
+                                            fontFamily: "'DM Sans', sans-serif", 
+                                            fontWeight: 400, 
+                                            fontSize: '20px', 
+                                            lineHeight: '100%', 
+                                            color: '#B0B0B0', 
+                                            verticalAlign: 'middle' 
+                                        }}>
+                                            {t("profile.addCoverPhoto") || "Cliquez pour ajouter une photo de couverture"}
+                                        </span>
                                     </div>
                                 )}
                             </div>
@@ -1445,11 +1454,15 @@ function ProfilePage() {
                                                 </div>
                                             </div>
                                             
-                                            <div className="figma-input-field" style={{ width: '100%' }}>
-                                                <label className="figma-input-label">Nom de l'entreprise</label>
-                                                <div className={`figma-form-field ${!isEditing ? 'readonly' : ''}`}>
-                                                    <input type="text" name="companyName" value={formData.companyName} onChange={handleInputChange} disabled={!isEditing} placeholder="Nom de l'entreprise" />
+                                            <div className="figma-form-row">
+                                                <div className="figma-input-field">
+                                                    <label className="figma-input-label">Nom de l'entreprise</label>
+                                                    <div className={`figma-form-field ${!isEditing ? 'readonly' : ''}`}>
+                                                        <input type="text" name="companyName" value={formData.companyName} onChange={handleInputChange} disabled={!isEditing} placeholder="Nom de l'entreprise" />
+                                                    </div>
                                                 </div>
+                                                <div className="figma-input-field" style={{ visibility: 'hidden' }}></div>
+                                                <div className="figma-input-field" style={{ visibility: 'hidden' }}></div>
                                             </div>
 
                                             <div className="figma-cta-group figma-cta-group-personal">
@@ -1533,21 +1546,36 @@ function ProfilePage() {
                                                     <label className="figma-input-label">Ancien mot de passe</label>
                                                     <div className="figma-form-field">
                                                         <input type={showPassword ? "text" : "password"} placeholder="••••••••••••" value={passwordData.currentPassword} onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} required />
-                                                        <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ cursor: 'pointer', color: '#737373' }} onClick={() => setShowPassword(!showPassword)}></i>
+                                                        <img 
+                                                            src={showPassword ? "/assets/images/eye-off-svgrepo-com.svg" : "/assets/images/eye-svgrepo-com.svg"} 
+                                                            style={{ cursor: 'pointer', width: '20px', height: '20px' }} 
+                                                            onClick={() => setShowPassword(!showPassword)} 
+                                                            alt="toggle visibility"
+                                                        />
                                                     </div>
                                                 </div>
                                                 <div className="figma-input-field">
                                                     <label className="figma-input-label">Nouveau mot de passe</label>
                                                     <div className="figma-form-field">
                                                         <input type={showPassword ? "text" : "password"} placeholder="••••••••••••" value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} required />
-                                                        <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ cursor: 'pointer', color: '#737373' }} onClick={() => setShowPassword(!showPassword)}></i>
+                                                        <img 
+                                                            src={showPassword ? "/assets/images/eye-off-svgrepo-com.svg" : "/assets/images/eye-svgrepo-com.svg"} 
+                                                            style={{ cursor: 'pointer', width: '20px', height: '20px' }} 
+                                                            onClick={() => setShowPassword(!showPassword)} 
+                                                            alt="toggle visibility"
+                                                        />
                                                     </div>
                                                 </div>
                                                 <div className="figma-input-field">
                                                     <label className="figma-input-label">Confirmez</label>
                                                     <div className="figma-form-field">
                                                         <input type={showPassword ? "text" : "password"} placeholder="••••••••••••" value={passwordData.confirmPassword} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} required />
-                                                        <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} style={{ cursor: 'pointer', color: '#737373' }} onClick={() => setShowPassword(!showPassword)}></i>
+                                                        <img 
+                                                            src={showPassword ? "/assets/images/eye-off-svgrepo-com.svg" : "/assets/images/eye-svgrepo-com.svg"} 
+                                                            style={{ cursor: 'pointer', width: '20px', height: '20px' }} 
+                                                            onClick={() => setShowPassword(!showPassword)} 
+                                                            alt="toggle visibility"
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
@@ -1627,7 +1655,7 @@ function ProfilePage() {
                                                 return (
                                                     <div className={`figma-doc-card-v2 figma-card-${doc.key.toLowerCase()}`} key={doc.key}>
                                                         <div className="figma-doc-header-v2">
-                                                            <i className="bi bi-file-earmark-plus figma-doc-icon-v2"></i>
+                                                            <img src="/assets/images/add-file-svgrepo-com.svg" className="figma-doc-icon-v2" style={{ width: '28px', height: '28px' }} alt="add file" />
                                                             <h4 className="figma-doc-title-v2">
                                                                 {doc.label} <span className="required">*</span>
                                                             </h4>

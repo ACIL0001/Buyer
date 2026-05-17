@@ -113,11 +113,11 @@ export default function TenderBidsPage() {
   if (isQueryLoading && !bids.length) return <div style={{ padding: '40px', textAlign: 'center' }}>Chargement...</div>;
 
   return (
-    <div style={{ padding: '40px 20px', backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
-      <div style={{ maxWidth: '1116px', margin: '0 auto' }}>
-        
+    <div className="dashboard-tender-bids-page" style={{ padding: '40px 20px', backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
+      <div className="dashboard-tender-bids-inner" style={{ maxWidth: '1116px', margin: '0 auto' }}>
+
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+        <div className="dashboard-tender-bids-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
           <div>
             <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#0F172A', margin: 0 }}>
               Bienvenue {(user as any)?.companyName || (user as any)?.entreprise || (user as any)?.firstName || 'Utilisateur'}
@@ -200,7 +200,7 @@ export default function TenderBidsPage() {
         </div>
 
         {/* Sub-filters and Search */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', padding: '0 24px' }}>
+        <div className="dashboard-tender-bids-subfilters" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', padding: '0 24px' }}>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <span style={{ fontSize: '13px', fontWeight: 600, color: '#64748B' }}>Filtrer par type :</span>
             {(['all', 'MIEUX_DISANT', 'MOINS_DISANT'] as const).map(val => (

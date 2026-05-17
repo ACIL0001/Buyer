@@ -53,6 +53,31 @@ export default function DirectSalePage() {
                 0% { transform: rotate(0deg); }
                 100% { transform: rotate(360deg); }
               }
+              /* Mobile/tablet: header collapses to ~68px (~60px on very small phones).
+                 Tighten both the page top padding and the title's stacked 80px margin. */
+              @media (max-width: 1024px) {
+                .direct-sale-page {
+                  padding-top: 72px !important;
+                }
+                .direct-sale-page h1 {
+                  margin-top: 8px !important;
+                  font-size: 28px !important;
+                  line-height: 32px !important;
+                }
+                .direct-sale-page .container {
+                  margin-bottom: 20px !important;
+                }
+              }
+              @media (max-width: 375px) {
+                .direct-sale-page {
+                  padding-top: 64px !important;
+                }
+                .direct-sale-page h1 {
+                  margin-top: 4px !important;
+                  font-size: 22px !important;
+                  line-height: 26px !important;
+                }
+              }
             `}</style>
             <DynamicScrollToTop colorSchema="yellow" />
           </SnackbarProvider>

@@ -196,6 +196,20 @@ const responseBody = (res: AxiosResponse): ApiResponse => {
 
 // Export the axios instance
 export { instance };
+
+// Network-level failures (backend not running, DNS failures, CORS, offline) surface in
+// axios as errors without a `.response`. These are typically transient during development
+// — logging them via console.error triggers the Next.js dev error overlay and blocks the
+// page. Downgrade them to warn; surface real HTTP errors (4xx/5xx) as error.
+const logRequestFailure = (method: string, url: string, error: any) => {
+  const detail = error.response?.data || error.message;
+  if (!error.response) {
+    console.warn(`⚠️ ${method} request network failure:`, url, detail);
+  } else {
+    console.error(`❌ ${method} request failed:`, url, detail);
+  }
+};
+
 // Enhanced requests object with better error handling and logging
 export const requests = {
   get: <T = any>(url: string, config = {}): Promise<ApiResponse<T>> => {
@@ -203,7 +217,7 @@ export const requests = {
     return instance.get(url, config)
       .then(responseBody)
       .catch(error => {
-        console.error('❌ GET request failed:', url, error.response?.data || error.message);
+        logRequestFailure('GET', url, error);
         throw error;
       });
   },
@@ -211,13 +225,12 @@ export const requests = {
   post: <T = any>(url: string, body: {}, config = {}, returnFullResponse = false): Promise<ApiResponse<T> | AxiosResponse> => {
     console.log('🌐 POST request to:', url);
     const request = instance.post(url, body, config);
+    const isChatEndpoint = url === 'chat' || url === 'chats' || url.includes('chat/');
 
     if (returnFullResponse) {
       return request.catch(error => {
-        // Suppress error logging for chat endpoints
-        const isChatEndpoint = url === 'chat' || url === 'chats' || url.includes('chat/');
         if (!isChatEndpoint) {
-          console.error('❌ POST request failed:', url, error.response?.data || error.message);
+          logRequestFailure('POST', url, error);
         }
         throw error;
       });
@@ -226,10 +239,8 @@ export const requests = {
     return request
       .then(responseBody)
       .catch(error => {
-        // Suppress error logging for chat endpoints
-        const isChatEndpoint = url === 'chat' || url === 'chats' || url.includes('chat/');
         if (!isChatEndpoint) {
-          console.error('❌ POST request failed:', url, error.response?.data || error.message);
+          logRequestFailure('POST', url, error);
         }
         throw error;
       });
@@ -250,7 +261,7 @@ export const requests = {
     })
       .then(responseBody)
       .catch(error => {
-        console.error('❌ POST FormData request failed:', url, error.response?.data || error.message);
+        logRequestFailure('POST FormData', url, error);
         throw error;
       });
   },
@@ -260,7 +271,7 @@ export const requests = {
     return instance.put(url, body, config)
       .then(responseBody)
       .catch(error => {
-        console.error('❌ PUT request failed:', url, error.response?.data || error.message);
+        logRequestFailure('PUT', url, error);
         throw error;
       });
   },
@@ -270,7 +281,7 @@ export const requests = {
     return instance.patch(url, body, config)
       .then(responseBody)
       .catch(error => {
-        console.error('❌ PATCH request failed:', url, error.response?.data || error.message);
+        logRequestFailure('PATCH', url, error);
         throw error;
       });
   },
@@ -280,7 +291,7 @@ export const requests = {
     return instance.delete(url, config)
       .then(responseBody)
       .catch(error => {
-        console.error('❌ DELETE request failed:', url, error.response?.data || error.message);
+        logRequestFailure('DELETE', url, error);
         throw error;
       });
   },

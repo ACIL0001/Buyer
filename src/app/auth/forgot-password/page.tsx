@@ -275,7 +275,7 @@ export default function ForgotPassword() {
       <Fade in timeout={600}>
         <StyledCard elevation={0}>
           <IconFrame>
-            <LockResetIcon />
+            <Box component="img" src="/assets/images/password-svgrepo-com.svg" sx={{ width: '50px', height: '50px' }} />
           </IconFrame>
 
           <TitleText variant="h4">
@@ -297,7 +297,7 @@ export default function ForgotPassword() {
               Email
             </ToggleButton>
             <ToggleButton value="phone" sx={{ position: 'absolute', left: '167px', width: '135px' }}>
-              <PhoneAndroidIcon />
+              <Box component="img" src="/assets/images/phone-svgrepo-com.svg" sx={{ width: '24px', height: '24px', mr: 1 }} />
               Téléphone
             </ToggleButton>
           </StyledToggleButtonGroup>

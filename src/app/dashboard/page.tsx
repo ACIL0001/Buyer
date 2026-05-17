@@ -189,11 +189,135 @@ export default function DashboardPage() {
     ];
 
     return (
-        <Container maxWidth="xl" sx={{ py: 4, px: { xs: 2, md: 4 }, bgcolor: '#fafafa', minHeight: '100vh' }}>
+        <Container className="dashboard-home-page" maxWidth="xl" sx={{ py: 4, px: { xs: 2, md: 4 }, bgcolor: '#fafafa', minHeight: '100vh' }}>
+            <style jsx global>{`
+                @media (max-width: 768px) {
+                    /* Page-level overflow guard */
+                    .dashboard-home-page {
+                        width: 100% !important;
+                        max-width: 100vw !important;
+                        overflow-x: hidden !important;
+                        box-sizing: border-box !important;
+                        padding-top: 16px !important;
+                        padding-bottom: 24px !important;
+                        padding-left: 12px !important;
+                        padding-right: 12px !important;
+                    }
+
+                    /* Header greeting */
+                    .dh-greeting {
+                        margin-bottom: 16px !important;
+                    }
+                    .dh-greeting h4 {
+                        font-size: 18px !important;
+                        line-height: 22px !important;
+                    }
+                    .dh-greeting p {
+                        font-size: 13px !important;
+                    }
+
+                    /* Top stats cards row */
+                    .dh-top-cards {
+                        display: grid !important;
+                        grid-template-columns: repeat(2, 1fr) !important;
+                        gap: 8px !important;
+                        margin-bottom: 16px !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        min-width: 0 !important;
+                    }
+                    .dh-top-cards > .MuiPaper-root {
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        min-width: 0 !important;
+                        height: auto !important;
+                        min-height: 90px;
+                        padding: 12px !important;
+                        gap: 8px !important;
+                        box-sizing: border-box !important;
+                        overflow: hidden;
+                    }
+                    .dh-top-cards .MuiTypography-root {
+                        word-break: break-word;
+                    }
+
+                    /* Navigation cards (the 3 large action cards) */
+                    .dh-nav-cards {
+                        margin-bottom: 16px !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        min-width: 0 !important;
+                    }
+                    .dh-nav-cards .MuiPaper-root {
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        min-width: 0 !important;
+                        height: auto !important;
+                        min-height: 160px;
+                        padding: 16px !important;
+                        box-sizing: border-box !important;
+                        overflow: hidden;
+                    }
+                    .dh-nav-cards .MuiTypography-root {
+                        word-break: break-word;
+                    }
+
+                    /* Activity table card */
+                    .dh-activity {
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        min-width: 0 !important;
+                        box-sizing: border-box !important;
+                        overflow: hidden;
+                        border-radius: 12px !important;
+                    }
+                    .dh-activity-header {
+                        padding: 12px 14px !important;
+                        height: auto !important;
+                    }
+                    .dh-activity-header > .MuiTypography-root {
+                        font-size: 14px !important;
+                    }
+                    /* Hide the column header row entirely on mobile */
+                    .dh-activity-thead {
+                        display: none !important;
+                    }
+                    /* Each row stacks its cells vertically */
+                    .dh-activity-row {
+                        flex-direction: column !important;
+                        align-items: flex-start !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        min-width: 0 !important;
+                        min-height: 0 !important;
+                        padding: 12px 14px !important;
+                        gap: 4px;
+                        box-sizing: border-box !important;
+                    }
+                    .dh-activity-row > .MuiBox-root {
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        min-width: 0 !important;
+                        padding: 0 !important;
+                        box-sizing: border-box !important;
+                    }
+                    .dh-activity-row .MuiTypography-root {
+                        white-space: normal !important;
+                        word-break: break-word;
+                        text-overflow: clip !important;
+                        overflow: visible !important;
+                        font-size: 13px !important;
+                    }
+                    .dh-activity-footer {
+                        padding: 12px !important;
+                        height: auto !important;
+                    }
+                }
+            `}</style>
             <DashboardKeyframes />
-            
+
             {/* Header */}
-            <Box sx={{ mb: 5 }}>
+            <Box className="dh-greeting" sx={{ mb: 5 }}>
                 <Typography variant="h4" sx={{ fontWeight: 700, color: '#191B24', mb: 1, fontSize: '24px' }}>
                     Bienvenue {auth?.user?.firstName || 'Anis'}
                 </Typography>
@@ -203,7 +327,7 @@ export default function DashboardPage() {
             </Box>
 
             {/* Top Cards Row */}
-            <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 6, justifyContent: 'center' }}>
+            <Box className="dh-top-cards" sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 6, justifyContent: 'center' }}>
                 {topCards.map((card, idx) => (
                     <Paper
                         key={idx}
@@ -258,7 +382,7 @@ export default function DashboardPage() {
             </Box>
 
             {/* Navigation Cards Row */}
-            <Grid container spacing={3} sx={{ justifyContent: 'center', mb: 6 }}>
+            <Grid className="dh-nav-cards" container spacing={3} sx={{ justifyContent: 'center', mb: 6 }}>
                 {navigationCards.map((card, idx) => (
                     <Grid size={{ xs: 12, sm: 'auto' }} key={idx} className={card.className}>
                         <Paper
@@ -350,6 +474,7 @@ export default function DashboardPage() {
             {/* Recent Activity Table */}
             <Box sx={{ mb: 2 }}>
                 <Paper
+                    className="dh-activity"
                     elevation={0}
                     sx={{
                         boxSizing: 'border-box',
@@ -366,7 +491,7 @@ export default function DashboardPage() {
                     }}
                 >
                     {/* HorizontalBorder (Header) */}
-                    <Box sx={{
+                    <Box className="dh-activity-header" sx={{
                         boxSizing: 'border-box',
                         display: 'flex',
                         flexDirection: 'row',
@@ -385,7 +510,7 @@ export default function DashboardPage() {
                     </Box>
 
                     {/* Table Header Row */}
-                    <Box sx={{
+                    <Box className="dh-activity-thead" sx={{
                         display: 'flex',
                         flexDirection: 'row',
                         alignItems: 'center',
@@ -405,7 +530,7 @@ export default function DashboardPage() {
                     {/* Table Rows */}
                     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
                         {MOCK_ACTIVITY.map((row, idx) => (
-                            <Box key={idx} sx={{
+                            <Box key={idx} className="dh-activity-row" sx={{
                                 boxSizing: 'border-box',
                                 display: 'flex',
                                 flexDirection: 'row',
@@ -478,7 +603,7 @@ export default function DashboardPage() {
                     </Box>
 
                     {/* Table Footer */}
-                    <Box sx={{
+                    <Box className="dh-activity-footer" sx={{
                         boxSizing: 'border-box',
                         display: 'flex',
                         flexDirection: 'column',

@@ -192,6 +192,32 @@ const AuctionSidebarPage = () => {
         .spinner {
           animation: spin 1s linear infinite;
         }
+
+        /* Mobile/tablet: header collapses to ~68px (~60px on very small phones).
+           Tighten both the page top padding and the title's stacked 80px margin. */
+        @media (max-width: 1024px) {
+          .auction-sidebar-page {
+            padding-top: 72px !important;
+          }
+          .auction-sidebar-page h1 {
+            margin-top: 8px !important;
+            font-size: 28px !important;
+            line-height: 32px !important;
+          }
+          .auction-sidebar-page section {
+            padding: 8px 0 !important;
+          }
+        }
+        @media (max-width: 375px) {
+          .auction-sidebar-page {
+            padding-top: 64px !important;
+          }
+          .auction-sidebar-page h1 {
+            margin-top: 4px !important;
+            font-size: 22px !important;
+            line-height: 26px !important;
+          }
+        }
       `}</style>
       
       <div className={`${show && 'AllPages'}`}>
@@ -205,11 +231,11 @@ const AuctionSidebarPage = () => {
           <RequestProvider>
             <AxiosInterceptor>
               <Header />
-              <main style={{ 
+              <main className="auction-sidebar-page" style={{
                 width: '100%',
                 minHeight: '100vh',
-                height: 'auto', 
-                backgroundColor: '#FFFFFF', 
+                height: 'auto',
+                backgroundColor: '#FFFFFF',
                 paddingTop: '200px',
                 opacity: 1,
                 transform: 'rotate(0deg)',

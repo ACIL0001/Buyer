@@ -300,21 +300,7 @@ function ResetPasswordContent() {
       <Fade in timeout={600}>
         <StyledCard elevation={0}>
           <IconFrame>
-            <Box sx={{ 
-              width: '54px', 
-              height: '40px', 
-              border: '1px solid #d0d0d0', 
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#2b2b43',
-              fontWeight: 700,
-              fontSize: '1.2rem',
-              letterSpacing: '1px'
-            }}>
-              ***
-            </Box>
+            <Box component="img" src="/assets/images/password-svgrepo-com.svg" sx={{ width: '50px', height: '50px' }} />
           </IconFrame>
 
           <TitleText>
@@ -402,7 +388,7 @@ function ResetPasswordContent() {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" sx={{ color: '#757575' }}>
-                        <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                        <Box component="img" src={showPassword ? "/assets/images/eye-svgrepo-com.svg" : "/assets/images/eye-off-svgrepo-com.svg"} sx={{ width: '22px', height: '22px' }} />
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -422,7 +408,7 @@ function ResetPasswordContent() {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" sx={{ color: '#757575' }}>
-                        <Iconify icon={showPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                        <Box component="img" src={showPassword ? "/assets/images/eye-svgrepo-com.svg" : "/assets/images/eye-off-svgrepo-com.svg"} sx={{ width: '22px', height: '22px' }} />
                       </IconButton>
                     </InputAdornment>
                   ),

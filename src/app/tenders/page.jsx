@@ -102,7 +102,8 @@ const TendersPage = () => {
     // Filter by Type (Product/Service)
     if (selectedTypes.length > 0) {
       transformed = transformed.filter(t => {
-        const type = (t.tenderType || t.type || t.saleType || '').toUpperCase();
+        const rawType = t.tenderType || t.type || t.saleType || '';
+        const type = String(rawType).toUpperCase();
         return selectedTypes.includes(type);
       });
     }
@@ -117,12 +118,31 @@ const TendersPage = () => {
 
     // Filter by Categories
     if (selectedCategories.length > 0) {
-      transformed = transformed.filter(t => selectedCategories.includes(t.categoryId || t.category?._id));
+      transformed = transformed.filter(t => {
+        const catObj = t.productCategory || t.category;
+        const catId = t.categoryId || (typeof catObj === 'object' ? catObj?._id : catObj);
+        return selectedCategories.includes(catId);
+      });
     }
 
     // Filter by Wilaya
     if (selectedWilaya) {
-      transformed = transformed.filter(t => t.wilaya === selectedWilaya);
+      transformed = transformed.filter(t => {
+        const rawWilaya = t.wilaya || t.location || (t.owner && t.owner.wilaya) || '';
+        return String(rawWilaya).trim().toLowerCase() === String(selectedWilaya).trim().toLowerCase();
+      });
+    }
+
+    // Availability Filter (Recently Published)
+    if (availability.recentlyPublished) {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      transformed = transformed.filter(t => new Date(t.createdAt) > oneWeekAgo);
+    }
+
+    // Rating Filter
+    if (rating !== null) {
+      transformed = transformed.filter(t => (t.rating || t.owner?.rating || 0) >= rating);
     }
 
     // Filter by Search Query
@@ -148,7 +168,7 @@ const TendersPage = () => {
     });
 
     return transformed;
-  }, [allTendersResponse, auth.user, selectedTypes, priceRange, selectedCategories, selectedWilaya, searchQuery, sortOrder]);
+  }, [allTendersResponse, auth.user, selectedTypes, priceRange, selectedCategories, selectedWilaya, availability, rating, searchQuery, sortOrder]);
 
   const [timers, setTimers] = useState({});
   const [flippedId, setFlippedId] = useState(null);
@@ -183,13 +203,40 @@ const TendersPage = () => {
   return (
     <>
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@700&display=swap" rel="stylesheet" />
+      <style jsx global>{`
+        /* Mobile/tablet: header collapses to ~68px (~60px on very small phones).
+           Tighten both the page top padding and the title's stacked 80px margin. */
+        @media (max-width: 1024px) {
+          .tenders-page {
+            padding-top: 72px !important;
+          }
+          .tenders-page h1 {
+            margin-top: 8px !important;
+            font-size: 28px !important;
+            line-height: 32px !important;
+          }
+          .tenders-page > .container:first-of-type {
+            margin-bottom: 20px !important;
+          }
+        }
+        @media (max-width: 375px) {
+          .tenders-page {
+            padding-top: 64px !important;
+          }
+          .tenders-page h1 {
+            margin-top: 4px !important;
+            font-size: 22px !important;
+            line-height: 26px !important;
+          }
+        }
+      `}</style>
       <Header />
-      <div style={{ 
+      <div className="tenders-page" style={{
         width: '100%',
         minHeight: '100vh',
         height: 'auto',
-        background: '#ffffff', 
-        padding: '200px 0 80px 0', 
+        background: '#ffffff',
+        padding: '200px 0 80px 0',
         fontFamily: '"DM Sans", sans-serif',
         opacity: 1,
         transform: 'rotate(0deg)',
@@ -722,18 +769,12 @@ const TendersPage = () => {
           onClose={() => setIsFilterOpen(false)}
           categories={categories}
           selectedCategories={selectedCategories}
-          onToggleCategory={(id) => setSelectedCategories(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])}
           priceRange={priceRange}
-          onPriceChange={(key, val) => setPriceRange(prev => ({ ...prev, [key]: val }))}
           wilayas={WILAYAS}
           selectedWilaya={selectedWilaya}
-          onWilayaChange={setSelectedWilaya}
           selectedTypes={selectedTypes}
-          onToggleType={(type) => setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])}
           availability={availability}
-          onToggleAvailability={(key) => setAvailability(prev => ({ ...prev, [key]: !prev[key] }))}
           rating={rating}
-          onToggleRating={(r) => setRating(prev => prev === r ? null : r)}
           onClear={() => {
             setPriceRange({ min: '', max: '' });
             setSelectedCategories([]);
@@ -742,7 +783,15 @@ const TendersPage = () => {
             setAvailability({ inStock: false, recentlyPublished: false });
             setRating(null);
           }}
-          onApply={() => {
+          onApply={(data) => {
+            if (data) {
+              setSelectedCategories(data.categories || []);
+              setPriceRange(data.priceRange || { min: '', max: '' });
+              setSelectedWilaya(data.wilaya || '');
+              setSelectedTypes(data.types || []);
+              setAvailability(data.availability || { inStock: false, recentlyPublished: false });
+              setRating(data.rating || null);
+            }
             setIsFilterOpen(false);
             setCurrentPage(1);
           }}

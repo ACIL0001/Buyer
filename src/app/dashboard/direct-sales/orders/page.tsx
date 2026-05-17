@@ -122,11 +122,11 @@ export default function OrdersPage() {
   if (isQueryLoading && (!orders.length && !purchases.length)) return <div style={{ padding: '40px', textAlign: 'center' }}>Chargement...</div>;
 
   return (
-    <div style={{ padding: '40px 20px', backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
-      <div style={{ maxWidth: '1116px', margin: '0 auto' }}>
-        
+    <div className="dashboard-orders-page" style={{ padding: '40px 20px', backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
+      <div className="dashboard-orders-inner" style={{ maxWidth: '1116px', margin: '0 auto' }}>
+
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+        <div className="dashboard-orders-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
           <div>
             <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#0F172A', margin: 0 }}>
               Bienvenue {(user as any)?.companyName || (user as any)?.entreprise || (user as any)?.firstName || 'Utilisateur'}

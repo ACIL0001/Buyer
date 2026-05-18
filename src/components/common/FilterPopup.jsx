@@ -9,16 +9,16 @@ import { motion, AnimatePresence } from 'framer-motion';
  * @param {() => void} props.onClose
  * @param {any[]} props.categories
  * @param {string[]} props.selectedCategories
- * @param {(id: string) => void} [props.onToggleCategory]
+ * @param {(id: string) => void} props.onToggleCategory
  * @param {{ min: string, max: string }} props.priceRange
- * @param {(key: string, val: string) => void} [props.onPriceChange]
+ * @param {(key: string, val: string) => void} props.onPriceChange
  * @param {string[]} [props.wilayas]
  * @param {string} props.selectedWilaya
- * @param {(val: string) => void} [props.onWilayaChange]
+ * @param {(val: string) => void} props.onWilayaChange
  * @param {string[]} [props.selectedTypes]
- * @param {(type: string) => void} [props.onToggleType]
- * @param {() => void} [props.onClear]
- * @param {(data: any) => void} props.onApply
+ * @param {(type: string) => void} props.onToggleType
+ * @param {() => void} props.onClear
+ * @param {() => void} props.onApply
  * @param {{ inStock: boolean, recentlyPublished: boolean }} [props.availability]
  * @param {(key: string) => void} [props.onToggleAvailability]
  * @param {number | null} [props.rating]

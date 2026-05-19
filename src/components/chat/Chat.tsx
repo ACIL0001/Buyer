@@ -1192,10 +1192,34 @@ export default function Chat() {
                                 key={message._id || `${message.sender}_${message.createdAt}_${message.message}`}
                                 className={`message-wrapper-modern ${isSender ? 'sender' : 'receiver'}`}
                               >
+                                {!isSender && (
+                                  <div className="message-avatar-container">
+                                    <img
+                                      src={getAvatarUrl(userChat?.avatar)}
+                                      alt={`${userChat?.firstName || ''} ${userChat?.lastName || ''}`}
+                                      className="message-avatar-image"
+                                      onError={(e: any) => {
+                                        const target = e.target as HTMLImageElement
+                                        target.src = '/assets/images/avatar.jpg'
+                                      }}
+                                    />
+                                  </div>
+                                )}
                                 <div className="message-content-stack">
-                                  <span className="message-time-outside">
-                                    {message.createdAt ? formatTime(message.createdAt) : ''}
-                                  </span>
+                                  {isSender ? (
+                                    <span className="message-time-outside">
+                                      {message.createdAt ? formatTime(message.createdAt) : ''}
+                                    </span>
+                                  ) : (
+                                    <div className="message-meta-info">
+                                      <span className="message-sender-name">
+                                        {userChat?.socialReason || userChat?.entreprise || userChat?.companyName || `${userChat?.firstName || ''} ${userChat?.lastName || ''}`}
+                                      </span>
+                                      <span className="message-time-outside">
+                                        {message.createdAt ? formatTime(message.createdAt) : ''}
+                                      </span>
+                                    </div>
+                                  )}
                                   <div className={`message-bubble ${isSender ? 'sent' : 'received'}`}>
                                     {message.attachment && (
                                       <div className="message-attachment-container">

@@ -262,6 +262,10 @@ const MultipurposeDetails2 = () => {
   const handleVideoThumbnailClick = (index) => { setSelectedVideoIndex(index); setShowVideo(true); };
   const handleBidClick = (e) => { 
     e.preventDefault(); 
+    if (isOwner) {
+      toast.warning("Vous ne pouvez pas soumettre d'offre sur votre propre appel d'offres.");
+      return;
+    }
     if (!isLogged) { 
       toast.error("Veuillez vous connecter pour soumettre une offre"); 
       router.push('/auth/login'); 
@@ -409,90 +413,81 @@ const MultipurposeDetails2 = () => {
             </div>
 
             <div className="product-info-area">
-              {/* Removed Produit and Status badges */}
-              <h1 className="product-title">{safeTitle}</h1>
-              <div className="countdown-info">{formatRemainingTime(safeEndingAt)}</div>
+              {/* Wrapper for Title, Countdown, Price, and Details Table to keep them close together per User request */}
+              <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                <h1 className="direct-sale-title" style={{ marginBottom: '4px' }}>{safeTitle}</h1>
+                <div className="countdown-info" style={{ marginBottom: '8px' }}>{formatRemainingTime(safeEndingAt)}</div>
               
-              <div className="budget-display-redesign my-2" style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                {tenderData?.evaluationType === 'MIEUX_DISANT' ? (
-                  <span style={{ 
-                    fontFamily: "'Inter', sans-serif", 
-                    fontSize: '24px', 
-                    fontWeight: '700', 
-                    lineHeight: '24px', 
-                    color: '#002896' 
-                  }}>
-                    Offre
-                  </span>
-                ) : safeMaxBudget > 0 && (
-                  <>
-                    <span className="budget-amount" style={{ 
-                      fontFamily: "'Inter', sans-serif", 
-                      fontSize: '24px', 
-                      fontWeight: '400', 
-                      lineHeight: '24px', 
-                      letterSpacing: '0.03em', 
-                      color: '#000000' 
-                    }}>
-                      {formatPrice(safeMaxBudget).trim()}
+                {tenderData?.evaluationType !== 'MIEUX_DISANT' && safeMaxBudget > 0 && (
+                  <div className="price-section mt-1" style={{ marginBottom: '8px' }}>
+                    <span className="direct-sale-price">
+                      {Math.floor(safeMaxBudget).toLocaleString('fr-FR')},00 DA
                     </span>
-                    <span style={{ 
-                      fontFamily: "'Inter', sans-serif", 
-                      fontSize: '24px', 
-                      fontWeight: '400', 
-                      lineHeight: '24px', 
-                      color: '#000000' 
-                    }}>
-                      DA
-                    </span>
-                  </>
+                  </div>
                 )}
+
+                {/* Custom Details Table section per User request */}
+                <div 
+                  className="custom-details-table" 
+                  style={{ 
+                    gap: tenderData?.evaluationType === 'MIEUX_DISANT' ? '10px' : '18px', 
+                    paddingBottom: tenderData?.evaluationType === 'MIEUX_DISANT' ? '8px' : '18px',
+                    marginTop: '10px'
+                  }}
+                >
+                  <div className="custom-detail-row" style={{ padding: tenderData?.evaluationType === 'MIEUX_DISANT' ? '7px 0px' : '11px 0px' }}>
+                    <span className="custom-detail-label">Annonceur</span>
+                    <span className="custom-detail-value">
+                      <Link href={`/dashboard/profile/${safeOwner?._id || safeOwner}`} className="custom-detail-link">
+                        {formatUserName(safeOwner) || 'Vendeur'}
+                      </Link>
+                    </span>
+                  </div>
+                  <div className="custom-detail-separator"></div>
+
+                  <div className="custom-detail-row" style={{ padding: tenderData?.evaluationType === 'MIEUX_DISANT' ? '7px 0px' : '11px 0px' }}>
+                    <span className="custom-detail-label">Localisation</span>
+                    <span className="custom-detail-value">
+                      {safeWilaya || 'Algérie'}{safeLocation ? `, ${safeLocation}` : ''}
+                    </span>
+                  </div>
+                  <div className="custom-detail-separator"></div>
+
+                  <div className="custom-detail-row" style={{ padding: tenderData?.evaluationType === 'MIEUX_DISANT' ? '7px 0px' : '11px 0px' }}>
+                    <span className="custom-detail-label">Statut</span>
+                    <span className="custom-detail-value" style={{ color: safeStatus === 'OPEN' ? '#10B981' : '#ef4444' }}>
+                      {safeStatus === 'OPEN' ? 'En ligne' : safeStatus}
+                    </span>
+                  </div>
+                  <div className="custom-detail-separator"></div>
+
+                  <div className="custom-detail-row" style={{ padding: tenderData?.evaluationType === 'MIEUX_DISANT' ? '7px 0px' : '11px 0px' }}>
+                    <span className="custom-detail-label">Type</span>
+                    <span className="custom-detail-value">
+                      {safeTenderType === 'SERVICE' ? 'Service' : 'Produit'}
+                    </span>
+                  </div>
+                  <div className="custom-detail-separator"></div>
+
+                  <div className="custom-detail-row" style={{ padding: tenderData?.evaluationType === 'MIEUX_DISANT' ? '7px 0px' : '11px 0px' }}>
+                    <span className="custom-detail-label">Catégorie</span>
+                    <span className="custom-detail-value">
+                      {tenderData?.category?.name || tenderData?.categoryName || tenderData?.productSubCategory?.name || tenderData?.productCategory?.name || 'Non spécifiée'}
+                    </span>
+                  </div>
+                  <div className="custom-detail-separator"></div>
+                </div>
               </div>
-              
 
-
-              <div className="info-grid-mini mt-3">
-                <div className="info-item-mini">
-                  <span className="info-label-mini">VENDEUR:</span>
-                  <Link href={`/dashboard/profile/${safeOwner?._id || safeOwner}`} className="info-text-mini hover-link">
-                    {formatUserName(safeOwner) || 'Vendeur'}
-                  </Link>
-                </div>
-                <div className="info-item-mini">
-                  <span className="info-label-mini">LOCALISATION:</span>
-                  <span className="info-text-mini">{safeWilaya}, {safeLocation}</span>
-                </div>
-                <div className="info-item-mini">
-                  <span className="info-label-mini">QUANTITÉ:</span>
-                  <span className="info-text-mini">{safeQuantity || 'N/A'}</span>
-                </div>
-                <div className="info-item-mini">
-                  <span className="info-label-mini">TYPE:</span>
-                  <span className="info-text-mini">{safeTenderType === 'SERVICE' ? '🛠️ Service' : '📦 Produit'}</span>
-                </div>
-                <div className="info-item-mini">
-                  <span className="info-label-mini">STATUT:</span>
-                  <span className="info-text-mini" style={{ color: safeStatus === 'OPEN' ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>
-                    {safeStatus === 'OPEN' ? 'Ouvert' : safeStatus}
-                  </span>
-                </div>
-                <div className="info-item-mini">
-                  <span className="info-label-mini">CATÉGORIE:</span>
-                  <span className="info-text-mini">{tenderData?.category?.name || tenderData?.categoryName || tenderData?.productSubCategory?.name || tenderData?.productCategory?.name || 'Non spécifiée'}</span>
-                </div>
-              </div>
-
-
-
-              <div className="divider" style={{ opacity: 0.5, margin: '20px 0' }}></div>
-              
-              <div className="bid-input-section" style={{ background: 'rgba(0, 40, 150, 0.02)', padding: '25px', borderRadius: '24px', border: '1px solid rgba(0, 40, 150, 0.05)' }}>
-                {isOwner && <div className="alert alert-warning py-2 mb-3" style={{fontSize: '13px', borderRadius: '12px'}}>C'est votre propre appel d'offres.</div>}
+            {/* Wrapper to bind action card and submit button together with minimal space per User request */}
+            <div className="action-card-and-btn-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+              {/* Custom Action Area for Bidding / Bid submission */}
+              <div className="custom-action-card" style={{ marginTop: 0, marginBottom: 0, background: 'transparent', padding: 0 }}>
                 
                 {tenderData?.evaluationType === 'MIEUX_DISANT' ? (
-                  <div className="mieux-disant-input-area">
-                    <label style={{ fontSize: '15px', fontWeight: '800', color: '#002896', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <i className="fa fa-edit" style={{ fontSize: '18px' }}></i> Votre proposition :
+                  <div className="mieux-disant-input-area w-100">
+                    <label style={{ fontSize: '13px', fontWeight: '700', color: '#757575', marginBottom: '4px', display: 'block' }}>
+                      Votre proposition :
                     </label>
                     <textarea 
                       className="proposal-textarea" 
@@ -500,37 +495,25 @@ const MultipurposeDetails2 = () => {
                       placeholder="Décrivez votre offre, votre expertise et vos délais de réalisation..."
                       style={{
                         width: '100%',
-                        minHeight: '140px',
-                        padding: '16px',
-                        borderRadius: '16px',
-                        border: '2px solid #e2e8f0',
-                        fontSize: '14px',
-                        lineHeight: '1.6',
-                        resize: 'vertical',
-                        transition: 'all 0.3s ease',
+                        minHeight: '80px',
+                        padding: '10px',
+                        borderRadius: '8px',
+                        border: '1px solid #E5E7EB',
+                        fontSize: '13px',
                         outline: 'none',
-                        background: '#ffffff',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.02)'
-                      }}
-                      onFocus={(e) => {
-                        e.currentTarget.style.borderColor = '#002896';
-                        e.currentTarget.style.boxShadow = '0 10px 20px rgba(0, 40, 150, 0.08)';
-                      }}
-                      onBlur={(e) => {
-                        e.currentTarget.style.borderColor = '#e2e8f0';
-                        e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.02)';
+                        background: '#ffffff'
                       }}
                     ></textarea>
                     
-                    <div className="file-upload-modern mt-3" style={{ position: 'relative' }}>
+                    <div className="file-upload-modern mt-2" style={{ position: 'relative' }}>
                       <label style={{ 
                         display: 'flex', 
                         flexDirection: 'column', 
                         alignItems: 'center', 
                         justifyContent: 'center', 
-                        padding: '20px', 
-                        border: '2px dashed #002896', 
-                        borderRadius: '16px', 
+                        padding: '10px', 
+                        border: '1px dashed #002896', 
+                        borderRadius: '8px', 
                         background: proposalFile ? 'rgba(0, 40, 150, 0.05)' : 'white', 
                         cursor: 'pointer', 
                         transition: 'all 0.3s ease' 
@@ -542,46 +525,40 @@ const MultipurposeDetails2 = () => {
                           accept=".pdf,.doc,.docx" 
                           style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', cursor: 'pointer' }}
                         />
-                        <i className={`fa ${proposalFile ? 'fa-file-pdf' : 'fa-cloud-upload'}`} style={{ fontSize: '24px', color: '#002896', marginBottom: '8px' }}></i>
-                        <span style={{ fontSize: '13px', fontWeight: '700', color: '#002896', textAlign: 'center' }}>
+                        <i className={`bi ${proposalFile ? 'bi-file-earmark-pdf' : 'bi-cloud-arrow-up'}`} style={{ fontSize: '16px', color: '#002896', marginBottom: '3px' }}></i>
+                        <span style={{ fontSize: '12px', fontWeight: '600', color: '#002896', textAlign: 'center' }}>
                           {proposalFile ? proposalFile.name : "Joindre votre dossier technique (PDF, DOCX)"}
                         </span>
-                        {!proposalFile && <span style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>Taille max : 10Mo</span>}
                       </label>
                     </div>
                   </div>
                 ) : (
-                  <div className="moins-disant-input-area">
-                    <label style={{ fontSize: '15px', fontWeight: '800', color: '#002896', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <i className="fa fa-coins" style={{ fontSize: '18px' }}></i> Votre offre financière (DA) :
-                    </label>
-                    <div className="quantity-stepper">
-                      <HandleQuantity initialValue={currentLowestBidPrice} startingPrice={currentLowestBidPrice} maxValue={currentLowestBidPrice} />
+                  <div className="moins-disant-input-area w-100">
+                    <div className="custom-action-card-row w-100" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: 0 }}>
+                      <span className="custom-action-card-label" style={{ margin: 0 }}>Offre financière</span>
+                      <div className="custom-action-card-stepper">
+                        <HandleQuantity initialValue={currentLowestBidPrice} startingPrice={currentLowestBidPrice} maxValue={currentLowestBidPrice} />
+                      </div>
                     </div>
                   </div>
                 )}
-                
-                <button 
-                  className="enchirir-btn mt-4" 
-                  onClick={handleBidClick} 
-                  disabled={isOwner || safeStatus !== 'OPEN'}
-                  style={{
-                    width: '100%',
-                    height: '56px',
-                    borderRadius: '16px',
-                    fontSize: '16px',
-                    fontWeight: '800',
-                    letterSpacing: '0.5px',
-                    boxShadow: '0 10px 25px rgba(0, 40, 150, 0.2)'
-                  }}
-                >
-                  {tenderData?.evaluationType === 'MIEUX_DISANT' ? 'SOUMETTRE MA PROPOSITION' : 'ENVOYER MON OFFRE'}
-                </button>
               </div>
+
+              {safeStatus === 'OPEN' && (
+                <div className="custom-action-btn-container" style={{ marginTop: 0 }}>
+                  <button 
+                    className="custom-action-buy-btn" 
+                    onClick={handleBidClick} 
+                  >
+                    {tenderData?.evaluationType === 'MIEUX_DISANT' ? 'Soumettre ma proposition' : 'Envoyer mon offre'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
+        </div>
 
-          <div className="product-description-container mt-5">
+        <div className="product-description-container mt-5">
             <h2 className="description-title">Description du produit</h2>
             <div className="description-body">
               <div style={{ whiteSpace: 'pre-wrap' }}>{safeDescription}</div>
@@ -592,72 +569,70 @@ const MultipurposeDetails2 = () => {
                 </div>
               )}
             </div>
+        </div>
+        
+        <div className="qa-section-container">
+          <div className="qa-header-row">
+            <h2 className="qa-title">Questions et réponses</h2>
+          </div>
+          
+          <div className="qa-content-area">
+            <p className="qa-subtitle">Une question sur ce produit ? Le vendeur vous répondra dans les plus brefs délais.</p>
             
-            <div className="tabs-redesign mt-4">
-              <div className="tab-headers">
+            {isLogged ? (
+              <div className="qa-textarea-wrapper">
+                <textarea
+                  className="qa-textarea"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Posez votre question ici..."
+                />
                 <button 
-                  className={`tab-item ${activeTab === 'comments' ? 'active' : ''}`} 
-                  onClick={() => setActiveTab('comments')}
+                  className="qa-submit-btn"
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    if (!newComment.trim()) return;
+                    setSubmitting(true);
+                    try {
+                      await commentsApi.createCommentForTender(tenderId, newComment, auth?.user?._id || '');
+                      setNewComment("");
+                      const data = await TendersAPI.getTenderById(tenderId);
+                      setTenderData(data);
+                      toast.success("Question envoyée");
+                    } catch (err) {
+                      toast.error("Erreur lors de l'envoi de la question.");
+                    }
+                    setSubmitting(false);
+                  }}
+                  disabled={submitting}
                 >
-                  Questions & Réponses
+                  <svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15.83 6.67L0.830002 0.420044C0.710363 0.369796 0.575001 0.379308 0.463595 0.445831C0.352189 0.512353 0.281729 0.625934 0.28 0.750044V5.25004C0.28 5.61793 0.54711 5.92982 0.908002 5.98904L9.00002 6.99904L0.908002 8.00904C0.54711 8.06827 0.28 8.38016 0.28 8.74804V13.248C0.281729 13.3722 0.352189 13.4857 0.463595 13.5523C0.575001 13.6188 0.710363 13.6283 0.830002 13.578L15.83 7.32804C15.9348 7.28383 16.0024 7.18128 16.0024 7.06804C16.0024 6.9548 15.9348 6.85226 15.83 6.80804V6.67Z" fill="#003399" />
+                  </svg>
+                  <span>{submitting ? '...' : 'Envoyer'}</span>
                 </button>
               </div>
-              <div className="tab-content-area p-4">
-                {activeTab === 'comments' && (
-                  <div className="comments-section-v2">
-                    {isLogged ? (
-                      <div className="comment-form-v2 mb-4">
-                        <textarea 
-                          value={newComment} 
-                          onChange={(e) => setNewComment(e.target.value)} 
-                          placeholder="Posez une question au vendeur..."
-                          rows={4}
-                        ></textarea>
-                        <div className="d-flex justify-content-end mt-2">
-                          <button 
-                            className="btn-envoyer"
-                            onClick={async () => {
-                              if (!newComment.trim()) return;
-                              setSubmitting(true);
-                              try { 
-                                await commentsApi.createCommentForTender(tenderId, newComment, auth?.user?._id || ''); 
-                                setNewComment(""); 
-                                const data = await TendersAPI.getTenderById(tenderId);
-                                setTenderData(data);
-                                toast.success("Question envoyée"); 
-                              } catch (err) {
-                                toast.error("Erreur lors de l'envoi");
-                              } finally { setSubmitting(false); }
-                            }} 
-                            disabled={submitting}
-                          >
-                            {submitting ? '...' : 'Envoyer'}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="alert alert-info">Veuillez vous connecter pour poser une question.</div>
-                    )}
-                    <div className="comment-list-v2">
-                      {tenderData?.comments?.map(c => (
-                        <CommentItem 
-                          key={c._id} 
-                          comment={c} 
-                          isLogged={isLogged} 
-                          authUser={auth.user} 
-                          announcementOwnerId={safeOwner?._id || safeOwner}
-                          onReplySuccess={async () => {
-                            const data = await TendersAPI.getTenderById(tenderId);
-                            setTenderData(data);
-                          }} 
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+            ) : (
+              <div className="login-prompt">Veuillez vous connecter pour poser une question.</div>
+            )}
+            
+            <div className="comment-list-v2 w-100 mt-3">
+              {tenderData?.comments?.map((comment) => (
+                <CommentItem 
+                  key={comment._id} 
+                  comment={comment} 
+                  isLogged={isLogged} 
+                  authUser={auth.user} 
+                  announcementOwnerId={safeOwner?._id || safeOwner}
+                  onReplySuccess={async () => {
+                    const data = await TendersAPI.getTenderById(tenderId);
+                    setTenderData(data);
+                  }}
+                />
+              ))}
             </div>
           </div>
+        </div>
 
           {tenderData?.isPro && (
             <div className="professional-access-box mt-5">
@@ -721,7 +696,7 @@ const MultipurposeDetails2 = () => {
                           initial={false}
                           animate={{ rotateY: flippedSimilarId === tid ? 180 : 0 }}
                           transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
-                          style={{ width: '100%', maxWidth: '320px', aspectRatio: '284 / 464', margin: '0 auto', position: 'relative', zIndex: 1, transformStyle: 'preserve-3d' }}
+                          style={{ width: '320px', aspectRatio: '284 / 464', margin: '0', position: 'relative', zIndex: 1, transformStyle: 'preserve-3d' }}
                         >
                           {/* FRONT */}
                           <div
@@ -871,25 +846,6 @@ const MultipurposeDetails2 = () => {
 
       <style jsx>{`
         .redesign-v2-container { width: 100%; max-width: 1440px; margin: 0 auto; padding: clamp(120px, 18vw, 236px) clamp(16px, 4vw, 20px) clamp(48px, 10vw, 100px); }
-        .product-hero-section {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: clamp(12px, 2vw, 19px);
-          margin-bottom: clamp(28px, 5vw, 50px);
-          align-items: start;
-        }
-        @media (min-width: 768px) {
-          .product-hero-section {
-            grid-template-columns: clamp(80px, 8vw, 100px) minmax(0, 1fr);
-            gap: clamp(16px, 2.5vw, 24px);
-          }
-        }
-        @media (min-width: 1024px) {
-          .product-hero-section {
-            grid-template-columns: clamp(80px, 7vw, 100px) minmax(0, 1fr) minmax(280px, 400px);
-            justify-content: center;
-          }
-        }
         .thumbnails-vertical {
           display: flex;
           flex-direction: column;
@@ -911,25 +867,6 @@ const MultipurposeDetails2 = () => {
           box-shadow: 0 4px 8px rgba(0, 40, 150, 0.1);
         }
         .thumb-item img, .thumb-item video { width: 100%; height: 100%; object-fit: cover; }
-        .main-image-area {
-          background: #f8fafc;
-          border-radius: 4px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          width: 100%;
-          max-width: 632px;
-          aspect-ratio: 632 / 600;
-          overflow: hidden;
-          border: 1px solid #e2e8f0;
-          box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-        .main-image-area img { 
-          width: 100%;
-          height: 100%;
-          object-fit: fill; 
-        }
         .product-title { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 600; line-height: 1.2; color: #1e293b; margin: 10px 0; }
         .countdown-info {
           font-family: 'Roboto', sans-serif;
@@ -945,9 +882,6 @@ const MultipurposeDetails2 = () => {
         .budget-item.highlight { background: #ecfdf5; border: 1px solid #10b981; }
         .budget-value { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 400; line-height: 24px; letter-spacing: 0.03em; color: #000; display: block; }
         .enchirir-btn { width: 100%; max-width: 336px; min-height: 44px; padding: 10px clamp(20px, 4vw, 48px); border-radius: 4px; background: #002d9c; color: white; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .product-description-container { margin-top: 69px; padding-left: 27px; }
-        .description-title { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 25px; color: #000; }
-        .description-body { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: 0.03em; color: #444; width: 100%; max-width: 1158px; white-space: pre-wrap; margin-bottom: 20px; word-wrap: break-word; }
         .seller-section-card { background: white; border-radius: 24px; padding: clamp(20px, 3vw, 30px); display: flex; flex-wrap: wrap; align-items: center; gap: clamp(16px, 3vw, 30px); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         .seller-avatar img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; }
         .seller-actions { margin-left: auto; display: flex; gap: 10px; }

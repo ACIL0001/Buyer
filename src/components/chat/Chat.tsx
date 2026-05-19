@@ -8,10 +8,71 @@ import { IoMdSend, IoMdAttach } from 'react-icons/io'
 import { RiMessage3Line, RiUser3Line } from 'react-icons/ri'
 import { ChatAPI } from '@/app/api/chat'
 import { MessageAPI } from '@/app/api/messages'
+import { UserAPI } from '@/app/api/users'
 import { useCreateSocket } from '@/contexts/socket'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 import Image from 'next/image'
+import app from '@/config'
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react'
+
+// Helper to resolve dynamic avatar URLs
+const getAvatarUrl = (avatar: any) => {
+  if (!avatar) return '/assets/images/avatar.jpg'
+  
+  let avatarUrl = ''
+  if (typeof avatar === 'string') {
+    avatarUrl = avatar
+  } else if (avatar && typeof avatar === 'object' && avatar.url) {
+    avatarUrl = avatar.url
+  } else {
+    return '/assets/images/avatar.jpg'
+  }
+
+  if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://') || avatarUrl.startsWith('data:')) {
+    return avatarUrl
+  }
+
+  // Prefix with backend route
+  const route = app?.route || 'http://localhost:3000'
+  const cleanRoute = route.replace(/\/$/, '')
+  const cleanAvatarUrl = avatarUrl.startsWith('/') ? avatarUrl : `/${avatarUrl}`
+  return `${cleanRoute}${cleanAvatarUrl}`
+}
+
+// Helper to resolve and dynamically rewrite attachment URLs
+const getAttachmentUrl = (url: any) => {
+  if (!url) return undefined
+  
+  let targetUrl = ''
+  if (typeof url === 'string') {
+    targetUrl = url
+  } else if (url && typeof url === 'object' && url.url) {
+    targetUrl = url.url
+  } else {
+    return undefined
+  }
+
+  if (!targetUrl) return undefined
+
+  // Get active backend route (e.g. http://127.0.0.1:3000 or https://api.mazad.click)
+  const route = app?.route || 'http://localhost:3000'
+  const cleanRoute = route.replace(/\/$/, '')
+
+  // If the target URL is already a full URL, extract the path and prefix with active route
+  if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) {
+    try {
+      const urlObj = new URL(targetUrl)
+      return `${cleanRoute}${urlObj.pathname}`
+    } catch (e) {
+      return targetUrl
+    }
+  }
+
+  // If it's a relative path, prefix with cleanRoute
+  const cleanPath = targetUrl.startsWith('/') ? targetUrl : `/${targetUrl}`
+  return `${cleanRoute}${cleanPath}`
+}
 
 // Define TypeScript interfaces
 interface User {
@@ -29,7 +90,7 @@ interface Chat {
   _id: string
   users: User[]
   createdAt: string
-  lastMessage?: string
+  lastMessage?: string | any
   unreadCount?: number
 }
 
@@ -41,6 +102,16 @@ interface Message {
   reciver: string
   createdAt: string
   isRead?: boolean
+  attachment?: {
+    _id?: string
+    url?: string
+    name?: string
+    type?: string
+    size?: number
+    filename?: string
+    originalname?: string
+    mimetype?: string
+  }
 }
 
 type SocketMessage = Message;
@@ -60,12 +131,30 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [typing, setTyping] = useState<boolean>(false)
-  const [isOnline, setIsOnline] = useState<boolean>(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false)
   const [allReceivedMessages, setAllReceivedMessages] = useState<Set<string>>(new Set())
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState<boolean>(false)
 
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const quickEmojis = ['😊', '😂', '❤️', '👍', '🎉', '🔥', '✨', '🙏', '🙌', '😎', '💡', '🤔', '👀', '👏', '🚀', '💯']
+
+  const addEmoji = (emoji: string) => {
+    setText(prev => prev + emoji)
+    setShowEmojiPicker(false)
+    textRef.current?.focus()
+  }
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+  }
   const currentChatRef = useRef<string>('')
   const processedMessagesRef = useRef<Set<string>>(new Set())
   const socketListenersAddedRef = useRef<boolean>(false)
@@ -73,6 +162,7 @@ export default function Chat() {
   const urlParamsProcessedRef = useRef<string | null>(null)
   const socketContext = useCreateSocket()
   const socket = socketContext?.socket
+  const onlineUsers = socketContext?.onlineUsers || []
 
   // Check authentication
   useEffect(() => {
@@ -187,6 +277,31 @@ export default function Chat() {
         setChats(deduplicatedChats)
         setArr(deduplicatedChats)
         console.log('✅ Chats loaded:', deduplicatedChats.length)
+
+        // Hydrate any partners with missing info in the background
+        Promise.all(deduplicatedChats.map(async (chat) => {
+          const partner = chat.users.find(user => user._id !== userId) || chat.users[0];
+          if (partner && partner._id && (!partner.firstName && !partner.companyName && !partner.socialReason)) {
+            try {
+              console.log('🔄 Hydrating partner info for user ID:', partner._id);
+              const userRes = await UserAPI.getUserById(partner._id);
+              if (userRes && (userRes.user || userRes.data)) {
+                const fullUser = userRes.user || userRes.data;
+                return {
+                  ...chat,
+                  users: chat.users.map(u => u._id === partner._id ? { ...u, ...fullUser } : u)
+                };
+              }
+            } catch (err) {
+              console.error('❌ Failed to hydrate user details:', err);
+            }
+          }
+          return chat;
+        })).then(hydrated => {
+          console.log('✅ Finished background hydration of chats info');
+          setChats(hydrated);
+          setArr(hydrated);
+        });
       } else {
         console.log('⚠️ No chat data in response')
       }
@@ -229,7 +344,7 @@ export default function Chat() {
 
   // Send message
   const sendMessage = useCallback(async () => {
-    if (!text.trim()) return
+    if (!text.trim() && !selectedFile) return
 
     try {
       const authData = localStorage.getItem('auth')
@@ -243,16 +358,59 @@ export default function Chat() {
       
       if (!currentUserId) return
 
+      let attachmentInfo = undefined
+
+      if (selectedFile) {
+        setIsUploading(true)
+        try {
+          const uploadFormData = new FormData()
+          uploadFormData.append('file', selectedFile)
+          uploadFormData.append('as', 'message-attachment')
+          
+          const baseURL = app?.baseURL || 'http://localhost:3000'
+          const cleanBaseURL = baseURL.replace(/\/$/, '')
+          
+          const uploadResponse = await fetch(`${cleanBaseURL}/attachments/upload`, {
+            method: 'POST',
+            body: uploadFormData
+          })
+
+          if (!uploadResponse.ok) {
+            throw new Error('Échec du téléversement de la pièce jointe')
+          }
+
+          const uploadData = await uploadResponse.json()
+          attachmentInfo = {
+            _id: uploadData._id || uploadData.id,
+            url: uploadData.fullUrl || uploadData.url || `${cleanBaseURL}/static/${uploadData.filename}`,
+            name: uploadData.originalname || selectedFile.name,
+            type: uploadData.mimetype || selectedFile.type,
+            size: uploadData.size || selectedFile.size,
+            filename: uploadData.filename
+          }
+        } catch (uploadErr) {
+          console.error('❌ Failed to upload attachment:', uploadErr)
+          alert('Erreur lors du téléversement du fichier. Veuillez réessayer.')
+          setIsUploading(false)
+          return
+        }
+        setIsUploading(false)
+      }
+
       // If no chat ID but we have a userChat (userId from URL), send message without idChat
       // Server will create chat automatically
-      const messageData = {
+      const messageData: any = {
         idChat: idChat || 'undefined', // Server will handle chat creation if undefined
-        message: text.trim(),
+        message: text.trim() || `Fichier: ${selectedFile?.name || 'Fichier joint'}`,
         sender: currentUserId,
         reciver: userChat?._id || ''
       }
 
-      const response = await MessageAPI.send(messageData)
+      if (attachmentInfo) {
+        messageData.attachment = attachmentInfo
+      }
+
+      const response = await MessageAPI.sendMessage(messageData)
       
       // If chat was created, update idChat and refresh chats
       if (response && response.data?.idChat && !idChat) {
@@ -261,11 +419,15 @@ export default function Chat() {
       }
       
       setText('')
+      setSelectedFile(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
       setReget(prev => !prev)
     } catch (error) {
       console.error('Error sending message:', error)
     }
-  }, [text, idChat, userChat, getChats])
+  }, [text, idChat, userChat, selectedFile, getChats])
 
   // Handle chat selection
   const handleChatSelect = useCallback((chat: Chat) => {
@@ -287,6 +449,17 @@ export default function Chat() {
         setIdChat(chat._id)
         markChatAsRead(chat._id)
         getMessages(chat._id)
+
+        // Fetch full profile info for otherUser asynchronously in the background to ensure header is fully loaded
+        if (otherUser._id && (!otherUser.firstName && !otherUser.companyName && !otherUser.socialReason)) {
+          console.log('🔄 Fetching full user profile in handleChatSelect for ID:', otherUser._id)
+          UserAPI.getUserById(otherUser._id).then(userRes => {
+            if (userRes && (userRes.user || userRes.data)) {
+              const fullUser = userRes.user || userRes.data;
+              setUserChat(prev => prev && prev._id === otherUser._id ? { ...prev, ...fullUser } : prev);
+            }
+          }).catch(err => console.error('❌ Failed to fetch user details in selection:', err));
+        }
       }
     } catch (error) {
       console.error('Error in handleChatSelect:', error)
@@ -295,7 +468,7 @@ export default function Chat() {
 
   // Handle URL parameters to open specific chat
   useEffect(() => {
-    const chatIdParam = searchParams.get('chatId');
+    const chatIdParam = searchParams.get('chatId') || searchParams.get('conversationId');
     const userIdParam = searchParams.get('userId') || searchParams.get('sellerId');
     const announceId = searchParams.get('announceId');
     const announceType = searchParams.get('announceType');
@@ -629,11 +802,9 @@ export default function Chat() {
 
   // Scroll to bottom when new messages arrive or chat changes
   useEffect(() => {
-    if (messages.length > 0 && messagesEndRef.current) {
-      // Use setTimeout to ensure DOM is updated
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-      }, 100)
+    if (messagesContainerRef.current) {
+      // Scroll the messages container directly without scrolling the whole page
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
     }
   }, [messages, idChat])
 
@@ -669,7 +840,6 @@ export default function Chat() {
     }
   }
 
-  // Format time
   const formatTime = (dateString: string) => {
     if (!dateString) return ''
     
@@ -681,14 +851,16 @@ export default function Chat() {
       const diff = now.getTime() - date.getTime()
       const days = Math.floor(diff / (1000 * 60 * 60 * 24))
       
+      const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+      
       if (days === 0) {
-        return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+        return timeStr
       } else if (days === 1) {
-        return t('chat.yesterday')
+        return `${t('chat.yesterday')} ${timeStr}`
       } else if (days < 7) {
-        return date.toLocaleDateString('fr-FR', { weekday: 'short' })
+        return `${date.toLocaleDateString('fr-FR', { weekday: 'short' })} ${timeStr}`
       } else {
-        return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+        return `${date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })} ${timeStr}`
       }
     } catch (error) {
       console.error('Error formatting time:', error)
@@ -758,6 +930,25 @@ export default function Chat() {
     return groups
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0]
+      // Max 20MB limit
+      if (file.size > 20 * 1024 * 1024) {
+        alert("La taille du fichier ne doit pas dépasser 20 Mo")
+        return
+      }
+      setSelectedFile(file)
+    }
+  }
+
+  const removeSelectedFile = () => {
+    setSelectedFile(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   const goBack = () => {
     router.push('/')
   }
@@ -781,26 +972,6 @@ export default function Chat() {
   }
 
   return (
-    <div className="modern-chat-app">
-      {/* Header */}
-      <div className="chat-header-modern">
-        <button className="back-button-modern" onClick={goBack}>
-          <BiArrowBack />
-        </button>
-        <div className="header-content">
-          <h1>{t('chat.messages')}</h1>
-          <p>{t('chat.discussRealTime')}</p>
-        </div>
-        <div className="header-actions">
-          <button className="action-button">
-            <BiSearch />
-          </button>
-          <button className="action-button">
-            <BsThreeDotsVertical />
-          </button>
-        </div>
-      </div>
-
       <div className="chat-main-container">
         {/* Sidebar */}
         <div className="chat-sidebar-modern">
@@ -854,8 +1025,8 @@ export default function Chat() {
                     onClick={() => handleChatSelect(chat)}
                   >
                     <div className="conversation-avatar">
-                      <Image
-                        src={otherUser.avatar || '/assets/images/avatar.jpg'}
+                      <img
+                        src={getAvatarUrl(otherUser.avatar)}
                         alt={`${otherUser.firstName} ${otherUser.lastName}`}
                         width={50}
                         height={50}
@@ -865,7 +1036,7 @@ export default function Chat() {
                           target.src = '/assets/images/avatar.jpg'
                         }}
                       />
-                      <div className={`online-status ${isOnline ? 'online' : 'offline'}`}></div>
+                      <div className={`online-status ${(otherUser._id && onlineUsers.includes(otherUser._id)) ? 'online' : 'offline'}`}></div>
                     </div>
                     <div className="conversation-content">
                       <div className="conversation-header">
@@ -875,12 +1046,14 @@ export default function Chat() {
                         </span>
                       </div>
                       <div className="conversation-preview">
-                        <p>{chat.lastMessage || t('chat.noMessage')}</p>
-                        {chat.unreadCount && chat.unreadCount > 0 && (
-                          <div className="unread-badge">
-                            {chat.unreadCount}
-                          </div>
-                        )}
+                        <p>
+                          {typeof chat.lastMessage === 'object' && chat.lastMessage !== null
+                            ? (chat.lastMessage as any).message
+                            : (chat.lastMessage || t('chat.noMessage'))}
+                        </p>
+                        <span className="unread-count-text">
+                          {chat.unreadCount || 0}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -908,8 +1081,8 @@ export default function Chat() {
               <div className="chat-conversation-header">
                 <div className="conversation-info">
                   <div className="conversation-avatar-small">
-                    <Image
-                      src={userChat?.avatar || '/assets/images/avatar.jpg'}
+                    <img
+                      src={getAvatarUrl(userChat?.avatar)}
                       alt={`${userChat?.firstName} ${userChat?.lastName}`}
                       width={40}
                       height={40}
@@ -919,22 +1092,16 @@ export default function Chat() {
                         target.src = '/assets/images/avatar.jpg'
                       }}
                     />
-                    <div className={`online-status-small ${isOnline ? 'online' : 'offline'}`}></div>
+                    <div className={`online-status-small ${(userChat?._id && onlineUsers.includes(userChat._id)) ? 'online' : 'offline'}`}></div>
                   </div>
                   <div className="conversation-details">
                     <h4>{userChat?.socialReason || userChat?.entreprise || userChat?.companyName || `${userChat?.firstName} ${userChat?.lastName}`}</h4>
                     <span className="status-text">
-                      {isOnline ? t('chat.online') : t('chat.offline')}
+                      {(userChat?._id && onlineUsers.includes(userChat._id)) ? t('chat.online') : t('chat.offline')}
                     </span>
                   </div>
                 </div>
                 <div className="conversation-actions">
-                  <button className="action-btn">
-                    <BiPhone />
-                  </button>
-                  <button className="action-btn">
-                    <BiVideo />
-                  </button>
                   <button className="action-btn">
                     <BiDotsVerticalRounded />
                   </button>
@@ -942,7 +1109,7 @@ export default function Chat() {
               </div>
                     
               {/* Messages Area */}
-              <div className="messages-container">
+              <div ref={messagesContainerRef} className="messages-container">
                 {loading ? (
                   <div className="loading-messages">
                     <div className="loading-spinner"></div>
@@ -995,17 +1162,81 @@ export default function Chat() {
                             } catch (error) {
                               console.error('Error checking message sender:', error)
                             }
+                            // Safe metadata extraction
+                            let attachmentName = "";
+                            let attachmentSize = 0;
+                            let attachmentType = "";
+                            let isImage = false;
+                            
+                            if (message.attachment) {
+                              attachmentName = message.attachment.name || message.attachment.originalname || message.attachment.filename || "Fichier joint";
+                              
+                              if (attachmentName === "Fichier joint" && (message.message?.startsWith('📎 ') || message.message?.startsWith('Fichier: '))) {
+                                attachmentName = message.message.replace('📎 ', '').replace('Fichier: ', '').trim();
+                              }
+
+                              attachmentSize = message.attachment.size || 0;
+                              attachmentType = message.attachment.type || message.attachment.mimetype || "";
+                              
+                              if (attachmentType.startsWith('image/')) {
+                                isImage = true;
+                              } else if (attachmentName.match(/\.(jpeg|jpg|gif|png|webp|bmp)$/i)) {
+                                isImage = true;
+                              } else if (message.attachment.url && message.attachment.url.match(/\.(jpeg|jpg|gif|png|webp|bmp)$/i)) {
+                                isImage = true;
+                              }
+                            }
                             
                             return (
                               <div
                                 key={message._id || `${message.sender}_${message.createdAt}_${message.message}`}
                                 className={`message-wrapper-modern ${isSender ? 'sender' : 'receiver'}`}
                               >
-                                <div className={`message-bubble ${isSender ? 'sent' : 'received'}`}>
-                                  <p>{message.message}</p>
-                                  <span className="message-time">
+                                <div className="message-content-stack">
+                                  <span className="message-time-outside">
                                     {message.createdAt ? formatTime(message.createdAt) : ''}
                                   </span>
+                                  <div className={`message-bubble ${isSender ? 'sent' : 'received'}`}>
+                                    {message.attachment && (
+                                      <div className="message-attachment-container">
+                                        {isImage ? (
+                                          <div className="message-attachment-image">
+                                            {getAttachmentUrl(message.attachment.url) ? (
+                                              <a href={getAttachmentUrl(message.attachment.url)} target="_blank" rel="noopener noreferrer">
+                                                <img
+                                                  src={getAttachmentUrl(message.attachment.url)}
+                                                  alt={attachmentName}
+                                                  className="attachment-preview-img"
+                                                />
+                                              </a>
+                                            ) : null}
+                                          </div>
+                                        ) : (
+                                          <a 
+                                            href={getAttachmentUrl(message.attachment.url)} 
+                                            download={attachmentName}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="message-attachment-file message-attachment-file-link"
+                                          >
+                                            <div className="file-info-bar">
+                                              <span className="file-icon"><IoMdAttach /></span>
+                                              <div className="file-meta">
+                                                <span className="file-title" title={attachmentName}>{attachmentName}</span>
+                                                {attachmentSize > 0 && (
+                                                  <span className="file-size-tag">{formatFileSize(attachmentSize)}</span>
+                                                )}
+                                              </div>
+                                              <span className="file-download-icon">⬇</span>
+                                            </div>
+                                          </a>
+                                        )}
+                                      </div>
+                                    )}
+                                    {(!message.attachment || (message.message?.trim() && message.message.trim() !== `📎 ${attachmentName}` && message.message.trim() !== `Fichier: ${attachmentName}`)) && message.message?.trim() ? (
+                                      <p>{message.message}</p>
+                                    ) : null}
+                                  </div>
                                 </div>
                               </div>
                             )
@@ -1013,47 +1244,85 @@ export default function Chat() {
                         </div>
                       ))
                     })() : null}
-                    <div ref={messagesEndRef} />
+                  </div>
+                )}
+              </div>
+
+              {/* Message Input */}
+              <div className="message-input-container">
+                <input 
+                  ref={fileInputRef}
+                  type="file" 
+                  style={{ display: 'none' }} 
+                  onChange={handleFileChange}
+                />
+
+                {isUploading && (
+                  <div className="upload-loader-overlay">
+                    <div className="loader-spinner-small"></div>
+                    <span>Téléchargement du fichier...</span>
                   </div>
                 )}
 
-                {/* Message Input */}
-                <div className="message-input-container">
-                  <div className="input-wrapper">
-                    <button className="attach-button">
-                      <IoMdAttach />
-                    </button>
-                    <div className="input-field">
-                      <input 
-                        ref={textRef}
-                        type="text" 
-                        placeholder={t('chat.typeMessage')}
-                        value={text} 
-                        onChange={(e) => setText(e.target.value)} 
-                        onKeyPress={handleKeyPress}
-                        className="message-input"
-                      />
-                      <button 
-                        className="emoji-button"
-                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                      >
-                        <HiOutlineEmojiHappy />
-                      </button>
+                {selectedFile && (
+                  <div className="selected-file-preview">
+                    <div className="file-preview-card">
+                      <span className="file-preview-icon"><IoMdAttach /></span>
+                      <div className="file-preview-meta">
+                        <span className="file-preview-name">{selectedFile.name}</span>
+                        <span className="file-preview-size">{formatFileSize(selectedFile.size)}</span>
+                      </div>
+                      <button className="remove-file-btn" onClick={removeSelectedFile}>✕</button>
                     </div>
-                    <button 
-                      className={`send-button ${text.trim() ? 'active' : ''}`}
-                      onClick={sendMessage}
-                      disabled={!text.trim()}
-                    >
-                      <IoMdSend />
-                    </button>
                   </div>
+                )}
+
+                {showEmojiPicker && (
+                  <div className="emoji-picker-container">
+                    <EmojiPicker 
+                      onEmojiClick={(emojiData) => addEmoji(emojiData.emoji)} 
+                      width={320}
+                      height={400}
+                    />
+                  </div>
+                )}
+
+                <div className="input-wrapper">
+                  <button 
+                    className="emoji-button"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  >
+                    <HiOutlineEmojiHappy />
+                  </button>
+                  <input 
+                    ref={textRef}
+                    type="text" 
+                    placeholder="message..."
+                    value={text} 
+                    onChange={(e) => setText(e.target.value)} 
+                    onKeyPress={handleKeyPress}
+                    className="message-input"
+                    disabled={isUploading}
+                  />
+                  <button 
+                    className="attach-button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    <IoMdAttach />
+                  </button>
+                  <button 
+                    className={`send-button ${(text.trim() || selectedFile) ? 'active' : ''}`}
+                    onClick={sendMessage}
+                    disabled={(!text.trim() && !selectedFile) || isUploading}
+                  >
+                    {isUploading ? '...' : 'Envoyer'}
+                  </button>
                 </div>
               </div>
             </div>
           )}
         </div>
       </div>
-    </div>
   )
 }

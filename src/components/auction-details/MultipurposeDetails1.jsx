@@ -96,6 +96,7 @@ const MultipurposeDetails1 = () => {
   const [hasExistingAutoBid, setHasExistingAutoBid] = useState(false); // State to track if user has existing auto-bid
   const [deletingAutoBid, setDeletingAutoBid] = useState(false); // State for deleting auto bid
   const [showBidConfirmation, setShowBidConfirmation] = useState(false); // State for bid confirmation modal
+  const [showOwnerWarning, setShowOwnerWarning] = useState(false); // State for owner bidding warning
 
   // Get auction ID from URL params or search params
   const routeId = params?.id;
@@ -524,6 +525,12 @@ const MultipurposeDetails1 = () => {
   // Function to show bid confirmation modal
   const handleBidClick = (e) => {
     e.preventDefault();
+    
+    if (isOwner) {
+      setShowOwnerWarning(true);
+      toast.warning("Vous ne pouvez pas enchérir sur votre propre enchère.");
+      return;
+    }
     
     // Check if user is logged in
     if (!isLogged || !auth.tokens) {
@@ -1258,79 +1265,82 @@ const MultipurposeDetails1 = () => {
               <h1 className="product-title">{safeTitle}</h1>
               <div className="countdown-info">{formatRemainingTime(safeAuctionData.endingAt)}</div>
               <div className="price-section mt-1 mb-3">
-                <span 
-                  className="current-price" 
-                  style={{ 
-                    fontFamily: 'Inter, sans-serif',
-                    fontWeight: 400,
-                    fontSize: '24px',
-                    lineHeight: '24px',
-                    letterSpacing: '0.03em',
-                    color: '#000000',
-                    display: 'inline-block',
-                    width: 'auto',
-                    height: '24px'
-                  }}
-                >
-                  {formatPrice(safeCurrentPrice || safeStartingPrice).replace('DA', '').trim()} DA
+                <span className="current-price">
+                  {Math.floor(safeCurrentPrice || safeStartingPrice).toLocaleString('fr-FR')},00 DA
                 </span>
-                <span className="bid-count ms-2" style={{ fontSize: '16px', color: '#666' }}>({offers?.length || 0} bids)</span>
+                <span className="bid-count ms-2" style={{ fontSize: '16px', color: '#666', fontFamily: 'Inter, sans-serif' }}>
+                  ({offers?.length || 0} bids)
+                </span>
               </div>
 
-              <div className="info-grid-mini mt-3">
-                <div className="info-item-mini">
-                  <span className="info-label-mini">VENDEUR:</span>
-                  <Link href={`/dashboard/profile/${safeOwner?._id}`} className="info-text-mini hover-link">
-                    {formatUserName(safeOwner) || 'Vendeur'}
-                  </Link>
-                </div>
-                <div className="info-item-mini">
-                  <span className="info-label-mini">LOCALISATION:</span>
-                  <span className="info-text-mini">{auctionData?.wilaya || 'Algérie'}</span>
-                </div>
-                <div className="info-item-mini">
-                  <span className="info-label-mini">QUANTITÉ:</span>
-                  <span className="info-text-mini">{auctionData?.quantity || '1'}</span>
-                </div>
-                <div className="info-item-mini">
-                  <span className="info-label-mini">TYPE:</span>
-                  <span className="info-text-mini">
-                    {auctionData?.bidType === 'SERVICE' ? '🛠️ Service' : '📦 Produit'}
+              {/* Custom Details Table section per User request */}
+              <div className="custom-details-table">
+                <div className="custom-detail-row">
+                  <span className="custom-detail-label">Vendeur</span>
+                  <span className="custom-detail-value">
+                    <Link href={`/dashboard/profile/${safeOwner?._id}`} className="custom-detail-link">
+                      {formatUserName(safeOwner) || 'Vendeur'}
+                    </Link>
                   </span>
                 </div>
-                <div className="info-item-mini">
-                  <span className="info-label-mini">STATUT:</span>
-                  <span className="info-text-mini" style={{ color: auctionData?.status === 'ACTIVE' ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>
+                <div className="custom-detail-separator"></div>
+
+                <div className="custom-detail-row">
+                  <span className="custom-detail-label">Quantité disponible</span>
+                  <span className="custom-detail-value">{auctionData?.quantity || '1'} disponible(s)</span>
+                </div>
+                <div className="custom-detail-separator"></div>
+
+                <div className="custom-detail-row">
+                  <span className="custom-detail-label">Localisation</span>
+                  <span className="custom-detail-value">{auctionData?.wilaya || 'Algérie'}</span>
+                </div>
+                <div className="custom-detail-separator"></div>
+
+                <div className="custom-detail-row">
+                  <span className="custom-detail-label">Statut</span>
+                  <span className="custom-detail-value" style={{ color: auctionData?.status === 'ACTIVE' ? '#10b981' : '#ef4444' }}>
                     {auctionData?.status === 'ACTIVE' ? 'Actif' : (auctionData?.status || 'Terminé')}
                   </span>
                 </div>
-                <div className="info-item-mini">
-                  <span className="info-label-mini">CATÉGORIE:</span>
-                  <span className="info-text-mini">{auctionData?.category?.name || auctionData?.categoryName || auctionData?.productSubCategory?.name || auctionData?.productCategory?.name || 'Non spécifiée'}</span>
+                <div className="custom-detail-separator"></div>
+
+                <div className="custom-detail-row">
+                  <span className="custom-detail-label">Type</span>
+                  <span className="custom-detail-value">
+                    {auctionData?.bidType === 'SERVICE' ? 'Service' : 'Produit'}
+                  </span>
+                </div>
+                <div className="custom-detail-separator"></div>
+
+                <div className="custom-detail-row">
+                  <span className="custom-detail-label">Catégorie</span>
+                  <span className="custom-detail-value">
+                    {auctionData?.category?.name || auctionData?.categoryName || auctionData?.productSubCategory?.name || auctionData?.productCategory?.name || 'Non spécifiée'}
+                  </span>
+                </div>
+                <div className="custom-detail-separator"></div>
+              </div>
+
+              {/* Custom Action Card section per User request */}
+              <div className="custom-action-card">
+                <div className="custom-action-card-row">
+                  <span className="custom-action-card-label">Proposez un prix..</span>
+                  <div className="custom-action-card-stepper">
+                    <HandleQuantity
+                      initialValue={safeCurrentPrice || safeStartingPrice || 0}
+                      startingPrice={safeCurrentPrice || safeStartingPrice}
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="divider"></div>
-              
-              <div className="bid-input-section">
-                {isOwner && (
-                  <div className="alert alert-warning py-2 mb-3" style={{fontSize: '13px'}}>
-                    Vous ne pouvez pas enchérir sur votre propre enchère.
-                  </div>
-                )}
-                <div className="quantity-stepper">
-                  <HandleQuantity
-                    initialValue={safeCurrentPrice || safeStartingPrice || 0}
-                    startingPrice={safeCurrentPrice || safeStartingPrice}
-                  />
-                </div>
+              <div className="custom-bid-btn-container">
                 <button 
-                  className="enchirir-btn" 
-                  onClick={handleBidClick} 
-                  disabled={isOwner}
-                  style={{ opacity: isOwner ? 0.6 : 1 }}
+                  className="custom-submit-bid-btn" 
+                  onClick={handleBidClick}
                 >
-                  Placer une Enchère (Enchérir)
+                  Placer une Enchère
                 </button>
               </div>
             </div>
@@ -1343,73 +1353,68 @@ const MultipurposeDetails1 = () => {
             <div className="description-body">
               {safeDescription}
             </div>
+          </div>
+          
+          <div className="qa-section-container">
+            <div className="qa-header-row">
+              <h2 className="qa-title">Questions et réponses</h2>
+            </div>
             
-            <div className="tabs-redesign mt-4">
-              <div className="tab-headers">
-                <button 
-                  className={`tab-item ${activeTab === 'comments' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('comments')}
-                >
-                  Questions & Réponses
-                </button>
-              </div>
+            <div className="qa-content-area">
+              <p className="qa-subtitle">Une question sur ce produit ? Le vendeur vous répondra dans les plus brefs délais.</p>
               
-              <div className="tab-content-area">
-                {activeTab === 'comments' && (
-                  <div className="comments-section-v2">
-                    {isLogged ? (
-                      <div className="comment-form-v2">
-                        <textarea
-                          value={newComment}
-                          onChange={(e) => setNewComment(e.target.value)}
-                          placeholder="Posez une question au vendeur..."
-                          rows={3}
-                        />
-                        <button 
-                          onClick={async (e) => {
-                            e.preventDefault();
-                            if (!newComment.trim()) return;
-                            setSubmitting(true);
-                            try {
-                              await commentsApi.createCommentForBid(auctionId, newComment, auth.user._id);
-                              setNewComment("");
-                              const data = await AuctionsAPI.getAuctionById(auctionId);
-                              setAuctionData(data);
-                              toast.success("Question envoyée");
-                            } catch (err) {
-                              toast.error("Erreur lors de l'envoi de la question.");
-                            }
-                            setSubmitting(false);
-                          }}
-                          disabled={submitting}
-                        >
-                          {submitting ? '...' : 'Envoyer'}
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="login-prompt">Veuillez vous connecter pour poser une question.</div>
-                    )}
-                    
-                    <div className="comment-list-v2">
-                      {auctionData?.comments?.map((comment) => (
-                        <CommentItem 
-                          key={comment._id} 
-                          comment={comment} 
-                          isLogged={isLogged} 
-                          authUser={auth.user} 
-                          announcementOwnerId={safeOwner?._id || safeOwner}
-                          onReplySuccess={async () => {
-                            const response = await AuctionsAPI.getAuctionById(auctionId);
-                            let data = response?.data || (response?.success ? response.data : response);
-                            if (data) setAuctionData(data);
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-
+              {isLogged ? (
+                <div className="qa-textarea-wrapper">
+                  <textarea
+                    className="qa-textarea"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Posez votre question ici..."
+                  />
+                  <button 
+                    className="qa-submit-btn"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      if (!newComment.trim()) return;
+                      setSubmitting(true);
+                      try {
+                        await commentsApi.createCommentForBid(auctionId, newComment, auth.user._id);
+                        setNewComment("");
+                        const data = await AuctionsAPI.getAuctionById(auctionId);
+                        setAuctionData(data);
+                        toast.success("Question envoyée");
+                      } catch (err) {
+                        toast.error("Erreur lors de l'envoi de la question.");
+                      }
+                      setSubmitting(false);
+                    }}
+                    disabled={submitting}
+                  >
+                    <svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M15.83 6.67L0.830002 0.420044C0.710363 0.369796 0.575001 0.379308 0.463595 0.445831C0.352189 0.512353 0.281729 0.625934 0.28 0.750044V5.25004C0.28 5.61793 0.54711 5.92982 0.908002 5.98904L9.00002 6.99904L0.908002 8.00904C0.54711 8.06827 0.28 8.38016 0.28 8.74804V13.248C0.281729 13.3722 0.352189 13.4857 0.463595 13.5523C0.575001 13.6188 0.710363 13.6283 0.830002 13.578L15.83 7.32804C15.9348 7.28383 16.0024 7.18128 16.0024 7.06804C16.0024 6.9548 15.9348 6.85226 15.83 6.80804V6.67Z" fill="#003399" />
+                    </svg>
+                    <span>{submitting ? '...' : 'Envoyer'}</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="login-prompt">Veuillez vous connecter pour poser une question.</div>
+              )}
+              
+              <div className="comment-list-v2 w-100 mt-3">
+                {auctionData?.comments?.map((comment) => (
+                  <CommentItem 
+                    key={comment._id} 
+                    comment={comment} 
+                    isLogged={isLogged} 
+                    authUser={auth.user} 
+                    announcementOwnerId={safeOwner?._id || safeOwner}
+                    onReplySuccess={async () => {
+                      const response = await AuctionsAPI.getAuctionById(auctionId);
+                      let data = response?.data || (response?.success ? response.data : response);
+                      if (data) setAuctionData(data);
+                    }}
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -1554,7 +1559,7 @@ const MultipurposeDetails1 = () => {
                             initial={false}
                             animate={{ rotateY: flippedSimilarId === aid ? 180 : 0 }}
                             transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
-                            style={{ width: '100%', maxWidth: '320px', aspectRatio: '284 / 464', margin: '0 auto', position: 'relative', zIndex: 1, transformStyle: 'preserve-3d' }}
+                            style={{ width: '320px', aspectRatio: '284 / 464', margin: '0', position: 'relative', zIndex: 1, transformStyle: 'preserve-3d' }}
                           >
                             {/* FRONT */}
                             <div

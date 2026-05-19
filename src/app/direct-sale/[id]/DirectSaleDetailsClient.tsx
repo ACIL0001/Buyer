@@ -274,86 +274,112 @@ function DirectSaleDetailContent() {
           </div>
 
           <div className="product-info-area">
-            <h1 className="product-title">{directSale.title}</h1>
+            <h1 className="direct-sale-title">{directSale.title}</h1>
             
             <div className="price-section mt-4 mb-3">
-              <span 
-                className="current-price" 
-                style={{ 
-                  fontFamily: 'Inter, sans-serif',
-                  fontWeight: 400,
-                  fontSize: '24px',
-                  lineHeight: '24px',
-                  letterSpacing: '0.03em',
-                  color: '#000000',
-                  display: 'inline-block',
-                  width: 'auto',
-                  height: '24px'
-                }}
-              >
-                {formatPrice(directSale.price).replace('DA', '').trim()} DA
+              <span className="direct-sale-price">
+                {Math.floor(directSale.price).toLocaleString('fr-FR')},00 DA
               </span>
             </div>
 
-            <div className="info-grid-mini mt-3">
-              <div className="info-item-mini">
-                <span className="info-label-mini">VENDEUR:</span>
-                <Link href={`/dashboard/profile/${directSale.owner?._id}`} className="info-text-mini hover-link">
-                  {formatUserName(directSale.owner) || 'Vendeur'}
-                </Link>
-              </div>
-              <div className="info-item-mini">
-                <span className="info-label-mini">LOCALISATION:</span>
-                <span className="info-text-mini">{directSale.wilaya}, {directSale.place}</span>
-              </div>
-              <div className="info-item-mini">
-                <span className="info-label-mini">QUANTITÉ:</span>
-                <span className="info-text-mini">{directSale.quantity === 0 ? 'En stock (Illimité)' : `${availableQuantity} disponible(s)`}</span>
-              </div>
-              <div className="info-item-mini">
-                <span className="info-label-mini">TYPE:</span>
-                <span className="info-text-mini">{directSale.saleType === 'SERVICE' ? '🛠️ Service' : '📦 Produit'}</span>
-              </div>
-              <div className="info-item-mini">
-                <span className="info-label-mini">STATUT:</span>
-                <span className="info-text-mini" style={{ color: isSoldOut ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>
-                  {isSoldOut ? 'Sold Out' : 'En Stock'}
+            {/* Custom Details Table per User request */}
+            <div className="custom-details-table">
+              <div className="custom-detail-row">
+                <span className="custom-detail-label">Vendeur</span>
+                <span className="custom-detail-value">
+                  <Link href={`/dashboard/profile/${directSale.owner?._id}`} className="custom-detail-link">
+                    {formatUserName(directSale.owner) || 'Vendeur'}
+                  </Link>
                 </span>
               </div>
-              <div className="info-item-mini">
-                <span className="info-label-mini">CATÉGORIE:</span>
-                <span className="info-text-mini">{directSale.category?.name || directSale.categoryName || directSale.productSubCategory?.name || directSale.productCategory?.name || 'Non spécifiée'}</span>
+              <div className="custom-detail-separator"></div>
+
+              <div className="custom-detail-row">
+                <span className="custom-detail-label">Quantité disponible</span>
+                <span className="custom-detail-value">
+                  {directSale.quantity === 0 ? 'Illimité' : `${availableQuantity} disponible(s)`}
+                </span>
               </div>
-              {(directSale.owner as any)?.phoneNumber && (
-                <div className="info-item-mini">
-                  <span className="info-label-mini">CONTACT:</span>
-                  <span className="info-text-mini">{(directSale.owner as any).phoneNumber}</span>
-                </div>
-              )}
+              <div className="custom-detail-separator"></div>
+
+              <div className="custom-detail-row">
+                <span className="custom-detail-label">Localisation</span>
+                <span className="custom-detail-value">
+                  {directSale.wilaya || 'Algérie'}{directSale.place ? `, ${directSale.place}` : ''}
+                </span>
+              </div>
+              <div className="custom-detail-separator"></div>
+
+              <div className="custom-detail-row">
+                <span className="custom-detail-label">Statut</span>
+                <span className="custom-detail-value" style={{ color: isSoldOut ? '#ef4444' : '#10B981' }}>
+                  {isSoldOut ? 'Sold Out' : 'En stock'}
+                </span>
+              </div>
+              <div className="custom-detail-separator"></div>
+
+              <div className="custom-detail-row">
+                <span className="custom-detail-label">Type</span>
+                <span className="custom-detail-value">
+                  {directSale.saleType === 'SERVICE' ? 'Service' : 'Produit'}
+                </span>
+              </div>
+              <div className="custom-detail-separator"></div>
+
+              <div className="custom-detail-row">
+                <span className="custom-detail-label">Catégorie</span>
+                <span className="custom-detail-value">
+                  {directSale.category?.name || directSale.categoryName || directSale.productSubCategory?.name || directSale.productCategory?.name || 'Non spécifiée'}
+                </span>
+              </div>
+              <div className="custom-detail-separator"></div>
             </div>
 
-            <div className="divider"></div>
-            
+            {/* Custom Action Card per User request */}
             {!isSoldOut && (
-              <div className="bid-input-section">
-                {isOwner && <div className="alert alert-warning py-2 mb-3" style={{fontSize: '13px'}}>{t('details.cannotBuyOwnProduct')}</div>}
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                  <span style={{ fontWeight: '600', color: '#333' }}>Quantité:</span>
-                  <div className="quantity-selector-custom">
-                    <button className="qty-btn" onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={quantity <= 1}>-</button>
-                    <input type="number" className="qty-input" value={quantity} onChange={(e) => setQuantity(Math.max(1, Math.min(parseInt(e.target.value) || 1, availableQuantity)))} />
-                    <button className="qty-btn" onClick={() => setQuantity(Math.min(availableQuantity, quantity + 1))} disabled={quantity >= availableQuantity}>+</button>
+              <div className="custom-action-card">
+                <div className="custom-action-card-row">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <span className="custom-action-card-label">Quantité</span>
+                    <div className="custom-action-card-selector">
+                      <button 
+                        className="custom-selector-btn" 
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))} 
+                        disabled={quantity <= 1}
+                      >
+                        -
+                      </button>
+                      <input 
+                        type="number" 
+                        className="custom-selector-input" 
+                        value={quantity} 
+                        onChange={(e) => setQuantity(Math.max(1, Math.min(parseInt(e.target.value) || 1, availableQuantity)))} 
+                      />
+                      <button 
+                        className="custom-selector-btn" 
+                        onClick={() => setQuantity(Math.min(availableQuantity, quantity + 1))} 
+                        disabled={quantity >= availableQuantity}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
+                  
+                  <span className="custom-action-card-price">
+                    {(directSale.price * quantity).toLocaleString('fr-FR')},00 DA
+                  </span>
                 </div>
+              </div>
+            )}
 
-                <div className="total-to-pay mb-3 p-3" style={{ background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: '600', color: '#475569' }}>Total à payer:</span>
-                  <span style={{ color: '#0063B1', fontWeight: '800', fontSize: '20px' }}>{formatPrice(directSale.price * quantity)}</span>
-                </div>
-                
-                <button className="enchirir-btn" onClick={handlePurchase} disabled={purchasing || isOwner}>
-                  {purchasing ? 'Traitement...' : 'Acheter maintenant'}
+            {!isSoldOut && (
+              <div className="custom-action-btn-container mt-3">
+                <button 
+                  className="custom-action-buy-btn" 
+                  onClick={handlePurchase} 
+                  disabled={purchasing}
+                >
+                  {purchasing ? 'Traitement...' : 'Acheter'}
                 </button>
               </div>
             )}
@@ -364,41 +390,63 @@ function DirectSaleDetailContent() {
         <div className="product-description-container mt-5">
           <h2 className="description-title">Description du produit</h2>
           <div className="description-body" style={{ whiteSpace: 'pre-wrap' }}>{directSale.description}</div>
+        </div>
+        
+        <div className="qa-section-container">
+          <div className="qa-header-row">
+            <h2 className="qa-title">Questions et réponses</h2>
+          </div>
           
-          <div className="tabs-redesign mt-4">
-            <div className="tab-headers">
-              <button className={`tab-item ${activeTab === 'comments' ? 'active' : ''}`} onClick={() => setActiveTab('comments')}>Questions & Réponses</button>
-            </div>
-            <div className="tab-content-area p-4">
-              <div className="comments-section-v2">
-                {isLogged ? (
-                  <div className="comment-form-v2 mb-4">
-                    <textarea value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Posez une question au vendeur..."></textarea>
-                    <button onClick={async () => {
-                        if (!newComment.trim()) return;
-                        setSubmittingComment(true);
-                        try { 
-                          await commentsApi.createCommentForDirectSale(directSaleId, newComment, auth?.user?._id || ''); 
-                          setNewComment(""); 
-                          setRefreshKey(k => k + 1); 
-                          toast.success("Question envoyée"); 
-                        } finally { setSubmittingComment(false); }
-                    }} disabled={submittingComment}>{submittingComment ? '...' : 'Envoyer'}</button>
-                  </div>
-                ) : <div className="alert alert-info">Veuillez vous connecter pour poser une question.</div>}
-                <div className="comment-list-v2">
-                  {directSale.comments?.map(c => (
-                    <CommentItem 
-                      key={c._id} 
-                      comment={c} 
-                      isLogged={isLogged} 
-                      authUser={auth.user} 
-                      announcementOwnerId={directSale.owner?._id || (directSale.owner as any)}
-                      onReplySuccess={() => setRefreshKey(k => k + 1)} 
-                    />
-                  ))}
-                </div>
+          <div className="qa-content-area">
+            <p className="qa-subtitle">Une question sur ce produit ? Le vendeur vous répondra dans les plus brefs délais.</p>
+            
+            {isLogged ? (
+              <div className="qa-textarea-wrapper">
+                <textarea
+                  className="qa-textarea"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Posez votre question ici..."
+                />
+                <button 
+                  className="qa-submit-btn"
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    if (!newComment.trim()) return;
+                    setSubmittingComment(true);
+                    try {
+                      await commentsApi.createCommentForDirectSale(directSaleId, newComment, auth?.user?._id || '');
+                      setNewComment("");
+                      setRefreshKey(k => k + 1);
+                      toast.success("Question envoyée");
+                    } catch (err) {
+                      toast.error("Erreur lors de l'envoi de la question.");
+                    }
+                    setSubmittingComment(false);
+                  }}
+                  disabled={submittingComment}
+                >
+                  <svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15.83 6.67L0.830002 0.420044C0.710363 0.369796 0.575001 0.379308 0.463595 0.445831C0.352189 0.512353 0.281729 0.625934 0.28 0.750044V5.25004C0.28 5.61793 0.54711 5.92982 0.908002 5.98904L9.00002 6.99904L0.908002 8.00904C0.54711 8.06827 0.28 8.38016 0.28 8.74804V13.248C0.281729 13.3722 0.352189 13.4857 0.463595 13.5523C0.575001 13.6188 0.710363 13.6283 0.830002 13.578L15.83 7.32804C15.9348 7.28383 16.0024 7.18128 16.0024 7.06804C16.0024 6.9548 15.9348 6.85226 15.83 6.80804V6.67Z" fill="#003399" />
+                  </svg>
+                  <span>{submittingComment ? '...' : 'Envoyer'}</span>
+                </button>
               </div>
+            ) : (
+              <div className="login-prompt">Veuillez vous connecter pour poser une question.</div>
+            )}
+            
+            <div className="comment-list-v2 w-100 mt-3">
+              {directSale.comments?.map((comment) => (
+                <CommentItem 
+                  key={comment._id} 
+                  comment={comment} 
+                  isLogged={isLogged} 
+                  authUser={auth.user} 
+                  announcementOwnerId={directSale.owner?._id || (directSale.owner as any)}
+                  onReplySuccess={() => setRefreshKey(k => k + 1)} 
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -450,7 +498,7 @@ function DirectSaleDetailContent() {
                         initial={false}
                         animate={{ rotateY: flippedSimilarId === sid ? 180 : 0 }}
                         transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
-                        style={{ width: '100%', maxWidth: '320px', aspectRatio: '284 / 464', margin: '0 auto', position: 'relative', zIndex: 1, transformStyle: 'preserve-3d' }}
+                        style={{ width: '320px', aspectRatio: '284 / 464', margin: '0', position: 'relative', zIndex: 1, transformStyle: 'preserve-3d' }}
                       >
                         {/* FRONT */}
                         <div
@@ -557,25 +605,6 @@ function DirectSaleDetailContent() {
 
       <style jsx>{`
         .redesign-v2-container { width: 100%; max-width: 1440px; margin: 0 auto; padding: clamp(120px, 18vw, 236px) clamp(16px, 4vw, 20px) clamp(48px, 10vw, 100px); }
-        .product-hero-section {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: clamp(12px, 2vw, 19px);
-          margin-bottom: clamp(28px, 5vw, 50px);
-          align-items: start;
-        }
-        @media (min-width: 768px) {
-          .product-hero-section {
-            grid-template-columns: clamp(80px, 8vw, 100px) minmax(0, 1fr);
-            gap: clamp(16px, 2.5vw, 24px);
-          }
-        }
-        @media (min-width: 1024px) {
-          .product-hero-section {
-            grid-template-columns: clamp(80px, 7vw, 100px) minmax(0, 1fr) minmax(280px, 400px);
-            justify-content: center;
-          }
-        }
         .thumbnails-vertical {
           display: flex;
           flex-direction: column;
@@ -594,25 +623,6 @@ function DirectSaleDetailContent() {
         }
         .thumb-item.active { border-color: #0063B1; }
         .thumb-item img, .thumb-item video { width: 100%; height: 100%; object-fit: cover; }
-        .main-image-area {
-          background: #f8fafc;
-          border-radius: 4px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          width: 100%;
-          max-width: 632px;
-          aspect-ratio: 632 / 600;
-          overflow: hidden;
-          border: 1px solid #e2e8f0;
-          box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-        .main-image-area img { 
-          width: 100%;
-          height: 100%;
-          object-fit: fill; 
-        }
         .product-title { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 600; line-height: 24px; letter-spacing: 0.03em; color: #1e293b; margin: 10px 0; }
         .tender-budget-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
         .budget-item { background: #f1f5f9; padding: 15px; border-radius: 16px; }
@@ -625,9 +635,6 @@ function DirectSaleDetailContent() {
         .qty-input { width: 50px; border: none; background: transparent; text-align: center; font-weight: bold; }
         .enchirir-btn { width: 100%; max-width: 336px; min-height: 44px; border-radius: 4px; padding: 10px clamp(20px, 4vw, 48px); background: #002d9c; color: white; font-weight: 700; border: none; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .enchirir-btn:hover { background: #001f6d; transform: translateY(-2px); }
-        .product-description-container { margin-top: 69px; padding-left: 27px; }
-        .description-title { font-family: 'Inter', sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 25px; color: #000; }
-        .description-body { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: 0.03em; color: #444; width: 100%; max-width: 1158px; white-space: pre-wrap; margin-bottom: 20px; word-wrap: break-word; }
         .seller-section-card { background: white; border-radius: 24px; padding: clamp(20px, 3vw, 30px); display: flex; flex-wrap: wrap; align-items: center; gap: clamp(16px, 3vw, 30px); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         .seller-avatar img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #0063B1; }
         .seller-actions { margin-left: auto; display: flex; gap: 10px; }

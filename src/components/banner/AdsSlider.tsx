@@ -53,6 +53,7 @@ const AdsSlider: React.FC = () => {
     aspectRatio: '1218 / 315',
     position: 'relative',
     overflow: 'hidden',
+    margin: '12px auto 0',
   };
 
   const getAdImageUrl = (ad: Ad): string => {
@@ -122,7 +123,7 @@ const AdsSlider: React.FC = () => {
   /* ── Fallback banner when no ads from API ── */
   if (ads.length === 0) {
     return (
-      <div style={{
+      <div className="ads-slider-container" style={{
         ...adsContainerStyle,
         cursor: 'default',
       }}>

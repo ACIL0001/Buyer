@@ -11,7 +11,7 @@ interface Props {
 
 interface SocketContextData {
   socket: Socket | undefined;
-  onlineUsers: unknown;
+  onlineUsers: string[];
   messages: unknown;
   setMessages: unknown;
   setRelode: React.Dispatch<React.SetStateAction<boolean>>;
@@ -37,7 +37,7 @@ const SocketProvider: React.FC<Props> = (props = {}) => {
   
   const [socket, setSocket] = useState<Socket | undefined>();
   const [messages, setMessages] = useState<unknown[]>([]);
-  const [onlineUsers] = useState<unknown>([]);
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [relode, setRelode] = useState(false);
   const [showChat, setShowChat] = useState<boolean>(true);
   const [socketError, setSocketError] = useState<string | null>(null);
@@ -86,6 +86,13 @@ const SocketProvider: React.FC<Props> = (props = {}) => {
         currentSocket.on('connect', () => {
           console.log('Socket connected successfully with ID:', currentSocket?.id);
           setSocketError(null);
+        });
+
+        currentSocket.on('online-users', (users: any) => {
+          console.log('🟢 Received online-users event:', users);
+          if (Array.isArray(users)) {
+            setOnlineUsers(users.map((u: any) => u.userId || u._id || u));
+          }
         });
 
         currentSocket.on('connect_error', (error) => {

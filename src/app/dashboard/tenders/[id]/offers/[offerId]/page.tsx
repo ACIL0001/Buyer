@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { TendersAPI } from '@/services/tenders';
@@ -8,17 +8,12 @@ import useAuth from '@/hooks/useAuth';
 import { useSnackbar } from 'notistack';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCreateSocket } from '@/contexts/socket';
-import { DashboardKeyframes, StatusBadge, ActionBtn, tableStyles, ConfirmDialog, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
+import { DashboardKeyframes, ConfirmDialog, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
 import DocxViewerModal from '@/components/shared/DocxViewerModal';
 import { formatUserName } from '@/utils/user';
-
-const ACCENT = 'var(--primary-tender-color)';
-const ACCENT_80 = 'color-mix(in srgb, var(--primary-tender-color) 80%, transparent)'; // cc in hex
-const ACCENT_25 = 'color-mix(in srgb, var(--primary-tender-color) 25%, transparent)'; // 40 in hex
-const ACCENT_12 = 'color-mix(in srgb, var(--primary-tender-color) 12%, transparent)'; // 20 in hex
-const ACCENT_05 = 'color-mix(in srgb, var(--primary-tender-color) 5%, transparent)'; // 08 in hex
-const ACCENT_03 = 'color-mix(in srgb, var(--primary-tender-color) 3%, transparent)'; // 06 in hex
-const ACCENT_18 = 'color-mix(in srgb, var(--primary-tender-color) 18%, transparent)'; // 30 in hex
+import { normalizeImageUrl } from '@/utils/url';
+import { BsArrowLeft, BsFileEarmarkText, BsInfoCircle, BsBarChart, BsClockHistory, BsCheckCircle, BsXCircle, BsDownload } from 'react-icons/bs';
+import '../../../../auctions/[id]/auction-details-styles.css';
 
 function offerStatusCfg(s: string) {
   const m: Record<string, any> = {
@@ -33,8 +28,6 @@ function fmtDate(d: any) {
   if (!d) return 'N/A';
   return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
-
-const card: React.CSSProperties = { background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid rgba(0,0,0,0.06)', padding: 24, marginBottom: 20 };
 
 export default function TenderOfferDetailPage() {
   const params = useParams();
@@ -83,26 +76,32 @@ export default function TenderOfferDetailPage() {
     staleTime: 60000,
   });
 
-  const getAvatarUrl = (u: any) => {
-    const p = u?.avatar?.path || u?.bidder?.avatar?.path;
-    if (!p) return '';
-    const { baseURL } = require('@/config').default || require('@/config');
-    const base = baseURL?.endsWith('/') ? baseURL : `${baseURL}/`;
-    return `${base}static/uploads/${p}`;
-  };
-
   const handleAccept = async () => {
     setProcessing(true);
-    try { await TendersAPI.acceptTenderBid(offerId); enqueueSnackbar('Offre acceptée', { variant: 'success' }); await refetch(); }
-    catch { enqueueSnackbar('Erreur', { variant: 'error' }); }
-    finally { setProcessing(false); setAcceptDialog(false); }
+    try { 
+      await TendersAPI.acceptTenderBid(offerId); 
+      enqueueSnackbar('Offre acceptée', { variant: 'success' }); 
+      await refetch(); 
+    } catch { 
+      enqueueSnackbar('Erreur lors de l\'acceptation', { variant: 'error' }); 
+    } finally { 
+      setProcessing(false); 
+      setAcceptDialog(false); 
+    }
   };
 
   const handleReject = async () => {
     setProcessing(true);
-    try { await TendersAPI.rejectTenderBid(offerId); enqueueSnackbar('Offre rejetée', { variant: 'info' }); await refetch(); }
-    catch { enqueueSnackbar('Erreur', { variant: 'error' }); }
-    finally { setProcessing(false); setRejectDialog(false); }
+    try { 
+      await TendersAPI.rejectTenderBid(offerId); 
+      enqueueSnackbar('Offre rejetée', { variant: 'info' }); 
+      await refetch(); 
+    } catch { 
+      enqueueSnackbar('Erreur lors du rejet', { variant: 'error' }); 
+    } finally { 
+      setProcessing(false); 
+      setRejectDialog(false); 
+    }
   };
 
   if (isLoading) return <DetailPageSkeleton accentColor="var(--primary-tender-color)" />;
@@ -113,239 +112,411 @@ export default function TenderOfferDetailPage() {
 
   if (!tender || !offer) return (
     <div style={{ textAlign: 'center', padding: '60px 24px' }}>
-      <div style={{ fontSize: 52, marginBottom: 16 }}>🔍</div>
-      <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569' }}>Offre ou appel d'offres introuvable</p>
-      <button onClick={() => router.back()} style={{ marginTop: 16, padding: '10px 22px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>← Retour</button>
+      <p>Offre ou appel d'offres introuvable</p>
+      <button onClick={() => router.back()}>Retour</button>
     </div>
   );
 
   const evalType = tender.evaluationType || 'MOINS_DISANT';
   const tenderOwnerId = typeof tender.owner === 'object' ? tender.owner?._id : tender.owner;
   const isOwner = tenderOwnerId == auth?.user?._id;
-  const bidder = offer.bidder || offer.user;
+  const bidder = offer.bidder || offer.user || {};
   const bidderId = typeof bidder === 'object' ? bidder?._id : bidder;
   const bidderName = formatUserName(bidder);
   const budget = tender.maxBudget || tender.budget || tender.estimatedBudget || 0;
   const showActions = isOwner && offer.status === 'pending' && evalType !== 'MOINS_DISANT';
+  const stCfg = offerStatusCfg(offer.status);
+
+  const getDisplayName = (user: any) => {
+    if (user?.companyName || user?.entreprise) return user.companyName || user.entreprise;
+    if (user?.firstName || user?.lastName) return `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    return user?.name || 'Utilisateur';
+  };
+
+  const getInitials = (user: any): string => {
+    const name = getDisplayName(user);
+    if (!name || name === 'Utilisateur') return '?';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const BidderAvatar = ({ user }: { user: any }) => {
+    const avatarUrl = user?.avatar?.fullUrl || user?.avatar?.url || user?.profileImage?.url || user?.photoURL;
+    const resolvedUrl = avatarUrl ? normalizeImageUrl(avatarUrl) : null;
+    const initials = getInitials(user);
+    const colors = ['#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#F59E0B', '#EF4444'];
+    const colorIndex = initials.charCodeAt(0) % colors.length;
+    const bgColor = colors[colorIndex];
+
+    if (!resolvedUrl) {
+      return (
+        <div className="figma-ad-bidder-avatar" style={{ backgroundColor: bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px', fontWeight: 700, fontFamily: 'Inter, sans-serif', flexShrink: 0 }}>
+          {initials}
+        </div>
+      );
+    }
+
+    return (
+      <img
+        src={resolvedUrl}
+        alt={getDisplayName(user)}
+        className="figma-ad-bidder-avatar"
+        onError={(e) => {
+          const target = e.currentTarget;
+          target.style.display = 'none';
+          const parent = target.parentElement;
+          if (parent && !parent.querySelector('.avatar-fallback')) {
+            const fallback = document.createElement('div');
+            fallback.className = 'avatar-fallback figma-ad-bidder-avatar';
+            fallback.textContent = initials;
+            fallback.style.cssText = `background-color:${bgColor};display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;font-family:Inter,sans-serif;flex-shrink:0;`;
+            parent.insertBefore(fallback, target.nextSibling);
+          }
+        }}
+      />
+    );
+  };
 
   return (
-    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div style={{ backgroundColor: '#F8FAFC', minHeight: '100vh', paddingBottom: '80px' }}>
       <DashboardKeyframes />
+      <div className="figma-ad-main">
+        
+        <button 
+          className="figma-ad-back-btn"
+          onClick={() => router.push(`/dashboard/tenders/${tenderId}`)}
+        >
+          <BsArrowLeft /> Retour à l'appel d'offres
+        </button>
 
-      {/* Hero */}
-      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT_80})`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT_25}`, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08), transparent 60%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <button onClick={() => router.push(`/dashboard/tenders/${tenderId}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, marginBottom: 14 }}>← Retour à l'appel d'offres</button>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-            <div>
-              <h1 style={{ color: '#fff', fontSize: 'clamp(1.1rem, 3vw, 1.6rem)', fontWeight: 800, margin: 0 }}>Détails de la soumission</h1>
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', margin: '6px 0 0' }}>📄 {tender.title}</p>
-            </div>
-            <StatusBadge config={offerStatusCfg(offer.status)} />
+        {/* Header Title Section */}
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <h1 className="figma-ad-product-title" style={{ margin: 0, fontSize: '28px' }}>Détails de la soumission</h1>
+            <p style={{ margin: 0, color: '#64748B', fontWeight: 500 }}>🏷️ {tender.title}</p>
           </div>
-        </div>
-      </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <span style={{ padding: '6px 16px', borderRadius: '99px', background: stCfg.bg, color: stCfg.color, fontSize: '13px', fontWeight: 700 }}>
+              {stCfg.label.toUpperCase()}
+            </span>
+          </div>
+        </header>
 
-      {/* Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 20, alignItems: 'start' }}>
-        <div>
-          {/* Proposal / Amount */}
-          <div style={card}>
-            <h3 style={{ margin: '0 0 4px', fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Proposition</h3>
-            <div style={{ borderBottom: '1px solid #f1f5f9', marginBottom: 20, paddingBottom: 12 }} />
+        <div className="figma-ad-grid" style={{ marginTop: '16px' }}>
+          {/* Left Column */}
+          <div className="figma-ad-left-col">
+            
+            {/* Tender Card */}
+            <div className="figma-ad-product-card">
+              <div className="figma-ad-product-img-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'rgba(0, 80, 203, 0.05)', color: '#0050CB' }}>
+                <BsFileEarmarkText size={44} />
+              </div>
+              <div className="figma-ad-product-content">
+                <h2 className="figma-ad-product-title">{tender.title}</h2>
+                <span className="figma-ad-product-date">Publié le {tender.createdAt ? new Date(tender.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</span>
+              </div>
+            </div>
 
-            {evalType === 'MIEUX_DISANT' ? (
-              <>
-                {offer.proposal && offer.proposal.trim() && offer.proposal !== 'Aucune proposition textuelle fournie.' && (
-                  <div style={{ padding: '16px 20px', borderRadius: 12, border: '1.5px solid #e2e8f0', background: '#f8fafc', marginBottom: 16, whiteSpace: 'pre-wrap', lineHeight: 1.7, color: '#334155' }}>
-                    {offer.proposal}
+            {/* Details Box */}
+            <div className="figma-ad-details-box">
+              <div className="figma-ad-proposal-header">
+                <div className="figma-ad-proposal-amount-group">
+                  {evalType !== 'MIEUX_DISANT' ? (
+                    <>
+                      <span className="figma-ad-label">MONTANT PROPOSÉ</span>
+                      <span className="figma-ad-amount">{(offer.price || offer.bidAmount || 0).toLocaleString('fr-FR')} Da</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="figma-ad-label">PROPOSITION SOUMISE</span>
+                      <span className="figma-ad-amount" style={{ fontSize: '28px', color: '#1E293B', fontWeight: 700, margin: '8px 0' }}>Dossier Technique</span>
+                    </>
+                  )}
+                  <span className="figma-ad-proposal-date">Soumission reçue le {new Date(offer.createdAt || offer.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} à {new Date(offer.createdAt || offer.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <div className="figma-ad-bidder-profile">
+                  <span className="figma-ad-label">SOUMISSIONNAIRE</span>
+                  <div className="figma-ad-bidder-info" style={{ alignItems: 'center', display: 'flex', gap: '16px', flexWrap: 'wrap', height: 'auto', padding: '16px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: '180px' }}>
+                      <BidderAvatar user={bidder} />
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span className="figma-ad-bidder-name" style={{ fontSize: '15px' }}>{bidderName}</span>
+                        {bidder?.email && <span className="figma-ad-bidder-meta" style={{ fontSize: '12px' }}>✉️ {bidder.email}</span>}
+                        {(bidder?.phone || offer.phone) && <span className="figma-ad-bidder-meta" style={{ fontSize: '12px' }}>📞 {bidder.phone || offer.phone}</span>}
+                      </div>
+                    </div>
+                    {bidderId && (
+                      <button 
+                        onClick={() => router.push(`/dashboard/profile/${bidderId}`)} 
+                        style={{ padding: '8px 16px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', color: '#191B24', fontWeight: 600, cursor: 'pointer', fontSize: '13px' }}
+                      >
+                        Consulter le profil
+                      </button>
+                    )}
                   </div>
-                )}
-                {(offer.proposalFile || (offer.proposalFiles && offer.proposalFiles.length > 0)) && (
-                  <div>
-                    <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, marginBottom: 10 }}>📎 Documents joints</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      {offer.proposalFile && (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 12, background: '#e0f2fe18', border: '1.5px dashed #0284c740' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 36, height: 36, borderRadius: 10, background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>📄</div>
-                            <div>
-                              <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>
-                                {offer.proposalFile.split('/').pop()?.split('-').slice(1).join('-') || 'Proposition technique'}
+                </div>
+              </div>
+
+              {/* Proposal Text & Documents */}
+              <div className="figma-ad-comment-section">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BsFileEarmarkText color="#0050CB" />
+                  <span className="figma-ad-bidder-name">Détails de la proposition</span>
+                </div>
+                
+                {evalType === 'MIEUX_DISANT' ? (
+                  <>
+                    {offer.proposal && offer.proposal.trim() && offer.proposal !== 'Aucune proposition textuelle fournie.' && (
+                      <div className="figma-ad-comment-box" style={{ whiteSpace: 'pre-wrap', width: '100%' }}>
+                        {offer.proposal}
+                      </div>
+                    )}
+                    
+                    {(offer.proposalFile || (offer.proposalFiles && offer.proposalFiles.length > 0)) && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', marginTop: '8px' }}>
+                        <span className="figma-ad-label" style={{ fontSize: '11px', color: '#64748B' }}>DOCUMENTS ATTACHÉS</span>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', width: '100%' }}>
+                          
+                          {offer.proposalFile && (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '12px', background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'rgba(0, 80, 203, 0.1)', color: '#0050CB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                                  <BsFileEarmarkText />
+                                </div>
+                                <div>
+                                  <div style={{ fontWeight: 600, color: '#191B24', fontSize: '14px' }}>
+                                    {offer.proposalFile.split('/').pop()?.split('-').slice(1).join('-') || 'Proposition technique'}
+                                  </div>
+                                  <div style={{ color: '#64748B', fontSize: '12px' }}>Document joint</div>
+                                </div>
                               </div>
-                              <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Document PDF / Word</div>
+                              {(() => {
+                                const isDoc = offer.proposalFile.toLowerCase().endsWith('.docx') || offer.proposalFile.toLowerCase().endsWith('.doc');
+                                const fileName = offer.proposalFile.split('/').pop()?.split('-').slice(1).join('-') || 'Proposition technique';
+                                
+                                if (isDoc) {
+                                  return (
+                                    <button 
+                                      onClick={() => setViewDoc({ open: true, url: offer.proposalFile, name: fileName })} 
+                                      style={{ padding: '6px 14px', borderRadius: '8px', background: '#0050CB', color: '#fff', border: 'none', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}
+                                    >
+                                      Voir
+                                    </button>
+                                  );
+                                }
+                                return (
+                                  <a 
+                                    href={offer.proposalFile} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    style={{ padding: '6px 14px', borderRadius: '8px', background: '#0050CB', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '13px' }}
+                                  >
+                                    Ouvrir
+                                  </a>
+                                );
+                              })()}
                             </div>
-                          </div>
-                          {(() => {
-                            const isDoc = offer.proposalFile.toLowerCase().endsWith('.docx') || offer.proposalFile.toLowerCase().endsWith('.doc');
-                            const fileName = offer.proposalFile.split('/').pop()?.split('-').slice(1).join('-') || 'Proposition technique';
-                            
-                            if (isDoc) {
-                              return (
-                                <button 
-                                  onClick={() => setViewDoc({ open: true, url: offer.proposalFile, name: fileName })}
-                                  style={{ padding: '6px 14px', borderRadius: 8, background: ACCENT, color: '#fff', border: 'none', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}
-                                >
-                                  Voir
-                                </button>
-                              );
-                            }
+                          )}
+                          
+                          {Array.isArray(offer.proposalFiles) && offer.proposalFiles.map((file: any, idx: number) => {
+                            const fileUrl = typeof file === 'string' ? file : file.url;
+                            const isDoc = fileUrl?.toLowerCase().endsWith('.docx') || fileUrl?.toLowerCase().endsWith('.doc');
+                            const fileName = typeof file === 'string' ? file.split('/').pop() : (file.originalname || `Fichier ${idx + 1}`);
                             
                             return (
-                              <a href={offer.proposalFile} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 14px', borderRadius: 8, background: ACCENT, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem' }}>Voir</a>
-                            );
-                          })()}
-                        </div>
-                      )}
-                      {Array.isArray(offer.proposalFiles) && offer.proposalFiles.map((file: any, idx: number) => {
-                        const fileUrl = typeof file === 'string' ? file : file.url;
-                        const isDoc = fileUrl?.toLowerCase().endsWith('.docx') || fileUrl?.toLowerCase().endsWith('.doc');
-                        const fileName = typeof file === 'string' ? file.split('/').pop() : (file.originalname || `Fichier ${idx + 1}`);
-                        
-                        return (
-                          <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 12, background: '#e0f2fe18', border: '1.5px dashed #0284c740' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <div style={{ width: 36, height: 36, borderRadius: 10, background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>📎</div>
-                              <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>
-                                {fileName}
+                              <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '12px', background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'rgba(0, 80, 203, 0.1)', color: '#0050CB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                                    <BsFileEarmarkText />
+                                  </div>
+                                  <div style={{ fontWeight: 600, color: '#191B24', fontSize: '14px' }}>{fileName}</div>
+                                </div>
+                                {isDoc ? (
+                                  <button 
+                                    onClick={() => setViewDoc({ open: true, url: fileUrl, name: fileName })} 
+                                    style={{ padding: '6px 14px', borderRadius: '8px', background: '#0050CB', color: '#fff', border: 'none', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}
+                                  >
+                                    Voir
+                                  </button>
+                                ) : (
+                                  <a 
+                                    href={fileUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    style={{ padding: '6px 14px', borderRadius: '8px', background: '#0050CB', color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: '13px' }}
+                                  >
+                                    Ouvrir
+                                  </a>
+                                )}
                               </div>
-                            </div>
-                            {isDoc ? (
-                              <button 
-                                onClick={() => setViewDoc({ open: true, url: fileUrl, name: fileName })}
-                                style={{ padding: '6px 14px', borderRadius: 8, background: ACCENT, color: '#fff', border: 'none', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}
-                              >
-                                Voir
-                              </button>
-                            ) : (
-                              <a href={fileUrl} target="_blank" rel="noopener noreferrer" style={{ padding: '6px 14px', borderRadius: 8, background: ACCENT, color: '#fff', textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem' }}>Voir</a>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {!offer.proposal && !offer.proposalFile && (!offer.proposalFiles || offer.proposalFiles.length === 0) && (
+                      <div style={{ padding: '32px', textAlign: 'center', width: '100%', borderRadius: '12px', background: '#F8FAFC', border: '1px dashed #E2E8F0', color: '#64748B' }}>
+                        Aucune proposition textuelle ou document fourni.
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="figma-ad-comment-box" style={{ fontStyle: 'normal', width: '100%' }}>
+                    <span>Cette soumission est basée uniquement sur le critère du prix. Le montant proposé est de <strong>{(offer.price || offer.bidAmount || 0).toLocaleString('fr-FR')} DA</strong>.</span>
                   </div>
                 )}
-                {!offer.proposal && !offer.proposalFile && (!offer.proposalFiles || offer.proposalFiles.length === 0) && (
-                  <div style={{ padding: '32px', textAlign: 'center', borderRadius: 12, background: '#f8fafc', border: '1.5px dashed #e2e8f0', color: '#94a3b8' }}>Aucune proposition fournie</div>
-                )}
-              </>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '20px 24px', borderRadius: 14, background: ACCENT_05, border: `1.5px solid ${ACCENT_12}` }}>
-                <span style={{ fontSize: 40 }}>💰</span>
-                <div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 800, color: ACCENT, lineHeight: 1 }}>{(offer.price || offer.bidAmount || offer.amount || 0).toLocaleString('fr-FR')}</div>
-                  <div style={{ color: '#64748b', fontWeight: 600, marginTop: 4 }}>DA proposé</div>
+              </div>
+
+              {/* Action Buttons inside Footer Actions */}
+              {showActions && (
+                <div className="figma-ad-footer-actions" style={{ borderTop: '1px solid #F1F5F9', paddingTop: '24px', width: '100%' }}>
+                  <button 
+                    disabled={processing} 
+                    className="figma-ad-btn-reject" 
+                    onClick={() => setRejectDialog(true)}
+                  >
+                    <BsXCircle /> Refuser la soumission
+                  </button>
+                  <button 
+                    disabled={processing} 
+                    className="figma-ad-btn-accept" 
+                    onClick={() => setAcceptDialog(true)}
+                  >
+                    <BsCheckCircle /> Accepter la soumission
+                  </button>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Submission date */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', borderRadius: 12, background: '#f8fafc', border: '1px solid #f1f5f9', marginTop: 16 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>📅</div>
-              <div>
-                <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date de soumission</div>
-                <div style={{ fontWeight: 700, color: '#334155', marginTop: 2 }}>{fmtDate(offer.createdAt || offer.date)}</div>
+              <div className="figma-ad-info-banner">
+                <BsInfoCircle size={20} color="#0050CB" />
+                <span>En acceptant cette proposition, vous attribuez définitivement l'appel d'offres à ce soumissionnaire.</span>
               </div>
             </div>
           </div>
 
-          {/* Accept / Reject actions */}
-          {showActions && (
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-              <ActionBtn label="Refuser" icon="❌" variant="danger" size="md" onClick={() => setRejectDialog(true)} disabled={processing} />
-              <ActionBtn label="Accepter" icon="✅" variant="success" size="md" onClick={() => setAcceptDialog(true)} disabled={processing} />
-            </div>
-          )}
-        </div>
-
-        {/* Right sidebar */}
-        <div>
-          {/* Bidder card */}
-          <div style={card}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>👤 Soumissionnaire</h3>
-            {bidder && bidderId ? (
-              <Link href={`/dashboard/profile/${bidderId}`} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
-                <div style={{ width: 56, height: 56, borderRadius: '50%', background: ACCENT_12, color: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', border: `2px solid ${ACCENT_18}`, flexShrink: 0 }}>{bidderName.charAt(0).toUpperCase()}</div>
-                <div>
-                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '1rem' }}>{bidderName}</div>
-                  {(bidder as any).email && <div style={{ color: '#64748b', fontSize: '0.82rem', marginTop: 2 }}>{(bidder as any).email}</div>}
-                  {((bidder as any).phone || offer.phone) && <div style={{ marginTop: 6 }}><span style={{ padding: '2px 8px', borderRadius: 8, background: '#f1f5f9', color: '#475569', fontSize: '0.75rem', fontWeight: 600 }}>📞 {(bidder as any).phone || offer.phone}</span></div>}
-                </div>
-              </Link>
-            ) : (
-              <div style={{ color: '#94a3b8' }}>Infos non disponibles</div>
-            )}
-          </div>
-
-          {/* Tender info card */}
-          <div style={{ ...card, background: `linear-gradient(135deg, ${ACCENT_05}, #fff)` }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📄 Info Appel d'offres</h3>
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Titre</div>
-              <div style={{ fontWeight: 600, color: '#1e293b' }}>{tender.title}</div>
-            </div>
-            {evalType !== 'MIEUX_DISANT' && budget > 0 && (
-              <div style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Budget</div>
-                <div style={{ fontWeight: 800, color: ACCENT, fontSize: '1.1rem' }}>{budget.toLocaleString('fr-FR')} DA</div>
+          {/* Right Column (Sidebar Deck) */}
+          <div className="figma-ad-right-col">
+            <div className="figma-ad-side-card">
+              <h3 className="figma-ad-side-title"><BsBarChart color="#0050CB" /> Statistiques de l'appel</h3>
+              <div className="figma-ad-stat-row">
+                <span className="figma-ad-stat-label">Budget estimé</span>
+                <span className="figma-ad-stat-value">{budget > 0 ? `${budget.toLocaleString('fr-FR')} DA` : 'N/A'}</span>
               </div>
-            )}
-            <button onClick={() => router.push(`/dashboard/tenders/${tenderId}`)} style={{ width: '100%', padding: 10, borderRadius: 10, border: `1.5px solid ${ACCENT}`, background: 'transparent', color: ACCENT, fontWeight: 700, cursor: 'pointer', fontSize: '0.875rem' }}>
-              Voir l'appel d'offres →
-            </button>
-          </div>
-        </div>
-      </div>
+              <div className="figma-ad-stat-row">
+                <span className="figma-ad-stat-label">Critère de choix</span>
+                <span className="figma-ad-stat-value figma-ad-stat-value-blue">
+                  {evalType === 'MIEUX_DISANT' ? 'Mieux-disant' : 'Moins-disant'}
+                </span>
+              </div>
+              <div className="figma-ad-stat-row">
+                <span className="figma-ad-stat-label">Date limite</span>
+                <span className="figma-ad-stat-value">{tender.endingAt ? new Date(tender.endingAt).toLocaleDateString('fr-FR') : 'N/A'}</span>
+              </div>
+              <div className="figma-ad-stat-row" style={{ borderBottom: 'none' }}>
+                <span className="figma-ad-stat-label">Total soumissions</span>
+                <span className="figma-ad-stat-value">{allBids.length}</span>
+              </div>
+            </div>
 
-      {/* All bids table */}
-      <div style={card}>
-        <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>📑 Autres soumissions ({allBids.length})</h3>
-        {allBids.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '32px', color: '#94a3b8' }}>Aucune autre soumission</div>
-        ) : (
-          <table style={tableStyles.table}>
-            <thead>
-              <tr>
-                {['Soumissionnaire', 'Annonce', evalType !== 'MIEUX_DISANT' ? 'Montant' : 'Proposition', 'Date', ...(isOwner && evalType !== 'MOINS_DISANT' ? [''] : [])].map(h => <th key={h} style={tableStyles.th}>{h}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {allBids.map((b: any, i: number) => {
-                const bd = b.bidder || b.user;
-                const bName = formatUserName(bd);
-                const isCurrent = b._id === offerId;
-                return (
-                  <tr key={b._id || i} className="db-row" style={{ ...tableStyles.trHover, background: isCurrent ? ACCENT_03 : undefined }}>
-                    <td style={tableStyles.td}>
-                      <Link href={`/dashboard/profile/${bd?._id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
-                        <div style={{ width: 34, height: 34, borderRadius: '50%', background: isCurrent ? ACCENT_12 : '#f1f5f9', color: isCurrent ? ACCENT : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.82rem', flexShrink: 0 }}>{bName.charAt(0).toUpperCase()}</div>
-                        <div>
-                          <span style={{ fontWeight: isCurrent ? 700 : 500, color: '#1e293b' }}>{bName}</span>
-                          {isCurrent && <span style={{ marginLeft: 8, padding: '1px 7px', borderRadius: 8, background: ACCENT, color: '#fff', fontSize: '0.68rem', fontWeight: 700 }}>Cette offre</span>}
-                          {bd?.email && <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{bd.email}</div>}
+            <div className="figma-ad-side-card figma-ad-history-card-height">
+              <h3 className="figma-ad-side-title"><BsClockHistory color="#0050CB" /> Historique ({allBids.length})</h3>
+              <div className="figma-ad-history-list">
+                <div className="figma-ad-history-divider"></div>
+                {allBids.length > 0 ? (
+                  allBids.map((b: any, idx) => {
+                    const bd = b.bidder || b.user;
+                    const isCurrent = b._id === offerId;
+                    return (
+                      <div key={b._id} className="figma-ad-history-item">
+                        <div className={`figma-ad-history-dot ${isCurrent ? 'figma-ad-history-dot-active' : ''}`}></div>
+                        <div className="figma-ad-history-header">
+                          <span className="figma-ad-history-name" style={{ color: isCurrent ? '#002896' : '#475569', fontWeight: isCurrent ? 700 : 500 }}>
+                            {getDisplayName(bd)}
+                          </span>
+                          <span className="figma-ad-history-price" style={{ color: isCurrent ? '#002896' : '#64748B', fontWeight: 600 }}>
+                            {evalType !== 'MIEUX_DISANT' ? `${(b.bidAmount || b.price || 0).toLocaleString('fr-FR')} DA` : 'Dossier'}
+                          </span>
                         </div>
-                      </Link>
-                    </td>
-                    <td style={{ ...tableStyles.td, color: '#64748b', fontSize: '0.82rem', maxWidth: 180 }}><div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tender?.title}</div></td>
-                    <td style={tableStyles.td}>
-                      {evalType !== 'MIEUX_DISANT'
-                        ? <span style={{ fontWeight: 700, color: '#10b981' }}>{(b.bidAmount || b.price || 0).toLocaleString('fr-FR')} DA</span>
-                        : <span style={{ color: '#475569', fontSize: '0.82rem' }}>{b.proposal ? b.proposal.slice(0, 50) + '…' : '—'}</span>}
-                    </td>
-                    <td style={{ ...tableStyles.td, color: '#64748b', fontSize: '0.82rem' }}>{fmtDate(b.createdAt || b.date)}</td>
-                    {isOwner && evalType !== 'MOINS_DISANT' && (
-                      <td style={{ ...tableStyles.td, textAlign: 'right' }}>
-                        {isCurrent && b.status === 'pending' && <ActionBtn label="Accepter" icon="✅" variant="success" onClick={() => setAcceptDialog(true)} />}
+                        <span className="figma-ad-history-date">
+                          {new Date(b.createdAt || b.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}, {new Date(b.createdAt || b.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#64748B', fontSize: '14px' }}>
+                    Aucune soumission enregistrée
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Full-Width Table */}
+        <div style={{ background: '#FFFFFF', border: '1px solid #F1F5F9', boxShadow: '0px 4px 6px -1px rgba(0, 0, 0, 0.1)', borderRadius: '12px', padding: '24px', width: '100%', marginTop: '24px' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 600, color: '#191B24' }}>Autres soumissions ({allBids.length})</h3>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
+                  {['Soumissionnaire', 'Appel d\'offres', evalType !== 'MIEUX_DISANT' ? 'Montant' : 'Proposition', 'Date', ...(isOwner && evalType !== 'MOINS_DISANT' ? ['Action'] : [])].map((h, i) => (
+                    <th key={i} style={{ padding: '12px', textAlign: 'left', color: '#64748B', fontWeight: 600, fontSize: '13px', textTransform: 'uppercase' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {allBids.map((b: any, i: number) => {
+                  const bd = b.bidder || b.user;
+                  const bName = formatUserName(bd);
+                  const isCurrent = b._id === offerId;
+                  return (
+                    <tr key={b._id || i} style={{ background: isCurrent ? 'rgba(0, 80, 203, 0.04)' : undefined, borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '12px' }}>
+                        {bd?._id ? (
+                          <Link href={`/dashboard/profile/${bd._id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
+                            <div style={{ width: 32, height: 32, borderRadius: '50%', background: isCurrent ? 'rgba(0, 80, 203, 0.1)' : '#F1F5F9', color: isCurrent ? '#0050CB' : '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '12px', flexShrink: 0 }}>
+                              {bName.charAt(0).toUpperCase()}
+                            </div>
+                            <span style={{ fontWeight: isCurrent ? 600 : 500, color: '#191B24', fontSize: '14px' }}>
+                              {bName}
+                              {isCurrent && <span style={{ marginLeft: 8, padding: '2px 6px', borderRadius: 6, background: '#0050CB', color: '#fff', fontSize: '10px', fontWeight: 600 }}>Cette offre</span>}
+                            </span>
+                          </Link>
+                        ) : <span style={{ color: '#94a3b8' }}>Inconnu</span>}
                       </td>
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
+                      <td style={{ padding: '12px', color: '#64748B', fontSize: '14px', maxWidth: 180 }}>
+                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tender?.title}</div>
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        {evalType !== 'MIEUX_DISANT' ? (
+                          <span style={{ fontWeight: 600, color: '#0050CB', fontSize: '14px' }}>{(b.bidAmount || b.price || 0).toLocaleString('fr-FR')} DA</span>
+                        ) : (
+                          <span style={{ color: '#64748B', fontSize: '14px' }}>{b.proposal ? b.proposal.slice(0, 40) + '…' : '—'}</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '12px', color: '#64748B', fontSize: '14px' }}>{fmtDate(b.createdAt || b.date)}</td>
+                      {isOwner && evalType !== 'MOINS_DISANT' && (
+                        <td style={{ padding: '12px' }}>
+                          {isCurrent && b.status === 'pending' && (
+                            <button 
+                              onClick={() => setAcceptDialog(true)} 
+                              style={{ background: '#10B981', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', fontSize: '12px' }}
+                            >
+                              Accepter
+                            </button>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <ConfirmDialog open={acceptDialog} title="Accepter la soumission" message={`Accepter l'offre de "${bidderName}" ? Cette action attribuera l'appel d'offres.`} confirmLabel={processing ? '…' : 'Accepter'} onConfirm={handleAccept} onCancel={() => setAcceptDialog(false)} />

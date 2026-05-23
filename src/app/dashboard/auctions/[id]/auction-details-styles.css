@@ -30,7 +30,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 120px 40px;
+  padding: 60px 40px;
   gap: 32px;
   max-width: 1440px;
   margin: 0 auto;
@@ -114,25 +114,20 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 32px;
-  gap: 32px;
-  width: 735px;
-  min-height: 400px;
+  padding: 32px 24px;
+  gap: 24px;
+  width: 100%;
   background: #FFFFFF;
   border: 1px solid #F1F5F9;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
-  flex: none;
-  order: 1;
-  flex-grow: 0;
 }
 
 .figma-ad-proposal-header {
   box-sizing: border-box;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  width: 669px;
-  height: 127px;
+  width: 100%;
   border-bottom: 1px solid #F1F5F9;
   flex: none;
   order: 0;
@@ -226,8 +221,7 @@
   align-items: flex-start;
   padding: 0px;
   gap: 16px;
-  width: 669px;
-  height: 124px;
+  width: 100%;
   flex: none;
   order: 1;
   align-self: stretch;
@@ -241,7 +235,7 @@
   align-items: flex-start;
   justify-content: flex-start;
   padding: 16px;
-  width: 669px;
+  width: 100%;
   min-height: 84px;
   background: #F8FAFC;
   border-left: 4px solid #0050CB;
@@ -261,8 +255,7 @@
   align-items: flex-start;
   padding: 16px;
   gap: 16px;
-  width: 669px;
-  height: 76px;
+  width: 100%;
   background: #EFF6FF;
   border: 1px solid #DBEAFE;
   border-radius: 12px;
@@ -284,8 +277,7 @@
   align-items: flex-start;
   padding: 16px 0px 0px;
   gap: 16px;
-  width: 669px;
-  height: 77px;
+  width: 100%;
   flex: none;
   order: 3;
   align-self: stretch;
@@ -300,8 +292,7 @@
   padding: 18px 0px;
   gap: 8px;
   isolation: isolate;
-  width: 351.67px;
-  height: 61px;
+  flex: 1;
   background: #16A34A;
   border-radius: 12px;
   color: #FFFFFF;
@@ -323,8 +314,7 @@
   align-items: center;
   padding: 16px 0px;
   gap: 8px;
-  width: 355.67px;
-  height: 60.9px;
+  flex: 1;
   background: #FFFFFF;
   border: 2px solid #FEE2E2;
   border-radius: 12px;
@@ -339,7 +329,6 @@
 /* Right Column */
 .figma-ad-right-col {
   width: 343px;
-  height: 628px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -350,10 +339,9 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 24px;
-  gap: 24px;
+  padding: 20px;
+  gap: 20px;
   width: 343px;
-  min-height: 310px;
   background: #FFFFFF;
   border: 1px solid #F1F5F9;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.05);

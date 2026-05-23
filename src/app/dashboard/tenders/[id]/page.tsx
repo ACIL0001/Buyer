@@ -74,10 +74,10 @@ export default function TenderDetailPage() {
         position: 'absolute',
         width: '976px',
         height: '100px',
-        left: '31px',
+        left: '60px',
         top: '20px',
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '0px', gap: '8px', width: '347.14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '0px', gap: '8px', width: '100%' }}>
           <h1 style={{ width: '100%', fontWeight: 700, fontSize: '36px', lineHeight: '44px', margin: 0, color: '#191B24', letterSpacing: '-0.72px', display: 'flex', alignItems: 'center' }}>
             {tender.title}
           </h1>
@@ -99,8 +99,8 @@ export default function TenderDetailPage() {
         position: 'absolute',
         width: '559.33px',
         height: '400px',
-        left: '31px',
-        top: '160px',
+        left: '60px',
+        top: '130px',
         background: '#FFFFFF',
         boxShadow: '0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.1)',
         borderRadius: '12px',
@@ -124,8 +124,8 @@ export default function TenderDetailPage() {
         position: 'absolute',
         width: '392.67px',
         height: 'auto', // Adjusted after removing buttons
-        left: '614px',
-        top: '160px',
+        right: '150px',
+        top: '130px',
         background: '#FFFFFF',
         border: '1px solid #F1F5F9',
         boxShadow: '0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.1)',
@@ -181,8 +181,8 @@ export default function TenderDetailPage() {
         position: 'absolute',
         width: '559.33px',
         minHeight: '431px',
-        left: '31px',
-        top: '584px',
+        left: '60px',
+        top: '554px',
         background: '#FFFFFF',
         border: '1px solid #F1F5F9',
         boxShadow: '0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.1)',

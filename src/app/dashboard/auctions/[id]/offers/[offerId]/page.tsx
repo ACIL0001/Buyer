@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AuctionsAPI } from '@/services/auctions';
@@ -9,17 +9,16 @@ import useAuth from '@/hooks/useAuth';
 import { useSnackbar } from 'notistack';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCreateSocket } from '@/contexts/socket';
-import { DashboardKeyframes, StatusBadge, tableStyles, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
+import { DashboardKeyframes, DetailPageSkeleton } from '@/components/dashboard/dashboardHelpers';
 import { formatUserName } from '@/utils/user';
-
-const ACCENT = 'var(--primary-auction-color)';
+import { normalizeImageUrl } from '@/utils/url';
+import { BsArrowLeft, BsBarChart, BsClockHistory, BsChatSquareQuote, BsInfoCircle } from 'react-icons/bs';
+import '../../auction-details-styles.css';
 
 function fmtDate(d: any) {
   if (!d) return 'N/A';
   return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
-
-const card: React.CSSProperties = { background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid rgba(0,0,0,0.06)', padding: 24, marginBottom: 20 };
 
 export default function AuctionOfferDetailPage() {
   const params = useParams();
@@ -68,9 +67,8 @@ export default function AuctionOfferDetailPage() {
 
   if (!auction || !offer) return (
     <div style={{ textAlign: 'center', padding: '60px 24px' }}>
-      <div style={{ fontSize: 52, marginBottom: 16 }}>🔍</div>
-      <p style={{ fontSize: '1.1rem', fontWeight: 700, color: '#475569' }}>Offre ou enchère introuvable</p>
-      <button onClick={() => router.back()} style={{ marginTop: 16, padding: '10px 22px', background: ACCENT, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>← Retour</button>
+      <p>Offre ou enchère introuvable</p>
+      <button onClick={() => router.back()}>Retour</button>
     </div>
   );
 
@@ -80,131 +78,260 @@ export default function AuctionOfferDetailPage() {
   const isClosed = auction.status === 'CLOSED' || auction.status === 'ACCEPTED';
   const offerUser = offer.user || {};
   const displayName = formatUserName(offerUser);
+  const views = auction.viewsCount || 0;
+
+  const getDisplayName = (user: any) => {
+    if (user?.companyName || user?.entreprise) return user.companyName || user.entreprise;
+    if (user?.firstName || user?.lastName) return `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    return user?.name || 'Utilisateur';
+  };
+
+  const getInitials = (user: any): string => {
+    const name = getDisplayName(user);
+    if (!name || name === 'Utilisateur') return '?';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const BidderAvatar = ({ user }: { user: any }) => {
+    const avatarUrl = user?.avatar?.fullUrl || user?.avatar?.url || user?.profileImage?.url || user?.photoURL;
+    const resolvedUrl = avatarUrl ? normalizeImageUrl(avatarUrl) : null;
+    const initials = getInitials(user);
+    const colors = ['#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#F59E0B', '#EF4444'];
+    const colorIndex = initials.charCodeAt(0) % colors.length;
+    const bgColor = colors[colorIndex];
+
+    if (!resolvedUrl) {
+      return (
+        <div className="figma-ad-bidder-avatar" style={{ backgroundColor: bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px', fontWeight: 700, fontFamily: 'Inter, sans-serif', flexShrink: 0 }}>
+          {initials}
+        </div>
+      );
+    }
+
+    return (
+      <img
+        src={resolvedUrl}
+        alt={getDisplayName(user)}
+        className="figma-ad-bidder-avatar"
+        onError={(e) => {
+          const target = e.currentTarget;
+          target.style.display = 'none';
+          const parent = target.parentElement;
+          if (parent && !parent.querySelector('.avatar-fallback')) {
+            const fallback = document.createElement('div');
+            fallback.className = 'avatar-fallback figma-ad-bidder-avatar';
+            fallback.textContent = initials;
+            fallback.style.cssText = `background-color:${bgColor};display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:700;font-family:Inter,sans-serif;flex-shrink:0;`;
+            parent.insertBefore(fallback, target.nextSibling);
+          }
+        }}
+      />
+    );
+  };
+
+  const getImageUrl = (item: any): string => {
+    if (!item) return '/assets/img/logo.png';
+    const url = item.fullUrl || item.url;
+    return normalizeImageUrl(url) || '/assets/img/logo.png';
+  };
 
   return (
-    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div style={{ backgroundColor: '#F8FAFC', minHeight: '100vh', paddingBottom: '80px' }}>
       <DashboardKeyframes />
+      <div className="figma-ad-main">
+        
+        <button 
+          className="figma-ad-back-btn"
+          onClick={() => router.push(`/dashboard/auctions/${auctionId}`)}
+        >
+          <BsArrowLeft /> Retour à l'enchère
+        </button>
 
-      {/* Hero */}
-      <div style={{ background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`, borderRadius: 16, padding: '24px 28px', marginBottom: 24, boxShadow: `0 8px 32px ${ACCENT}40`, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08), transparent 60%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <button onClick={() => router.push(`/dashboard/auctions/${auctionId}`)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '5px 12px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, marginBottom: 14 }}>← Retour à l'enchère</button>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-            <div>
-              <h1 style={{ color: '#fff', fontSize: 'clamp(1.1rem, 3vw, 1.6rem)', fontWeight: 800, margin: 0 }}>Détails de la mise</h1>
-              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem', margin: '6px 0 0' }}>🏷️ {auction.title}</p>
-            </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-              {isWinner && <span style={{ padding: '4px 12px', borderRadius: 20, background: '#fbbf24', color: '#7c3300', fontSize: '0.78rem', fontWeight: 700 }}>🏆 GAGNANT</span>}
-              <span style={{ padding: '4px 12px', borderRadius: 20, background: isClosed ? '#dc262620' : '#16a34a20', color: isClosed ? '#dc2626' : '#16a34a', fontSize: '0.78rem', fontWeight: 700, border: `1.5px solid ${isClosed ? '#dc262640' : '#16a34a40'}` }}>{isClosed ? 'CLÔTURÉE' : 'EN COURS'}</span>
-            </div>
+        {/* Header Title Section */}
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <h1 className="figma-ad-product-title" style={{ margin: 0, fontSize: '28px' }}>Détails de la mise</h1>
+            <p style={{ margin: 0, color: '#64748B', fontWeight: 500 }}>🏷️ {auction.title}</p>
           </div>
-        </div>
-      </div>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {isWinner && <span style={{ padding: '6px 16px', borderRadius: '99px', background: '#FEF3C7', color: '#D97706', fontSize: '13px', fontWeight: 700 }}>🏆 GAGNANT</span>}
+            <span style={{ padding: '6px 16px', borderRadius: '99px', background: isClosed ? '#FEE2E2' : '#DCFCE7', color: isClosed ? '#DC2626' : '#16A34A', fontSize: '13px', fontWeight: 700 }}>
+              {isClosed ? 'CLÔTURÉE' : 'EN COURS'}
+            </span>
+          </div>
+        </header>
 
-      {/* Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: 20, alignItems: 'start', marginBottom: 20 }}>
-        {/* Left: Offer amount + date */}
-        <div>
-          <div style={card}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Montant de la mise</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '20px 24px', borderRadius: 14, background: `${ACCENT}08`, border: `1.5px solid ${ACCENT}20` }}>
-              <span style={{ fontSize: 40 }}>🏷️</span>
-              <div>
-                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: ACCENT, lineHeight: 1 }}>{(offer.price || 0).toLocaleString('fr-FR')}</div>
-                <div style={{ color: '#64748b', fontWeight: 600, marginTop: 4 }}>DA</div>
+        <div className="figma-ad-grid" style={{ marginTop: '16px' }}>
+          {/* Left Column */}
+          <div className="figma-ad-left-col">
+            
+            {/* Product Card */}
+            <div className="figma-ad-product-card">
+              <div className="figma-ad-product-img-container">
+                <img src={getImageUrl(auction.thumbs?.[0])} alt={auction.title} className="figma-ad-product-img" />
+              </div>
+              <div className="figma-ad-product-content">
+                <h2 className="figma-ad-product-title">{auction.title}</h2>
+                <span className="figma-ad-product-date">Publié le {auction.createdAt ? new Date(auction.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</span>
               </div>
             </div>
-            {/* Comparison */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(140px, 100%), 1fr))', gap: 12, marginTop: 16 }}>
-              {[
-                { label: 'Prix de départ', value: `${(auction.startingPrice || 0).toLocaleString('fr-FR')} DA`, color: '#64748b' },
-                { label: 'Prix actuel', value: `${(auction.currentPrice || auction.startingPrice || 0).toLocaleString('fr-FR')} DA`, color: '#10b981' },
-              ].map(r => (
-                <div key={r.label} style={{ padding: '12px 16px', borderRadius: 10, background: '#f8fafc', border: '1px solid #f1f5f9' }}>
-                  <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{r.label}</div>
-                  <div style={{ fontWeight: 700, color: r.color, marginTop: 4 }}>{r.value}</div>
+
+            {/* Details Box */}
+            <div className="figma-ad-details-box">
+              <div className="figma-ad-proposal-header">
+                <div className="figma-ad-proposal-amount-group">
+                  <span className="figma-ad-label">MONTANT PROPOSÉ</span>
+                  <span className="figma-ad-amount">{(offer.price || 0).toLocaleString('fr-FR')} Da</span>
+                  <span className="figma-ad-proposal-date">Enchère reçue le {new Date(offer.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} à {new Date(offer.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>📅</div>
-            <div>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date de la mise</div>
-              <div style={{ fontWeight: 700, color: '#334155', fontSize: '0.95rem', marginTop: 2 }}>{fmtDate(offer.createdAt)}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Bidder + Auction info */}
-        <div>
-          <div style={card}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>👤 Enchérisseur</h3>
-            <Link href={`/dashboard/profile/${offerUser._id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
-              <div style={{ width: 56, height: 56, borderRadius: '50%', background: `${ACCENT}20`, color: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', border: `2px solid ${ACCENT}30`, flexShrink: 0 }}>{displayName.charAt(0).toUpperCase()}</div>
-              <div>
-                <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '1rem' }}>{displayName}</div>
-                {offerUser.email && <div style={{ color: '#64748b', fontSize: '0.82rem', marginTop: 2 }}>{offerUser.email}</div>}
-                {offerUser.phone && <div style={{ marginTop: 4 }}><span style={{ padding: '2px 8px', borderRadius: 8, background: '#f1f5f9', color: '#475569', fontSize: '0.75rem', fontWeight: 600 }}>📞 {offerUser.phone}</span></div>}
-              </div>
-            </Link>
-          </div>
-
-          <div style={{ ...card, background: `linear-gradient(135deg, ${ACCENT}08, #fff)` }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>🏷️ Info Enchère</h3>
-            <div style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Titre</div>
-              <div style={{ fontWeight: 600, color: '#1e293b' }}>{auction.title}</div>
-            </div>
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Prix actuel</div>
-              <div style={{ fontWeight: 800, color: '#10b981', fontSize: '1.1rem' }}>{(auction.currentPrice || auction.startingPrice || 0).toLocaleString('fr-FR')} DA</div>
-            </div>
-            <button onClick={() => router.push(`/dashboard/auctions/${auctionId}`)} style={{ width: '100%', padding: '10px', borderRadius: 10, border: `1.5px solid ${ACCENT}`, background: 'transparent', color: ACCENT, fontWeight: 700, cursor: 'pointer', fontSize: '0.875rem' }}>
-              Voir l'enchère complète →
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Participants table */}
-      <div style={card}>
-        <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>👥 Tous les participants ({participants.length})</h3>
-        <table style={tableStyles.table}>
-          <thead>
-            <tr>{['Participant', 'Montant', 'Date', 'Statut'].map(h => <th key={h} style={tableStyles.th}>{h}</th>)}</tr>
-          </thead>
-          <tbody>
-            {participants.map((p: any, i: number) => {
-              const isCurrent = p._id === offerId;
-              const pUserId = typeof p.user === 'object' ? p.user?._id : p.user;
-              const isWinnerP = auctionWinnerId && pUserId && auctionWinnerId === pUserId;
-              const pName = formatUserName(p.user);
-              return (
-                <tr key={p._id || i} className="db-row" style={{ ...tableStyles.trHover, background: isCurrent ? `${ACCENT}06` : undefined }}>
-                  <td style={tableStyles.td}>
-                    <Link href={`/dashboard/profile/${p.user?._id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
-                      <div style={{ width: 34, height: 34, borderRadius: '50%', background: isCurrent ? `${ACCENT}20` : '#f1f5f9', color: isCurrent ? ACCENT : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.82rem', flexShrink: 0 }}>{pName.charAt(0).toUpperCase()}</div>
-                      <div>
-                        <span style={{ fontWeight: isCurrent ? 700 : 500, color: '#1e293b' }}>{pName}</span>
-                        {isCurrent && <span style={{ marginLeft: 8, padding: '1px 7px', borderRadius: 8, background: ACCENT, color: '#fff', fontSize: '0.68rem', fontWeight: 700 }}>Cette offre</span>}
+                <div className="figma-ad-bidder-profile">
+                  <span className="figma-ad-label">ENCHÉRISSEUR</span>
+                  <div className="figma-ad-bidder-info" style={{ alignItems: 'center', display: 'flex', gap: '16px', flexWrap: 'wrap', height: 'auto', padding: '16px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: '180px' }}>
+                      <BidderAvatar user={offerUser} />
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span className="figma-ad-bidder-name" style={{ fontSize: '15px' }}>{displayName}</span>
+                        {offerUser.email && <span className="figma-ad-bidder-meta" style={{ fontSize: '12px' }}>✉️ {offerUser.email}</span>}
+                        {offerUser.phone && <span className="figma-ad-bidder-meta" style={{ fontSize: '12px' }}>📞 {offerUser.phone}</span>}
                       </div>
-                    </Link>
-                  </td>
-                  <td style={tableStyles.td}><span style={{ fontWeight: 700, color: '#10b981' }}>{(p.price || p.bidAmount || 0).toLocaleString('fr-FR')} DA</span></td>
-                  <td style={{ ...tableStyles.td, color: '#64748b', fontSize: '0.82rem' }}>{fmtDate(p.createdAt)}</td>
-                  <td style={tableStyles.td}>
-                    {isWinnerP ? <span style={{ padding: '3px 10px', borderRadius: 12, background: '#dcfce7', color: '#16a34a', fontWeight: 700, fontSize: '0.76rem' }}>🏆 Gagnant</span>
-                      : <span style={{ color: '#94a3b8', fontSize: '0.82rem' }}>—</span>}
-                  </td>
+                    </div>
+                    {offerUser._id && (
+                      <button 
+                        onClick={() => router.push(`/dashboard/profile/${offerUser._id}`)} 
+                        style={{ padding: '8px 16px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', color: '#191B24', fontWeight: 600, cursor: 'pointer', fontSize: '13px' }}
+                      >
+                        Consulter le profil
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Description box */}
+              <div className="figma-ad-comment-section">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BsChatSquareQuote color="#0050CB" />
+                  <span className="figma-ad-bidder-name">Description de l'enchère</span>
+                </div>
+                <div className="figma-ad-comment-box" style={{ whiteSpace: 'pre-wrap', width: '100%' }}>
+                  {auction.description || "Aucune description supplémentaire."}
+                </div>
+              </div>
+
+              <div className="figma-ad-info-banner">
+                <BsInfoCircle size={20} color="#0050CB" />
+                <span>En participant à cette enchère, vous acceptez les conditions de vente de MazadClick.</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column (Sidebar Deck) */}
+          <div className="figma-ad-right-col">
+            <div className="figma-ad-side-card">
+              <h3 className="figma-ad-side-title"><BsBarChart color="#0050CB" /> Statistiques de l'enchère</h3>
+              <div className="figma-ad-stat-row">
+                <span className="figma-ad-stat-label">Prix de départ</span>
+                <span className="figma-ad-stat-value">{(auction.startingPrice || 0).toLocaleString('fr-FR')} DA</span>
+              </div>
+              <div className="figma-ad-stat-row">
+                <span className="figma-ad-stat-label">Meilleure offre</span>
+                <span className="figma-ad-stat-value figma-ad-stat-value-blue">
+                  {((participants[0]?.price) || auction.startingPrice || 0).toLocaleString('fr-FR')} DA
+                </span>
+              </div>
+              <div className="figma-ad-stat-row">
+                <span className="figma-ad-stat-label">Date limite</span>
+                <span className="figma-ad-stat-value">{auction.endingAt ? new Date(auction.endingAt).toLocaleDateString('fr-FR') : 'N/A'}</span>
+              </div>
+              <div className="figma-ad-stat-row" style={{ borderBottom: 'none' }}>
+                <span className="figma-ad-stat-label">Vues</span>
+                <span className="figma-ad-stat-value">{views}</span>
+              </div>
+            </div>
+
+            <div className="figma-ad-side-card figma-ad-history-card-height">
+              <h3 className="figma-ad-side-title"><BsClockHistory color="#0050CB" /> Historique ({participants.length})</h3>
+              <div className="figma-ad-history-list">
+                <div className="figma-ad-history-divider"></div>
+                {participants.length > 0 ? (
+                  participants.slice(0, 5).map((p: any, idx) => {
+                    const isCurrent = p._id === offerId;
+                    return (
+                      <div key={p._id} className="figma-ad-history-item">
+                        <div className={`figma-ad-history-dot ${isCurrent ? 'figma-ad-history-dot-active' : ''}`}></div>
+                        <div className="figma-ad-history-header">
+                          <span className="figma-ad-history-name" style={{ color: isCurrent ? '#002896' : '#475569', fontWeight: isCurrent ? 700 : 500 }}>
+                            {getDisplayName(p.user)}
+                          </span>
+                          <span className="figma-ad-history-price" style={{ color: isCurrent ? '#002896' : '#64748B', fontWeight: 600 }}>
+                            {(p.price || 0).toLocaleString('fr-FR')} Da
+                          </span>
+                        </div>
+                        <span className="figma-ad-history-date">
+                          {new Date(p.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}, {new Date(p.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#64748B', fontSize: '14px' }}>
+                    Aucune offre enregistrée
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Full-Width Table */}
+        <div style={{ background: '#FFFFFF', border: '1px solid #F1F5F9', boxShadow: '0px 4px 6px -1px rgba(0, 0, 0, 0.1)', borderRadius: '12px', padding: '24px', width: '100%', marginTop: '24px' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 600, color: '#191B24' }}>Tous les participants ({participants.length})</h3>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #F1F5F9' }}>
+                  {['Participant', 'Montant', 'Date', 'Statut'].map(h => (
+                    <th key={h} style={{ padding: '12px', textAlign: 'left', color: '#64748B', fontWeight: 600, fontSize: '13px', textTransform: 'uppercase' }}>{h}</th>
+                  ))}
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {participants.map((p: any, i: number) => {
+                  const isCurrent = p._id === offerId;
+                  const pUserId = typeof p.user === 'object' ? p.user?._id : p.user;
+                  const isWinnerP = auctionWinnerId && pUserId && auctionWinnerId === pUserId;
+                  const pName = formatUserName(p.user);
+                  return (
+                    <tr key={p._id || i} style={{ background: isCurrent ? 'rgba(0, 80, 203, 0.04)' : undefined, borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '12px' }}>
+                        <Link href={`/dashboard/profile/${p.user?._id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
+                          <div style={{ width: 32, height: 32, borderRadius: '50%', background: isCurrent ? 'rgba(0, 80, 203, 0.1)' : '#F1F5F9', color: isCurrent ? '#0050CB' : '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '12px', flexShrink: 0 }}>
+                            {pName.charAt(0).toUpperCase()}
+                          </div>
+                          <span style={{ fontWeight: isCurrent ? 600 : 500, color: '#191B24', fontSize: '14px' }}>
+                            {pName}
+                            {isCurrent && <span style={{ marginLeft: 8, padding: '2px 6px', borderRadius: 6, background: '#0050CB', color: '#fff', fontSize: '10px', fontWeight: 600 }}>Cette offre</span>}
+                          </span>
+                        </Link>
+                      </td>
+                      <td style={{ padding: '12px', fontWeight: 600, color: '#0050CB', fontSize: '14px' }}>{(p.price || p.bidAmount || 0).toLocaleString('fr-FR')} DA</td>
+                      <td style={{ padding: '12px', color: '#64748B', fontSize: '14px' }}>{fmtDate(p.createdAt)}</td>
+                      <td style={{ padding: '12px' }}>
+                        {isWinnerP ? (
+                          <span style={{ padding: '4px 10px', borderRadius: '6px', background: '#DCFCE7', color: '#16A34A', fontWeight: 600, fontSize: '12px' }}>🏆 Gagnant</span>
+                        ) : (
+                          <span style={{ color: '#94a3b8', fontSize: '14px' }}>—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );

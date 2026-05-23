@@ -14,7 +14,15 @@ import {
   BsTrash, 
   BsArrowLeft 
 } from 'react-icons/bs';
+import { normalizeImageUrl } from '@/utils/url';
 import './direct-sale-details-styles.css';
+
+// Custom image normalizer helper to align with the rest of the application
+const getImageUrl = (item: any): string => {
+  if (!item) return '/assets/img/logo.png';
+  const url = item.fullUrl || item.url;
+  return normalizeImageUrl(url) || '/assets/img/logo.png';
+};
 
 export default function DirectSaleDetailPage() {
   const params = useParams();
@@ -78,13 +86,7 @@ export default function DirectSaleDetailPage() {
     <div className="figma-dsd-main">
       <DashboardKeyframes />
       
-      {/* Back Button */}
-      <button 
-        className="figma-dsd-back-btn"
-        onClick={() => router.push('/dashboard/direct-sales')}
-      >
-        <BsArrowLeft /> Retour aux ventes
-      </button>
+
 
       {/* Header Area */}
       <header className="figma-dsd-header">
@@ -103,7 +105,7 @@ export default function DirectSaleDetailPage() {
         <div className="figma-dsd-left-col">
           <div className="figma-dsd-hero-card">
             <img 
-              src={sale.thumbs?.[0]?.url || '/assets/img/logo.png'} 
+              src={getImageUrl(sale.thumbs?.[0])} 
               alt={sale.title} 
               className="figma-dsd-hero-img" 
             />

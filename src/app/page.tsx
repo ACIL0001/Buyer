@@ -340,9 +340,6 @@ export default function Home() {
                               <img src="/assets/images/icon 1.png" alt="Enchères" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
                             <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '10px' }}>Enchères</h3>
-                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', margin: '0 0 15px' }}>
-                              Lorem ipsum dolor sit amet consectetur. Fringilla ulla.
-                            </p>
 
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
                               <button onClick={goTo('/auction-sidebar')} className="btn-3d-blue">Enchérir</button>
@@ -356,9 +353,6 @@ export default function Home() {
                               <img src="/assets/images/icon 2.png" alt="Vente directe" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
                             <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '10px' }}>Vente et Service</h3>
-                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', margin: '0 0 15px' }}>
-                              Lorem ipsum dolor sit amet consectetur. Fringilla ulla.
-                            </p>
 
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
                               <button onClick={goTo('/dashboard/direct-sales/create')} className="btn-3d-blue">Vendre</button>
@@ -371,10 +365,7 @@ export default function Home() {
                             <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px' }}>
                               <img src="/assets/images/icon 3.png" alt="Soumission" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                             </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '28px', lineHeight: '30px', textAlign: 'center', marginBottom: '10px' }}>Consultez les projets et soumissionnez</h3>
-                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '16px', lineHeight: '30px', textAlign: 'center', margin: '0 0 15px' }}>
-                              Lorem ipsum dolor sit amet consectetur. Fringilla ulla.
-                            </p>
+                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '28px', lineHeight: '30px', textAlign: 'center', marginBottom: '10px' }}>Soumissions (Appels d'offres / Projets)</h3>
 
                             <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
                               <button onClick={goTo('/dashboard/tenders/create')} className="btn-3d-blue">Publier</button>

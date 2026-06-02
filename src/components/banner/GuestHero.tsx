@@ -126,7 +126,7 @@ const GuestHero = () => {
         >
           {/* Commencer Button */}
           <button
-            onClick={() => window.location.href = 'http://localhost:3001/auth/register/'}
+            onClick={() => router.push('/auth/register')}
             style={{
               minWidth: 'clamp(110px, 28vw, 140px)',
               minHeight: 'clamp(40px, 9vw, 52px)',

@@ -324,9 +324,9 @@ const InternationalPage = () => {
               lineHeight: 1.4,
               textAlign: 'center',
               margin: 0,
-              maxWidth: '623px',
+              maxWidth: '750px',
             }}>
-              Lorem ipsum dolor sit amet consectetur. Sed vestibulum mauris elit sagittis eu. Dui felis tristique consectetur sagittis faucibus non et fusce lacinia.
+              Une question sur nos services, nos tarifs ou les modalités d&apos;inscription ? Nos conseillers sont à votre écoute pour vous accompagner dans vos démarches et maximiser vos opportunités de marché.
             </p>
 
             <button
@@ -352,7 +352,7 @@ const InternationalPage = () => {
                 boxSizing: 'border-box',
               }}
             >
-              Commencez
+              Nous contacter
             </button>
           </div>
         </section>

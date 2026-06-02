@@ -6,23 +6,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 const faqs = [
   {
     id: 1,
-    question: "Qu'est-ce que Mazadclick ?",
-    answer: "Mazadclick est une plateforme innovante d'enchères en ligne, de soumissions d'offres et de vente directe, conçue pour connecter les acheteurs et les vendeurs dans un environnement sécurisé et transparent."
+    question: "Qu'est-ce que Mazad Click et à quoi ça sert ?",
+    answer: "MazadClick est une plateforme en ligne innovante spécialisée dans les enchères, la vente directe et la soumission d'offres. Elle permet d'acheter et de vendre des biens et services de manière sécurisée et transparente."
   },
   {
     id: 2,
-    question: "Qu'est-ce que Mazadclick ?",
-    answer: "Mazadclick est une plateforme innovante d'enchères en ligne, de soumissions d'offres et de vente directe, conçue pour connecter les acheteurs et les vendeurs dans un environnement sécurisé et transparent."
+    question: "Comment s'inscrire sur MazadClick ?",
+    answer: "Pour vous inscrire, cliquez sur 'Connexion' ou d'inscription en haut de la page, puis choisissez l'option de création de compte. Renseignez vos coordonnées de contact et validez via le mail de confirmation."
   },
   {
     id: 3,
-    question: "Qu'est-ce que Mazadclick ?",
-    answer: "Mazadclick est une plateforme innovante d'enchères en ligne, de soumissions d'offres et de vente directe, conçue pour connecter les acheteurs et les vendeurs dans un environnement sécurisé et transparent."
+    question: "Comment compléter son profil ?",
+    answer: "Accédez à votre profil depuis le tableau de bord. Vous pourrez y ajouter vos coordonnées professionnelles, vos préférences de notification et les justificatifs d'identité requis."
   },
   {
     id: 4,
-    question: "Qu'est-ce que Mazadclick ?",
-    answer: "Mazadclick est une plateforme innovante d'enchères en ligne, de soumissions d'offres et de vente directe, conçue pour connecter les acheteurs et les vendeurs dans un environnement sécurisé et transparent."
+    question: "Comment publier votre annonce ?",
+    answer: "Depuis votre tableau de bord, cliquez sur le bouton de création d'annonce, sélectionnez le type (enchère, vente directe ou appel d'offres), ajoutez une description, des photos et validez la publication."
+  },
+  {
+    id: 5,
+    question: "Comment rédiger une annonce efficace ?",
+    answer: "Utilisez un titre explicite, détaillez précisément les caractéristiques du produit ou service, indiquez l'état réel et proposez des visuels de haute qualité avec un prix compétitif."
+  },
+  {
+    id: 6,
+    question: "Quels sont les modes de transaction sur MazadClick ?",
+    answer: "Vous pouvez vendre et acheter via trois modes flexibles : les enchères en ligne, la vente directe avec prix fixe (achat immédiat), ou les appels d'offres pour soumissionner des propositions commerciales."
   }
 ];
 
@@ -38,8 +48,8 @@ const FAQSection = () => {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const visibleFaqs = isMobile && !showAll ? faqs.slice(0, 4) : faqs;
-  const hasMore = isMobile && faqs.length > 4;
+  const visibleFaqs = isMobile && !showAll ? faqs.slice(0, 6) : faqs;
+  const hasMore = isMobile && faqs.length > 6;
 
   return (
     <div className="faq-section" style={{ width: '100%', background: '#ffffff', padding: 'clamp(40px, 8vw, 80px) clamp(16px, 4vw, 20px) clamp(60px, 12vw, 140px)', fontFamily: '"DM Sans", sans-serif' }}>

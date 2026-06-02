@@ -115,7 +115,7 @@ export default function CreateAuctionPage() {
         initialValues: {
             title: '',
             description: '',
-            bidType: '',
+            bidType: BID_TYPES.PRODUCT,
             auctionType: AUCTION_TYPES.CLASSIC,
             productCategory: '',
             productSubCategory: '',
@@ -329,49 +329,8 @@ export default function CreateAuctionPage() {
                                             Remplissez les détails ci-dessous pour publier votre enchère.
                                         </Typography>
 
-                                        <Grid container spacing={2.5}>
-                                            <Grid size={{ xs: 12 }}>
-                                                <Typography sx={fieldLabelStyle}>Status enchère</Typography>
-                                                <TextField
-                                                    select fullWidth variant="outlined"
-                                                    placeholder="Select status product"
-                                                    {...formik.getFieldProps('bidType')}
-                                                    error={(formik.touched.bidType || formik.submitCount > 0) && !!formik.errors.bidType}
-                                                    helperText={(formik.touched.bidType || formik.submitCount > 0) && formik.errors.bidType}
-                                                    sx={inputStyle}
-                                                    SelectProps={{ displayEmpty: true }}
-                                                >
-                                                    <MenuItem value="" disabled>Select status product</MenuItem>
-                                                    <MenuItem value={BID_TYPES.PRODUCT}>Produit</MenuItem>
-                                                </TextField>
-                                            </Grid>
-
-                                            <Grid size={{ xs: 12 }}>
-                                                <Typography sx={fieldLabelStyle}>Nom produit</Typography>
-                                                <TextField
-                                                    fullWidth placeholder="Nom" variant="outlined"
-                                                    {...formik.getFieldProps('title')}
-                                                    error={(formik.touched.title || formik.submitCount > 0) && !!formik.errors.title}
-                                                    helperText={(formik.touched.title || formik.submitCount > 0) && formik.errors.title}
-                                                    sx={inputStyle}
-                                                />
-                                            </Grid>
-
-                                            <Grid size={{ xs: 12 }}>
-                                                <Typography sx={fieldLabelStyle}>Description</Typography>
-                                                <TextField
-                                                    fullWidth placeholder="Description détaillée du produit ou service" 
-                                                    variant="outlined" multiline rows={4}
-                                                    {...formik.getFieldProps('description')}
-                                                    error={(formik.touched.description || formik.submitCount > 0) && !!formik.errors.description}
-                                                    helperText={(formik.touched.description || formik.submitCount > 0) && formik.errors.description}
-                                                    sx={inputStyle}
-                                                />
-                                            </Grid>
-                                        </Grid>
-
-                                        {/* MODERN SEGMENTED SELECTOR */}
-                                        <Box sx={{ mt: 4, mb: 4 }}>
+                                        {/* 1. Type d'enchère */}
+                                        <Box sx={{ mt: 0, mb: 4 }}>
                                             <Typography sx={{ ...fieldLabelStyle, mb: 1.5 }}>Type d'enchère</Typography>
                                             <Box sx={{
                                                 display: 'flex',
@@ -427,6 +386,7 @@ export default function CreateAuctionPage() {
                                         </Box>
 
                                         <Grid container spacing={2.5}>
+                                            {/* 2. Délai */}
                                             <Grid size={{ xs: 12 }}>
                                                 <Typography sx={fieldLabelStyle}>Délai</Typography>
                                                 <TextField 
@@ -451,7 +411,33 @@ export default function CreateAuctionPage() {
                                                 </TextField>
                                             </Grid>
 
-                                            <Grid size={{ xs: 12, sm: 6 }}>
+                                            {/* 3. Nom produit */}
+                                            <Grid size={{ xs: 12 }}>
+                                                <Typography sx={fieldLabelStyle}>Nom produit</Typography>
+                                                <TextField
+                                                    fullWidth placeholder="Nom" variant="outlined"
+                                                    {...formik.getFieldProps('title')}
+                                                    error={(formik.touched.title || formik.submitCount > 0) && !!formik.errors.title}
+                                                    helperText={(formik.touched.title || formik.submitCount > 0) && formik.errors.title}
+                                                    sx={inputStyle}
+                                                />
+                                            </Grid>
+
+                                            {/* 4. Description */}
+                                            <Grid size={{ xs: 12 }}>
+                                                <Typography sx={fieldLabelStyle}>Description</Typography>
+                                                <TextField
+                                                    fullWidth placeholder="Description détaillée du produit ou service" 
+                                                    variant="outlined" multiline rows={4}
+                                                    {...formik.getFieldProps('description')}
+                                                    error={(formik.touched.description || formik.submitCount > 0) && !!formik.errors.description}
+                                                    helperText={(formik.touched.description || formik.submitCount > 0) && formik.errors.description}
+                                                    sx={inputStyle}
+                                                />
+                                            </Grid>
+
+                                            {/* 5. Catégorie */}
+                                            <Grid size={{ xs: 12 }}>
                                                 <Typography sx={fieldLabelStyle}>Categorie</Typography>
                                                 <TextField
                                                     select fullWidth variant="outlined"
@@ -467,6 +453,7 @@ export default function CreateAuctionPage() {
                                                 </TextField>
                                             </Grid>
 
+                                            {/* 6. Prix de départ */}
                                             <Grid size={{ xs: 12, sm: 6 }}>
                                                 <Typography sx={fieldLabelStyle}>Prix de départ</Typography>
                                                 <TextField
@@ -479,7 +466,8 @@ export default function CreateAuctionPage() {
                                                 />
                                             </Grid>
 
-                                            <Grid size={{ xs: 12 }}>
+                                            {/* 6. Prix de réserve */}
+                                            <Grid size={{ xs: 12, sm: 6 }}>
                                                 <Typography sx={fieldLabelStyle}>Prix de réserve (DA)</Typography>
                                                 <TextField 
                                                     fullWidth type="number" 
@@ -490,11 +478,14 @@ export default function CreateAuctionPage() {
                                                     helperText={(formik.touched.reservePrice || formik.submitCount > 0) && formik.errors.reservePrice}
                                                     sx={inputStyle} 
                                                 />
-                                                <Typography variant="caption" sx={{ color: '#64748b', mt: 0.5, display: 'block', fontStyle: 'italic' }}>
+                                            </Grid>
+                                            <Grid size={{ xs: 12 }} sx={{ mt: -1.5 }}>
+                                                <Typography variant="caption" sx={{ color: '#64748b', mt: 0, display: 'block', fontStyle: 'italic' }}>
                                                     Ce prix sera uniquement visible par le propriétaire de l'annonce
                                                 </Typography>
                                             </Grid>
 
+                                            {/* 7. Quantité */}
                                             <Grid size={{ xs: 12 }}>
                                                 <Typography sx={fieldLabelStyle}>Quantité</Typography>
                                                 <TextField

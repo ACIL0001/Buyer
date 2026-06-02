@@ -58,9 +58,16 @@ function ProfilePage() {
     const [isReady, setIsReady] = useState(false);
     const isLogged = !!auth.user;
 
-    // Wait for hydration
+    // Wait for hydration and check tab query param
     useEffect(() => {
         setIsReady(true);
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get("tab");
+            if (tab === "documents" || tab === "securite" || tab === "compte") {
+                setActiveTab(tab);
+            }
+        }
     }, []);
     
     // Identity Query

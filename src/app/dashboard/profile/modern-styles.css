@@ -3919,7 +3919,7 @@ screen and (-webkit-device-pixel-ratio: 3) {
 
 .figma-doc-card-v2 {
   box-sizing: border-box;
-  width: 100%;
+  width: calc(33.333% - 14px);
   max-width: 340px;
   height: 270px;
   background: #FFFFFF;

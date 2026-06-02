@@ -7,6 +7,7 @@ import { TermsAPI } from '../../../app/api/terms';
 import { CategoryAPI } from '../../../app/api/category';
 import { styled } from '@mui/material/styles';
 import { WILAYAS } from '../../../constants/wilayas';
+import { useTranslation } from 'react-i18next';
 const POSTES = [
   'Directeur Général',
   'Gérant',
@@ -68,7 +69,6 @@ const getFullUrl = (url: string) => {
   return `${cleanBase}${cleanPath}`;
 };
 
-/* ─── Terms Modal ─── */
 function TermsModal({
   open,
   onClose,
@@ -82,9 +82,14 @@ function TermsModal({
   termsAttachment?: { url: string; mimetype: string };
   isLoading: boolean;
 }) {
+  const { i18n } = useTranslation();
   const [docxContent, setDocxContent] = useState<string>('');
   const [isConverting, setIsConverting] = useState(false);
   const [conversionError, setConversionError] = useState(false);
+
+  const isArabic = i18n.language === 'ar';
+  const hasArabic = termsContent && /[\u0600-\u06FF]/.test(termsContent);
+  const isRtl = isArabic || hasArabic;
 
   useEffect(() => {
     if (
@@ -131,6 +136,7 @@ function TermsModal({
       maxWidth="md"
       fullWidth
       scroll="paper"
+      dir={isArabic ? 'rtl' : 'ltr'}
       PaperProps={{ sx: { borderRadius: 3, height: '80vh', maxHeight: '90vh' } }}
     >
       <DialogTitle
@@ -143,10 +149,18 @@ function TermsModal({
           color: '#1e293b',
         }}
       >
-        <Typography variant="h6" component="span" fontWeight="bold">
-          Conditions Générales d'Utilisation
+        <Typography 
+          variant="h6" 
+          component="span" 
+          fontWeight="bold" 
+          sx={{ 
+            fontFamily: isArabic ? '"Cairo", "Tajawal", "Inter", sans-serif' : 'inherit',
+            fontSize: isArabic ? '1.15rem' : '1.25rem'
+          }}
+        >
+          {isArabic ? 'الشروط والأحكام العامة للاستخدام' : "Conditions Générales d'Utilisation"}
         </Typography>
-        <IconButton onClick={onClose} size="small">
+        <IconButton onClick={onClose} size="small" sx={{ ml: isArabic ? 'auto' : 0, mr: isArabic ? -1 : 0 }}>
           <Iconify icon="eva:close-fill" />
         </IconButton>
       </DialogTitle>
@@ -177,14 +191,37 @@ function TermsModal({
           >
             {showTextContent ? (
               <Box sx={{ p: 4, overflowY: 'auto', flexGrow: 1, bgcolor: 'white' }}>
-                <Typography
-                  component="div"
-                  variant="body1"
-                  sx={{ whiteSpace: 'pre-wrap', color: 'text.primary' }}
-                >
-                  {termsContent ||
-                    "Le contenu des termes et conditions n'est pas disponible pour le moment."}
-                </Typography>
+                {termsContent ? (
+                  termsContent.split('\n').map((paragraph, index) => {
+                    const trimmed = paragraph.trim();
+                    if (!trimmed) return <Box key={index} sx={{ height: '0.8em' }} />;
+                    
+                    const isParaArabic = /[\u0600-\u06FF]/.test(trimmed);
+                    return (
+                      <Typography
+                        key={index}
+                        component="p"
+                        variant="body1"
+                        sx={{ 
+                          whiteSpace: 'pre-wrap', 
+                          color: 'text.primary',
+                          textAlign: isParaArabic ? 'right' : 'justify',
+                          fontFamily: isParaArabic ? '"Cairo", "Tajawal", "Inter", sans-serif' : 'inherit',
+                          lineHeight: isParaArabic ? 1.85 : 1.6,
+                          fontSize: isParaArabic ? '15px' : '14px',
+                          direction: isParaArabic ? 'rtl' : 'ltr',
+                          mb: '12px'
+                        }}
+                      >
+                        {paragraph}
+                      </Typography>
+                    );
+                  })
+                ) : (
+                  <Typography component="div" sx={{ p: 4, textAlign: 'center', color: 'text.secondary', fontFamily: isArabic ? '"Cairo", "Tajawal", sans-serif' : 'inherit' }}>
+                    {isArabic ? 'محتوى الشروط والأحكام غير متوفر حالياً.' : "Le contenu des termes et conditions n'est pas disponible pour le moment."}
+                  </Typography>
+                )}
               </Box>
             ) : hasAttachment ? (
               <Box
@@ -205,8 +242,14 @@ function TermsModal({
                     title="Terms PDF"
                   />
                 ) : isDocx && !conversionError ? (
-                  <Box sx={{ p: 4, overflowY: 'auto', flexGrow: 1 }}>
-                    <DocumentPage dangerouslySetInnerHTML={{ __html: docxContent }} />
+                  <Box sx={{ p: 4, overflowY: 'auto', flexGrow: 1, direction: isRtl ? 'rtl' : 'ltr', textAlign: isRtl ? 'right' : 'justify' }}>
+                    <DocumentPage 
+                      dangerouslySetInnerHTML={{ __html: docxContent }} 
+                      style={{ 
+                        fontFamily: isRtl ? '"Cairo", "Tajawal", "Times New Roman", serif' : undefined,
+                        lineHeight: isRtl ? 1.85 : undefined 
+                      }} 
+                    />
                   </Box>
                 ) : (
                   <Box
@@ -218,12 +261,11 @@ function TermsModal({
                     p={3}
                     textAlign="center"
                   >
-                    <Typography variant="h6" gutterBottom>
-                      Document complet disponible
+                    <Typography variant="h6" gutterBottom sx={{ fontFamily: isRtl ? '"Cairo", "Tajawal", sans-serif' : 'inherit' }}>
+                      {isRtl ? 'المستند الكامل متوفر' : 'Document complet disponible'}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" paragraph>
-                      Veuillez télécharger le fichier pour consulter les termes et conditions
-                      complets.
+                    <Typography variant="body2" color="text.secondary" paragraph sx={{ fontFamily: isRtl ? '"Cairo", "Tajawal", sans-serif' : 'inherit' }}>
+                      {isRtl ? 'يرجى تحميل الملف للاطلاع على الشروط والأحكام الكاملة.' : 'Veuillez télécharger le fichier pour consulter les termes et conditions complets.'}
                     </Typography>
                     <Button
                       variant="contained"
@@ -232,8 +274,9 @@ function TermsModal({
                       href={getFullUrl(termsAttachment!.url)}
                       target="_blank"
                       download
+                      sx={{ fontFamily: isRtl ? '"Cairo", "Tajawal", sans-serif' : 'inherit' }}
                     >
-                      Télécharger le document (
+                      {isRtl ? 'تحميل المستند' : 'Télécharger le document'} (
                       {termsAttachment!.mimetype.split('/').pop()?.toUpperCase()})
                     </Button>
                   </Box>
@@ -241,8 +284,8 @@ function TermsModal({
               </Box>
             ) : (
               <Box sx={{ p: 4, overflowY: 'auto', flexGrow: 1, bgcolor: 'white' }}>
-                <Typography component="div" sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
-                  Le contenu des termes et conditions n'est pas disponible pour le moment.
+                <Typography component="div" sx={{ p: 4, textAlign: 'center', color: 'text.secondary', fontFamily: isRtl ? '"Cairo", "Tajawal", sans-serif' : 'inherit' }}>
+                  {isRtl ? 'محتوى الشروط والأحكام غير متوفر حالياً.' : "Le contenu des termes et conditions n'est pas disponible pour le moment."}
                 </Typography>
               </Box>
             )}
@@ -250,12 +293,12 @@ function TermsModal({
         )}
       </DialogContent>
 
-      <DialogActions sx={{ borderTop: '1px solid #e0e0e0', p: 2, bgcolor: '#f8fafc' }}>
-        <Button onClick={onClose} variant="outlined" color="inherit" sx={{ mr: 1 }}>
-          Fermer
+      <DialogActions sx={{ borderTop: '1px solid #e0e0e0', p: 2, bgcolor: '#f8fafc', gap: 1.5 }}>
+        <Button onClick={onClose} variant="outlined" color="inherit">
+          {isRtl ? 'إغلاق' : 'Fermer'}
         </Button>
         <Button onClick={onClose} variant="contained" color="primary">
-          J'accepte
+          {isRtl ? 'أوافق' : "J'accepte"}
         </Button>
       </DialogActions>
     </Dialog>

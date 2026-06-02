@@ -272,7 +272,7 @@ export const Header = () => {
     { name: 'Startup', path: '/startup' },
     { name: 'International', path: '/international' },
     { name: 'Nos plans', path: '/plans' },
-    { name: 'A propos', path: '/about' },
+    { name: 'À propos', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
 
@@ -1031,7 +1031,7 @@ export const Header = () => {
                 { name: 'Startup', path: '/startup', left: '691px' },
                 { name: 'International', path: '/international', left: '763px' },
                 { name: 'Nos plans', path: '/plans', left: '873px' },
-                { name: 'A propos', path: '/about', left: '963px' },
+                { name: 'À propos', path: '/about', left: '963px' },
               ].map((item, index) => (
                 <Link 
                   key={index} href={item.path} 

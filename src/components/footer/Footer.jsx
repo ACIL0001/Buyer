@@ -61,10 +61,9 @@ const Footer = () => {
     { href: '/plans', label: 'Tarifs' },
   ];
   const entrepriseLinks = [
-    { href: '/support', label: 'Support' },
+    { href: '/about', label: 'Qui sommes-nous ?' },
     { href: '/contact', label: 'Nous contacter' },
     { href: '/recrutement', label: 'Recrutement' },
-    { href: '/about', label: 'Notre équipe' },
   ];
   const supportLinks = [
     { href: '/how-to-bid', label: 'Comment ça marche' },
@@ -318,7 +317,11 @@ const Footer = () => {
             />
           </Link>
           <p>
-            Lorem ipsum dolor sit amet consectetur. Ultrices velit eget mattis eu enim volutpat.
+            MazadClick votre plateforme de<br />
+            référence pour les enchères en<br />
+            ligne et les marchés publics.<br />
+            Trouvez, misez et développez<br />
+            votre activité en toute sécurité.
           </p>
           <div className="footer-social">
             <Link href="https://www.instagram.com/mazadclick_/" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><i className="bi bi-instagram"></i></Link>

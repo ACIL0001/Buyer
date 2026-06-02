@@ -76,7 +76,7 @@ export default function ContactPage() {
                                     {/* Line 1: Nom & Email */}
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))', gap: 'clamp(16px, 3vw, 40px)', marginBottom: 'clamp(20px, 4vw, 45px)' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                            <label style={{ color: primaryColor, fontWeight: '700', fontSize: '15px' }}>Nom</label>
+                                            <label style={{ color: primaryColor, fontWeight: '700', fontSize: '15px' }}>Nom & Prénom</label>
                                             <input type="text" placeholder="Anis M" style={{ width: '100%', padding: '20px 25px', borderRadius: '30px', border: 'none', background: 'white', outline: 'none', color: '#444', fontSize: '15px' }} />
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -88,7 +88,7 @@ export default function ContactPage() {
                                     {/* Line 2: Numéro & Entreprise */}
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))', gap: 'clamp(16px, 3vw, 40px)', marginBottom: 'clamp(20px, 4vw, 45px)' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                            <label style={{ color: primaryColor, fontWeight: '700', fontSize: '15px' }}>Numéro</label>
+                                            <label style={{ color: primaryColor, fontWeight: '700', fontSize: '15px' }}>Numéro de téléphone</label>
                                             <input type="text" placeholder="xxxx-xxx-xxx" style={{ width: '100%', padding: '20px 25px', borderRadius: '30px', border: 'none', background: 'white', outline: 'none', color: '#444', fontSize: '15px' }} />
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -122,7 +122,7 @@ export default function ContactPage() {
                                     {/* Submit */}
                                     <div>
                                         <button type="button" style={{ background: primaryColor, color: 'white', padding: '18px 55px', borderRadius: '50px', fontWeight: '700', fontSize: '16px', border: 'none', cursor: 'pointer', transition: 'all 0.3s' }} className="hover:scale-105 hover:shadow-2xl">
-                                            Soumettre mon message
+                                            Envoyer
                                         </button>
                                     </div>
                                 </form>
@@ -159,7 +159,7 @@ export default function ContactPage() {
                                             NOTRE ADRESSE
                                         </p>
                                         <div style={{ color: primaryColor, fontSize: 'clamp(1.25rem, 2.5vw, 1.875rem)', fontWeight: '700', lineHeight: '1.2' }}>
-                                            58 rue des orangers<br/>Alger .
+                                            Cité 2058 Logts LPP, Imm. A7,<br/>Loc. n°4, RDC, Mahelma,<br/>Algérie.
                                         </div>
                                     </div>
 
@@ -169,7 +169,7 @@ export default function ContactPage() {
                                             APPELEZ-NOUS
                                         </p>
                                         <div style={{ color: primaryColor, fontSize: 'clamp(1.25rem, 2.5vw, 1.875rem)', fontWeight: '700' }}>
-                                            034 -xx-xx-xx
+                                            Tél. : +213 561 07 49 77
                                         </div>
                                     </div>
 

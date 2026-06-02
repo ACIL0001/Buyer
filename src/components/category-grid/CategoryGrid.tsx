@@ -175,7 +175,7 @@ const CategoryGrid = () => {
   });
 
   const categories = data?.data || [];
-  const displayTitle = "Découvrez toutes les opportunités de marché essentielles pour votre activité";
+  const displayTitle = "Découvrez toutes les opportunités de marché essentielles à votre activité";
 
   if (isLoading) {
     return (

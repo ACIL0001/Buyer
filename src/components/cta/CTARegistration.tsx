@@ -100,7 +100,7 @@ const CTARegistration = () => {
 
           <div className="cta-buttons" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '10px' }}>
             <button
-              onClick={() => window.location.href = 'http://localhost:3001/auth/register/'}
+              onClick={() => router.push('/auth/register')}
               style={{
                 minWidth: 0,
                 minHeight: 'clamp(50px, 8vw, 71px)',

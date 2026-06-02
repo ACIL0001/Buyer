@@ -240,27 +240,8 @@ export default function CreateTenderPage() {
                                                          : "Appel d'offre basé sur la qualité de l'expertise."}
                                              </Typography>
 
-                                             <Grid container spacing={3} sx={{ mb: 4 }}>
-                                                <Grid size={{ xs: 12 }}>
-                                                    <Typography sx={fieldLabelStyle}>Statut de produit</Typography>
-                                                    <TextField select fullWidth {...formik.getFieldProps('tenderType')} sx={inputStyle} SelectProps={{ displayEmpty: true }} error={(formik.touched.tenderType || formik.submitCount > 0) && !!formik.errors.tenderType} helperText={(formik.touched.tenderType || formik.submitCount > 0) && formik.errors.tenderType}>
-                                                        <MenuItem value="" disabled>select statut product</MenuItem>
-                                                        <MenuItem value="PRODUCT">Produit</MenuItem>
-                                                        <MenuItem value="SERVICE">Service</MenuItem>
-                                                    </TextField>
-                                                </Grid>
-                                                <Grid size={{ xs: 12 }}>
-                                                    <Typography sx={fieldLabelStyle}>Titre</Typography>
-                                                    <TextField fullWidth placeholder="Titre" {...formik.getFieldProps('title')} sx={inputStyle} error={(formik.touched.title || formik.submitCount > 0) && !!formik.errors.title} helperText={(formik.touched.title || formik.submitCount > 0) && formik.errors.title} />
-                                                </Grid>
-                                                <Grid size={{ xs: 12 }}>
-                                                    <Typography sx={fieldLabelStyle}>Description</Typography>
-                                                    <TextField fullWidth multiline rows={8} placeholder="Description offre" {...formik.getFieldProps('description')} sx={inputStyle} error={(formik.touched.description || formik.submitCount > 0) && !!formik.errors.description} helperText={(formik.touched.description || formik.submitCount > 0) && formik.errors.description} />
-                                                </Grid>
-                                            </Grid>
-
-                                             {/* MODERN INTEGRATED SELECTORS */}
-                                             <Box sx={{ display: 'flex', gap: 4, mb: 5, flexWrap: 'wrap' }}>
+                                             {/* 1. MODERN INTEGRATED SELECTORS */}
+                                             <Box sx={{ display: 'flex', gap: 4, mb: 4, flexWrap: 'wrap' }}>
                                                  <Box>
                                                      <Typography sx={{ color: '#002795', fontWeight: 700, fontSize: '0.9rem', mb: 1.5 }}>Méthode d'offre</Typography>
                                                      <Box sx={{ display: 'flex', backgroundColor: '#F8FAFC', p: 0.75, borderRadius: '16px', border: '1px solid #E2E8F0', width: 'fit-content' }}>
@@ -313,6 +294,34 @@ export default function CreateTenderPage() {
                                              </Box>
 
                                              <Grid container spacing={3}>
+                                                 {/* 2. Délai */}
+                                                 <Grid size={{ xs: 12 }}>
+                                                     <Typography sx={fieldLabelStyle}>Délai</Typography>
+                                                     <TextField select fullWidth {...formik.getFieldProps('duration')} sx={inputStyle} SelectProps={{ displayEmpty: true }} error={(formik.touched.duration || formik.submitCount > 0) && !!formik.errors.duration} helperText={(formik.touched.duration || formik.submitCount > 0) && formik.errors.duration}>
+                                                         <MenuItem value="" disabled>Choisir un délai</MenuItem>
+                                                         {formik.values.auctionType === 'EXPRESS' ? (
+                                                             [1, 2, 4, 12, 24].map(v => (
+                                                                 <MenuItem key={v} value={v}>{v} {v === 1 ? 'heure' : 'heures'}</MenuItem>
+                                                             ))
+                                                         ) : (
+                                                             [2, 7, 15, 30, 60].map(v => <MenuItem key={v} value={v}>{v} jours</MenuItem>)
+                                                         )}
+                                                     </TextField>
+                                                 </Grid>
+
+                                                 {/* 3. Titre */}
+                                                 <Grid size={{ xs: 12 }}>
+                                                     <Typography sx={fieldLabelStyle}>Titre</Typography>
+                                                     <TextField fullWidth placeholder="Titre" {...formik.getFieldProps('title')} sx={inputStyle} error={(formik.touched.title || formik.submitCount > 0) && !!formik.errors.title} helperText={(formik.touched.title || formik.submitCount > 0) && formik.errors.title} />
+                                                 </Grid>
+
+                                                 {/* 4. Description */}
+                                                 <Grid size={{ xs: 12 }}>
+                                                     <Typography sx={fieldLabelStyle}>Description</Typography>
+                                                     <TextField fullWidth multiline rows={8} placeholder="Description offre" {...formik.getFieldProps('description')} sx={inputStyle} error={(formik.touched.description || formik.submitCount > 0) && !!formik.errors.description} helperText={(formik.touched.description || formik.submitCount > 0) && formik.errors.description} />
+                                                 </Grid>
+
+                                                 {/* 5. Catégorie */}
                                                  <Grid size={{ xs: 12 }}>
                                                      <Typography sx={fieldLabelStyle}>Catégorie</Typography>
                                                      <TextField select fullWidth {...formik.getFieldProps('category')} sx={inputStyle} SelectProps={{ displayEmpty: true }} error={(formik.touched.category || formik.submitCount > 0) && !!formik.errors.category} helperText={(formik.touched.category || formik.submitCount > 0) && formik.errors.category}>
@@ -320,44 +329,35 @@ export default function CreateTenderPage() {
                                                          {categories.map(c => <MenuItem key={c._id} value={c._id}>{c.name}</MenuItem>)}
                                                      </TextField>
                                                  </Grid>
+
+                                                 {/* 6. Budget (DA) */}
+                                                 {formik.values.evaluationType === 'MOINS_DISANT' && (
+                                                     <Grid size={{ xs: 12 }}>
+                                                         <Typography sx={fieldLabelStyle}>Budget (DA)</Typography>
+                                                         <TextField 
+                                                             fullWidth type="number" 
+                                                             placeholder="Entrer le budget" 
+                                                             {...formik.getFieldProps('price')} 
+                                                             error={(formik.touched.price || formik.submitCount > 0) && !!formik.errors.price}
+                                                             helperText={(formik.touched.price || formik.submitCount > 0) && formik.errors.price}
+                                                             sx={inputStyle} 
+                                                         />
+                                                     </Grid>
+                                                 )}
+
+                                                 {/* 7. Quantité */}
+                                                 <Grid size={{ xs: 12 }}>
+                                                     <Typography sx={fieldLabelStyle}>Quantité</Typography>
+                                                     <TextField fullWidth placeholder="Ex: 100 unités / 5 lots" {...formik.getFieldProps('quantity')} sx={inputStyle} error={(formik.touched.quantity || formik.submitCount > 0) && !!formik.errors.quantity} helperText={(formik.touched.quantity || formik.submitCount > 0) && formik.errors.quantity} />
+                                                 </Grid>
                                              </Grid>
                                          </Box>
 
                                         <Box sx={cardStyle}>
                                             <Typography variant="h5" sx={{ color: '#002795', fontWeight: 700, fontSize: '22px', mb: 3 }}>
-                                                Configuration & Localisation
+                                                Information Localisation
                                             </Typography>
                                             <Grid container spacing={3}>
-                                                <Grid size={{ xs: 12, sm: 6 }}>
-                                                    <Typography sx={fieldLabelStyle}>Délai</Typography>
-                                                    <TextField select fullWidth {...formik.getFieldProps('duration')} sx={inputStyle} SelectProps={{ displayEmpty: true }} error={(formik.touched.duration || formik.submitCount > 0) && !!formik.errors.duration} helperText={(formik.touched.duration || formik.submitCount > 0) && formik.errors.duration}>
-                                                        <MenuItem value="" disabled>Choisir un délai</MenuItem>
-                                                        {formik.values.auctionType === 'EXPRESS' ? (
-                                                            [1, 2, 4, 12, 24].map(v => (
-                                                                <MenuItem key={v} value={v}>{v} {v === 1 ? 'heure' : 'heures'}</MenuItem>
-                                                            ))
-                                                        ) : (
-                                                            [2, 7, 15, 30, 60].map(v => <MenuItem key={v} value={v}>{v} jours</MenuItem>)
-                                                        )}
-                                                    </TextField>
-                                                </Grid>
-                                                <Grid size={{ xs: 12, sm: 6 }}>
-                                                    <Typography sx={fieldLabelStyle}>Quantité</Typography>
-                                                    <TextField fullWidth placeholder="Ex: 100 unités / 5 lots" {...formik.getFieldProps('quantity')} sx={inputStyle} error={(formik.touched.quantity || formik.submitCount > 0) && !!formik.errors.quantity} helperText={(formik.touched.quantity || formik.submitCount > 0) && formik.errors.quantity} />
-                                                </Grid>
-                                                {formik.values.evaluationType === 'MOINS_DISANT' && (
-                                                    <Grid size={{ xs: 12, sm: 6 }}>
-                                                        <Typography sx={fieldLabelStyle}>Budget (DA)</Typography>
-                                                        <TextField 
-                                                            fullWidth type="number" 
-                                                            placeholder="Entrer le budget" 
-                                                            {...formik.getFieldProps('price')} 
-                                                            error={(formik.touched.price || formik.submitCount > 0) && !!formik.errors.price}
-                                                            helperText={(formik.touched.price || formik.submitCount > 0) && formik.errors.price}
-                                                            sx={inputStyle} 
-                                                        />
-                                                    </Grid>
-                                                )}
                                                 <Grid size={{ xs: 12, sm: 6 }}>
                                                     <Typography sx={fieldLabelStyle}>Wilaya</Typography>
                                                     <TextField select fullWidth {...formik.getFieldProps('wilaya')} sx={inputStyle} SelectProps={{ displayEmpty: true }} error={(formik.touched.wilaya || formik.submitCount > 0) && !!formik.errors.wilaya} helperText={(formik.touched.wilaya || formik.submitCount > 0) && formik.errors.wilaya}>

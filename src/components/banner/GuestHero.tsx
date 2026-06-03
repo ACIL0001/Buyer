@@ -12,7 +12,7 @@ const GuestHero = () => {
       <style jsx>{`
         .guest-hero-root {
           width: 100%;
-          max-width: 1218px;
+          max-width: 1600px;
           min-height: 315px;
           position: relative;
           background: #f8f9fb;
@@ -106,10 +106,7 @@ const GuestHero = () => {
             margin: '0 0 20px 0',
             opacity: 1
           }}
-        >
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit<br/>
-          sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        </motion.p>
+        />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

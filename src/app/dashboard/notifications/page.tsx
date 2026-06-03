@@ -19,7 +19,7 @@ const MOCK_NOTIFICATIONS = [
   {
     _id: '1',
     title: "Nouvelle demande d'achat",
-    message: "Anis A souhaite acheter votre MacBook Air M2 13\" pour 11500 Da.",
+    message: "Anis A souhaite acheter votre MacBook Air M2 13\" pour 11 500 DA.",
     type: 'ORDER',
     read: false,
     createdAt: new Date(Date.now() - 5 * 60000).toISOString(),
@@ -28,7 +28,7 @@ const MOCK_NOTIFICATIONS = [
   {
     _id: '2',
     title: "Demande acceptée",
-    message: "Votre demande d’achat de Produit A 9500 Da a été validée.",
+    message: "Votre demande d’achat de Produit A pour 9 500 DA a été validée.",
     type: 'OFFER_ACCEPTED',
     read: true,
     createdAt: new Date(Date.now() - 30 * 60000).toISOString(),
@@ -97,9 +97,9 @@ export default function NotificationsPage() {
 
   const formatTime = (dateString: string) => {
     const diff = Math.floor((new Date().getTime() - new Date(dateString).getTime()) / 60000);
-    if (diff < 60) return `${diff} min ago`;
-    if (diff < 1440) return `${Math.floor(diff / 60)}h ago`;
-    return `${Math.floor(diff / 1440)}d ago`;
+    if (diff < 60) return `Il y a ${diff} min`;
+    if (diff < 1440) return `Il y a ${Math.floor(diff / 60)} h`;
+    return `Il y a ${Math.floor(diff / 1440)} j`;
   };
 
   return (
@@ -192,7 +192,7 @@ export default function NotificationsPage() {
               </div>
 
               {notif.thumb && (
-                <img src={notif.thumb} alt="Product" className="figma-notif-thumb" />
+                <img src={notif.thumb} alt="Produit" className="figma-notif-thumb" />
               )}
             </div>
           );

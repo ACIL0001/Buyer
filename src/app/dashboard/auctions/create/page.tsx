@@ -323,7 +323,7 @@ export default function CreateAuctionPage() {
                                                 alignItems: 'center'
                                             }}
                                         >
-                                            Informations enchère
+                                            Informations de l'enchère
                                         </Typography>
                                         <Typography variant="body2" sx={{ color: '#94a3b8', mb: 3 }}>
                                             Remplissez les détails ci-dessous pour publier votre enchère.
@@ -391,14 +391,14 @@ export default function CreateAuctionPage() {
                                                 <Typography sx={fieldLabelStyle}>Délai</Typography>
                                                 <TextField 
                                                     select fullWidth variant="outlined" 
-                                                    placeholder="choisir un delai"
+                                                    placeholder="Choisir un délai"
                                                     {...formik.getFieldProps('duration')} 
                                                     error={(formik.touched.duration || formik.submitCount > 0) && !!formik.errors.duration}
                                                     helperText={(formik.touched.duration || formik.submitCount > 0) && formik.errors.duration}
                                                     sx={inputStyle}
                                                     SelectProps={{ displayEmpty: true }}
                                                 >
-                                                    <MenuItem value="" disabled>choisir un delai</MenuItem>
+                                                    <MenuItem value="" disabled>Choisir un délai</MenuItem>
                                                     {formik.values.auctionType === AUCTION_TYPES.EXPRESS ? (
                                                         [1, 2, 4, 12, 24].map(v => (
                                                             <MenuItem key={v} value={v}>{v} {v === 1 ? 'heure' : 'heures'}</MenuItem>
@@ -413,7 +413,7 @@ export default function CreateAuctionPage() {
 
                                             {/* 3. Nom produit */}
                                             <Grid size={{ xs: 12 }}>
-                                                <Typography sx={fieldLabelStyle}>Nom produit</Typography>
+                                                <Typography sx={fieldLabelStyle}>Nom du produit</Typography>
                                                 <TextField
                                                     fullWidth placeholder="Nom" variant="outlined"
                                                     {...formik.getFieldProps('title')}
@@ -425,7 +425,7 @@ export default function CreateAuctionPage() {
 
                                             {/* 4. Description */}
                                             <Grid size={{ xs: 12 }}>
-                                                <Typography sx={fieldLabelStyle}>Description</Typography>
+                                                <Typography sx={fieldLabelStyle}>Description détaillée de l'enchère</Typography>
                                                 <TextField
                                                     fullWidth placeholder="Description détaillée du produit ou service" 
                                                     variant="outlined" multiline rows={4}
@@ -557,7 +557,7 @@ export default function CreateAuctionPage() {
                                                         <MdWorkOutline size={18} />
                                                     </Box>
                                                     <Box>
-                                                        <Typography variant="body2" fontWeight="700" sx={{ fontSize: '0.85rem' }}>Pros Uniquement</Typography>
+                                                        <Typography variant="body2" fontWeight="700" sx={{ fontSize: '0.85rem' }}>Professionnel uniquement</Typography>
                                                         <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>Visible par les comptes pro</Typography>
                                                     </Box>
                                                 </Box>
@@ -579,10 +579,10 @@ export default function CreateAuctionPage() {
                                         boxSizing: 'border-box'
                                     }}>
                                         <Typography variant="h5" sx={{ color: '#002795', fontWeight: 600, fontSize: 'clamp(1rem, 2vw, 1.375rem)', mb: 0, lineHeight: 1.2 }}>
-                                            Image offre/ service
+                                            Images de l'enchère
                                         </Typography>
                                         <Typography variant="body2" sx={{ color: '#94a3b8', mb: 0, lineHeight: 1.4 }}>
-                                            <Typography component="span" sx={{ color: '#002795', fontWeight: 700 }}>Note :</Typography> Format photos SVG, PNG, or JPG (Max size 4mb)
+                                            <Typography component="span" sx={{ color: '#002795', fontWeight: 700 }}>Note :</Typography> Formats acceptés : SVG, PNG ou JPG (Taille max. 4 Mo)
                                         </Typography>
 
                                         <Box sx={{

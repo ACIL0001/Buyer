@@ -159,12 +159,12 @@ export default function AuctionDetailPage() {
               {latestBid ? (
                 <div className="figma-ad-proposal-header">
                   <div className="figma-ad-proposal-amount-group">
-                    <span className="figma-ad-label">MONTANT PROPOSÉ</span>
+                    <span className="figma-ad-label">Montant proposé</span>
                     <span className="figma-ad-amount">{latestBid.price.toLocaleString()} Da</span>
                     <span className="figma-ad-proposal-date">Enchère reçue le {new Date(latestBid.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} à {new Date(latestBid.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                   <div className="figma-ad-bidder-profile">
-                    <span className="figma-ad-label">PROFIL DE L’ENCHÉRISSEUR</span>
+                    <span className="figma-ad-label">Profil de l’enchérisseur</span>
                     <div className="figma-ad-bidder-info">
                       <BidderAvatar user={latestBid.user} />
                       <div style={{ display: 'flex', flexDirection: 'column' }}>

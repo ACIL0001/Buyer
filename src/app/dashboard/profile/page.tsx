@@ -944,12 +944,12 @@ function ProfilePage() {
                         <div className="modern-document-note-card">
                             <i className="bi-info-circle-fill"></i>
                             <div className="modern-document-note-content">
-                                <h4>{t("profile.documents.verificationNoteTitle") || "Vérification"}</h4>
+                                <h4>{t("profile.documents.verificationNoteTitle") || "Vérification:"}</h4>
                                 <p>
-                                    {t("profile.documents.verificationRequirement") || "Fournir (RC/ Autres + NIF) ou (Carte Fellah uniquement)."}
+                                    {t("profile.documents.verificationRequirement") || "Fournir le RC (Registre du Commerce), le NIF ou d'autres documents réglementaires (ou la Carte Fellah uniquement)."}
                                 </p>
                                 <p>
-                                    {t("profile.documents.verificationSaveNote") || "Cliquez sur \"Soumettre\" pour envoyer à l'administrateur."}
+                                    {t("profile.documents.verificationSaveNote") || "Cliquez sur \"Envoyer\" pour soumettre les documents à l'administrateur."}
                                 </p>
                             </div>
                         </div>
@@ -1454,9 +1454,9 @@ function ProfilePage() {
                                                     </div>
                                                 </div>
                                                 <div className="figma-input-field">
-                                                    <label className="figma-input-label">Email</label>
+                                                    <label className="figma-input-label">E-mail</label>
                                                     <div className={`figma-form-field ${!isEditing ? 'readonly' : ''}`}>
-                                                        <input type="email" name="email" value={formData.email} onChange={handleInputChange} disabled={!isEditing} placeholder="Email" required />
+                                                        <input type="email" name="email" value={formData.email} onChange={handleInputChange} disabled={!isEditing} placeholder="E-mail" required />
                                                     </div>
                                                 </div>
                                             </div>
@@ -1504,7 +1504,7 @@ function ProfilePage() {
                                                 </div>
                                                 {!isEditing && (
                                                     <button type="button" onClick={() => setIsEditing(true)} className="figma-btn-edit-v2">
-                                                        <span>Editer</span>
+                                                        <span>Éditer</span>
                                                         <i className="bi bi-pencil-square"></i>
                                                     </button>
                                                 )}
@@ -1527,7 +1527,7 @@ function ProfilePage() {
                                                     </div>
                                                 </div>
                                                 <div className="figma-input-field">
-                                                    <label className="figma-input-label">Addresse / Secteur</label>
+                                                    <label className="figma-input-label">Adresse / Secteur</label>
                                                     <div className={`figma-form-field ${!isEditing ? 'readonly' : ''}`}>
                                                         <input type="text" name="activitySector" value={formData.activitySector} onChange={handleInputChange} disabled={!isEditing} placeholder="Adresse" />
                                                     </div>
@@ -1574,7 +1574,7 @@ function ProfilePage() {
                                                     </div>
                                                 </div>
                                                 <div className="figma-input-field">
-                                                    <label className="figma-input-label">Confirmez</label>
+                                                    <label className="figma-input-label">Confirmez le nouveau mot de passe.</label>
                                                     <div className="figma-form-field">
                                                         <input type={showPassword ? "text" : "password"} placeholder="••••••••••••" value={passwordData.confirmPassword} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} required />
                                                         <img 
@@ -1590,21 +1590,21 @@ function ProfilePage() {
                                             <ul className="figma-checklist">
                                                 <li className="figma-checklist-item">
                                                     <div className="figma-checklist-icon"><i className="bi bi-check-circle"></i></div>
-                                                    <span className="figma-checklist-text">8 characters au minimum.</span>
+                                                    <span className="figma-checklist-text">8 caractères au minimum.</span>
                                                 </li>
                                                 <li className="figma-checklist-item">
                                                     <div className="figma-checklist-icon"><i className="bi bi-check-circle"></i></div>
-                                                    <span className="figma-checklist-text">Utilisez une combinaison de majuscule minuscule</span>
+                                                    <span className="figma-checklist-text">Au moins une majuscule et une minuscule.</span>
                                                 </li>
                                                 <li className="figma-checklist-item">
                                                     <div className="figma-checklist-icon"><i className="bi bi-check-circle"></i></div>
-                                                    <span className="figma-checklist-text">Utilisez des caractères (e.g., !, @, #, $, %)</span>
+                                                    <span className="figma-checklist-text">Des caractères spéciaux (ex : !, @, #, $, %) .</span>
                                                 </li>
                                             </ul>
                                             
                                             <div className="figma-cta-group figma-cta-group-security">
                                                 <button type="submit" disabled={isSubmittingPassword} className="figma-btn-password-update">
-                                                    {isSubmittingPassword ? "..." : "Mettre à jour mot de passe"}
+                                                    {isSubmittingPassword ? "..." : "Mettre à jour mot de passe."}
                                                 </button>
                                                 <button type="button" onClick={() => setPasswordData({currentPassword: "", newPassword: "", confirmPassword: ""})} className="figma-btn-secondary">Annuler</button>
                                             </div>
@@ -1628,7 +1628,7 @@ function ProfilePage() {
                                                 <div className="figma-status-info">
                                                     <span className="figma-status-step">ÉTAPE 1</span>
                                                     <h4 className="figma-status-name">VÉRIFIÉ</h4>
-                                                    <p className="figma-status-desc">Passer à Vérifié pour débloquer les ventes de base</p>
+                                                    <p className="figma-status-desc">Passer au statut "Vérifié" pour débloquer les ventes de base.</p>
                                                 </div>
                                                 <i className="bi bi-patch-check figma-status-icon-v2"></i>
                                             </div>
@@ -1636,7 +1636,7 @@ function ProfilePage() {
                                                 <div className="figma-status-info">
                                                     <span className="figma-status-step">ÉTAPE 2</span>
                                                     <h4 className="figma-status-name">CERTIFIÉ</h4>
-                                                    <p className="figma-status-desc">Passer à Certifié</p>
+                                                    <p className="figma-status-desc">Passer au statut "Certifié"</p>
                                                 </div>
                                                 <i className="bi bi-lock figma-status-icon-v2"></i>
                                             </div>
@@ -1645,10 +1645,10 @@ function ProfilePage() {
                                         <div className="figma-alert-box-v3">
                                             <i className="bi bi-exclamation-circle figma-alert-icon-v3"></i>
                                             <div className="figma-alert-content-v2">
-                                                <h4 className="figma-alert-title-v3">Vérification</h4>
+                                                <h4 className="figma-alert-title-v3">Vérification:</h4>
                                                 <p className="figma-alert-desc-v3">
-                                                    Fournir (RC/ Autres + NIF) ou (Carte Fellah uniquement).<br />
-                                                    Cliquez sur "Soumettre" pour envoyer à l'administrateur.
+                                                    Fournir le RC (Registre du Commerce), le NIF ou d'autres documents réglementaires (ou la Carte Fellah uniquement).<br />
+                                                    Cliquez sur "Envoyer" pour soumettre les documents à l'administrateur.
                                                 </p>
                                             </div>
                                         </div>

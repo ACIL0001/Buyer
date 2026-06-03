@@ -82,7 +82,7 @@ export default function DirectSalesPage() {
             <div className="figma-ds-icon-circle figma-ds-icon-green">
               <BsCheckCircle size={18} />
             </div>
-            <span className="figma-ds-card-label">Totale vendu</span>
+            <span className="figma-ds-card-label">Total vendu</span>
             <span className="figma-ds-card-value">{soldCount}</span>
           </div>
 
@@ -90,7 +90,7 @@ export default function DirectSalesPage() {
             <div className="figma-ds-icon-circle figma-ds-icon-gray">
               <BsSend size={18} />
             </div>
-            <span className="figma-ds-card-label">Demandes d’achat</span>
+            <span className="figma-ds-card-label">Demandes d'achat</span>
             <span className="figma-ds-card-value">{requestsCount}</span>
             <a className="figma-ds-card-link">Voir tout</a>
           </div>
@@ -142,8 +142,8 @@ export default function DirectSalesPage() {
               <button className={`figma-ds-tab-btn ${statusFilter === 'SOLD' ? 'active' : ''}`} onClick={() => setStatusFilter('SOLD')}>
                 <span>Vendues ({soldCount})</span>
               </button>
-              <button className="figma-ds-tab-btn">
-                <span>Demandes d'achat</span>
+              <button className="figma-ds-tab-btn" style={{ whiteSpace: 'nowrap' }}>
+                <span>Demandes d'achat (0)</span>
               </button>
             </div>
           </div>
@@ -152,11 +152,11 @@ export default function DirectSalesPage() {
           <table className="figma-ds-table">
             <thead className="figma-ds-thead">
               <tr>
-                <th className="figma-ds-th">PRODUIT</th>
-                <th className="figma-ds-th">PRIX</th>
-                <th className="figma-ds-th">STATUT</th>
-                <th className="figma-ds-th">DATE DE PUBLICATION</th>
-                <th className="figma-ds-th" style={{ textAlign: 'right' }}>ACTIONS</th>
+                <th className="figma-ds-th">Produit</th>
+                <th className="figma-ds-th">Prix</th>
+                <th className="figma-ds-th">Statut</th>
+                <th className="figma-ds-th">Date de publication</th>
+                <th className="figma-ds-th" style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody className="figma-ds-tbody">
@@ -176,11 +176,11 @@ export default function DirectSalesPage() {
                     </div>
                   </td>
                   <td className="figma-ds-td">
-                    <span className="figma-ds-price">{sale.price?.toLocaleString()}</span>
+                    <span className="figma-ds-price">{sale.price?.toLocaleString('fr-FR')} DA</span>
                   </td>
                   <td className="figma-ds-td">
                     <span className={`figma-ds-status-badge ${sale.status === SALE_STATUS.ACTIVE ? 'figma-ds-status-online' : 'figma-ds-status-sold'}`}>
-                      {sale.status === SALE_STATUS.ACTIVE ? 'EN LIGNE' : 'VENDU'}
+                      {sale.status === SALE_STATUS.ACTIVE ? 'En ligne' : 'Vendu'}
                     </span>
                   </td>
                   <td className="figma-ds-td">

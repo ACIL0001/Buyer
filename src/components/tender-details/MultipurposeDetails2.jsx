@@ -456,7 +456,7 @@ const MultipurposeDetails2 = () => {
                   <div className="custom-detail-row" style={{ padding: tenderData?.evaluationType === 'MIEUX_DISANT' ? '7px 0px' : '11px 0px' }}>
                     <span className="custom-detail-label">Statut</span>
                     <span className="custom-detail-value" style={{ color: safeStatus === 'OPEN' ? '#10B981' : '#ef4444' }}>
-                      {safeStatus === 'OPEN' ? 'En ligne' : safeStatus}
+                      {safeStatus === 'OPEN' ? (Number(safeQuantity) > 1 ? 'disponibles' : 'disponible') : (safeStatus === 'CLOSED' || safeStatus === 'closed' ? 'Clôturée' : safeStatus)}
                     </span>
                   </div>
                   <div className="custom-detail-separator"></div>
@@ -559,7 +559,7 @@ const MultipurposeDetails2 = () => {
         </div>
 
         <div className="product-description-container mt-5">
-            <h2 className="description-title">Description du produit</h2>
+            <h2 className="description-title">Fiche descriptive</h2>
             <div className="description-body">
               <div style={{ whiteSpace: 'pre-wrap' }}>{safeDescription}</div>
               {safeRequirements.length > 0 && (
@@ -660,13 +660,13 @@ const MultipurposeDetails2 = () => {
             </div>
             <div className="seller-actions">
               <Link href={getSellerUrl(safeOwner?._id || safeOwner)} className="seller-btn btn-all-products">Boutique</Link>
-              <button className="seller-btn btn-contact" onClick={() => { setActiveTab('comments'); window.scrollBy({ top: 500, behavior: 'smooth' }); }}>Contacter</button>
+              <button className="seller-btn btn-contact" onClick={() => { setActiveTab('comments'); window.scrollBy({ top: 500, behavior: 'smooth' }); }}>Contacter le vendeur</button>
             </div>
           </div>
 
           <div className="similar-auctions-redesign mt-5">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 className="redesign-title">Appels d'offres similaires</h2>
+              <h2 className="redesign-title">Offres similaires</h2>
             </div>
             {similarTenders.length > 0 ? (
               <div style={{ position: 'relative', overflow: 'visible' }}>

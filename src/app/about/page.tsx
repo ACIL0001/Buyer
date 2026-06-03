@@ -194,8 +194,8 @@ const AboutPage = () => {
 
         {/* 4. Contact CTA */}
         <section style={{ padding: 'clamp(40px, 8vw, 80px) clamp(16px, 4vw, 20px)', textAlign: 'center' }}>
-          <div className="container" style={{ width: '100%', maxWidth: '700px', margin: '0 auto' }}>
-            <h2 style={{
+          <div className="container" style={{ width: '100%', maxWidth: '1000px', margin: '0 auto' }}>
+            <h2 className="contact-title" style={{
               color: '#002896',
               fontFamily: '"DM Sans", sans-serif',
               fontSize: 'clamp(1.5rem, 5vw, 3.5rem)',
@@ -294,6 +294,14 @@ const AboutPage = () => {
           .gradient-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 15px 30px rgba(0, 40, 150, 0.3);
+          }
+          .contact-title {
+            white-space: nowrap;
+          }
+          @media (max-width: 768px) {
+            .contact-title {
+              white-space: normal;
+            }
           }
         `}</style>
       </main>

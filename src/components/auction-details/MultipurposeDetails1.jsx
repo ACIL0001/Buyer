@@ -1300,7 +1300,7 @@ const MultipurposeDetails1 = () => {
                 <div className="custom-detail-row">
                   <span className="custom-detail-label">Statut</span>
                   <span className="custom-detail-value" style={{ color: auctionData?.status === 'ACTIVE' ? '#10b981' : '#ef4444' }}>
-                    {auctionData?.status === 'ACTIVE' ? 'Actif' : (auctionData?.status || 'Terminé')}
+                    {auctionData?.status === 'ACTIVE' ? 'En cours' : 'Clôturée'}
                   </span>
                 </div>
                 <div className="custom-detail-separator"></div>
@@ -1340,7 +1340,7 @@ const MultipurposeDetails1 = () => {
                   className="custom-submit-bid-btn" 
                   onClick={handleBidClick}
                 >
-                  Placer une Enchère
+                  Placer votre enchère
                 </button>
               </div>
             </div>
@@ -1349,7 +1349,7 @@ const MultipurposeDetails1 = () => {
 
           {/* Product Description Section (Updated per User Request) */}
           <div className="product-description-container">
-            <h2 className="description-title">Description du produit</h2>
+            <h2 className="description-title">Fiche descriptive</h2>
             <div className="description-body">
               {safeDescription}
             </div>
@@ -1498,7 +1498,7 @@ const MultipurposeDetails1 = () => {
               </div>
             </div>
             <div className="seller-actions">
-              <Link href={getSellerUrl(safeOwner._id || safeOwner)} className="seller-btn btn-all-products">Tout les produits</Link>
+              <Link href={getSellerUrl(safeOwner._id || safeOwner)} className="seller-btn btn-all-products">Tous les produits</Link>
               <button 
                 className="seller-btn btn-contact"
                 onClick={() => {
@@ -1506,7 +1506,7 @@ const MultipurposeDetails1 = () => {
                    window.scrollBy({ top: 500, behavior: 'smooth' });
                 }}
               >
-                Contacter / Question
+                Contacter le vendeur
               </button>
             </div>
           </div>

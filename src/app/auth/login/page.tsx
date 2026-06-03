@@ -97,7 +97,7 @@ export default function Login() {
               pointerEvents: 'none',
             }}
           />
-          <Typography
+          <Box
             sx={{
               position: 'absolute',
               maxWidth: 'min(508px, 75%)',
@@ -105,16 +105,36 @@ export default function Login() {
               top: '50%',
               transform: 'translateY(-50%)',
               zIndex: 2,
-              fontFamily: '"Poppins", sans-serif',
-              fontWeight: 400,
-              fontSize: 'clamp(1.5rem, 3.5vw, 2.5rem)',
-              lineHeight: '140%',
-              letterSpacing: '-0.02em',
-              color: '#FFFFFF',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px'
             }}
           >
-            Content de vous retrouver !
-          </Typography>
+            <Typography
+              sx={{
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 600,
+                fontSize: 'clamp(1.1rem, 2vw, 1.6rem)',
+                lineHeight: '130%',
+                letterSpacing: '-0.02em',
+                color: '#FFFFFF',
+              }}
+            >
+              Ne ratez plus rien ! Votre passerelle vers de nouvelles opportunités.
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: '"Poppins", sans-serif',
+                fontWeight: 400,
+                fontSize: 'clamp(1.5rem, 3.5vw, 2.5rem)',
+                lineHeight: '140%',
+                letterSpacing: '-0.02em',
+                color: '#FFFFFF',
+              }}
+            >
+              Content de vous retrouver !
+            </Typography>
+          </Box>
         </Box>
 
         {/* ── Right Section: Form Box ── */}
@@ -145,7 +165,7 @@ export default function Login() {
                    color: '#757575',
                  }}
               >
-                Se connecter
+                Connectez-vous !
               </Typography>
               <Typography
                  sx={{

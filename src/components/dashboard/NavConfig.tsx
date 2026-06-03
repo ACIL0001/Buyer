@@ -43,7 +43,7 @@ const useNavConfig = () => {
       icon: getIcon(MdOutlineHome),
     },
     {
-      title: 'Enchère',
+      title: 'Enchères',
       path: '/dashboard/auctions',
       icon: getIcon(MdOutlineTrendingUp),
       children: [
@@ -62,7 +62,7 @@ const useNavConfig = () => {
       ],
     },
     {
-      title: 'Soumission',
+      title: 'Soumissions',
       path: '/dashboard/tenders',
       icon: getIcon(MdOutlineLayers),
       children: [
@@ -81,16 +81,16 @@ const useNavConfig = () => {
       ],
     },
     {
-      title: 'Vente et Service',
+      title: 'Ventes et services',
       path: '/dashboard/direct-sales',
       icon: getIcon(MdOutlineStorefront),
       children: [
         {
-          title: 'Mes Ventes et Services',
+          title: 'Mes ventes et services',
           path: '/dashboard/direct-sales',
         },
         {
-          title: 'Créer Vente et Service',
+          title: 'Créer une vente / service',
           path: '/dashboard/direct-sales/create/',
         },
         {

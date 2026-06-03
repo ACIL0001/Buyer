@@ -156,7 +156,7 @@ const Home1LiveAuction = () => {
         }
         .live-section-header {
           width: 100%;
-          max-width: 1240px;
+          max-width: 1600px;
           margin: 0 auto;
           position: relative;
           padding: clamp(20px, 4vw, 60px) clamp(16px, 4vw, 20px) clamp(14px, 3vw, 40px);
@@ -225,7 +225,7 @@ const Home1LiveAuction = () => {
         </div>
       </div>
 
-      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1240px', margin: '0 auto', padding: '0 clamp(12px, 3vw, 20px)', overflow: 'visible' }}>
+      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1600px', margin: '0 auto', padding: '0 clamp(12px, 3vw, 20px)', overflow: 'visible' }}>
         {liveAuctions.length > 0 ? (
           <div className="auction-carousel-container" style={{ position: 'relative', overflow: 'visible' }}>
             <div style={{ position: 'relative' }}>

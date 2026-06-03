@@ -138,7 +138,7 @@ export default function OrdersPage() {
               onClick={() => router.push('/dashboard/direct-sales/create/')}
               style={{ backgroundColor: '#0050CB', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <BsPlusLg /> Créer une Vente Directe
+              <BsPlusLg /> Créer une vente directe
             </button>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', fontSize: '20px' }}>🔔</button>
@@ -236,12 +236,12 @@ export default function OrdersPage() {
           <table className="figma-auc-table">
             <thead className="figma-auc-thead">
               <tr>
-                <th className="figma-auc-th">PRODUIT</th>
-                <th className="figma-auc-th">{isPurchase ? 'VENDEUR' : 'ACHETEUR'}</th>
-                <th className="figma-auc-th">QTÉ</th>
-                <th className="figma-auc-th">TOTAL</th>
-                <th className="figma-auc-th">STATUS</th>
-                <th className="figma-auc-th" style={{ textAlign: 'right' }}>ACTIONS</th>
+                <th className="figma-auc-th">Produit</th>
+                <th className="figma-auc-th">Acheteur</th>
+                <th className="figma-auc-th">Quantité</th>
+                <th className="figma-auc-th">Total</th>
+                <th className="figma-auc-th">Statut</th>
+                <th className="figma-auc-th" style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -262,7 +262,7 @@ export default function OrdersPage() {
                       <td className="figma-auc-td">
                         <div className="figma-auc-product-info">
                           <span className="figma-auc-product-name">{order.directSale?.title || 'Produit inconnu'}</span>
-                          <span className="figma-auc-product-cat">ID: {order._id.slice(-6).toUpperCase()}</span>
+                          <span className="figma-auc-product-cat">Id : {order._id.slice(-6).toUpperCase()}</span>
                         </div>
                       </td>
                       <td className="figma-auc-td">
@@ -280,7 +280,7 @@ export default function OrdersPage() {
                          <span style={{ fontWeight: 600, color: '#475569' }}>x{order.quantity}</span>
                       </td>
                       <td className="figma-auc-td">
-                        <span className="figma-auc-price">{order.totalPrice?.toLocaleString(i18n.language)} DA</span>
+                        <span className="figma-auc-price">{order.totalPrice?.toLocaleString('fr-FR')} DA</span>
                       </td>
                       <td className="figma-auc-td">
                         <span className={`figma-auc-status-badge ${
@@ -289,10 +289,10 @@ export default function OrdersPage() {
                           order.status === 'COMPLETED' ? 'figma-auc-status-completed' : 
                           'figma-auc-status-pending'
                         }`}>
-                          {order.status === 'CONFIRMED' ? 'CONFIRMÉ' : 
-                           order.status === 'CANCELLED' ? 'ANNULÉ' : 
-                           order.status === 'COMPLETED' ? 'COMPLÉTÉ' : 
-                           'EN ATTENTE'}
+                          {order.status === 'CONFIRMED' ? 'Confirmé' : 
+                           order.status === 'CANCELLED' ? 'Annulé' : 
+                           order.status === 'COMPLETED' ? 'Complété' : 
+                           'En attente'}
                         </span>
                       </td>
                       <td className="figma-auc-td" style={{ textAlign: 'right' }}>
@@ -353,7 +353,7 @@ export default function OrdersPage() {
       <ConfirmDialog
         open={!!confirmTarget}
         title="Confirmer la commande"
-        message={`Confirmer la commande de "${confirmTarget?.directSale?.title || 'ce produit'}" pour ${formatUserName(confirmTarget?.buyer)} ? Total : ${confirmTarget?.totalPrice?.toLocaleString() || 0} DA`}
+        message={`Confirmer la commande de "${confirmTarget?.directSale?.title || 'ce produit'}" pour ${formatUserName(confirmTarget?.buyer)} ? Total : ${confirmTarget?.totalPrice?.toLocaleString('fr-FR') || 0} DA`}
         confirmLabel={confirming ? 'Confirmation...' : 'Confirmer'}
         cancelLabel="Annuler"
         onCancel={() => setConfirmTarget(null)}

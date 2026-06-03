@@ -54,7 +54,6 @@
   font-size: 12px;
   letter-spacing: 0.6px;
   color: #64748B;
-  text-transform: uppercase;
 }
 
 .figma-auc-card-value {
@@ -112,7 +111,6 @@
   font-weight: 600;
   font-size: 12px;
   letter-spacing: 0.6px;
-  text-transform: uppercase;
   color: #64748B;
 }
 

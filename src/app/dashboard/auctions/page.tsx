@@ -78,7 +78,7 @@ export default function AuctionsPage() {
               onClick={() => router.push('/dashboard/auctions/create/')}
               style={{ backgroundColor: '#0050CB', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <BsPlusLg /> Publier une Enchère
+              <BsPlusLg /> Publier une enchère
             </button>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', fontSize: '20px' }}>🔔</button>
@@ -124,7 +124,7 @@ export default function AuctionsPage() {
               <BsXCircle size={20} />
             </div>
             <div className="figma-auc-card-content">
-              <span className="figma-auc-card-label">Rejetés</span>
+              <span className="figma-auc-card-label">Rejetées</span>
               <span className="figma-auc-card-value">{rejectedCount}</span>
             </div>
           </div>
@@ -139,11 +139,11 @@ export default function AuctionsPage() {
           <table className="figma-auc-table">
             <thead className="figma-auc-thead">
               <tr>
-                <th className="figma-auc-th">PRODUIT</th>
-                <th className="figma-auc-th">PRIX ACTUEL</th>
-                <th className="figma-auc-th">STATUS</th>
-                <th className="figma-auc-th">DATE</th>
-                <th className="figma-auc-th" style={{ textAlign: 'right' }}>ACTIONS</th>
+                <th className="figma-auc-th">Produit</th>
+                <th className="figma-auc-th">Prix actuel</th>
+                <th className="figma-auc-th">Statut</th>
+                <th className="figma-auc-th">Date</th>
+                <th className="figma-auc-th" style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -172,7 +172,7 @@ export default function AuctionsPage() {
                     </td>
                     <td className="figma-auc-td">
                       <span className={`figma-auc-status-badge ${row.status === 'CLOSED' ? 'figma-auc-status-rejected' : row.status === 'ON_AUCTION' ? 'figma-auc-status-accepted' : 'figma-auc-status-pending'}`}>
-                        {row.status === 'CLOSED' ? 'REJETÉ' : row.status === 'ON_AUCTION' ? 'ACCEPTÉ' : 'EN ATTENTE'}
+                        {row.status === 'CLOSED' ? 'Rejetée' : row.status === 'ON_AUCTION' ? 'Acceptée' : 'En attente'}
                       </span>
                     </td>
                     <td className="figma-auc-td" style={{ color: '#64748B', fontSize: '13px', fontWeight: 500 }}>
@@ -195,12 +195,14 @@ export default function AuctionsPage() {
           </table>
 
           {/* Pagination */}
-          <div className="figma-auc-pagination">
-            <button className="figma-auc-pg-btn"><BsChevronLeft /></button>
-            <button className="figma-auc-pg-btn active">1</button>
-            <button className="figma-auc-pg-btn">2</button>
-            <button className="figma-auc-pg-btn"><BsChevronRight /></button>
-          </div>
+          {auctions.length > 0 && (
+            <div className="figma-auc-pagination">
+              <button className="figma-auc-pg-btn"><BsChevronLeft /></button>
+              <button className="figma-auc-pg-btn active">1</button>
+              <button className="figma-auc-pg-btn">2</button>
+              <button className="figma-auc-pg-btn"><BsChevronRight /></button>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -38,7 +38,7 @@ export default function ContactPage() {
             }}>
                 {/* Decorative background elements for glass effect */}
 
-                <div className="container mx-auto" style={{ width: '100%', maxWidth: '1440px', padding: '0 clamp(16px, 4vw, 40px)', position: 'relative', zIndex: 1 }}>
+                <div className="container mx-auto" style={{ marginTop: '40px', width: '100%', maxWidth: '1440px', padding: '0 clamp(16px, 4vw, 40px)', position: 'relative', zIndex: 1 }}>
 
                     {/* Page Header */}
                     <div style={{ marginBottom: '10px' }}>
@@ -80,7 +80,7 @@ export default function ContactPage() {
                                             <input type="text" placeholder="Anis M" style={{ width: '100%', padding: '20px 25px', borderRadius: '30px', border: 'none', background: 'white', outline: 'none', color: '#444', fontSize: '15px' }} />
                                         </div>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                            <label style={{ color: primaryColor, fontWeight: '700', fontSize: '15px' }}>Email</label>
+                                            <label style={{ color: primaryColor, fontWeight: '700', fontSize: '15px' }}>E-mail</label>
                                             <input type="email" placeholder="example@email.com" style={{ width: '100%', padding: '20px 25px', borderRadius: '30px', border: 'none', background: 'white', outline: 'none', color: '#444', fontSize: '15px' }} />
                                         </div>
                                     </div>

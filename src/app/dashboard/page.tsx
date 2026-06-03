@@ -87,7 +87,7 @@ export default function DashboardPage() {
                 ...auctions.map((a: any) => ({
                     _id: a._id,
                     rawDate: new Date(a.createdAt || new Date()),
-                    type: 'ENCHÈRE', color: '#C34B4E', bg: 'rgba(195, 75, 78, 0.3)',
+                    type: 'Enchère', color: '#C34B4E', bg: 'rgba(195, 75, 78, 0.3)',
                     title: a.title || 'Enchère',
                     user: a.creator?.firstName ? `${a.creator.firstName} ${a.creator.lastName?.charAt(0) || ''}.` : 'Inconnu',
                     userImage: a.creator?.profilePicture || '',
@@ -99,8 +99,8 @@ export default function DashboardPage() {
                 ...sales.map((s: any) => ({
                     _id: s._id,
                     rawDate: new Date(s.createdAt || new Date()),
-                    type: 'VENTE', color: '#70D979', bg: 'rgba(112, 217, 121, 0.3)',
-                    title: s.productName || s.title || 'Vente Directe',
+                    type: 'Vente', color: '#70D979', bg: 'rgba(112, 217, 121, 0.3)',
+                    title: s.productName || s.title || 'Ventes directes',
                     user: s.seller?.firstName ? `${s.seller.firstName} ${s.seller.lastName?.charAt(0) || ''}.` : 'Inconnu',
                     userImage: s.seller?.profilePicture || '',
                     amount: `${(s.price || 0).toLocaleString('fr-FR')} Da`,
@@ -111,7 +111,7 @@ export default function DashboardPage() {
                 ...offers.map((o: any) => ({
                     _id: o._id,
                     rawDate: new Date(o.createdAt || new Date()),
-                    type: 'OFFRE', color: '#EFCB6E', bg: 'rgba(239, 203, 110, 0.3)',
+                    type: 'Offre', color: '#EFCB6E', bg: 'rgba(239, 203, 110, 0.3)',
                     title: o.target?.title || 'Offre de service',
                     user: o.user?.firstName ? `${o.user.firstName} ${o.user.lastName?.charAt(0) || ''}.` : 'Moi',
                     userImage: o.user?.profilePicture || '',
@@ -151,11 +151,11 @@ export default function DashboardPage() {
     const MOCK_ACTIVITY = statsData?.recentActivity || [];
 
     const topCards = [
-        { label: 'ANNONCES\nACTIVES', value: formatNumber(statsData?.annoncesActives || 12), icon: MdInventory, color: '#0050CB', bg: 'rgba(0, 102, 255, 0.1)', className: 'annonces-actives-card' },
-        { label: 'ENCHÈRES\nREÇUES', value: formatNumber(statsData?.encheresRecues || 8), icon: MdGavel, color: '#C34B4E', bg: 'rgba(195, 75, 78, 0.3)', className: 'encheres-recues-card' },
-        { label: 'VENTES\nDIRECTES', value: formatNumber(statsData?.ventesDirectes || 3), icon: MdStore, color: '#70D979', bg: 'rgba(112, 217, 121, 0.3)', className: 'ventes-directes-card' },
-        { label: 'OFFRES &\nSERVICES', value: formatNumber(statsData?.offresServices || 5), icon: MdEmail, color: '#EFCB6E', bg: 'rgba(239, 203, 110, 0.3)', className: 'offres-services-card-mini' },
-        { label: 'MES\nACHATS', value: formatNumber(statsData?.mesAchats || 3), icon: MdShoppingCart, color: '#424656', bg: 'rgba(66, 70, 86, 0.1)', className: 'mes-achats-card' },
+        { label: 'Annonces\nactives', value: formatNumber(statsData?.annoncesActives || 12), icon: MdInventory, color: '#0050CB', bg: 'rgba(0, 102, 255, 0.1)', className: 'annonces-actives-card' },
+        { label: 'Enchères\nreçues', value: formatNumber(statsData?.encheresRecues || 8), icon: MdGavel, color: '#C34B4E', bg: 'rgba(195, 75, 78, 0.3)', className: 'encheres-recues-card' },
+        { label: 'Ventes\ndirectes', value: formatNumber(statsData?.ventesDirectes || 3), icon: MdStore, color: '#70D979', bg: 'rgba(112, 217, 121, 0.3)', className: 'ventes-directes-card' },
+        { label: 'Offres &\nservices', value: formatNumber(statsData?.offresServices || 5), icon: MdEmail, color: '#EFCB6E', bg: 'rgba(239, 203, 110, 0.3)', className: 'offres-services-card-mini' },
+        { label: 'Mes\nachats', value: formatNumber(statsData?.mesAchats || 3), icon: MdShoppingCart, color: '#424656', bg: 'rgba(66, 70, 86, 0.1)', className: 'mes-achats-card' },
     ];
 
     const navigationCards = [
@@ -169,7 +169,7 @@ export default function DashboardPage() {
             className: 'enchere-card'
         },
         { 
-            title: 'Vente directe', 
+            title: 'Ventes directes', 
             desc: 'Configurez vos articles à prix fixe.', 
             linkText: 'Voir mes ventes', 
             href: '/dashboard/direct-sales', 
@@ -367,7 +367,6 @@ export default function DashboardPage() {
                                 fontWeight: 400, 
                                 fontSize: '12px', 
                                 lineHeight: '14px', 
-                                textTransform: 'uppercase', 
                                 color: '#424656',
                                 whiteSpace: 'pre-line'
                             }}>
@@ -519,12 +518,12 @@ export default function DashboardPage() {
                         bgcolor: '#F2F3FF',
                         borderBottom: '1px solid #C2C6D8'
                     }}>
-                        <Typography sx={{ width: '11%', px: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', textTransform: 'uppercase', color: '#424656' }}>TYPE</Typography>
-                        <Typography sx={{ width: '23%', px: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', textTransform: 'uppercase', color: '#424656' }}>TITRE</Typography>
-                        <Typography sx={{ width: '16%', px: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', textTransform: 'uppercase', color: '#424656' }}>UTILISATEUR</Typography>
-                        <Typography sx={{ width: '18%', pl: '48px', pr: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', textTransform: 'uppercase', color: '#424656' }}>MONTANT</Typography>
-                        <Typography sx={{ width: '12%', px: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', textTransform: 'uppercase', color: '#424656' }}>ETAT</Typography>
-                        <Typography sx={{ width: '20%', pl: '48px', pr: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', textTransform: 'uppercase', color: '#424656' }}>TEMPS</Typography>
+                        <Typography sx={{ width: '11%', px: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', color: '#424656' }}>Type</Typography>
+                        <Typography sx={{ width: '23%', px: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', color: '#424656' }}>Titre</Typography>
+                        <Typography sx={{ width: '16%', px: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', color: '#424656' }}>Utilisateur</Typography>
+                        <Typography sx={{ width: '18%', pl: '48px', pr: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', color: '#424656' }}>Montant</Typography>
+                        <Typography sx={{ width: '12%', px: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', color: '#424656' }}>État</Typography>
+                        <Typography sx={{ width: '20%', pl: '48px', pr: '24px', fontFamily: 'Inter', fontWeight: 700, fontSize: '16px', lineHeight: '19px', letterSpacing: '0.8px', color: '#424656' }}>Date</Typography>
                     </Box>
 
                     {/* Table Rows */}
@@ -550,7 +549,7 @@ export default function DashboardPage() {
                                         bgcolor: row.bg,
                                         borderRadius: '9999px'
                                     }}>
-                                        <Typography sx={{ fontFamily: 'Inter', fontWeight: 400, fontSize: '11px', lineHeight: '13px', textTransform: 'uppercase', color: row.color }}>
+                                        <Typography sx={{ fontFamily: 'Inter', fontWeight: 400, fontSize: '11px', lineHeight: '13px', color: row.color }}>
                                             {row.type}
                                         </Typography>
                                     </Box>

@@ -313,7 +313,7 @@ function DirectSaleDetailContent() {
               <div className="custom-detail-row">
                 <span className="custom-detail-label">Statut</span>
                 <span className="custom-detail-value" style={{ color: isSoldOut ? '#ef4444' : '#10B981' }}>
-                  {isSoldOut ? 'Sold Out' : 'En stock'}
+                  {isSoldOut ? 'Sold Out' : (availableQuantity > 1 ? 'disponibles' : 'disponible')}
                 </span>
               </div>
               <div className="custom-detail-separator"></div>
@@ -388,7 +388,7 @@ function DirectSaleDetailContent() {
 
         {/* Details and Tabs */}
         <div className="product-description-container mt-5">
-          <h2 className="description-title">Description du produit</h2>
+          <h2 className="description-title">Fiche descriptive</h2>
           <div className="description-body" style={{ whiteSpace: 'pre-wrap' }}>{directSale.description}</div>
         </div>
         
@@ -464,13 +464,13 @@ function DirectSaleDetailContent() {
           </div>
           <div className="seller-actions">
             <Link href={getSellerUrl()} className="seller-btn btn-all-products">Boutique</Link>
-            <button className="seller-btn btn-contact" onClick={() => { setActiveTab('comments'); window.scrollBy({ top: 500, behavior: 'smooth' }); }}>Contacter</button>
+            <button className="seller-btn btn-contact" onClick={() => { setActiveTab('comments'); window.scrollBy({ top: 500, behavior: 'smooth' }); }}>Contacter le vendeur</button>
           </div>
         </div>
 
         {/* Similar Products */}
         <div className="similar-auctions-redesign mt-5">
-          <h2 className="redesign-title mb-4">Produits Similaires</h2>
+          <h2 className="redesign-title mb-4">Ventes directes</h2>
           {similarDirectSales.length > 0 ? (
             <div style={{ position: 'relative', overflow: 'visible' }}>
               <Swiper

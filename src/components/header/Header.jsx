@@ -616,22 +616,23 @@ export const Header = () => {
         className="header-content-wrapper"
         style={{
           width: '100%',
-          maxWidth: '1440px',
-          height: '196px',
-          position: 'relative',
-          background: '#FFFFFF',
-          opacity: 1,
+          maxWidth: '1600px',
           margin: '0 auto',
-          display: isClient && showMobileHeader ? 'none' : 'block',
+          padding: '16px clamp(24px, 4vw, 48px)',
+          background: '#FFFFFF',
+          boxSizing: 'border-box',
+          display: isClient && showMobileHeader ? 'none' : 'flex',
+          flexDirection: 'column',
+          gap: '18px',
         }}
       >
+        {/* --- TOP ROW: logo · search · langue / contact / auth --- */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(16px, 2vw, 32px)', width: '100%' }}>
         {/* --- LOGO --- */}
-        <Link 
-          href={getFrontendUrl()} 
-          style={{ 
-            position: 'absolute',
-            top: '52px',
-            left: '0px',
+        <Link
+          href={getFrontendUrl()}
+          style={{
+            flexShrink: 0,
             width: '193px',
             height: '56px',
             display: 'flex',
@@ -640,21 +641,21 @@ export const Header = () => {
             textDecoration: 'none'
           }}
         >
-          <img 
-            src={logoUrl || '/assets/img/logo.png'} 
-            alt="MazadClick" 
-            style={{ width: '100%', height: '100%', objectFit: 'fill' }} 
+          <img
+            src={logoUrl || '/assets/img/logo.png'}
+            alt="MazadClick"
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           />
         </Link>
 
         {/* --- SEARCH BAR --- */}
         <div 
           className="header-search-container"
-          style={{ 
-            position: 'absolute',
-            top: '42px',
-            left: '261px',
-            width: '776px',
+          style={{
+            position: 'relative',
+            flex: 1,
+            minWidth: 0,
+            maxWidth: '776px',
             height: '65px',
             opacity: 1,
             borderRadius: '24px',
@@ -670,7 +671,7 @@ export const Header = () => {
           }}
         >
           <form onSubmit={handleSearchSubmit} style={{ margin: 0, width: '100%', height: '100%' }}>
-            <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 12px 0 24px', gap: '12px' }}>
               <input
                 ref={searchInputRef}
                 type="text"
@@ -683,14 +684,13 @@ export const Header = () => {
                   fontSize: '16px', color: '#002896', opacity: 0.6 
                 }}
               />
-              <button 
-                type="submit" 
-                style={{ 
-                  position: 'absolute',
-                  top: '12px',
-                  left: '715px',
-                  width: '40px', 
-                  height: '40px', 
+              <button
+                type="submit"
+                style={{
+                  position: 'relative',
+                  flexShrink: 0,
+                  width: '40px',
+                  height: '40px',
                   borderRadius: '32px', 
                   background: '#F5F5FA', 
                   border: 'none',
@@ -851,43 +851,34 @@ export const Header = () => {
           {/* Right Links & Auth */}
           {!isMobile && (
             <>
-              <span 
-                style={{ 
-                  position: 'absolute',
-                  width: '84px',
-                  height: '18px',
-                  top: '72px',
-                  left: '1050px',
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
+              <span
+                style={{
+                  flexShrink: 0,
+                  marginLeft: 'auto',
                   fontFamily: '"Inter", sans-serif',
                   fontWeight: '400',
                   fontSize: '16px',
                   lineHeight: '18px',
                   textAlign: 'center',
                   color: '#002896',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 Langue
               </span>
-              <Link 
-                href="/contact" 
-                style={{ 
-                  position: 'absolute',
-                  width: '133px',
-                  height: '18px',
-                  top: '73px',
-                  left: '1126px',
-                  opacity: 1,
-                  transform: 'rotate(0deg)',
+              <Link
+                href="/contact"
+                style={{
+                  flexShrink: 0,
                   fontFamily: '"Inter", sans-serif',
                   fontWeight: '400',
                   fontSize: '16px',
                   lineHeight: '18px',
                   textAlign: 'center',
                   color: '#002896',
-                  textDecoration: 'none'
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 Nous contacter
@@ -897,7 +888,7 @@ export const Header = () => {
 
         {/* --- AUTH / LOGIN --- */}
         {isClient && isReady && (
-          <div ref={desktopAccountDropdownRef}>
+          <div ref={desktopAccountDropdownRef} style={{ display: 'flex', alignItems: 'center', gap: '18px', flexShrink: 0 }}>
             {isLogged ? (
               <>
                 <NotificationBellStable 
@@ -907,7 +898,7 @@ export const Header = () => {
                       <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16ZM16 17H8V11C8 8.52 9.51 6.5 12 6.5C14.49 6.5 16 8.52 16 11V17Z" fill="#002896"/>
                     </svg>
                   }
-                  customButtonStyles={{ position: 'absolute', width: '30px', height: '30px', left: '1272px', top: '68px', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', zIndex: 100, pointerEvents: 'auto' }}
+                  customButtonStyles={{ position: 'relative', width: '30px', height: '30px', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, pointerEvents: 'auto' }}
                 />
                 <ChatNotifications 
                   variant="header" 
@@ -917,10 +908,10 @@ export const Header = () => {
                       <path d="M2 6L12 13L22 6" stroke="#002896" strokeWidth="2" strokeLinejoin="miter"/>
                     </svg>
                   }
-                  customButtonStyles={{ position: 'absolute', width: '26px', height: '26px', left: '1325px', top: '70px', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', zIndex: 100, pointerEvents: 'auto' }}
+                  customButtonStyles={{ position: 'relative', width: '26px', height: '26px', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, pointerEvents: 'auto' }}
                 />
-                <div style={{ position: 'absolute', width: '32px', height: '32px', left: '1373px', top: '67px', zIndex: 100, pointerEvents: 'auto' }}>
-                  <button 
+                <div style={{ position: 'relative', width: '32px', height: '32px', flexShrink: 0, pointerEvents: 'auto' }}>
+                  <button
                     onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
                     style={{ width: '100%', height: '100%', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
                   >
@@ -945,12 +936,10 @@ export const Header = () => {
             ) : (
               <button 
                 onClick={() => router.push('/auth/login')}
-                style={{ 
-                  position: 'absolute', 
-                  top: '54px', 
-                  left: '1289px', 
-                  width: '118px', 
-                  height: '65px', 
+                style={{
+                  flexShrink: 0,
+                  width: '118px',
+                  height: '65px',
                   opacity: 1,
                   transform: 'rotate(0deg)',
                   borderWidth: '1px',
@@ -988,34 +977,36 @@ export const Header = () => {
             )}
           </div>
         )}
+        </div>
+        {/* --- TOP ROW END --- */}
 
         {/* --- BOTTOM NAVIGATION --- */}
-        {isClient && windowWidth > 992 && (
-          <>
+        {isClient && (
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 'clamp(16px, 2vw, 28px)', flexWrap: 'wrap', width: '100%' }}>
             {/* Categories */}
-            <div style={{ position: 'absolute', top: '143px', left: '273px', width: '125px', height: '36px', display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-              <CategoryMegaMenu 
-                item={{ name: 'Catégories', path: '/category', matchPaths: ['/category'] }} 
-                isActive={isNavActive(['/category'])} 
+            <div style={{ display: 'flex', alignItems: 'center', height: '36px', cursor: 'pointer', flexShrink: 0 }}>
+              <CategoryMegaMenu
+                item={{ name: 'Catégories', path: '/category', matchPaths: ['/category'] }}
+                isActive={isNavActive(['/category'])}
                 triggerStyle={{
-                  width: '125px', 
-                  height: '36px', 
-                  fontFamily: '"DM Sans", sans-serif', 
-                  fontWeight: '400', 
-                  fontSize: '16px', 
-                  lineHeight: '16px', 
-                  color: '#062C90', 
-                  padding: '0 10px', 
-                  gap: '10px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
+                  width: '125px',
+                  height: '36px',
+                  fontFamily: '"DM Sans", sans-serif',
+                  fontWeight: '400',
+                  fontSize: '16px',
+                  lineHeight: '16px',
+                  color: '#062C90',
+                  padding: '0 10px',
+                  gap: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
                   background: 'transparent',
                   opacity: 1,
                   transform: 'rotate(0deg)'
                 }}
-                chevronStyle={{ 
-                  width: '24px', 
-                  height: '24px', 
+                chevronStyle={{
+                  width: '24px',
+                  height: '24px',
                   stroke: '#062C90',
                   opacity: 1,
                   transform: 'rotate(0deg)'
@@ -1024,43 +1015,34 @@ export const Header = () => {
             </div>
 
             {/* Nav Links */}
-            <nav>
-              {[
-                { name: t('navigation.home') || 'Accueil', path: '/', left: '449px' },
-                { name: t('navigation.howToBid') || 'Comment ça marche', path: '/how-to-bid', left: '519px' },
-                { name: 'Startup', path: '/startup', left: '691px' },
-                { name: 'International', path: '/international', left: '763px' },
-                { name: 'Nos plans', path: '/plans', left: '873px' },
-                { name: 'À propos', path: '/about', left: '963px' },
-              ].map((item, index) => (
-                <Link 
-                  key={index} href={item.path} 
-                  style={{ 
-                    position: 'absolute', 
-                    top: '152px', 
-                    left: item.left, 
-                    width: 'auto', 
-                    height: 'auto', 
-                    whiteSpace: 'nowrap',
-                    opacity: 1,
-                    transform: 'rotate(0deg)',
-                    fontFamily: '"Inter", sans-serif', 
-                    fontWeight: 400, 
-                    fontSize: '16px', 
-                    lineHeight: '18px', 
-                    textAlign: 'center', 
-                    color: '#062C90', 
-                    textDecoration: 'none', 
-                    transition: 'opacity 0.2s' 
-                  }}
-                  onMouseOver={e => e.currentTarget.style.opacity = 0.7}
-                  onMouseOut={e => e.currentTarget.style.opacity = 1}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </nav>
-          </>
+            {[
+              { name: t('navigation.home') || 'Accueil', path: '/' },
+              { name: t('navigation.howToBid') || 'Comment ça marche', path: '/how-to-bid' },
+              { name: 'Startup', path: '/startup' },
+              { name: 'International', path: '/international' },
+              { name: 'Nos plans', path: '/plans' },
+              { name: 'À propos', path: '/about' },
+            ].map((item, index) => (
+              <Link
+                key={index} href={item.path}
+                style={{
+                  whiteSpace: 'nowrap',
+                  fontFamily: '"Inter", sans-serif',
+                  fontWeight: 400,
+                  fontSize: '16px',
+                  lineHeight: '18px',
+                  textAlign: 'center',
+                  color: '#062C90',
+                  textDecoration: 'none',
+                  transition: 'opacity 0.2s'
+                }}
+                onMouseOver={e => e.currentTarget.style.opacity = 0.7}
+                onMouseOut={e => e.currentTarget.style.opacity = 1}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
         )}
       </div>
     </header>

@@ -51,7 +51,7 @@ const CTARegistration = () => {
         }
       `}</style>
       <div className="cta-inner" style={{
-        maxWidth: '1200px',
+        maxWidth: '1600px',
         margin: '0 auto',
         display: 'flex',
         alignItems: 'center',

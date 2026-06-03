@@ -180,7 +180,7 @@ const CategoryGrid = () => {
   if (isLoading) {
     return (
       <div style={{ width: '100%', background: '#ffffff', padding: 'clamp(40px, 6vw, 80px) clamp(16px, 4vw, 20px)' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1600px', margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 'clamp(16px, 3vw, 40px)' }}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} style={{ height: '72px', background: '#f1f5f9', borderRadius: '8px', animation: 'pulse 1.5s infinite' }} />
@@ -264,7 +264,7 @@ const CategoryGrid = () => {
           }
         }
       `}</style>
-      <div className="container-responsive" style={{ maxWidth: '1258px', margin: '0 auto', width: '100%' }}>
+      <div className="container-responsive" style={{ maxWidth: '1600px', margin: '0 auto', width: '100%' }}>
         <div style={{ textAlign: 'center', marginBottom: 'clamp(16px, 4vw, 60px)' }}>
           <h2 style={{ color: '#002896', fontSize: 'clamp(1.2rem, 4vw, 2.4rem)', fontWeight: '700', margin: 0, letterSpacing: '-1px', lineHeight: 1.2 }}>
             {displayTitle}
@@ -278,7 +278,7 @@ const CategoryGrid = () => {
           rowGap: 'clamp(8px, 1.5vw, 20px)',
           padding: '0 clamp(0px, 2vw, 20px)',
           margin: '0 auto',
-          maxWidth: '1300px'
+          maxWidth: '1600px'
         }}>
           {categories.slice(0, 9).map((cat: any) => (
             <CategoryItem key={cat._id} cat={cat} router={router} />

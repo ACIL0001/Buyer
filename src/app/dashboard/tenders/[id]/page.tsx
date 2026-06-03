@@ -84,7 +84,7 @@ export default function TenderDetailPage() {
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '2px 0px 0px', gap: '16px' }}>
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '4px 12px', background: '#DCFCE7', borderRadius: '9999px', height: '22px', gap: '6px' }}>
               <div style={{ width: '8px', height: '8px', background: '#15803D', borderRadius: '50%' }} />
-              <span style={{ fontWeight: 600, fontSize: '12px', lineHeight: '12px', color: '#15803D', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+              <span style={{ fontWeight: 600, fontSize: '12px', lineHeight: '12px', color: '#15803D', letterSpacing: '0.6px' }}>
                 {tender.status === 'OPEN' ? 'En ligne' : 
                  tender.status === 'AWARDED' ? 'Attribué' : 
                  tender.status === 'CLOSED' ? 'Fermé' : tender.status}
@@ -193,8 +193,8 @@ export default function TenderDetailPage() {
         </h3>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <span style={{ fontWeight: 600, fontSize: '12px', color: '#64748B', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
-            CATÉGORIE
+          <span style={{ fontWeight: 600, fontSize: '12px', color: '#64748B', letterSpacing: '0.6px' }}>
+            Catégorie
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -211,8 +211,8 @@ export default function TenderDetailPage() {
         <div style={{ width: '100%', height: '1px', background: '#F1F5F9' }} />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
-          <span style={{ fontWeight: 600, fontSize: '12px', color: '#64748B', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
-            DESCRIPTION
+          <span style={{ fontWeight: 600, fontSize: '12px', color: '#64748B', letterSpacing: '0.6px' }}>
+            Description
           </span>
           <div style={{ fontWeight: 400, fontSize: '16px', lineHeight: '28px', color: '#505F76', whiteSpace: 'pre-wrap' }}>
             {tender.description || 'Aucune description fournie pour cet appel d\'offres.'}

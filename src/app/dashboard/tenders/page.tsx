@@ -338,7 +338,7 @@ export default function TendersPage() {
           </div>
         </div>
 
-        {/* Demandes reçu */}
+        {/* Demandes reçues */}
         <div style={{
           boxSizing: 'border-box',
           display: 'flex',
@@ -356,7 +356,7 @@ export default function TendersPage() {
           <ReceivedIcon />
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '12px 0px 0px', width: '100%' }}>
             <span style={{ fontWeight: 500, fontSize: '14px', lineHeight: '20px', color: '#64748B' }}>
-              Demandes reçu
+              Demandes reçues
             </span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
@@ -406,7 +406,7 @@ export default function TendersPage() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: 0, height: '20px' }}>
               <span style={{ width: '308.11px', height: '20px', fontWeight: 400, fontSize: '14px', lineHeight: '20px', color: '#64748B', display: 'flex', alignItems: 'center' }}>
-                Gérez vos Offres .
+                Gérez vos offres.
               </span>
             </div>
           </div>
@@ -428,7 +428,7 @@ export default function TendersPage() {
               { key: 'ALL', label: `Toutes (${tenders.length})` },
               { key: 'OPEN', label: `En ligne (${tenders.filter(t => t.status === 'OPEN').length})` },
               { key: 'CLOSED', label: `Conclus (${tenders.filter(t => t.status === 'CLOSED').length})` },
-              { key: 'DEMANDES', label: 'Demandes' }
+              { key: 'DEMANDES', label: `Demandes (${tenders.reduce((acc, t) => acc + (t.participantsCount || 0), 0)})` }
             ].map((tab) => (
               <div 
                 key={tab.key}
@@ -472,11 +472,11 @@ export default function TendersPage() {
             borderBottom: '1px solid #F1F5F9',
           }}>
             {[
-              { label: 'PRODUIT', width: '364.09px' },
-              { label: 'TYPE', width: '156.28px' },
-              { label: 'STATUT', width: '161.17px' },
-              { label: 'DATE DE PUBLICATION', width: '243.08px' },
-              { label: 'ACTIONS', width: '181.55px', align: 'right' }
+              { label: 'Produit', width: '364.09px' },
+              { label: 'Type', width: '156.28px' },
+              { label: 'Statut', width: '161.17px' },
+              { label: 'Date de publication', width: '243.08px' },
+              { label: 'Actions', width: '181.55px', align: 'right' }
             ].map((col, idx) => (
               <div key={idx} style={{
                 display: 'flex',
@@ -487,7 +487,7 @@ export default function TendersPage() {
                 height: '46px',
                 boxSizing: 'border-box'
               }}>
-                <span style={{ fontWeight: 700, fontSize: '11px', lineHeight: '13px', letterSpacing: '0.55px', textTransform: 'uppercase', color: '#94A3B8' }}>
+                <span style={{ fontWeight: 700, fontSize: '11px', lineHeight: '13px', letterSpacing: '0.55px', color: '#94A3B8' }}>
                   {col.label}
                 </span>
               </div>
@@ -540,10 +540,10 @@ export default function TendersPage() {
                       borderRadius: '9999px',
                       width: 'fit-content'
                     }}>
-                      <span style={{ fontWeight: 700, fontSize: '11px', lineHeight: '13px', letterSpacing: '-0.275px', textTransform: 'uppercase', color: row.status === 'OPEN' ? '#16A34A' : '#64748B' }}>
-                        {row.status === 'OPEN' ? 'EN LIGNE' : 
-                         row.status === 'AWARDED' ? 'ATTRIBUÉ' : 
-                         row.status === 'CLOSED' ? 'FERMÉ' : row.status}
+                      <span style={{ fontWeight: 700, fontSize: '11px', lineHeight: '13px', letterSpacing: '-0.275px', color: row.status === 'OPEN' ? '#16A34A' : '#64748B' }}>
+                        {row.status === 'OPEN' ? 'En ligne' : 
+                         row.status === 'AWARDED' ? 'Attribué' : 
+                         row.status === 'CLOSED' ? 'Fermé' : row.status}
                       </span>
                     </div>
                   </div>
@@ -595,7 +595,7 @@ export default function TendersPage() {
         }}>
           <Link href="/tenders" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
             <span style={{ fontWeight: 600, fontSize: '14px', lineHeight: '20px', color: '#0050CB' }}>
-              Voir toutes les Offres
+              Voir toutes les offres
             </span>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1 6H11M11 6L6 1M11 6L6 11" stroke="#0050CB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

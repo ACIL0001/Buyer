@@ -73,11 +73,12 @@ export default function Home() {
     const checkMobile = () => {
       const width = window.innerWidth;
       
-      // Header switches to compact mobile bar at <= 1024 (see Header.jsx showMobileHeader)
-      let calculatedHeight = 196;
+      // Header switches to compact mobile bar at <= 1024 (see Header.jsx showMobileHeader).
+      // Desktop header is a flex column: 16px pad + 65px top row + 18px gap + 36px nav + 16px pad ≈ 151px.
+      let calculatedHeight = 152;
       if (width <= 375) calculatedHeight = 60;
       else if (width <= 1024) calculatedHeight = 68;
-      else calculatedHeight = 196;
+      else calculatedHeight = 152;
       
       const safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-top)') || '0', 10) || 0;
       setHeaderHeight(calculatedHeight + safeAreaTop);
@@ -319,7 +320,7 @@ export default function Home() {
                       {/* Ambient background blur blobs to make the glass effect visible */}
 
 
-                      <div style={{ position: 'relative', zIndex: 2, maxWidth: '1200px', margin: '0 auto' }}>
+                      <div style={{ position: 'relative', zIndex: 2, maxWidth: '1600px', margin: '0 auto' }}>
                         {isLogged && (
                           <>
                             <h2 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '36px', lineHeight: '46px', textAlign: 'center', marginBottom: '15px' }}>

@@ -64,13 +64,18 @@ const DefaultIcon = () => (
 
 const CategoryItem = ({ cat, router }: { cat: any; router: any }) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
+
+  // Root categories already embed their direct children ({ _id, name }), so the list can
+  // render instantly without a click-time request. Only fall back to the by-parent endpoint
+  // when the embedded list is missing.
+  const embeddedChildren = Array.isArray(cat.children) ? cat.children : [];
   const { data: subData, isLoading: subLoading } = useQuery({
     queryKey: ['categories', 'sub', cat._id],
     queryFn: () => CategoryAPI.getCategoriesByParent(cat._id),
-    enabled: isExpanded
+    enabled: isExpanded && embeddedChildren.length === 0
   });
 
-  const subCategories = subData?.data || [];
+  const subCategories = embeddedChildren.length > 0 ? embeddedChildren : (subData?.data || []);
 
   return (
     <div className="cat-item">
@@ -130,8 +135,9 @@ const CategoryItem = ({ cat, router }: { cat: any; router: any }) => {
       {isExpanded && (
         <motion.div
           className="cat-expandable"
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
           style={{ overflow: 'hidden', paddingBottom: '20px' }}
         >
           {subLoading ? (

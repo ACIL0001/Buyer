@@ -312,7 +312,7 @@ const Footer = () => {
         <div className="footer-brand">
           <Link href="/" className="footer-brand-logo" aria-label="MazadClick">
             <img
-              src={logoUrl || '/assets/img/logo.png'}
+              src={'/assets/logo_mazadclick.png'}
               alt="MazadClick"
             />
           </Link>

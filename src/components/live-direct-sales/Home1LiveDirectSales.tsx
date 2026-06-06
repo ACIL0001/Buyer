@@ -109,21 +109,37 @@ const Home1LiveDirectSales = () => {
         .image-nav-arrow:active {
           transform: translateY(-50%) scale(0.95) !important;
         }
+        .carousel-nav-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: #ffffff;
+          border: 1px solid rgba(0, 40, 150, 0.18);
+          box-shadow: 0 2px 8px rgba(0, 40, 150, 0.12);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: #002896;
+          flex-shrink: 0;
+          transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, background 0.2s ease;
+        }
         .carousel-nav-btn:hover {
-          transform: translateY(-50%) scale(1.08) !important;
-          box-shadow: 0 12px 32px rgba(0, 40, 150, 0.24), 0 4px 10px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(0, 40, 150, 0.12) !important;
+          transform: scale(1.08);
+          background: #f4f7fc;
+          box-shadow: 0 4px 14px rgba(0, 40, 150, 0.22);
         }
         .carousel-nav-btn:active {
-          transform: translateY(-50%) scale(0.96) !important;
+          transform: scale(0.96);
         }
         @media (max-width: 767px) {
           .carousel-nav-btn {
-            width: 38px !important;
-            height: 38px !important;
+            width: 34px;
+            height: 34px;
           }
           .carousel-nav-btn svg {
-            width: 16px !important;
-            height: 16px !important;
+            width: 16px;
+            height: 16px;
           }
         }
         .live-section-header {
@@ -141,6 +157,9 @@ const Home1LiveDirectSales = () => {
           position: absolute;
           right: clamp(12px, 3vw, 35px);
           top: clamp(28px, 6vw, 75px);
+          display: flex;
+          align-items: center;
+          gap: 10px;
         }
         @media (max-width: 767px) {
           .live-section-header {
@@ -178,6 +197,12 @@ const Home1LiveDirectSales = () => {
         </div>
 
         <div className="live-section-voirtout">
+          <div className="direct-sale-prev carousel-nav-btn" aria-label="Précédent">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </div>
+          <div className="direct-sale-next carousel-nav-btn" aria-label="Suivant">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
           <Link href="/direct-sale" style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -558,50 +583,6 @@ const Home1LiveDirectSales = () => {
                   );
                 })}
               </Swiper>
-  
-              {/* Custom Navigation Buttons - Modern Glass Pills */}
-              <div className="direct-sale-prev carousel-nav-btn" style={{
-                position: 'absolute',
-                top: '35%',
-                left: 'clamp(4px, 1vw, 10px)',
-                transform: 'translateY(-50%)',
-                width: 'clamp(44px, 5vw, 56px)',
-                height: 'clamp(44px, 5vw, 56px)',
-                background: 'linear-gradient(135deg, #ffffff 0%, #f4f7fc 100%)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 8px 24px rgba(0, 40, 150, 0.16), 0 2px 6px rgba(0, 0, 0, 0.06), inset 0 0 0 1px rgba(0, 40, 150, 0.08)',
-                cursor: 'pointer',
-                zIndex: 100,
-                color: '#002896',
-                border: 'none',
-                transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease'
-              }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-              </div>
-              <div className="direct-sale-next carousel-nav-btn" style={{
-                position: 'absolute',
-                top: '35%',
-                right: 'clamp(4px, 1vw, 10px)',
-                transform: 'translateY(-50%)',
-                width: 'clamp(44px, 5vw, 56px)',
-                height: 'clamp(44px, 5vw, 56px)',
-                background: 'linear-gradient(135deg, #ffffff 0%, #f4f7fc 100%)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 8px 24px rgba(0, 40, 150, 0.16), 0 2px 6px rgba(0, 0, 0, 0.06), inset 0 0 0 1px rgba(0, 40, 150, 0.08)',
-                cursor: 'pointer',
-                zIndex: 100,
-                color: '#002896',
-                border: 'none',
-                transition: 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease'
-              }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-              </div>
             </div>
             
             <div style={{ height: 'clamp(16px, 3vw, 40px)' }} />

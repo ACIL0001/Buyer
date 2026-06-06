@@ -351,7 +351,7 @@ export const Header = () => {
           {/* Logo (centered) */}
           <Link href={getFrontendUrl()} style={{ display: 'flex', alignItems: 'center', flex: 1, justifyContent: 'center', textDecoration: 'none', minWidth: 0 }}>
             <img
-              src={logoUrl || '/assets/img/logo.png'}
+              src={'/assets/logo_mazadclick.png'}
               alt="MazadClick"
               style={{ height: 'clamp(28px, 8vw, 36px)', maxWidth: '60%', objectFit: 'contain' }}
             />
@@ -469,12 +469,15 @@ export const Header = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   height: 36,
-                  padding: '0 14px',
+                  padding: '0 16px',
                   borderRadius: 18,
-                  background: '#002896',
-                  color: '#fff',
+                  background: '#FFFFFF',
+                  border: '1px solid #062C90',
+                  color: '#062C90',
+                  fontFamily: '"DM Sans", sans-serif',
                   fontSize: 13,
                   fontWeight: 600,
+                  boxShadow: '1px 1px 4px 0px #0000004D',
                   textDecoration: 'none',
                   whiteSpace: 'nowrap',
                 }}
@@ -519,7 +522,7 @@ export const Header = () => {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #f0f2f5' }}>
-              <img src={logoUrl || '/assets/img/logo.png'} alt="MazadClick" style={{ height: 32, objectFit: 'contain' }} />
+              <img src={'/assets/logo_mazadclick.png'} alt="MazadClick" style={{ height: 32, objectFit: 'contain' }} />
               <button
                 type="button"
                 onClick={() => setMenuOpen(false)}
@@ -642,7 +645,7 @@ export const Header = () => {
           }}
         >
           <img
-            src={logoUrl || '/assets/img/logo.png'}
+            src={'/assets/logo_mazadclick.png'}
             alt="MazadClick"
             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           />

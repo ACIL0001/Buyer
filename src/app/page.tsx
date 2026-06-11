@@ -3,18 +3,20 @@
 import Header from "@/components/header/Header"
 import AdsSlider from "@/components/banner/AdsSlider";
 import GuestHero from "@/components/banner/GuestHero";
-import Home1LiveAuction from "@/components/live-auction/Home1LiveAuction";
-import Home1LiveTenders from "@/components/live-tenders/Home1LiveTenders";
-import Home1LiveDirectSales from "@/components/live-direct-sales/Home1LiveDirectSales";
-import Footer from "@/components/footer/FooterWithErrorBoundary";
-import DynamicScrollToTop from "@/components/common/DynamicScrollToTop";
-import CategoryGrid from "@/components/category-grid/CategoryGrid";
-import Testimonials from "@/components/testimonials/Testimonials";
-import CTARegistration from "@/components/cta/CTARegistration";
-import FAQSection from "@/components/faq/FAQSection";
+import dynamic from "next/dynamic";
+
+const Home1LiveAuction = dynamic(() => import("@/components/live-auction/Home1LiveAuction"), { ssr: false });
+const Home1LiveTenders = dynamic(() => import("@/components/live-tenders/Home1LiveTenders"), { ssr: false });
+const Home1LiveDirectSales = dynamic(() => import("@/components/live-direct-sales/Home1LiveDirectSales"), { ssr: false });
+const Footer = dynamic(() => import("@/components/footer/FooterWithErrorBoundary"), { ssr: false });
+const DynamicScrollToTop = dynamic(() => import("@/components/common/DynamicScrollToTop"), { ssr: false });
+const CategoryGrid = dynamic(() => import("@/components/category-grid/CategoryGrid"), { ssr: false });
+const Testimonials = dynamic(() => import("@/components/testimonials/Testimonials"), { ssr: false });
+const CTARegistration = dynamic(() => import("@/components/cta/CTARegistration"), { ssr: false });
+const FAQSection = dynamic(() => import("@/components/faq/FAQSection"), { ssr: false });
 import RequestProvider from "@/contexts/RequestContext";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { SnackbarProvider } from 'notistack';
 import useAuth from '@/hooks/useAuth';
 import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
@@ -23,6 +25,7 @@ import SocketProvider from "@/contexts/socket";
 import { useRouter } from 'next/navigation';
 import ResponsiveTest from '@/components/common/ResponsiveTest';
 import { useTranslation } from 'react-i18next';
+import Image from 'next/image';
 
 export default function Home() {
   const { t } = useTranslation();
@@ -30,45 +33,15 @@ export default function Home() {
   const router = useRouter();
   
   const [headerHeight, setHeaderHeight] = useState(112);
-  const actionCardsRef = useRef<HTMLDivElement | null>(null);
-  const [openCardIdx, setOpenCardIdx] = useState<number | null>(null);
-
-  // Close the expanded card when the user taps outside of the cards row.
-  useEffect(() => {
-    if (openCardIdx === null) return;
-    const handler = (e: MouseEvent | TouchEvent) => {
-      if (!actionCardsRef.current?.contains(e.target as Node)) {
-        setOpenCardIdx(null);
-      }
-    };
-    document.addEventListener('click', handler);
-    document.addEventListener('touchstart', handler);
-    return () => {
-      document.removeEventListener('click', handler);
-      document.removeEventListener('touchstart', handler);
-    };
-  }, [openCardIdx]);
-
-  const toggleCard = (idx: number) => (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setOpenCardIdx((prev) => (prev === idx ? null : idx));
-  };
+  // On mobile the action cards hide their buttons until the card is tapped
+  const [expandedCard, setExpandedCard] = useState<number | null>(null);
+  const toggleCard = (i: number) => () => setExpandedCard((prev) => (prev === i ? null : i));
 
   const goTo = (path: string) => (e: React.MouseEvent) => {
     e.stopPropagation();
     router.push(path);
   };
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const el = actionCardsRef.current;
-    if (!el) return;
-    const reset = () => { el.scrollLeft = 0; };
-    reset();
-    const id = window.setTimeout(reset, 50);
-    return () => window.clearTimeout(id);
-  }, [isLogged]);
-  
   useEffect(() => {
     const checkMobile = () => {
       const width = window.innerWidth;
@@ -177,105 +150,112 @@ export default function Home() {
           transform: translateY(-5px);
           box-shadow: 0 15px 40px rgba(0, 40, 150, 0.2);
         }
+        /* Card body holds the title + buttons; flex:1 keeps buttons pinned to the card bottom */
+        .card-body {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          width: 100%;
+          flex: 1;
+        }
+
+        /* Shared responsive home container (Figma: 1216px content column, 112px gutters) */
+        .home-container {
+          width: 100%;
+          max-width: 1600px;
+          margin-inline: auto;
+          padding-inline: clamp(16px, 3vw, 48px);
+        }
 
         /* Que voulez-vous faire section */
         @media (max-width: 767px) {
-          .qvf-section {
-            padding: 24px 16px !important;
-          }
           .qvf-section h2 {
-            font-size: 24px !important;
-            line-height: 30px !important;
+            font-size: clamp(22px, 5vw, 36px) !important;
+            line-height: 1.25 !important;
             margin-bottom: 8px !important;
           }
           .qvf-section > div > p {
-            font-size: 14px !important;
-            line-height: 20px !important;
-            margin-bottom: 18px !important;
+            font-size: clamp(13px, 3.5vw, 18px) !important;
+            line-height: 1.5 !important;
+            margin-bottom: 24px !important;
           }
         }
 
-        /* Action cards layout */
+        /* Action cards: one design at every width — columns reflow 3 -> 2 -> 1, no layout swap */
         .action-cards-wrap {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 25px;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: clamp(12px, 2vw, 26px);
           justify-content: center;
+          align-items: stretch;
         }
-        @media (min-width: 768px) and (max-width: 1023px) {
-          .action-cards-wrap {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-          }
+        .action-cards-wrap > .grey-glass-card {
+          width: 100%;
+          height: auto;
+          min-height: 320px;
         }
-        @media (max-width: 767px) {
+        .action-cards-wrap .btn-3d-blue {
+          width: 100%;
+          max-width: 140px;
+          min-width: 0;
+        }
+        @media (max-width: 1023px) {
+          .action-cards-wrap { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 639px) {
+          /* Mobile: keep all three cards inline in one row — just smaller */
           .action-cards-wrap {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            padding: 0 6px;
-            margin: 0;
-            align-items: start;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
           }
           .action-cards-wrap > .grey-glass-card {
-            width: 100% !important;
-            max-width: 100%;
-            height: auto !important;
-            min-height: 150px;
-            padding: 14px 6px !important;
-            border-radius: 14px !important;
-            cursor: pointer;
-            transition: box-shadow 0.2s ease, transform 0.2s ease;
-            -webkit-tap-highlight-color: transparent;
+            width: 100%;
+            min-height: 0;
+            height: auto;
+            padding: 12px 8px 14px;
           }
-          .action-cards-wrap > .grey-glass-card.open {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 28px rgba(0, 40, 150, 0.18) !important;
-          }
+          /* Smaller icon */
           .action-cards-wrap > .grey-glass-card > div:first-child {
-            height: 58px !important;
-            margin-top: 0 !important;
-            margin-bottom: 4px !important;
-            pointer-events: none;
+            height: 54px !important;
+            width: 54px !important;
+            margin: 0 0 6px !important;
           }
-          .action-cards-wrap > .grey-glass-card h3 {
-            font-size: 11px !important;
-            line-height: 14px !important;
+          .action-cards-wrap > .grey-glass-card > div:first-child img {
+            width: 48px !important;
+            height: 48px !important;
+          }
+          .action-cards-wrap > .grey-glass-card {
+            cursor: pointer;
+          }
+          .action-cards-wrap .card-body h3 {
+            font-size: 12px !important;
+            line-height: 1.25 !important;
             margin-bottom: 0 !important;
-            pointer-events: none;
           }
-          .action-cards-wrap > .grey-glass-card p {
+          /* Buttons hidden until the card is tapped */
+          .action-cards-wrap .card-body > div {
             display: none !important;
-          }
-          /* Buttons row: hidden by default, revealed (stacked) when card is open */
-          .action-cards-wrap > .grey-glass-card > div:last-child {
-            display: none !important;
-          }
-          .action-cards-wrap > .grey-glass-card.open > div:last-child {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 4px !important;
+            flex-direction: column;
+            align-items: center !important;
+            gap: 5px !important;
             margin-top: 8px !important;
-            width: 100% !important;
-            animation: cardButtonsReveal 0.2s ease-out;
           }
-          .action-cards-wrap > .grey-glass-card .btn-3d-blue {
-            width: 100% !important;
+          .action-cards-wrap > .grey-glass-card.expanded .card-body > div {
+            display: flex !important;
+          }
+          /* Compact pills sized to the small card */
+          .action-cards-wrap .btn-3d-blue {
+            height: 24px !important;
+            min-height: 0 !important;
+            width: auto !important;
             min-width: 0 !important;
-            flex: 0 0 auto !important;
-            height: 16px !important;
-            min-height: 16px !important;
-            font-size: 8px !important;
-            font-weight: 600 !important;
-            padding: 0 4px !important;
-            letter-spacing: 0 !important;
-            border-radius: 100px !important;
+            max-width: 100% !important;
+            padding: 0 12px !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
             line-height: 1 !important;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
-          }
-          @keyframes cardButtonsReveal {
-            from { opacity: 0; transform: translateY(-4px); }
-            to { opacity: 1; transform: translateY(0); }
+            border-radius: 100px !important;
           }
         }
       `}</style>
@@ -307,7 +287,11 @@ export default function Home() {
                   {/* Hero Section: Ads for logged users, Welcome for guests */}
                   <section style={{ width: '100%', background: '#ffffff', overflow: 'hidden' }}>
                     <div style={{ width: '100%', maxWidth: '100vw' }}>
-                      {isLogged ? <AdsSlider /> : <GuestHero />}
+                      {isLogged ? <AdsSlider /> : (
+                        <div className="home-container">
+                          <GuestHero />
+                        </div>
+                      )}
                     </div>
 
                     {/* Que voulez-vous faire? Section with ambient background for glass effect */}
@@ -320,7 +304,7 @@ export default function Home() {
                       {/* Ambient background blur blobs to make the glass effect visible */}
 
 
-                      <div style={{ position: 'relative', zIndex: 2, maxWidth: '1600px', margin: '0 auto' }}>
+                      <div className="home-container" style={{ position: 'relative', zIndex: 2 }}>
                         {isLogged && (
                           <>
                             <h2 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '36px', lineHeight: '46px', textAlign: 'center', marginBottom: '15px' }}>
@@ -332,45 +316,51 @@ export default function Home() {
                           </>
                         )}
 
-                        {/* Grid of 3 Grey Glassmorphism Cards (mobile: horizontal carousel) */}
-                        <div className="action-cards-wrap" ref={actionCardsRef}>
-                          
-                          {/* CARD 1: Enchères */}
-                          <div className={`grey-glass-card${openCardIdx === 0 ? ' open' : ''}`} onClick={toggleCard(0)}>
-                            <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px' }}>
-                              <img src="/assets/images/icon 1.png" alt="Enchères" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
-                            </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '10px' }}>Enchères</h3>
+                        {/* Grid of 3 Grey Glassmorphism Cards — same design, columns reflow on small screens */}
+                        <div className="action-cards-wrap">
 
-                            <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
-                              <button onClick={goTo('/auction-sidebar')} className="btn-3d-blue">Enchérir</button>
-                              <button onClick={goTo('/dashboard/auctions/create')} className="btn-3d-blue">Poster</button>
+                          {/* CARD 1: Enchères */}
+                          <div className={`grey-glass-card${expandedCard === 0 ? ' expanded' : ''}`} onClick={toggleCard(0)}>
+                            <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px', position: 'relative', width: '100%' }}>
+                              <Image src="/assets/images/icon 1.png" alt="Enchères" width={150} height={145} style={{ objectFit: 'contain' }} priority />
+                            </div>
+                            <div className="card-body">
+                              <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '10px' }}>Enchères</h3>
+
+                              <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
+                                <button onClick={goTo('/auction-sidebar')} className="btn-3d-blue">Enchérir</button>
+                                <button onClick={goTo('/dashboard/auctions/create')} className="btn-3d-blue">Poster</button>
+                              </div>
                             </div>
                           </div>
 
                           {/* CARD 2: Vente directe */}
-                          <div className={`grey-glass-card${openCardIdx === 1 ? ' open' : ''}`} onClick={toggleCard(1)}>
-                            <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px' }}>
-                              <img src="/assets/images/icon 2.png" alt="Vente directe" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                          <div className={`grey-glass-card${expandedCard === 1 ? ' expanded' : ''}`} onClick={toggleCard(1)}>
+                            <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px', position: 'relative', width: '100%' }}>
+                              <Image src="/assets/images/icon 2.png" alt="Vente directe" width={150} height={145} style={{ objectFit: 'contain' }} priority />
                             </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '10px' }}>Vente et Service</h3>
+                            <div className="card-body">
+                              <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '30px', lineHeight: '38px', textAlign: 'center', marginBottom: '10px' }}>Vente et Service</h3>
 
-                            <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
-                              <button onClick={goTo('/dashboard/direct-sales/create')} className="btn-3d-blue">Vendre</button>
-                              <button onClick={goTo('/direct-sale')} className="btn-3d-blue">Acheter</button>
+                              <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
+                                <button onClick={goTo('/dashboard/direct-sales/create')} className="btn-3d-blue">Vendre</button>
+                                <button onClick={goTo('/direct-sale')} className="btn-3d-blue">Acheter</button>
+                              </div>
                             </div>
                           </div>
 
                           {/* CARD 3: Soumission d'offre */}
-                          <div className={`grey-glass-card${openCardIdx === 2 ? ' open' : ''}`} onClick={toggleCard(2)}>
-                            <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px' }}>
-                              <img src="/assets/images/icon 3.png" alt="Soumission" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                          <div className={`grey-glass-card${expandedCard === 2 ? ' expanded' : ''}`} onClick={toggleCard(2)}>
+                            <div style={{ height: '145px', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginBottom: '0px', marginTop: '-10px', position: 'relative', width: '100%' }}>
+                              <Image src="/assets/images/icon 3.png" alt="Soumission" width={150} height={145} style={{ objectFit: 'contain' }} priority />
                             </div>
-                            <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '28px', lineHeight: '30px', textAlign: 'center', marginBottom: '10px' }}>Soumissions (Appels d'offres / Projets)</h3>
+                            <div className="card-body">
+                              <h3 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '28px', lineHeight: '30px', textAlign: 'center', marginBottom: '10px' }}>Soumissions (Appels d'offres)</h3>
 
-                            <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
-                              <button onClick={goTo('/dashboard/tenders/create')} className="btn-3d-blue">Publier</button>
-                              <button onClick={goTo('/tenders')} className="btn-3d-blue">Postuler</button>
+                              <div style={{ display: 'flex', gap: '15px', width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
+                                <button onClick={goTo('/dashboard/tenders/create')} className="btn-3d-blue">Publier</button>
+                                <button onClick={goTo('/tenders')} className="btn-3d-blue">Postuler</button>
+                              </div>
                             </div>
                           </div>
 

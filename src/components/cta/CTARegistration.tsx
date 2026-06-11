@@ -10,7 +10,7 @@ const CTARegistration = () => {
     <div className="cta-section" style={{
       width: '100%',
       background: '#ffffff',
-      padding: 'clamp(40px, 8vw, 80px) clamp(16px, 4vw, 20px)',
+      padding: 'clamp(40px, 8vw, 80px) clamp(16px, 3vw, 48px)',
       overflow: 'hidden',
       fontFamily: '"DM Sans", sans-serif'
     }}>

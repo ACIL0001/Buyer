@@ -78,7 +78,7 @@ const Home1LiveDirectSales = () => {
     slidesPerView: 1,
     speed: 800,
     spaceBetween: 16,
-    loop: true,
+    loop: directSales.length > 4,
     navigation: {
       nextEl: '.direct-sale-next',
       prevEl: '.direct-sale-prev',
@@ -91,7 +91,7 @@ const Home1LiveDirectSales = () => {
       1024: { slidesPerView: 3, spaceBetween: 20 },
       1280: { slidesPerView: 4, spaceBetween: 20 },
     },
-  }), []);
+  }), [directSales.length]);
 
   const formatPrice = useCallback((price: number) => `${Number(price).toLocaleString()} DA`, []);
 
@@ -142,6 +142,39 @@ const Home1LiveDirectSales = () => {
             height: 16px;
           }
         }
+        /* Big side arrows overlaid on the card row */
+        .carousel-side-arrow {
+          position: absolute;
+          top: 46%;
+          transform: translateY(-50%);
+          width: clamp(40px, 3.4vw, 54px);
+          height: clamp(40px, 3.4vw, 54px);
+          border-radius: 50%;
+          background: #002896;
+          border: 1.5px solid rgba(255, 255, 255, 0.75);
+          box-shadow: 0 8px 22px rgba(0, 40, 150, 0.38);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #ffffff;
+          cursor: pointer;
+          z-index: 30;
+          padding: 0;
+          transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+        .carousel-side-arrow:hover {
+          background: #001f73;
+          box-shadow: 0 12px 30px rgba(0, 40, 150, 0.48);
+          transform: translateY(-50%) scale(1.1);
+        }
+        .carousel-side-arrow:active { transform: translateY(-50%) scale(0.96); }
+        .carousel-side-arrow.swiper-button-disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+        .carousel-side-arrow--prev { left: clamp(-18px, -0.8vw, -8px); }
+        .carousel-side-arrow--next { right: clamp(-18px, -0.8vw, -8px); }
+        @media (max-width: 640px) {
+          .carousel-side-arrow { width: 36px; height: 36px; }
+          .carousel-side-arrow svg { width: 16px; height: 16px; }
+        }
         .live-section-header {
           width: 100%;
           max-width: 1600px;
@@ -191,18 +224,12 @@ const Home1LiveDirectSales = () => {
               textAlign: 'center'
             }}
           >
-            Marchés et ventes en cours
+            Ventes
           </motion.h2>
           <motion.div initial={{ width: 0 }} whileInView={{ width: '100px' }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 1 }} style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #002896, transparent)', marginTop: 'clamp(8px, 1.5vw, 15px)', borderRadius: '10px' }} />
         </div>
 
         <div className="live-section-voirtout">
-          <div className="direct-sale-prev carousel-nav-btn" aria-label="Précédent">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-          </div>
-          <div className="direct-sale-next carousel-nav-btn" aria-label="Suivant">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
           <Link href="/direct-sale" style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -222,9 +249,15 @@ const Home1LiveDirectSales = () => {
         </div>
       </div>
 
-      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1600px', margin: '0 auto', padding: '0 clamp(12px, 3vw, 20px)', overflow: 'visible' }}>
+      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1600px', margin: '0 auto', padding: '0 clamp(16px, 3vw, 48px)', overflow: 'visible' }}>
         {directSales.length > 0 ? (
           <div className="direct-sale-carousel-container" style={{ position: 'relative', overflow: 'visible' }}>
+            <button className="direct-sale-prev carousel-side-arrow carousel-side-arrow--prev" aria-label="Précédent" type="button">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button className="direct-sale-next carousel-side-arrow carousel-side-arrow--next" aria-label="Suivant" type="button">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
             <div style={{ position: 'relative' }}>
               <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper direct-sale-slider" style={{ padding: '30px 0', margin: '-30px 0', overflow: 'hidden' }}>
                 {directSales.map((sale: any) => {

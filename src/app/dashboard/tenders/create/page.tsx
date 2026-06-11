@@ -47,16 +47,7 @@ const TENDER_EVALUATION_TYPES = {
     MIEUX_DISANT: "MIEUX_DISANT",
 };
 
-const WILAYAS = [
-  'Adrar', 'Chlef', 'Laghouat', 'Oum El Bouaghi', 'Batna', 'Béjaïa', 'Biskra', 
-  'Béchar', 'Blida', 'Bouira', 'Tamanrasset', 'Tébessa', 'Tlemcen', 'Tiaret',
-  'Tizi Ouzou', 'Alger', 'Djelfa', 'Jijel', 'Sétif', 'Saïda', 'Skikda',
-  'Sidi Bel Abbès', 'Annaba', 'Guelma', 'Constantine', 'Médéa', 'Mostaganem',
-  "M'Sila", 'Mascara', 'Ouargla', 'Oran', 'El Bayadh', 'Illizi',
-  'Bordj Bou Arreridj', 'Boumerdès', 'El Tarf', 'Tindouf', 'Tissemsilt',
-  'El Oued', 'Khenchela', 'Souk Ahras', 'Tipaza', 'Mila', 'Aïn Defla',
-  'Naâma', 'Aïn Témouchent', 'Ghardaïa', 'Relizane',
-];
+import { WILAYAS } from '@/constants/wilayas';
 
 export default function CreateTenderPage() {
     const theme = useTheme();
@@ -362,7 +353,7 @@ export default function CreateTenderPage() {
                                                     <Typography sx={fieldLabelStyle}>Wilaya</Typography>
                                                     <TextField select fullWidth {...formik.getFieldProps('wilaya')} sx={inputStyle} SelectProps={{ displayEmpty: true }} error={(formik.touched.wilaya || formik.submitCount > 0) && !!formik.errors.wilaya} helperText={(formik.touched.wilaya || formik.submitCount > 0) && formik.errors.wilaya}>
                                                         <MenuItem value="" disabled>Wilaya</MenuItem>
-                                                        {WILAYAS.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
+                                                        {WILAYAS.map((w, idx) => <MenuItem key={w} value={w}>{String(idx + 1).padStart(2, '0')} - {w}</MenuItem>)}
                                                     </TextField>
                                                 </Grid>
                                                 <Grid size={{ xs: 12, sm: 6 }}>

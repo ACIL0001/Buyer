@@ -67,10 +67,9 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           // Remember Me Logic
           if (rememberMe) {
             localStorage.setItem('mazad_remembered_login', values.login);
-            localStorage.setItem('mazad_remembered_password', values.password);
+            // DO NOT STORE PASSWORD IN LOCALSTORAGE!
           } else {
             localStorage.removeItem('mazad_remembered_login');
-            localStorage.removeItem('mazad_remembered_password');
           }
 
           const authData = {
@@ -142,9 +141,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
   React.useEffect(() => {
     const savedLogin = localStorage.getItem('mazad_remembered_login');
-    const savedPass = localStorage.getItem('mazad_remembered_password');
-    if (savedLogin && savedPass) {
-      formik.setValues({ login: savedLogin, password: savedPass });
+    if (savedLogin) {
+      formik.setValues({ login: savedLogin, password: '' });
       setRememberMe(true);
     }
   }, []);

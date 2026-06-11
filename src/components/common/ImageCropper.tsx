@@ -85,6 +85,8 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                     onCropComplete={onCropCompleteHandler}
                     onZoomChange={onZoomChange}
                     cropShape={cropShape}
+                    minZoom={0.2}
+                    restrictPosition={false}
                 />
             </div>
 
@@ -103,9 +105,9 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                     <input
                         type="range"
                         value={zoom}
-                        min={1}
+                        min={0.2}
                         max={3}
-                        step={0.1}
+                        step={0.05}
                         aria-labelledby="Zoom"
                         onChange={(e) => setZoom(Number(e.target.value))}
                         style={{ width: '100%', cursor: 'pointer' }}

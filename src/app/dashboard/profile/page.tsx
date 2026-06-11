@@ -178,7 +178,7 @@ function ProfilePage() {
     const uploadCover = async (fileBlob: Blob) => {
         setIsUploadingCover(true);
         const formData = new FormData();
-        formData.append("cover", fileBlob, "cover.jpg");
+        formData.append("cover", fileBlob, "cover.png");
 
         try {
             const response = await UserAPI.uploadCover(formData);
@@ -203,7 +203,7 @@ function ProfilePage() {
         try {
             console.log('🖼️ Uploading avatar...');
             const formDataToUpload = new FormData();
-            formDataToUpload.append('avatar', fileBlob, "avatar.jpg");
+            formDataToUpload.append('avatar', fileBlob, "avatar.png");
             const response = await UserAPI.uploadAvatar(formDataToUpload);
 
             console.log('✅ Avatar upload response:', response);

@@ -108,7 +108,7 @@ const Home1LiveAuction = () => {
     slidesPerView: 1,
     speed: 800,
     spaceBetween: 16,
-    loop: true,
+    loop: liveAuctions.length > 4,
     navigation: {
       nextEl: '.auction-next',
       prevEl: '.auction-prev',
@@ -121,7 +121,7 @@ const Home1LiveAuction = () => {
       1024: { slidesPerView: 3, spaceBetween: 20 },
       1280: { slidesPerView: 4, spaceBetween: 20 },
     },
-  }), []);
+  }), [liveAuctions.length]);
 
   if (auctionsLoading) return <div style={{ background: '#fff', padding: '20px' }}><CardSkeleton /></div>;
 
@@ -159,6 +159,39 @@ const Home1LiveAuction = () => {
         }
         .carousel-nav-btn:active {
           transform: scale(0.96);
+        }
+        /* Big side arrows overlaid on the card row */
+        .carousel-side-arrow {
+          position: absolute;
+          top: 46%;
+          transform: translateY(-50%);
+          width: clamp(40px, 3.4vw, 54px);
+          height: clamp(40px, 3.4vw, 54px);
+          border-radius: 50%;
+          background: #002896;
+          border: 1.5px solid rgba(255, 255, 255, 0.75);
+          box-shadow: 0 8px 22px rgba(0, 40, 150, 0.38);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #ffffff;
+          cursor: pointer;
+          z-index: 30;
+          padding: 0;
+          transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+        .carousel-side-arrow:hover {
+          background: #001f73;
+          box-shadow: 0 12px 30px rgba(0, 40, 150, 0.48);
+          transform: translateY(-50%) scale(1.1);
+        }
+        .carousel-side-arrow:active { transform: translateY(-50%) scale(0.96); }
+        .carousel-side-arrow.swiper-button-disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+        .carousel-side-arrow--prev { left: clamp(-18px, -0.8vw, -8px); }
+        .carousel-side-arrow--next { right: clamp(-18px, -0.8vw, -8px); }
+        @media (max-width: 640px) {
+          .carousel-side-arrow { width: 36px; height: 36px; }
+          .carousel-side-arrow svg { width: 16px; height: 16px; }
         }
         @media (max-width: 767px) {
           .carousel-nav-btn {
@@ -219,18 +252,12 @@ const Home1LiveAuction = () => {
               textAlign: 'center'
             }}
           >
-            Enchères à la une
+            Enchères en cours
           </motion.h2>
           <motion.div initial={{ width: 0 }} whileInView={{ width: '100px' }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 1 }} style={{ height: '3px', background: 'linear-gradient(90deg, transparent, #002896, transparent)', marginTop: 'clamp(8px, 1.5vw, 15px)', borderRadius: '10px' }} />
         </div>
 
         <div className="live-section-voirtout">
-          <div className="auction-prev carousel-nav-btn" aria-label="Précédent">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-          </div>
-          <div className="auction-next carousel-nav-btn" aria-label="Suivant">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#002896" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
           <Link href="/auction-sidebar" style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -250,9 +277,15 @@ const Home1LiveAuction = () => {
         </div>
       </div>
 
-      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1600px', margin: '0 auto', padding: '0 clamp(12px, 3vw, 20px)', overflow: 'visible' }}>
+      <div className="container-responsive" style={{ background: 'transparent', maxWidth: '1600px', margin: '0 auto', padding: '0 clamp(16px, 3vw, 48px)', overflow: 'visible' }}>
         {liveAuctions.length > 0 ? (
           <div className="auction-carousel-container" style={{ position: 'relative', overflow: 'visible' }}>
+            <button className="auction-prev carousel-side-arrow carousel-side-arrow--prev" aria-label="Précédent" type="button">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button className="auction-next carousel-side-arrow carousel-side-arrow--next" aria-label="Suivant" type="button">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
             <div style={{ position: 'relative' }}>
               <Swiper modules={[Navigation, Autoplay]} {...settings} className="swiper auction-slider" style={{ padding: '30px 0', margin: '-30px 0', overflow: 'hidden' }}>
                 {liveAuctions.map((auction: any) => {

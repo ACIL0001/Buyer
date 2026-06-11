@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { MdClose, MdFileDownload } from 'react-icons/md';
 import mammoth from 'mammoth';
+import DOMPurify from 'dompurify';
 
 interface DocxViewerModalProps {
   open: boolean;
@@ -131,7 +132,7 @@ const DocxViewerModal: React.FC<DocxViewerModalProps> = ({ open, onClose, fileUr
               '& td, & th': { border: '1px solid #e2e8f0', p: 1 },
               '& img': { maxWidth: '100%', height: 'auto' }
             }}
-            dangerouslySetInnerHTML={{ __html: html }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }}
           />
         )}
       </DialogContent>

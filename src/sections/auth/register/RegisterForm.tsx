@@ -18,6 +18,7 @@ const POSTES = [
   'Autre',
 ];
 import * as mammoth from 'mammoth';
+import DOMPurify from 'dompurify';
 // material
 import {
   TextField,
@@ -244,7 +245,7 @@ function TermsModal({
                 ) : isDocx && !conversionError ? (
                   <Box sx={{ p: 4, overflowY: 'auto', flexGrow: 1, direction: isRtl ? 'rtl' : 'ltr', textAlign: isRtl ? 'right' : 'justify' }}>
                     <DocumentPage 
-                      dangerouslySetInnerHTML={{ __html: docxContent }} 
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(docxContent) }} 
                       style={{ 
                         fontFamily: isRtl ? '"Cairo", "Tajawal", "Times New Roman", serif' : undefined,
                         lineHeight: isRtl ? 1.85 : undefined 

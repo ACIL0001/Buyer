@@ -87,6 +87,10 @@ export const Header = () => {
   const filterDropdownRef = useRef(null);
   const mobileAccountDropdownRef = useRef(null);
   const desktopAccountDropdownRef = useRef(null);
+  const searchContainerRef = useRef(null);
+  const navRef = useRef(null);
+  // Padding that aligns the bottom nav's right edge with the search bar's right edge (items pack from the right)
+  const [navPadding, setNavPadding] = useState({ left: 225, right: 340 });
 
   // --- DATA FETCHING FOR SEARCH ---
   const { data: categoriesData } = useQuery({ queryKey: ['categories', 'all'], queryFn: () => CategoryAPI.getCategories() });
@@ -131,6 +135,36 @@ export const Header = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showSearchResults, isAccountDropdownOpen]);
+
+  // Align the bottom nav so it spans exactly the search bar's width (start → end)
+  useEffect(() => {
+    if (!isClient || showMobileHeader) return;
+    const nav = navRef.current;
+    const search = searchContainerRef.current;
+    if (!nav || !search) return;
+    const measure = () => {
+      const navRect = nav.getBoundingClientRect();
+      const searchRect = search.getBoundingClientRect();
+      setNavPadding({
+        left: Math.max(0, Math.round(searchRect.left - navRect.left)),
+        // Round up so the last item never spills past the search bar's right edge
+        right: Math.max(0, Math.ceil(navRect.right - searchRect.right)),
+      });
+    };
+    measure();
+    const raf = requestAnimationFrame(measure);
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    if (ro) { ro.observe(search); ro.observe(nav); }
+    if (typeof document !== 'undefined' && document.fonts?.ready) {
+      document.fonts.ready.then(measure).catch(() => {});
+    }
+    window.addEventListener('resize', measure);
+    return () => {
+      cancelAnimationFrame(raf);
+      if (ro) ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [isClient, showMobileHeader, isLogged, isReady, windowWidth]);
 
   // --- SEARCH LOGIC ---
   const performSearch = async (query, filter) => {
@@ -351,7 +385,7 @@ export const Header = () => {
           {/* Logo (centered) */}
           <Link href={getFrontendUrl()} style={{ display: 'flex', alignItems: 'center', flex: 1, justifyContent: 'center', textDecoration: 'none', minWidth: 0 }}>
             <img
-              src={'/assets/logo_mazadclick.png'}
+              src={logoUrl || '/assets/logo_mazadclick.png'}
               alt="MazadClick"
               style={{ height: 'clamp(28px, 8vw, 36px)', maxWidth: '60%', objectFit: 'contain' }}
             />
@@ -522,7 +556,7 @@ export const Header = () => {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid #f0f2f5' }}>
-              <img src={'/assets/logo_mazadclick.png'} alt="MazadClick" style={{ height: 32, objectFit: 'contain' }} />
+              <img src={logoUrl || '/assets/logo_mazadclick.png'} alt="MazadClick" style={{ height: 32, objectFit: 'contain' }} />
               <button
                 type="button"
                 onClick={() => setMenuOpen(false)}
@@ -621,7 +655,7 @@ export const Header = () => {
           width: '100%',
           maxWidth: '1600px',
           margin: '0 auto',
-          padding: '16px clamp(24px, 4vw, 48px)',
+          padding: '16px clamp(16px, 3vw, 48px)',
           background: '#FFFFFF',
           boxSizing: 'border-box',
           display: isClient && showMobileHeader ? 'none' : 'flex',
@@ -645,20 +679,20 @@ export const Header = () => {
           }}
         >
           <img
-            src={'/assets/logo_mazadclick.png'}
+            src={logoUrl || '/assets/logo_mazadclick.png'}
             alt="MazadClick"
             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           />
         </Link>
 
         {/* --- SEARCH BAR --- */}
-        <div 
+        <div
+          ref={searchContainerRef}
           className="header-search-container"
           style={{
             position: 'relative',
             flex: 1,
             minWidth: 0,
-            maxWidth: '776px',
             height: '65px',
             opacity: 1,
             borderRadius: '24px',
@@ -985,7 +1019,7 @@ export const Header = () => {
 
         {/* --- BOTTOM NAVIGATION --- */}
         {isClient && (
-          <nav style={{ display: 'flex', alignItems: 'center', gap: 'clamp(16px, 2vw, 28px)', flexWrap: 'wrap', width: '100%' }}>
+          <nav ref={navRef} style={{ display: 'flex', alignItems: 'center', gap: 'clamp(18px, 2vw, 32px)', flexWrap: 'nowrap', width: '100%', paddingLeft: navPadding.left, paddingRight: navPadding.right, justifyContent: 'flex-end', boxSizing: 'border-box' }}>
             {/* Categories */}
             <div style={{ display: 'flex', alignItems: 'center', height: '36px', cursor: 'pointer', flexShrink: 0 }}>
               <CategoryMegaMenu
@@ -999,7 +1033,7 @@ export const Header = () => {
                   fontSize: '16px',
                   lineHeight: '16px',
                   color: '#062C90',
-                  padding: '0 10px',
+                  padding: '0 10px 0 0',
                   gap: '10px',
                   display: 'flex',
                   alignItems: 'center',

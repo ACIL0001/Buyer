@@ -82,9 +82,9 @@ const Footer = () => {
         }
         .footer-inner {
           width: 100%;
-          max-width: 1280px;
+          max-width: 1600px;
           margin: 0 auto;
-          padding: clamp(40px, 5vw, 80px) clamp(24px, 5vw, 96px) clamp(28px, 3vw, 40px);
+          padding: clamp(40px, 5vw, 80px) clamp(16px, 3vw, 48px) clamp(28px, 3vw, 40px);
           display: grid;
           grid-template-columns: minmax(280px, 1.6fr) repeat(3, minmax(0, 1fr));
           gap: clamp(24px, 4vw, 64px);
@@ -189,9 +189,9 @@ const Footer = () => {
         }
         .footer-bottom {
           width: 100%;
-          max-width: 1280px;
+          max-width: 1600px;
           margin: 0 auto;
-          padding: 0 clamp(24px, 5vw, 96px) clamp(20px, 2.5vw, 28px);
+          padding: 0 clamp(16px, 3vw, 48px) clamp(20px, 2.5vw, 28px);
         }
         .footer-divider {
           height: 1px;
@@ -312,7 +312,7 @@ const Footer = () => {
         <div className="footer-brand">
           <Link href="/" className="footer-brand-logo" aria-label="MazadClick">
             <img
-              src={'/assets/logo_mazadclick.png'}
+              src={logoUrl || '/assets/logo_mazadclick.png'}
               alt="MazadClick"
             />
           </Link>

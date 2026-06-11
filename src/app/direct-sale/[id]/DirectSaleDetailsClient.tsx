@@ -604,7 +604,9 @@ function DirectSaleDetailContent() {
       </div>
 
       <style jsx>{`
-        .redesign-v2-container { width: 100%; max-width: 1440px; margin: 0 auto; padding: clamp(120px, 18vw, 236px) clamp(16px, 4vw, 20px) clamp(48px, 10vw, 100px); }
+        /* Content column sized to the hero grid (100 + 632 + 398 + 2×26 gaps = 1182) so every section
+           shares the same left/right edges and the page reads as centered. */
+        .redesign-v2-container { width: 100%; max-width: 1222px; margin: 0 auto; padding: clamp(120px, 18vw, 236px) clamp(16px, 4vw, 20px) clamp(48px, 10vw, 100px); }
         .thumbnails-vertical {
           display: flex;
           flex-direction: column;
@@ -671,7 +673,19 @@ export default function DirectSaleDetailsClient() {
           <ToastContainer position="top-right" autoClose={3000} />
           <Header />
           <DirectSaleDetailContent />
-          <Footer />
+          <div className="dsd-footer-align">
+            <Footer />
+          </div>
+          {/* Match the footer's content column to this page's column (1222 max / 1182 content)
+              so it starts and finishes on the same vertical lines as the sections above. */}
+          <style jsx global>{`
+            .dsd-footer-align .footer-inner,
+            .dsd-footer-align .footer-bottom {
+              max-width: 1222px;
+              padding-left: clamp(16px, 4vw, 20px);
+              padding-right: clamp(16px, 4vw, 20px);
+            }
+          `}</style>
         </SnackbarProvider>
       </RequestProvider>
     </AxiosInterceptor>

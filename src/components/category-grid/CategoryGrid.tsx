@@ -181,13 +181,13 @@ const CategoryGrid = () => {
   });
 
   const categories = data?.data || [];
-  const displayTitle = "Découvrez toutes les opportunités de marché essentielles à votre activité";
+  const displayTitle = "Découvrez des produits de diverses catégories";
 
   if (isLoading) {
     return (
       <div style={{ width: '100%', background: '#ffffff', padding: 'clamp(40px, 6vw, 80px) clamp(16px, 4vw, 20px)' }}>
-        <div style={{ maxWidth: '1600px', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 'clamp(16px, 3vw, 40px)' }}>
+        <div style={{ maxWidth: '1600px', margin: '0 auto', padding: '0 clamp(16px, 3vw, 48px)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 'clamp(16px, 3vw, 40px)' }}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} style={{ height: '72px', background: '#f1f5f9', borderRadius: '8px', animation: 'pulse 1.5s infinite' }} />
             ))}
@@ -201,76 +201,18 @@ const CategoryGrid = () => {
   return (
     <div className="cat-section" style={{ width: '100%', background: '#ffffff', padding: 'clamp(48px, 8vw, 100px) 0', fontFamily: '"DM Sans", sans-serif' }}>
       <style jsx global>{`
+        /* Same row design at every width (icon + name + chevron, blue underline) — columns reflow 3 -> 2 -> 1 */
         .cat-item { border-bottom: 2px solid #002896; width: 100%; min-width: 0; }
 
-        @media (min-width: 768px) and (max-width: 1023px) {
-          .cat-grid {
-            grid-template-columns: repeat(3, 1fr) !important;
-          }
+        @media (max-width: 1023px) {
+          .cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
         }
-
-        @media (max-width: 767px) {
-          .cat-section {
-            padding: 24px 16px !important;
-          }
-          .cat-section h2 {
-            font-size: 18px !important;
-            line-height: 1.3 !important;
-          }
-          .cat-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            column-gap: 10px !important;
-            row-gap: 10px !important;
-            padding: 0 !important;
-          }
-          .cat-item {
-            background: #ffffff;
-            border: 1px solid rgba(0, 40, 150, 0.12) !important;
-            border-radius: 14px;
-            box-shadow: 0 2px 8px rgba(0, 40, 150, 0.06);
-            padding: 14px 8px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-          }
-          .cat-item:active {
-            transform: scale(0.97);
-            box-shadow: 0 1px 4px rgba(0, 40, 150, 0.08);
-          }
-          .cat-item .cat-row {
-            flex-direction: column !important;
-            gap: 8px !important;
-            min-height: auto !important;
-            justify-content: center !important;
-          }
-          .cat-item .cat-clickable {
-            flex-direction: column !important;
-            gap: 8px !important;
-            text-align: center;
-            width: 100%;
-          }
-          .cat-item .cat-icon svg,
-          .cat-item .cat-icon .category-dynamic-icon {
-            width: 33px;
-            height: 30px;
-          }
-          .cat-item .cat-name {
-            font-size: 12.5px !important;
-            text-align: center;
-            white-space: normal !important;
-            line-height: 1.2;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-          .cat-item .cat-chevron {
-            display: none !important;
-          }
-          .cat-item .cat-expandable {
-            display: none !important;
-          }
+        @media (max-width: 639px) {
+          .cat-grid { grid-template-columns: minmax(0, 1fr) !important; }
+          .cat-section h2 { font-size: clamp(18px, 5vw, 28px) !important; line-height: 1.3 !important; }
         }
       `}</style>
-      <div className="container-responsive" style={{ maxWidth: '1600px', margin: '0 auto', width: '100%' }}>
+      <div className="container-responsive" style={{ maxWidth: '1600px', margin: '0 auto', width: '100%', padding: '0 clamp(16px, 3vw, 48px)' }}>
         <div style={{ textAlign: 'center', marginBottom: 'clamp(16px, 4vw, 60px)' }}>
           <h2 style={{ color: '#002896', fontSize: 'clamp(1.2rem, 4vw, 2.4rem)', fontWeight: '700', margin: 0, letterSpacing: '-1px', lineHeight: 1.2 }}>
             {displayTitle}
@@ -279,12 +221,11 @@ const CategoryGrid = () => {
 
         <div className="cat-grid" style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
-          columnGap: 'clamp(16px, 3vw, 40px)',
-          rowGap: 'clamp(8px, 1.5vw, 20px)',
-          padding: '0 clamp(0px, 2vw, 20px)',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          columnGap: 'clamp(20px, 4vw, 56px)',
+          rowGap: 'clamp(4px, 1vw, 12px)',
           margin: '0 auto',
-          maxWidth: '1600px'
+          width: '100%'
         }}>
           {categories.slice(0, 9).map((cat: any) => (
             <CategoryItem key={cat._id} cat={cat} router={router} />

@@ -63,14 +63,18 @@ instance.interceptors.request.use(
       config.url?.includes('auth/refresh') ||
       config.url?.includes('auth/reset-password');
 
-    if (token && !isAuthEndpoint) {
+    // Define explicitly public GET endpoints that don't need auth
+    const publicGetEndpoints = ['category', 'tenders', 'direct-sale', 'auctions'];
+    const isPublicGet = config.method?.toLowerCase() === 'get' && publicGetEndpoints.some(ep => config.url?.includes(ep));
+
+    if (token && !isAuthEndpoint && !isPublicGet) {
       config.headers = config.headers || {};
       // Ensure proper Bearer format
       const authHeader = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
       config.headers.Authorization = authHeader;
       console.log('🔑 Auth token attached to request:', config.url);
     } else if (!isAuthEndpoint && !token) {
-      console.warn('⚠️ No auth token available for request:', config.url);
+      // console.warn('⚠️ No auth token available for request:', config.url);
     }
 
     return config;

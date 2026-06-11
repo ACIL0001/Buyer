@@ -10,26 +10,17 @@ const useWow = () => {
       return;
     }
 
-    const initWow = () => {
+    const initWow = async () => {
       // Only run in browser environment
       if (typeof window === "undefined") {
         return;
       }
 
-      // Check if WOW is already available globally
-      if (window.WOW && typeof window.WOW === 'function') {
-        console.log('WOW.js already available globally');
-        initializeWowInstance(window.WOW);
-        return;
-      }
-
-      // Load from CDN (more reliable than npm package)
-      loadWowFromCDN();
-    };
-
-    const initializeWowInstance = (WOWConstructor) => {
       try {
-        const wow = new WOWConstructor({
+        // Dynamically import wowjs
+        const { WOW } = await import("wowjs");
+        
+        const wow = new WOW({
           boxClass: "wow",
           animateClass: "animated",
           offset: 80,
@@ -41,43 +32,11 @@ const useWow = () => {
         console.log('WOW.js initialized successfully');
         initialized.current = true;
         
+        // Store instance in window so handleRouteChange can sync it
+        window.WOW = wow;
+        
       } catch (error) {
         console.error('Error creating WOW instance:', error);
-      }
-    };
-    
-    const loadWowFromCDN = () => {
-      if (typeof window !== 'undefined' && !window.WOW) {
-        console.log('Loading WOW.js from CDN...');
-        
-        // Check if script is already loaded
-        const existingScript = document.querySelector('script[src*="wow"]');
-        if (existingScript) {
-          console.log('WOW.js script already exists');
-          return;
-        }
-        
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js';
-        script.async = true;
-        
-        script.onload = () => {
-          if (window.WOW && typeof window.WOW === 'function') {
-            try {
-              initializeWowInstance(window.WOW);
-            } catch (error) {
-              console.error('Error initializing WOW.js from CDN:', error);
-            }
-          } else {
-            console.error('WOW.js not available from CDN');
-          }
-        };
-        
-        script.onerror = () => {
-          console.error('Failed to load WOW.js from CDN');
-        };
-        
-        document.head.appendChild(script);
       }
     };
     

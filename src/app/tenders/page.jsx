@@ -37,17 +37,7 @@ function calculateTimeRemaining(endDate) {
 
 const DEFAULT_TENDER_IMAGE = "/assets/images/logo-white.png";
 
-const WILAYAS = [
-    "Adrar", "Chlef", "Laghouat", "Oum El Bouaghi", "Batna", "Béjaïa", "Biskra", "Béchar",
-    "Blida", "Bouira", "Tamanrasset", "Tébessa", "Tlemcen", "Tiaret", "Tizi Ouzou",
-    "Alger", "Djelfa", "Jijel", "Sétif", "Saïda", "Skikda", "Sidi Bel Abbès", "Annaba",
-    "Guelma", "Constantine", "Médéa", "Mostaganem", "M'Sila", "Mascara", "Ouargla",
-    "Oran", "El Bayadh", "Illizi", "Bordj Bou Arreridj", "Boumerdès", "El Tarf",
-    "Tindouf", "Tissemsilt", "El Oued", "Khenchela", "Souk Ahras", "Tipaza", "Mila",
-    "Aïn Defla", "Naâma", "Aïn Témouchent", "Ghardaïa", "Relizane", "Timimoun",
-    "Bordj Badji Mokhtar", "Ouled Djellal", "Béni Abbès", "In Salah", "In Guezzam",
-    "Touggourt", "Djanet", "El M'Ghair", "El Meniaa"
-];
+import { WILAYAS } from '@/constants/wilayas';
 
 const getTenderImageUrl = (tender, index = 0) => {
   const images = tender.attachments || tender.images || [];

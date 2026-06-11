@@ -1,6 +1,9 @@
-"use client";
-import { useEffect, ReactNode, useState } from "react";
+import { ReactNode } from "react";
+import type { Metadata } from "next";
 import Script from "next/script";
+import Head from "./head";
+import Providers from "./Providers";
+import CookieBanner from "@/components/common/CookieBanner";
 
 // Critical CSS
 import "../../public/assets/css/bootstrap.min.css";
@@ -8,110 +11,23 @@ import "../../public/assets/css/bootstrap-icons.css";
 import "../../public/assets/css/style.css";
 import "./rtl.css";
 
-import dynamic from "next/dynamic";
-
-// Non-critical components moved to dynamic imports for better initial load
-const ScrollTopBtn = dynamic(() => import("../components/common/ScrollTopBtn.jsx"), { ssr: false });
-const FloatingAdminChat = dynamic(() => import("@/components/FloatingAdminChat"), { ssr: false });
-const FloatingLanguageSwitcher = dynamic(() => import("@/components/FloatingLanguageSwitcher"), { ssr: false });
-const BidChecker = dynamic(() => import("@/components/BidChecker"), { ssr: false });
-const WinnerAnnouncement = dynamic(() => import("@/components/WinnerAnnouncement"), { ssr: false });
-
-import useWow from "@/customHooks/useWow";
 import { dmsans, playfair_display } from "@/fonts/font";
 
-import { authStore } from "@/contexts/authStore";
-import { AxiosInterceptor } from "@/app/api/AxiosInterceptor";
-
-import { SnackbarProvider } from "@/contexts/snackbarContext";
-import SocketProvider from "@/contexts/socket";
-import { LanguageProvider } from "@/contexts/LanguageContext";
-import I18nProvider from "@/components/I18nProvider";
-import GlobalLoader from "@/components/common/GlobalLoader";
-import TokenHandler from "@/app/components/TokenHandler";
-import MobileOptimizer from "@/components/common/MobileOptimizer";
-import { usePathname } from "next/navigation";
-import Head from "./head";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import ThemeInjector from "@/components/common/ThemeInjector";
-
-// Import notification service
-import { notificationManager } from "@/services/notifications";
-import { Capacitor } from "@capacitor/core";
-
-function ScrollManager() {
-  const pathname = usePathname();
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
-      window.history.scrollRestoration = "manual";
-      return () => {
-        window.history.scrollRestoration = "auto";
-      };
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      requestAnimationFrame(() => {
-        window.scrollTo({ top: 0, behavior: "auto" });
-        document.documentElement?.scrollTo?.({ top: 0, behavior: "auto" });
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-        setTimeout(() => {
-          window.scrollTo({ top: 0, behavior: "auto" });
-          document.documentElement.scrollTop = 0;
-          document.body.scrollTop = 0;
-        }, 50);
-      });
-    }
-  }, [pathname]);
-
-  return null;
-}
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://mazadclick.com'),
+  title: "MazadClick | Enchères et Ventes Directes en Ligne",
+  description: "La première plateforme en Algérie pour les enchères, les ventes directes et les appels d'offres. Achetez et vendez en toute sécurité avec des vendeurs vérifiés et des paiements protégés.",
+  keywords: "enchères, ventes directes, appels d'offres, Algérie, achats sécurisés, MazadClick, B2B, B2C",
+  openGraph: {
+    title: "MazadClick | Enchères et Ventes Directes en Ligne",
+    description: "La plateforme de référence pour les enchères et appels d'offres. Transactions sécurisées et vendeurs vérifiés.",
+    siteName: "MazadClick",
+    locale: "fr_DZ",
+    type: "website",
+  }
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  // --- Hooks must be called inside the component function body ---
-  
-  // Custom hook for WOW.js animations
-  useWow();
-
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        gcTime: 30 * 60 * 1000,  // 30 minutes
-        retry: 1,
-        refetchOnWindowFocus: false,
-      },
-    },
-  }));
-
-  // Initialize notifications on app load
-  useEffect(() => {
-    // Check if running in Capacitor native app
-    if (Capacitor.isNativePlatform()) {
-      console.log('Initializing push notifications...');
-      notificationManager.initialize().catch(error => {
-        console.error('Failed to initialize notifications:', error);
-      });
-    }
-  }, []);
-
-  // useEffect for initializing authentication state
-  useEffect(() => {
-    // Initialize auth store on app load
-    authStore.getState().initializeAuth();
-  }, []);
-
-  // Set document title
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      document.title = 'MazadClick';
-    }
-  }, []);
-
-  // --- The return statement provides the component's UI ---
   return (
     <html
       lang="en"
@@ -121,27 +37,26 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     >
       <head>
         <Head />
-      </head>
-      <body>
-        {/* Meta Pixel Code */}
-        <Script
-          id="meta-pixel"
-          strategy="afterInteractive"
+        <script
+          type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: `
-              !function(f,b,e,v,n,t,s)
-              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-              n.queue=[];t=b.createElement(e);t.async=!0;
-              t.src=v;s=b.getElementsByTagName(e)[0];
-              s.parentNode.insertBefore(t,s)}(window, document,'script',
-              'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '1893599971552570');
-              fbq('track', 'PageView');
-            `,
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "MazadClick",
+              "url": "https://mazadclick.com",
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://mazadclick.com/auctions?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            })
           }}
         />
+      </head>
+      <body>
+        {/* GDPR Cookie Banner & Conditional Meta Pixel */}
+        <CookieBanner />
         <noscript>
           <img
             height="1"
@@ -151,57 +66,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             alt=""
           />
         </noscript>
-        <QueryClientProvider client={queryClient}>
-          <MobileOptimizer>
-            <I18nProvider>
-              <LanguageProvider>
-                <AxiosInterceptor>
-                  <SocketProvider>
-                    <SnackbarProvider>
-                      <TokenHandler>
-                        <GlobalLoader />
-                        <BidChecker />
-                        <WinnerAnnouncement />
-                        
-                        {/* Notification Handler Component */}
-                        <ThemeInjector />
-                        <NotificationHandler />
-                        
-                        <ScrollManager />
-                        {children}
-                      </TokenHandler>
-                      <ScrollTopBtn />
-                      <FloatingAdminChat />
-                      <FloatingLanguageSwitcher />
-                    </SnackbarProvider>
-                  </SocketProvider>
-                </AxiosInterceptor>
-              </LanguageProvider>
-            </I18nProvider>
-          </MobileOptimizer>
-        </QueryClientProvider>
+        
+        <Providers>
+          {children}
+        </Providers>
+        
         <div id="filter-popup-root"></div>
       </body>
     </html>
   );
-}
-
-// Notification Handler Component
-function NotificationHandler() {
-  useEffect(() => {
-    // Handle notification permissions
-    const handleNotificationPermission = async () => {
-      if ('Notification' in window && Capacitor.getPlatform() === 'web') {
-        if (Notification.permission === 'default') {
-          // Request permission on web
-          const permission = await Notification.requestPermission();
-          console.log('Notification permission:', permission);
-        }
-      }
-    };
-
-    handleNotificationPermission();
-  }, []);
-
-  return null;
 }

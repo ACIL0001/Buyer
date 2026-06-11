@@ -42,7 +42,7 @@ export default function CategoryMegaMenu({
   const [isOpen, setIsOpen] = useState(false);
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
   const [activeSubCategoryId, setActiveSubCategoryId] = useState<string | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ['categories', 'tree'],
@@ -73,18 +73,18 @@ export default function CategoryMegaMenu({
     }
   }, [isOpen, categories, activeCategoryId, isMobile]);
 
-  const handleMouseEnter = () => {
-    if (isMobile) return;
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setIsOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    if (isMobile) return;
-    timeoutRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, 200);
-  };
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [isOpen]);
 
   const getImageUrl = (category: any) => {
     const imageUrl = category.thumb?.url || 
@@ -105,6 +105,7 @@ export default function CategoryMegaMenu({
 
   return (
     <div 
+      ref={containerRef}
       style={{ 
         position: 'relative', 
         height: isMobile ? 'auto' : '100%', 
@@ -113,8 +114,6 @@ export default function CategoryMegaMenu({
         alignItems: isMobile ? 'stretch' : 'center',
         width: '100%'
       }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
       <Link 
         href="#"
@@ -182,13 +181,13 @@ export default function CategoryMegaMenu({
         const activeSub = hasSubcategories ? activeCategory?.children?.find((c: Category) => c._id === activeSubCategoryId) : null;
         const showSubSubcategoriesPanel = activeSub && activeSub.children && activeSub.children.length > 0;
         
-        let containerWidth = '380px';
+        let containerWidth = '342px';
         if (hasSubcategories) {
-          containerWidth = showSubSubcategoriesPanel ? '980px' : '640px';
+          containerWidth = showSubSubcategoriesPanel ? '882px' : '576px';
         }
 
         return (
-          <div style={{
+          <div className="mega-menu-dropdown-wrapper" style={{
             position: isMobile ? 'relative' : 'absolute',
             top: isMobile ? '0' : '100%',
             left: isMobile ? '0' : (i18n.language === 'ar' ? 'auto' : '-20px'),
@@ -199,7 +198,7 @@ export default function CategoryMegaMenu({
             animation: isMobile ? 'none' : 'megaMenuFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
             transition: 'width 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
           }}>
-            <div style={{
+            <div className="mega-menu-inner-container" style={{
               background: '#ffffff',
               borderRadius: isMobile ? '0' : '20px',
               boxShadow: isMobile ? 'none' : '0 20px 40px -10px rgba(0,0,0,0.1), 0 0 20px rgba(0,0,0,0.05)',
@@ -216,10 +215,10 @@ export default function CategoryMegaMenu({
                 <span style={{ fontSize: '15px', fontWeight: '500' }}>{t('common.loading', 'Chargement...')}</span>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', width: '100%' }}>
+              <div className="mega-menu-columns-container" style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', width: '100%' }}>
                 {/* Left Side: Root Categories */}
-                <div className="mega-menu-scroll" style={{
-                  width: isMobile ? '100%' : (hasSubcategories ? '340px' : '100%'),
+                <div className="mega-menu-scroll mega-menu-root-categories-column" style={{
+                  width: isMobile ? '100%' : (hasSubcategories ? '306px' : '100%'),
                   background: '#f8fafc',
                   padding: isMobile ? '8px 20px' : '16px',
                   display: 'flex',
@@ -230,7 +229,7 @@ export default function CategoryMegaMenu({
                   borderRight: !isMobile && hasSubcategories ? '1px solid #e2e8f0' : 'none',
                   transition: 'width 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}>
-                  {categories.map((category) => {
+                  {categories.slice(0, 5).map((category) => {
                     const isCatActive = activeCategoryId === category._id;
                     const hasChildren = category.children && category.children.length > 0;
                     return (
@@ -258,46 +257,17 @@ export default function CategoryMegaMenu({
                               router.push(`/category?category=${category._id}&name=${encodeURIComponent(category.name)}`);
                             }
                           }}
+                          className={`mega-menu-root-category ${isCatActive ? 'active' : ''}`}
                           style={{
                             position: 'relative',
                             height: '80px',
                             borderRadius: '12px',
                             overflow: 'hidden',
                             cursor: 'pointer',
-                            border: isCatActive ? '2px solid #0063b1' : '2px solid transparent',
-                            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                             flexShrink: 0,
                             transform: isCatActive && !hasSubcategories ? 'scale(1.02)' : 'scale(1)'
                           }}
                         >
-                          {/* Background Image */}
-                          <img 
-                            src={getImageUrl(category)} 
-                            alt={category.name}
-                            style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover',
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              zIndex: 1
-                            }}
-                            onError={(e) => {
-                              e.currentTarget.src = "/assets/images/cat.avif";
-                            }}
-                          />
-                          {/* Overlay */}
-                          <div style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            background: isCatActive ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.6)',
-                            zIndex: 2,
-                            transition: 'background 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
-                          }}></div>
                           {/* Content */}
                           <div style={{
                             position: 'relative',
@@ -312,15 +282,43 @@ export default function CategoryMegaMenu({
                             fontSize: '15px'
                           }}>
                             <span>{category.name}</span>
-                            {hasChildren && (
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.2s', transform: (isMobile && isCatActive) ? 'rotate(90deg)' : (isCatActive ? (i18n.language === 'ar' ? 'translateX(-4px)' : 'translateX(4px)') : 'translateX(0)') }}>
-                                {i18n.language === 'ar' ? (
-                                   <path d="M15 18l-6-6 6-6"/>
-                                ) : (
-                                   <path d="M9 18l6-6-6-6"/>
-                                )}
-                              </svg>
-                            )}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div style={{
+                                width: '56px',
+                                height: '56px',
+                                borderRadius: '50%',
+                                overflow: 'hidden',
+                                border: '2px solid rgba(255, 255, 255, 0.8)',
+                                flexShrink: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                background: '#ffffff',
+                                padding: '4px'
+                              }}>
+                                <img 
+                                  src={getImageUrl(category)} 
+                                  alt={category.name}
+                                  style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'contain'
+                                  }}
+                                  onError={(e) => {
+                                    e.currentTarget.src = "/assets/images/cat.avif";
+                                  }}
+                                />
+                              </div>
+                              {hasChildren && (
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.2s', transform: (isMobile && isCatActive) ? 'rotate(90deg)' : (isCatActive ? (i18n.language === 'ar' ? 'translateX(-4px)' : 'translateX(4px)') : 'translateX(0)') }}>
+                                  {i18n.language === 'ar' ? (
+                                     <path d="M15 18l-6-6 6-6"/>
+                                  ) : (
+                                     <path d="M9 18l6-6-6-6"/>
+                                  )}
+                                </svg>
+                              )}
+                            </div>
                           </div>
                         </div>
 
@@ -418,7 +416,7 @@ export default function CategoryMegaMenu({
 
                 {/* Middle and Right: Subcategories Area (Desktop Only) */}
                 {!isMobile && hasSubcategories && (
-                  <div style={{
+                  <div className="mega-menu-subcategories-area" style={{
                     flex: 1,
                     display: 'flex',
                     flexDirection: isMobile ? 'column' : 'row',
@@ -429,8 +427,8 @@ export default function CategoryMegaMenu({
                   {activeCategory ? (
                     <>
                       {/* Subcategories Column */}
-                      <div className="mega-menu-scroll" style={{
-                        width: isMobile ? '100%' : (showSubSubcategoriesPanel ? '300px' : '100%'),
+                      <div className="mega-menu-scroll mega-menu-subcategories-column" style={{
+                        width: isMobile ? '100%' : (showSubSubcategoriesPanel ? '270px' : '100%'),
                         padding: isMobile ? '20px 24px' : '30px 24px',
                         overflowY: isMobile ? 'visible' : 'auto',
                         borderRight: !isMobile && showSubSubcategoriesPanel ? '1px solid #f1f5f9' : 'none',
@@ -512,7 +510,7 @@ export default function CategoryMegaMenu({
                       {/* Sub-subcategories Column */}
                       {showSubSubcategoriesPanel && (() => {
                         return (
-                          <div className="mega-menu-scroll" style={{
+                          <div className="mega-menu-scroll mega-menu-sub-subcategories-column" style={{
                             flex: 1,
                             padding: isMobile ? '20px 24px' : '30px 24px',
                             overflowY: isMobile ? 'visible' : 'auto',
@@ -601,6 +599,20 @@ export default function CategoryMegaMenu({
           to { transform: rotate(360deg); }
         }
 
+        .mega-menu-root-category {
+          background-color: #002896 !important;
+          border: 2px solid transparent !important;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .mega-menu-root-category:hover {
+          background-color: #003bbd !important;
+          transform: translateY(-1px);
+        }
+        .mega-menu-root-category.active {
+          background-color: #0063b1 !important;
+          border-color: #ffffff !important;
+        }
+
         .mega-menu-child-card:hover {
           background: #eff6ff !important;
           border-color: #bfdbfe !important;
@@ -621,6 +633,44 @@ export default function CategoryMegaMenu({
         }
         .mega-menu-scroll::-webkit-scrollbar-thumb:hover {
           background: #94a3b8; 
+        }
+
+        /* Responsive rules for desktop views on narrower screens */
+        .mega-menu-dropdown-wrapper {
+          max-width: calc(90vw - 40px) !important;
+        }
+        @media (max-width: 1200px) {
+          .mega-menu-dropdown-wrapper {
+            width: calc(90vw - 40px) !important;
+            left: -20px !important;
+            right: auto !important;
+          }
+          .mega-menu-inner-container {
+            min-height: auto !important;
+          }
+          .mega-menu-columns-container {
+            flex-direction: column !important;
+          }
+          .mega-menu-root-categories-column {
+            width: 100% !important;
+            max-height: 250px !important;
+            border-right: none !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+          }
+          .mega-menu-subcategories-area {
+            flex-direction: column !important;
+            max-height: none !important;
+          }
+          .mega-menu-subcategories-column {
+            width: 100% !important;
+            max-height: 200px !important;
+            border-right: none !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+          }
+          .mega-menu-sub-subcategories-column {
+            width: 100% !important;
+            max-height: 200px !important;
+          }
         }
       `}</style>
     </div>

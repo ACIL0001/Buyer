@@ -278,7 +278,7 @@ const Home1Category = () => {
       modules: [Autoplay, Navigation, Pagination],
       slidesPerView: 1,
       spaceBetween: 20,
-      loop: true,
+      loop: categories.length > 5,
       autoplay: {
         delay: 5000,
         disableOnInteraction: false,
@@ -290,7 +290,7 @@ const Home1Category = () => {
         1280: { slidesPerView: 5, spaceBetween: 20 },
       },
     }),
-    []
+    [categories.length]
   );
 
   useEffect(() => {

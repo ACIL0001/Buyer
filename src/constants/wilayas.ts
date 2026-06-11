@@ -7,5 +7,7 @@ export const WILAYAS = [
     "Tindouf", "Tissemsilt", "El Oued", "Khenchela", "Souk Ahras", "Tipaza", "Mila",
     "Aïn Defla", "Naâma", "Aïn Témouchent", "Ghardaïa", "Relizane", "Timimoun",
     "Bordj Badji Mokhtar", "Ouled Djellal", "Béni Abbès", "In Salah", "In Guezzam",
-    "Touggourt", "Djanet", "El M'Ghair", "El Meniaa"
+    "Touggourt", "Djanet", "El M'Ghair", "El Meniaa", "Aflou", "Barika",
+    "El Kantara", "Bir El Ater", "El Aricha", "Ksar Chellala", "Aïn Oussara",
+    "Messaad", "Ksar El Boukhari", "Bou Saâda", "El Abiodh Sidi Cheikh"
 ];

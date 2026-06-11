@@ -54,9 +54,18 @@ const SocketProvider: React.FC<Props> = (props = {}) => {
     
     const createSocket = () => {
       let userId = 'guest'; // Default to guest for unauthenticated users
+      let token = ''; // Store the JWT token
       
       if (user?._id) {
         userId = user._id;
+        // The token is not directly in the 'user' object from useAuth usually, we must get it from localStorage
+        const authData = window.localStorage.getItem('auth');
+        if (authData) {
+          try {
+            const parsed = JSON.parse(authData);
+            token = parsed?.tokens?.accessToken || parsed?.tokens?.access_token || '';
+          } catch (e) {}
+        }
       } else {
         // Fallback to localStorage if useAuth hasn't loaded (though useAuth is preferred)
         const authData = window.localStorage.getItem('auth');
@@ -64,6 +73,7 @@ const SocketProvider: React.FC<Props> = (props = {}) => {
           try {
             const userData = JSON.parse(authData);
             userId = userData?.user?._id || 'guest';
+            token = userData?.tokens?.accessToken || userData?.tokens?.access_token || '';
           } catch (error) {
             console.error('Error parsing auth data:', error);
           }
@@ -73,7 +83,7 @@ const SocketProvider: React.FC<Props> = (props = {}) => {
       console.log('Creating socket connection for user:', userId);
 
       currentSocket = io(app.socket, {
-        query: { userId },
+        query: { userId, token }, // Pass the token!
         transports: ['websocket', 'polling'],
         timeout: 20000,
         // Limit reconnection attempts to prevent spam

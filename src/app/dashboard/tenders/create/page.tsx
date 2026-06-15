@@ -403,7 +403,7 @@ export default function CreateTenderPage() {
                                                             <MdOutlinePrivacyTip size={18} />
                                                         </Box>
                                                         <Box>
-                                                            <Typography variant="body2" fontWeight="700" sx={{ fontSize: '0.85rem' }}>Sans image commerciale</Typography>
+                                                            <Typography variant="body2" fontWeight="700" sx={{ fontSize: '0.85rem' }}>Anonyme</Typography>
                                                         </Box>
                                                     </Box>
                                                     <Switch size="small" checked={formik.values.hidden} onChange={formik.handleChange} name="hidden" />

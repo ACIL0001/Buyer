@@ -58,6 +58,16 @@ instance.interceptors.request.use(
             axiosConfig.headers['accept-language'] = (auth.user as any).preference.language;
         }
 
+        // CSRF Protection
+        const isMutatingRequest = method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+        if (isMutatingRequest && typeof window !== 'undefined') {
+            const match = document.cookie.match(new RegExp('(^| )csrf_token=([^;]+)'));
+            const csrfToken = match ? match[2] : '';
+            if (csrfToken) {
+                axiosConfig.headers['X-CSRF-Token'] = csrfToken;
+            }
+        }
+
         return axiosConfig;
     },
     (error) => {

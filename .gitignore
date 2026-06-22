@@ -33,6 +33,16 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# Signing keys & keystores
+*.keystore
+*.jks
+*.key
+*.p12
+local.properties
+
+# Zip archives (may contain secrets)
+*.zip
+
 # vercel
 .vercel
 

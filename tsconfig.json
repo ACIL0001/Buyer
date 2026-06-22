@@ -29,15 +29,19 @@
     }
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    "src/components/auction-sidebar/MultipurposeAuctionSidebar.jsx",
+    "next-env.d.ts",
     "src/app/api/review.js",
+    "src/components/auction-sidebar/MultipurposeAuctionSidebar.jsx",
+    ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
   ]
 }

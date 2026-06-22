@@ -127,12 +127,12 @@ export const AuthAPI = {
     }
   },
 
-  refresh: async (refreshToken: string): Promise<AuthResponse> => {
+  refresh: async (): Promise<AuthResponse> => {
     try {
-      console.log('🔄 AuthAPI.refresh called with token:', refreshToken ? 'present' : 'missing');
+      console.log('🔄 AuthAPI.refresh called via HttpOnly cookie');
 
-      // Use the correct field name expected by backend
-      const res = await requests.post('auth/refresh', { refresh_token: refreshToken });
+      // Use PUT as defined in backend controller, browser attaches HttpOnly cookie automatically
+      const res = await requests.put('auth/refresh', {});
       console.log('🔄 AuthAPI.refresh response:', {
         success: 'success' in res ? res.success : false,
         hasTokens: !!('accessToken' in res ? res.accessToken : ('access_token' in res ? res.access_token : undefined))

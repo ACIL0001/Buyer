@@ -60,7 +60,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       openGraph: {
         title: title,
         description: enhancedDescription,
-        url: `https://mazadclick.com/direct-sale/${id}`,
+        url: `https://mazadclick.vercel.app/direct-sale/${id}`,
         images: fullImageUrl ? [
           {
             url: fullImageUrl,
@@ -117,7 +117,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
             price: price,
             priceCurrency: currency,
             availability: stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-            url: `https://mazadclick.com/direct-sale/${id}`,
+            url: `https://mazadclick.vercel.app/direct-sale/${id}`,
             itemCondition: condition === 'new' ? 'https://schema.org/NewCondition' : 'https://schema.org/UsedCondition',
           },
           brand: {

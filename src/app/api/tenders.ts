@@ -1,5 +1,6 @@
 // Buyer-side tenders API
 import { requests } from './utils';
+import tracker from '@/utils/analytics/tracker';
 
 export const TendersAPI = {
   // Get all active tenders
@@ -9,8 +10,22 @@ export const TendersAPI = {
   getTenderById: (id: string): Promise<any> => requests.get(`tender/${id}`),
 
   // Submit a bid on a tender
-  submitTenderBid: (tenderId: string, bid: FormData | Record<string, any>): Promise<any> => {
+  submitTenderBid: async (tenderId: string, bid: FormData | Record<string, any>): Promise<any> => {
     console.log('Submitting tender bid:', { tenderId, isFormData: bid instanceof FormData });
+    
+    // Extract bid amount if possible
+    let offerAmount = undefined;
+    if (bid instanceof FormData) {
+      offerAmount = bid.get('offer') || bid.get('price');
+    } else {
+      offerAmount = bid.offer || bid.price;
+    }
+    
+    tracker.track('tender_offer_submitted', {
+      tenderId,
+      offerAmount: Number(offerAmount) || 0,
+    });
+    
     if (bid instanceof FormData) {
       return requests.postFormData(`tender/${tenderId}/bid`, bid);
     }

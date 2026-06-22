@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "771236615564",
+    "project_id": "mazadclick-8c76b",
+    "storage_bucket": "mazadclick-8c76b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:771236615564:android:e07d719b4bb46ebbf032a9",
+        "android_client_info": {
+          "package_name": "com.mazadclick.buyer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDE3OpMD-7rG1gPLCFIgHwYEjLZcpPqGnQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

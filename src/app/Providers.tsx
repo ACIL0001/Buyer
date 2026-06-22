@@ -27,6 +27,7 @@ const FloatingAdminChat = dynamic(() => import("@/components/FloatingAdminChat")
 const FloatingLanguageSwitcher = dynamic(() => import("@/components/FloatingLanguageSwitcher"), { ssr: false });
 const BidChecker = dynamic(() => import("@/components/BidChecker"), { ssr: false });
 const WinnerAnnouncement = dynamic(() => import("@/components/WinnerAnnouncement"), { ssr: false });
+const AnalyticsProvider = dynamic(() => import("@/utils/analytics/AnalyticsProvider"), { ssr: false });
 
 function ScrollManager() {
   const pathname = usePathname();
@@ -106,6 +107,7 @@ export default function Providers({ children }: { children: ReactNode }) {
   }, []);
 
   return (
+    <AnalyticsProvider>
     <QueryClientProvider client={queryClient}>
       <MobileOptimizer>
         <I18nProvider>
@@ -132,5 +134,6 @@ export default function Providers({ children }: { children: ReactNode }) {
         </I18nProvider>
       </MobileOptimizer>
     </QueryClientProvider>
+    </AnalyticsProvider>
   );
 }

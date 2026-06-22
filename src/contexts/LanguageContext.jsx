@@ -12,6 +12,13 @@ export const useLanguage = () => {
   return context;
 };
 
+const setLanguageCookie = (languageCode) => {
+  if (typeof document === 'undefined') return;
+  const expires = new Date();
+  expires.setTime(expires.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 year
+  document.cookie = `i18nextLng=${languageCode};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+};
+
 export const LanguageProvider = ({ children }) => {
   const [isRTL, setIsRTL] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('fr');
@@ -62,6 +69,9 @@ export const LanguageProvider = ({ children }) => {
     html.setAttribute('lang', savedLanguage);
     html.setAttribute('dir', languageConfig.dir);
     
+    // Set language cookie on mount
+    setLanguageCookie(savedLanguage);
+    
     // Add RTL-specific styles
     if (languageConfig.isRTL) {
       document.body.style.direction = 'rtl';
@@ -86,6 +96,9 @@ export const LanguageProvider = ({ children }) => {
       const html = document.documentElement;
       html.setAttribute('lang', lng);
       html.setAttribute('dir', languageConfig.dir);
+      
+      // Set language cookie on language change
+      setLanguageCookie(lng);
       
       // Add RTL-specific styles
       if (languageConfig.isRTL) {
@@ -113,6 +126,7 @@ export const LanguageProvider = ({ children }) => {
       if (i18n && i18nReady) {
         i18n.changeLanguage(languageCode);
         localStorage.setItem('i18nextLng', languageCode);
+        setLanguageCookie(languageCode);
       }
     }
   };

@@ -7,26 +7,67 @@ const require = createRequire(import.meta.url);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // REMOVE output: 'export' for dynamic routes
+  // output: 'export',
+  
+  distDir: '.next', // Keep as .next for standard build
+  
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'mazadclick-server.onrender.com',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'api.mazad.click',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.onrender.com',
-        pathname: '/**',
-      }
-    ],
+      { protocol: 'https', hostname: '**.mazad.click' },
+      { protocol: 'http', hostname: '**.mazad.click' },
+      { protocol: 'https', hostname: '**.easyeats.dz' },
+      { protocol: 'http', hostname: '**.easyeats.dz' },
+      { protocol: 'http', hostname: 'localhost' },
+      { protocol: 'http', hostname: '127.0.0.1' },
+      { protocol: 'https', hostname: 'ui-avatars.com' },
+      { protocol: 'https', hostname: 'mazadclick-server.onrender.com' }
+    ]
   },
-  /* config options here */
+  
+  // Keep trailingSlash for better routing
+  // trailingSlash: true,
+  
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin'
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: process.env.NODE_ENV === 'development' 
+              ? "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https: http://127.0.0.1:* http://localhost:*; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* https://mazadclick-server.onrender.com wss://mazadclick-server.onrender.com https://api.easyeats.dz wss://api.easyeats.dz; frame-ancestors 'self';"
+              : "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://*.mazad.click https://mazadclick-server.onrender.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://mazadclick-server.onrender.com wss://mazadclick-server.onrender.com https://api.easyeats.dz wss://api.easyeats.dz; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()'
+          }
+        ]
+      }
+    ];
+  },
+  
   webpack: (config, { isServer, dev }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
@@ -52,14 +93,10 @@ const nextConfig = {
       };
     }
 
-    // Exclude Node.js-specific modules from client bundle
     if (!isServer) {
-      // These modules are Node.js-specific and shouldn't be bundled for browser
-      // Browser uses native FormData API instead
       const webpack = require('webpack');
       config.plugins = config.plugins || [];
       
-      // Replace Node.js modules with empty shims for browser builds
       config.plugins.push(
         new webpack.NormalModuleReplacementPlugin(
           /^form-data$/,
@@ -83,34 +120,28 @@ const nextConfig = {
     return config;
   },
   
-  // Improve performance
   compress: true,
   poweredByHeader: false,
-  
-  // React compatibility - enable strict mode for better error detection
   reactStrictMode: true,
   
-  // Remove standalone output for development (only for production builds)
-  // output: 'standalone',
-  
-  // Experimental features
   experimental: {
     optimizeCss: true,
   },
+
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? {
+      exclude: ["error"], // Removes log, warn, info, debug, etc.
+    } : false,
+  },
   
-  // Turbopack config (empty config to silence Next.js 16 warning about webpack config)
   turbopack: {},
   
-
-  
-  // Improve error handling
   onDemandEntries: {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 2,
   },
   
-  // External packages
   serverExternalPackages: ['critters', 'react-i18next', 'i18next'],
 };
 
-export default nextConfig; 
+export default nextConfig;

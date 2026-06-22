@@ -27,95 +27,17 @@ const StartupPage = () => {
           overflowX: 'hidden',
         }}
       >
-        {/* 1. Hero Section */}
-        <section
-          className="startup-hero"
-          style={{
-            position: 'relative',
-            width: '100%',
-            minHeight: 'clamp(420px, 60vw, 657px)',
-            marginTop: 'clamp(20px, 4vw, 60px)',
-            display: 'flex',
-            alignItems: 'center',
-            backgroundImage:
-              'linear-gradient(0deg, rgba(0, 40, 150, 0.63), rgba(0, 40, 150, 0.63)), url("/assets/images/startup banner.jpg")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            padding: 'clamp(40px, 8vw, 107px) clamp(20px, 5vw, 80px)',
-            boxSizing: 'border-box',
-          }}
-        >
-          <div style={{ width: '100%', maxWidth: '1440px', margin: '0 auto' }}>
-            <div style={{ maxWidth: '792px', display: 'flex', flexDirection: 'column', gap: 'clamp(20px, 4vw, 45px)' }}>
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                style={{
-                  fontFamily: '"DM Sans", sans-serif',
-                  fontWeight: 700,
-                  fontSize: 'clamp(28px, 5.5vw, 56px)',
-                  lineHeight: 1.18,
-                  color: '#FFFFFF',
-                  margin: 0,
-                }}
-              >
-                Mazadclick Startups<br />Lorem Ipsum
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                style={{
-                  fontFamily: '"Inter", sans-serif',
-                  fontWeight: 400,
-                  fontSize: 'clamp(14px, 1.6vw, 18px)',
-                  lineHeight: 1.6,
-                  color: '#FCFEFF',
-                  margin: 0,
-                  maxWidth: '792px',
-                }}
-              >
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam
-              </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-              >
-                <button
-                  onClick={() => router.push('/plans')}
-                  style={{
-                    display: 'inline-flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: 'clamp(14px, 2.5vw, 24px) clamp(20px, 4vw, 36px)',
-                    gap: '10px',
-                    width: '100%',
-                    maxWidth: '315px',
-                    minHeight: 'clamp(52px, 8vw, 71px)',
-                    background: 'linear-gradient(88.88deg, #062C90 50.03%, #3F95DD 98.92%)',
-                    boxShadow:
-                      'inset -1px -1px 1px rgba(6, 44, 144, 0.4), inset 1px 1px 1px rgba(6, 44, 144, 0.4), inset -1px -1px 1px rgba(255, 255, 255, 0.25), inset 1px 1px 4px rgba(255, 255, 255, 0.6)',
-                    borderRadius: '40px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s ease',
-                    boxSizing: 'border-box',
-                    fontFamily: '"DM Sans", sans-serif',
-                    fontWeight: 600,
-                    fontSize: 'clamp(15px, 1.6vw, 18px)',
-                    color: '#FFFFFF',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  Découvrez nos plans
-                </button>
-              </motion.div>
-            </div>
-          </div>
+        {/* 1. Hero Section with Video Background */}
+        <section className="video-banner-container" style={{ marginTop: '20px' }}>
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="video-banner-bg"
+          >
+            <source src="/assets/images/VF_04 - banner statup mp4.mp4" type="video/mp4" />
+          </video>
         </section>
 
         {/* 2. Comment ça marche Section */}
@@ -123,13 +45,14 @@ const StartupPage = () => {
           <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <h2 style={{
               color: '#002896',
-              fontSize: 'clamp(24px, 4vw, 42px)',
-              fontWeight: 800,
+              fontFamily: '"DM Sans", sans-serif',
+              fontSize: 'clamp(22px, 2.5vw, 32px)',
+              fontWeight: 700,
               textAlign: 'center',
-              marginBottom: 'clamp(40px, 8vw, 80px)',
+              marginBottom: 'clamp(40px, 6vw, 60px)',
               maxWidth: '800px',
-              margin: '0 auto clamp(40px, 8vw, 80px)',
-              lineHeight: 1.2,
+              margin: '0 auto clamp(40px, 6vw, 60px)',
+              lineHeight: 1.3,
             }}>
               Devenez le moteur de la transformation économique.
             </h2>
@@ -216,7 +139,7 @@ const StartupPage = () => {
                 <div style={{
                   fontFamily: '"Inter", sans-serif',
                   fontWeight: 700,
-                  fontSize: 'clamp(36px, 5vw, 64px)',
+                  fontSize: 'clamp(36px, 4.5vw, 56px)',
                   color: '#002896',
                   lineHeight: 1.1,
                   marginBottom: '12px',
@@ -224,7 +147,7 @@ const StartupPage = () => {
                 <div style={{
                   fontFamily: '"DM Sans", sans-serif',
                   fontWeight: 500,
-                  fontSize: 'clamp(15px, 1.6vw, 20px)',
+                  fontSize: 'clamp(14px, 1.4vw, 16px)',
                   color: '#002896',
                   lineHeight: 1.3,
                 }}>{s.label}</div>
@@ -263,25 +186,28 @@ const StartupPage = () => {
               pointerEvents: 'none',
             }} />
 
-            <div style={{ position: 'relative', maxWidth: '751px', width: '100%', textAlign: 'right' }}>
-              <h2 style={{
-                fontFamily: '"DM Sans", sans-serif',
-                fontWeight: 700,
-                fontSize: 'clamp(26px, 4.8vw, 56px)',
-                lineHeight: 1.2,
-                color: '#002896',
-                margin: 0,
-              }}>
+            <div style={{ position: 'relative', maxWidth: '100%', width: '100%', textAlign: 'right' }}>
+              <h2 
+                className="cta-title"
+                style={{
+                  fontFamily: '"DM Sans", sans-serif',
+                  fontWeight: 700,
+                  fontSize: 'clamp(22px, 2.5vw, 32px)',
+                  lineHeight: 1.3,
+                  color: '#002896',
+                  margin: 0,
+                }}
+              >
                 Prets a lancer votre startup au niveau seconaire ?
               </h2>
             </div>
 
             <div style={{ position: 'relative', maxWidth: '623px', width: '100%', textAlign: 'right' }}>
               <p style={{
-                fontFamily: '"DM Sans", sans-serif',
+                fontFamily: '"Inter", sans-serif',
                 fontWeight: 400,
-                fontSize: 'clamp(15px, 2vw, 24px)',
-                lineHeight: 1.4,
+                fontSize: 'clamp(14px, 1.6vw, 18px)',
+                lineHeight: 1.5,
                 color: '#002896',
                 margin: 0,
               }}>
@@ -348,6 +274,25 @@ const StartupPage = () => {
 
         {/* Global Styles */}
         <style jsx global>{`
+          .video-banner-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 2436 / 630;
+            max-height: 630px;
+            overflow: hidden;
+            background: #002896;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .video-banner-bg {
+            width: 2436px;
+            height: 630px;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+          }
+
           .btn-solid-blue {
             background: #002896;
             color: white;
@@ -396,9 +341,9 @@ const StartupPage = () => {
           }
           .feature-text p {
             color: #757575;
-            font-family: 'DM Sans', sans-serif;
-            font-size: clamp(15px, 1.7vw, 20px);
-            line-height: 1.6;
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(14px, 1.4vw, 16px);
+            line-height: 1.65;
             margin: 0;
           }
           .feature-image {
@@ -423,6 +368,15 @@ const StartupPage = () => {
             }
             .feature-image {
               max-width: 100%;
+            }
+          }
+
+          .cta-title {
+            white-space: nowrap;
+          }
+          @media (max-width: 540px) {
+            .cta-title {
+              white-space: normal;
             }
           }
         `}</style>

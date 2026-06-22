@@ -7,9 +7,13 @@ import Link from 'next/link';
 export default function CookieBanner() {
   const [consentGiven, setConsentGiven] = useState<boolean | null>(null);
 
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID || '1893599971552570';
+
   useEffect(() => {
-    // Check if the user has already consented
-    const storedConsent = localStorage.getItem('cookie_consent');
+    // Check if the user has already consented using cookies instead of localStorage
+    const match = document.cookie.match(new RegExp('(^| )cookie_consent=([^;]+)'));
+    const storedConsent = match ? match[2] : null;
+    
     if (storedConsent === 'true') {
       setConsentGiven(true);
     } else if (storedConsent === 'false') {
@@ -18,12 +22,14 @@ export default function CookieBanner() {
   }, []);
 
   const acceptCookies = () => {
-    localStorage.setItem('cookie_consent', 'true');
+    // Set cookie to expire in 1 year
+    document.cookie = "cookie_consent=true; max-age=31536000; path=/";
     setConsentGiven(true);
   };
 
   const declineCookies = () => {
-    localStorage.setItem('cookie_consent', 'false');
+    // Set cookie to expire in 1 year
+    document.cookie = "cookie_consent=false; max-age=31536000; path=/";
     setConsentGiven(false);
   };
 
@@ -44,7 +50,7 @@ export default function CookieBanner() {
               t.src=v;s=b.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '1893599971552570');
+              fbq('init', '${pixelId}');
               fbq('track', 'PageView');
             `,
           }}

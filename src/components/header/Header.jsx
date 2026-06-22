@@ -16,6 +16,7 @@ import { FaRegBell } from 'react-icons/fa';
 import { normalizeImageUrl } from '@/utils/url';
 import { useQuery } from '@tanstack/react-query';
 import Fuse from 'fuse.js';
+import tracker from '@/utils/analytics/tracker';
 
 // API Imports for Search
 import { CategoryAPI } from '@/app/api/category';
@@ -265,6 +266,7 @@ export const Header = () => {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+    tracker.track('search_performed', { query: searchQuery, filter: searchFilter, resultsCount: searchResults?.length || 0 });
     if (searchResults.length > 0) handleSearchSelect(searchResults[0]);
   };
 

@@ -79,7 +79,7 @@ class NotificationManager {
   private async sendTokenToServer(token: string) {
     try {
       // Send to your backend
-      await fetch('https://mazadclick.com/api/register-device', {
+      await fetch('https://mazadclick.vercel.app/api/register-device', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

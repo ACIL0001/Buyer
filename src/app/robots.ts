@@ -1,12 +1,25 @@
 import { MetadataRoute } from 'next';
+import { headers } from 'next/headers';
 
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+
+  if (host.includes('vercel.app') && !host.includes('mazadclick.vercel.app')) {
+    return {
+      rules: {
+        userAgent: '*',
+        disallow: '/',
+      },
+    };
+  }
+
   return {
     rules: {
       userAgent: '*',
       allow: '/',
       disallow: ['/dashboard/', '/dashboard/*', '/api/', '/api/*'],
     },
-    sitemap: 'https://mazadclick.com/sitemap.xml',
+    sitemap: 'https://mazadclick.vercel.app/sitemap.xml',
   };
 }

@@ -520,8 +520,7 @@ export default function CreateDirectSalePage() {
                                                         <MdOutlinePrivacyTip size={18} />
                                                     </Box>
                                                     <Box>
-                                                        <Typography variant="body2" fontWeight="700" sx={{ fontSize: '0.85rem' }}>Anonyme</Typography>
-                                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>Publier anonymement</Typography>
+                                                         <Typography variant="body2" fontWeight="700" sx={{ fontSize: '0.85rem' }}>Sans image commerciale</Typography>
                                                     </Box>
                                                 </Box>
                                                 <Switch size="small" checked={formik.values.hidden} onChange={formik.handleChange} name="hidden" />

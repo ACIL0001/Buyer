@@ -561,7 +561,7 @@ export default function UsersPage() {
 
   const handleLoginClick = () => {
     // Redirect to login page
-    window.location.href = 'https://mazadclick.com/auth/login/';
+    window.location.href = 'https://mazadclick.vercel.app/auth/login/';
   };
 
   // Show login prompt if user is not authenticated
@@ -762,7 +762,7 @@ export default function UsersPage() {
                     marginTop: '30px',
                     marginBottom: '0'
                   }}>
-                    Don't have an account? <a href="https://mazadclick.com/auth/register/" style={{ color: '#0063b1', fontWeight: '600', textDecoration: 'none' }}>Sign up</a> to join our community!
+                    Don't have an account? <a href="https://mazadclick.vercel.app/auth/register/" style={{ color: '#0063b1', fontWeight: '600', textDecoration: 'none' }}>Sign up</a> to join our community!
                   </p>
                 </div>
               </div>

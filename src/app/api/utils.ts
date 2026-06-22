@@ -1,5 +1,7 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 import app from '@/config';
+import { getCsrfToken, isProtectedPath } from '@/utils/csrf';
+import { authStore } from '@/contexts/authStore';
 
 interface ExtendedAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
@@ -24,20 +26,18 @@ const getTokenFromStorage = (): string | null => {
   try {
     if (typeof window === 'undefined') return null;
 
-    const authData = localStorage.getItem('auth');
-    if (authData) {
-      const parsed = JSON.parse(authData);
-      const token = parsed?.tokens?.accessToken;
-      if (token && typeof token === 'string' && token.trim() !== '') {
-        console.log('🔑 Token found in localStorage');
-        return token;
-      }
+    // Use authStore directly to get the token from memory, 
+    // avoiding the need to decrypt the VaultService payload synchronously
+    const state = authStore.getState();
+    const token = state.auth?.tokens?.accessToken || null;
+    
+    // Debug token retrieval
+    if (!token && state.isLogged) {
+      console.warn('⚠️ authStore says isLogged=true but tokens.accessToken is missing!', state.auth);
     }
-
-    // Only warn for authenticated endpoints, not auth endpoints
-    return null;
+    
+    return token;
   } catch (error) {
-    console.error('⚠️ Error getting token from storage:', error);
     return null;
   }
 };
@@ -49,8 +49,6 @@ const instance = axios.create({
   withCredentials: true,
 });
 
-// Debug: Log the axios instance baseURL to help diagnose configuration issues
-console.log('🌐 API Utils axios baseURL:', app.baseURL);
 
 // Add request interceptor to automatically attach auth token
 instance.interceptors.request.use(
@@ -72,9 +70,13 @@ instance.interceptors.request.use(
       // Ensure proper Bearer format
       const authHeader = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
       config.headers.Authorization = authHeader;
-      console.log('🔑 Auth token attached to request:', config.url);
-    } else if (!isAuthEndpoint && !token) {
-      // console.warn('⚠️ No auth token available for request:', config.url);
+    }
+
+    // CSRF Protection
+    const isMutatingRequest = config.method && ['post', 'put', 'patch', 'delete'].includes(config.method.toLowerCase());
+    if (isMutatingRequest || (config.url && isProtectedPath(config.url))) {
+      config.headers = config.headers || {};
+      config.headers['X-CSRF-Token'] = getCsrfToken();
     }
 
     return config;
@@ -94,34 +96,62 @@ instance.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
-      console.warn('🔒 401 Unauthorized - Token may be expired');
       originalRequest._retry = true;
 
-      // Only redirect if this is NOT a login/signup request, guest message request, or chat-related request
+      // Only redirect if this is NOT a login/signup request or guest message request
       const isLoginRequest = originalRequest.url?.includes('auth/signin') || originalRequest.url?.includes('auth/signup');
       const isGuestMessageRequest = originalRequest.url?.includes('message/guest-message');
-      const isChatRequest = originalRequest.url?.includes('chat/') || originalRequest.url?.includes('message/');
 
-      if (!isLoginRequest && !isGuestMessageRequest && !isChatRequest) {
+      if (!isLoginRequest && !isGuestMessageRequest) {
+        
+        // Try token refresh flow
+        try {
+          const { AuthAPI } = await import('@/app/api/auth');
+          // Browser will automatically attach the HttpOnly refresh_token cookie
+          const res = await AuthAPI.refresh();
+          
+          if (res.success && res.accessToken) {
+              // Retry original request with new token
+              originalRequest.headers.Authorization = `Bearer ${res.accessToken}`;
+              
+              // We also need to update the session storage with the new accessToken
+              const authDataStr = window.sessionStorage.getItem('auth');
+              if (authDataStr) {
+                 const authData = JSON.parse(authDataStr);
+                 if (!authData.tokens) authData.tokens = {};
+                 authData.tokens.accessToken = res.accessToken;
+                 // Note: we no longer store refreshToken in sessionStorage
+                 window.sessionStorage.setItem('auth', JSON.stringify(authData));
+              }
+
+              return instance(originalRequest);
+          }
+        } catch (refreshError) {
+             // Refresh failed, proceed to logout
+        }
+        
         // Clear auth data on 401 (only for non-login and non-guest requests)
         if (typeof window !== 'undefined') {
-          localStorage.removeItem('auth');
+          // Import and clear vault
+          try {
+            const { VaultService } = await import('@/services/vault');
+            await VaultService.clear();
+          } catch (e) {
+            authStore.getState().logout();
+          }
 
           // Try to get authStore and logout
           try {
-            const { authStore } = await import('@/contexts/authStore');
             authStore.getState().logout();
-          } catch (e) {
-            console.warn('Could not access auth store for logout');
-          }
+          } catch (e) {}
 
           // Redirect to login if not already there
           if (window.location.pathname !== '/auth/login' && window.location.pathname !== '/auth/signin') {
             window.location.href = '/auth/login';
           }
         }
-      } else if (isGuestMessageRequest || isChatRequest) {
-        console.log('🔒 Guest message or chat request got 401 - this should not happen, but not redirecting');
+      } else if (isGuestMessageRequest) {
+        console.log('🔒 Guest message request got 401 - this should not happen, but not redirecting');
       }
     }
 

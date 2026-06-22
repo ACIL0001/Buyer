@@ -1,25 +1,12 @@
-export const DEV_SERVER_URL = 'https://mazadclick-server.onrender.com';
+export const DEV_SERVER_URL = 'http://127.0.0.1:3000';
+// export const DEV_SERVER_URL = 'http://127.0.0.1:3000';
 export const PROD_SERVER_URL = 'https://mazadclick-server.onrender.com';
-export const PROD_SERVER_URL_FALLBACK = 'https://api.mazad.click';
-
-// All production URLs for URL sanitization (priority order)
-export const PRODUCTION_URLS = [PROD_SERVER_URL, PROD_SERVER_URL_FALLBACK];
 
 export const isProductionEnvironment = process.env.NODE_ENV === 'production';
-export const resolvedServerUrl = PROD_SERVER_URL;
+export const resolvedServerUrl = isProductionEnvironment ? PROD_SERVER_URL : DEV_SERVER_URL;
 const resolvedServerUrlWithSlash = resolvedServerUrl.endsWith('/')
   ? resolvedServerUrl
   : `${resolvedServerUrl}/`;
-
-// Debug: Log resolved URL to help diagnose configuration issues
-if (typeof window !== 'undefined') {
-  console.log('🔧 API URL Configuration:', {
-    nodeEnv: process.env.NODE_ENV,
-    isProduction: isProductionEnvironment,
-    resolvedUrl: resolvedServerUrl,
-    envVar: process.env.NEXT_PUBLIC_API_BASE_URL || '(not set)'
-  });
-}
 
 const app = {
   name: 'MazadClick',
@@ -42,26 +29,32 @@ const app = {
   baseURL: resolvedServerUrlWithSlash,
 
   // Frontend URLs - Dynamic based on environment
-  frontendUrl: process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://mazadclick.vercel.app/',
+  frontendUrl: (typeof window !== 'undefined' && window.location.hostname.includes('localhost')) 
+    ? `${window.location.protocol}//${window.location.host}`
+    : (process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://mazadclick.vercel.app/'),
   frontendPort: process.env.NODE_ENV === 'development' ? ':3001' : '',
 
   // Seller Application URL - Dynamic based on environment
-  sellerUrl: isProductionEnvironment 
-    ? 'https://mazad-click-seller.vercel.app/'
-    : 'http://localhost:3002/',
-  // sellerUrl:  'https://api.mazad.click/seller',
+  sellerUrl:  'https://dashbord.seller.mazad.click/',
+  // sellerUrl:  'https://dashbord.seller.mazad.click',
 
-  apiKey: '64d2e8b7c3a9f1e5d8b2a4c6e9f0d3a5',
+  apiKey: process.env.NEXT_PUBLIC_API_KEY || '',
 };
+
+// Warn in development if API key is missing
+if (typeof window !== 'undefined' && !app.apiKey && process.env.NODE_ENV === 'development') {
+  console.warn('⚠️ NEXT_PUBLIC_API_KEY is not set. API requests may fail. Set it in your .env.local file.');
+}
 
 export const API_BASE_URL = app.baseURL;
 
 // Helper function to get the full frontend URL
 export const getFrontendUrl = (): string => {
-  // let a = "development" ;
-  // if (a === 'development') {
-  //   return `http://localhost:3001`;
-  // }
+  // Check if we are in a browser environment and strictly on localhost
+  if (typeof window !== 'undefined' && window.location.hostname.includes('localhost')) {
+    return `${window.location.protocol}//${window.location.host}`;
+  }
+  
   if (process.env.NODE_ENV === 'development') {
     return `http://localhost:3001`;
   }

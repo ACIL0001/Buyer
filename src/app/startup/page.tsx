@@ -1,16 +1,35 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/header/Header';
 import Footer from '@/components/footer/FooterWithErrorBoundary';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import DynamicScrollToTop from "@/components/common/DynamicScrollToTop";
 import { motion } from 'framer-motion';
+import app from '@/config';
 
 const StartupPage = () => {
   const { t } = useTranslation();
   const router = useRouter();
+  const [proCount, setProCount] = useState<number | string>('+10');
+
+  useEffect(() => {
+    const fetchProCount = async () => {
+      try {
+        const response = await fetch(`${app.baseURL}stats/users`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.byType && typeof data.byType.professional === 'number') {
+            setProCount(data.byType.professional);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch professional user stats:", err);
+      }
+    };
+    fetchProCount();
+  }, []);
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -20,7 +39,8 @@ const StartupPage = () => {
           width: '100%',
           margin: '0',
           background: '#FFFFFF',
-          paddingTop: 'clamp(80px, 18vw, 256px)',
+          paddingTop: 'clamp(80px, 15vw, 220px)',
+          paddingBottom: 'clamp(40px, 8vw, 100px)',
           position: 'relative',
           opacity: 1,
           boxSizing: 'border-box',
@@ -28,7 +48,7 @@ const StartupPage = () => {
         }}
       >
         {/* 1. Hero Section with Video Background */}
-        <section className="video-banner-container" style={{ marginTop: '20px' }}>
+        <section className="video-banner-container">
           <video
             autoPlay
             loop
@@ -110,50 +130,48 @@ const StartupPage = () => {
 
         {/* 3. Statistics Banner */}
         <section style={{
+          padding: 'clamp(20px, 4vw, 40px) clamp(16px, 4vw, 20px)',
+          display: 'flex',
+          justifyContent: 'center',
           width: '100%',
           maxWidth: '1440px',
           margin: '0 auto clamp(30px, 6vw, 60px)',
-          padding: '0 clamp(16px, 4vw, 85px)',
           boxSizing: 'border-box',
         }}>
           <div style={{
             width: '100%',
-            background: 'linear-gradient(127.45deg, rgba(230, 230, 230, 0.7) 2.15%, rgba(195, 201, 215, 0.14) 63.05%)',
+            maxWidth: '1282px',
+            minHeight: '160px',
+            padding: 'clamp(20px, 4vw, 40px) clamp(16px, 4vw, 32px)',
+            background: '#d8d8d8',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             borderRadius: '24px',
-            border: '1px solid rgba(255, 255, 255, 0.42)',
-            boxShadow: '0px 20px 40px 0px rgba(0, 0, 0, 0.1), 0px 4px 4px 0px rgba(0, 0, 0, 0.25)',
-            padding: 'clamp(28px, 5vw, 48px) clamp(20px, 4vw, 40px)',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: 'clamp(20px, 4vw, 40px)',
-            boxSizing: 'border-box',
+            border: '1px solid',
+            borderImageSource: 'linear-gradient(127.23deg, rgba(255, 255, 255, 0.42) 2.46%, rgba(255, 255, 255, 0.24) 97.36%)',
+            borderImageSlice: 1,
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'space-around',
+            alignItems: 'center',
+            gap: 'clamp(16px, 3vw, 32px)',
+            textAlign: 'center',
+            boxShadow: '0px 20px 40px 0px #0000001A, 0px 4px 4px 0px #00000040',
+            boxSizing: 'border-box'
           }}>
-            {[
-              { number: '15', label: "Membres de l'équipe" },
-              { number: '10', label: 'Fonctionnalités' },
-              { number: '+10', label: 'Entreprises' },
-            ].map((s) => (
-              <div key={s.label} style={{ textAlign: 'center' }}>
-                <div style={{
-                  fontFamily: '"Inter", sans-serif',
-                  fontWeight: 700,
-                  fontSize: 'clamp(36px, 4.5vw, 56px)',
-                  color: '#002896',
-                  lineHeight: 1.1,
-                  marginBottom: '12px',
-                }}>{s.number}</div>
-                <div style={{
-                  fontFamily: '"DM Sans", sans-serif',
-                  fontWeight: 500,
-                  fontSize: 'clamp(14px, 1.4vw, 16px)',
-                  color: '#002896',
-                  lineHeight: 1.3,
-                }}>{s.label}</div>
+              <div style={{ flex: '1 1 140px' }}>
+                <h2 style={{ color: '#002896', fontSize: 'clamp(2rem, 4.5vw, 3rem)', fontWeight: '800', margin: 0 }}>15</h2>
+                <p style={{ color: '#002896', fontSize: 'clamp(0.8rem, 1.4vw, 0.875rem)', fontWeight: '600', margin: '6px 0 0' }}>Membres de l'équipe</p>
               </div>
-            ))}
-          </div>
+              <div style={{ flex: '1 1 140px' }}>
+                <h2 style={{ color: '#002896', fontSize: 'clamp(2rem, 4.5vw, 3rem)', fontWeight: '800', margin: 0 }}>10</h2>
+                <p style={{ color: '#002896', fontSize: 'clamp(0.8rem, 1.4vw, 0.875rem)', fontWeight: '600', margin: '6px 0 0' }}>Fonctionnalités</p>
+              </div>
+              <div style={{ flex: '1 1 140px' }}>
+                <h2 style={{ color: '#002896', fontSize: 'clamp(2rem, 4.5vw, 3rem)', fontWeight: '800', margin: 0 }}>{proCount}</h2>
+                <p style={{ color: '#002896', fontSize: 'clamp(0.8rem, 1.4vw, 0.875rem)', fontWeight: '600', margin: '6px 0 0' }}>Entreprises</p>
+              </div>
+            </div>
         </section>
 
         {/* 4. Final CTA Section */}

@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://mazadclick.vercel.app';
+  const baseUrl = 'https://mazadclick.com';
 
   const routes = [
     { path: '', changeFrequency: 'daily', priority: 1.0 },

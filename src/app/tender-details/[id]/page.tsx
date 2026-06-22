@@ -64,7 +64,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
       openGraph: {
         title: title,
         description: enhancedDescription,
-        url: `https://mazadclick.vercel.app/tender-details/${id}`,
+        url: `https://mazadclick.com/tender-details/${id}`,
         images: fullImageUrl ? [
           {
             url: fullImageUrl,

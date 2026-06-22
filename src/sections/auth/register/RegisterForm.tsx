@@ -578,8 +578,11 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
     setLoadingCategories(true);
     CategoryAPI.getCategories()
       .then((res: any) => {
-        if (res.success && Array.isArray(res.data)) setCategories(res.data);
-        else if (Array.isArray(res)) setCategories(res);
+        if (res.success && Array.isArray(res.data)) {
+          setCategories(res.data.filter((c: any) => !c.parent));
+        } else if (Array.isArray(res)) {
+          setCategories(res.filter((c: any) => !c.parent));
+        }
       })
       .catch(() => {})
       .finally(() => setLoadingCategories(false));

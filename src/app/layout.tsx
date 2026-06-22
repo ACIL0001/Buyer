@@ -33,10 +33,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const headersList = await headers();
   const host = headersList.get('host') || '';
-  const isVercel = host.includes('vercel.app') && !host.includes('mazadclick.vercel.app');
+  const isVercel = host.includes('vercel.app');
 
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://mazadclick.vercel.app'),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://mazadclick.com'),
     title,
     description,
     keywords,
@@ -76,10 +76,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             "@context": "https://schema.org",
             "@type": "WebSite",
             "name": "MazadClick",
-            "url": "https://mazadclick.vercel.app",
+            "url": "https://mazadclick.com",
             "potentialAction": {
               "@type": "SearchAction",
-              "target": "https://mazadclick.vercel.app/auctions?q={search_term_string}",
+              "target": "https://mazadclick.com/auctions?q={search_term_string}",
               "query-input": "required name=search_term_string"
             }
           })}

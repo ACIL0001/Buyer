@@ -41,7 +41,7 @@ const InternationalPage = () => {
       <main style={{
         width: '100%',
         background: '#ffffff',
-        paddingTop: 'clamp(80px, 18vw, 304px)',
+        paddingTop: 'clamp(80px, 15vw, 220px)',
         paddingBottom: 'clamp(40px, 8vw, 100px)',
         position: 'relative',
         overflowX: 'hidden',
@@ -279,16 +279,6 @@ const InternationalPage = () => {
           .video-banner-container {
             position: relative;
             width: 100%;
-            background: #002896;
-            display: flex;
-            align-items: center;
-            box-sizing: border-box;
-            overflow: hidden;
-          }
-
-          .video-banner-container {
-            position: relative;
-            width: 100%;
             aspect-ratio: 2436 / 630;
             max-height: 630px;
             overflow: hidden;
@@ -296,6 +286,7 @@ const InternationalPage = () => {
             display: flex;
             align-items: center;
             justify-content: center;
+            box-sizing: border-box;
           }
           .video-banner-bg {
             width: 2436px;

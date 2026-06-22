@@ -74,7 +74,7 @@ export async function generateMetadata(props) {
       openGraph: {
         title: title,
         description: enhancedDescription,
-        url: `https://mazadclick.vercel.app/auction-details/${id}`,
+        url: `https://mazadclick.com/auction-details/${id}`,
         images: fullImageUrl ? [
           {
             url: fullImageUrl,
@@ -128,7 +128,7 @@ export async function generateMetadata(props) {
             price: currentPrice,
             priceCurrency: currency,
             availability: isEnded ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
-            url: `https://mazadclick.vercel.app/auction-details/${id}`,
+            url: `https://mazadclick.com/auction-details/${id}`,
             validThrough: endDate,
           },
           brand: {

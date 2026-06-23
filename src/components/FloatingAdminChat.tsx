@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useCreateSocket } from '../contexts/socket';
 import { ChatAPI } from '../app/api/chat';
@@ -87,18 +86,6 @@ const FloatingAdminChat: React.FC = () => {
             return '';
         }
     });
-    const [guestUserId, setGuestUserId] = useState(() => {
-        try {
-            let id = localStorage.getItem('guestUserId');
-            if (!id) {
-                id = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                localStorage.setItem('guestUserId', id);
-            }
-            return id;
-        } catch {
-            return `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        }
-    });
     const [showGuestForm, setShowGuestForm] = useState(false);
     // États pour les messages vocaux
     const [isRecording, setIsRecording] = useState(false);
@@ -117,33 +104,10 @@ const FloatingAdminChat: React.FC = () => {
     const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    // Keep refs of active chat, guestUserId, messages, and auth to avoid stale closures in socket events
-    const adminChatRef = useRef(adminChat);
-    const guestUserIdRef = useRef(guestUserId);
-    const messagesRef = useRef(messages);
-    const authRef = useRef(auth);
-
-    useEffect(() => {
-        adminChatRef.current = adminChat;
-    }, [adminChat]);
-
-    useEffect(() => {
-        guestUserIdRef.current = guestUserId;
-    }, [guestUserId]);
-
-    useEffect(() => {
-        messagesRef.current = messages;
-    }, [messages]);
-
-    useEffect(() => {
-        authRef.current = auth;
-    }, [auth]);
-
     // Clear guest chat data (for testing or reset)
     const clearGuestChat = () => {
         localStorage.removeItem('guestChatId');
         localStorage.removeItem('guestChatInfo');
-        localStorage.removeItem('guestUserId');
         setGuestChatId('');
         setGuestInfo({ name: '', phone: '' });
         setAdminChat(null);
@@ -203,13 +167,12 @@ const FloatingAdminChat: React.FC = () => {
             
             formData.append('audio', audioBlob, 'voice-message.webm');
             formData.append('idChat', adminChat._id || '');
-            formData.append('sender', isAuthenticated ? (auth?.user?._id || 'guest') : guestUserId);
+            formData.append('sender', isAuthenticated ? (auth?.user?._id || 'guest') : 'guest');
             formData.append('reciver', 'admin');
             
             if (!isAuthenticated) {
                 formData.append('guestName', guestInfo.name);
                 formData.append('guestPhone', guestInfo.phone);
-                formData.append('guestUserId', guestUserId);
             }
 
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || RESOLVED_API_BASE_URL}/message/voice-message`, {
@@ -315,7 +278,7 @@ const FloatingAdminChat: React.FC = () => {
         const tempMessage: Message = {
             _id: tempMessageId,
             message: `📎 ${selectedFile.name}`,
-            sender: isAuthenticated ? (auth?.user?._id || 'user') : guestUserId,
+            sender: isAuthenticated ? (auth?.user?._id || 'user') : 'guest',
             reciver: 'admin',
             idChat: adminChat?._id || '',
             createdAt: new Date().toISOString(),
@@ -377,7 +340,6 @@ const FloatingAdminChat: React.FC = () => {
                     message: `📎 ${selectedFile.name}`,
                     guestName: guestInfo.name,
                     guestPhone: guestInfo.phone,
-                    guestUserId: guestUserId,
                     idChat: adminChat._id === 'pending-server-creation' ? '' : (adminChat._id || ''),
                     attachment: attachmentInfo // Add attachment directly to message
                 };
@@ -436,7 +398,7 @@ const FloatingAdminChat: React.FC = () => {
             const errorMessage: Message = {
                 _id: tempMessageId,
                 message: 'Failed to send attachment. Please try again.',
-                sender: isAuthenticated ? (auth?.user?._id || 'user') : guestUserId,
+                sender: isAuthenticated ? (auth?.user?._id || 'user') : 'guest',
                 reciver: 'admin',
                 idChat: adminChat?._id || '',
                 createdAt: new Date().toISOString(),
@@ -772,7 +734,7 @@ const FloatingAdminChat: React.FC = () => {
         const tempMessage: Message = {
             _id: `temp-${Date.now()}-${Math.random()}`,
             message: message.trim(),
-            sender: isAuthenticated ? (auth?.user?._id || 'guest') : guestUserId,
+            sender: isAuthenticated ? (auth?.user?._id || 'guest') : 'guest',
             reciver: 'admin',
             idChat: currentChat?._id || '',
             createdAt: new Date().toISOString(),
@@ -805,7 +767,6 @@ const FloatingAdminChat: React.FC = () => {
                     message: message.trim(),
                     guestName: guestInfo.name,
                     guestPhone: guestInfo.phone,
-                    guestUserId: guestUserId,
                     idChat: currentChat?._id === 'pending-server-creation' ? '' : (currentChat?._id || '')
                 };
             } else {
@@ -851,7 +812,7 @@ const FloatingAdminChat: React.FC = () => {
                             _id: newChatId,
                             users: currentChat?.users || [
                                 {
-                                _id: isGuestChat ? guestUserId : (auth?.user?._id || 'user'),
+                                _id: isGuestChat ? 'guest' : (auth?.user?._id || 'user'),
                                 firstName: isGuestChat ? (guestInfo.name || 'Guest') : (auth?.user?.firstName || 'User'),
                                 lastName: isGuestChat ? 'User' : (auth?.user?.lastName || ''),
                                 AccountType: isGuestChat ? 'guest' : (auth?.user?.type || 'user'),
@@ -967,33 +928,29 @@ const FloatingAdminChat: React.FC = () => {
         }
     };
 
-    // Real-time message listening for chat display - IMPROVED with better deduplication and refs
+    // Real-time message listening for chat display - IMPROVED with better deduplication
     useEffect(() => {
-        if (!socketContext?.socket) {
-            console.log('❌ Socket not available in FloatingAdminChat');
+        if (!socketContext?.socket || !adminChat?._id) {
+            console.log('❌ Socket or chat not available in FloatingAdminChat');
             return;
         }
 
-        console.log('🔌 Setting up real-time message listeners');
+        console.log('🔌 Setting up real-time message listeners for chat:', adminChat._id);
 
         // Global cache to prevent duplicate processing across events
         const processedMessages = new Set<string>();
 
         // Unified message handler to prevent duplicates
         const handleIncomingMessage = (data: any, eventType: string) => {
-            const currentAdminChat = adminChatRef.current;
-            const currentGuestUserId = guestUserIdRef.current;
-            const currentAuth = authRef.current;
-
             console.log(`📨 ${eventType} message received in FloatingAdminChat:`, data);
-            console.log(`📨 Current adminChat state:`, currentAdminChat);
+            console.log(`📨 Current adminChat state:`, adminChat);
             console.log(`📨 Current auth state:`, { 
-                hasUser: !!currentAuth?.user?._id, 
-                userId: currentAuth?.user?._id,
-                isGuest: !currentAuth?.user?._id 
+                hasUser: !!auth?.user?._id, 
+                userId: auth?.user?._id,
+                isGuest: !auth?.user?._id 
             });
             console.log(`📨 Message details:`, {
-                messageId: data._id || data.messageId,
+                messageId: data._id,
                 messageText: data.message,
                 sender: data.sender,
                 receiver: data.reciver || data.receiverId,
@@ -1005,7 +962,7 @@ const FloatingAdminChat: React.FC = () => {
             });
 
             // Create unique key for this message
-            const messageKey = `${data._id || data.id || data.messageId || 'unknown'}-${data.message}-${data.sender}-${data.createdAt}`;
+            const messageKey = `${data._id || data.id || 'unknown'}-${data.message}-${data.sender}-${data.createdAt}`;
 
             // Check if already processed
             if (processedMessages.has(messageKey)) {
@@ -1018,16 +975,16 @@ const FloatingAdminChat: React.FC = () => {
 
             // Check if this message belongs to the current admin chat
             // For guest chats, we need to be more flexible with chat ID matching
-            const isForCurrentChat = currentAdminChat?._id && currentAdminChat._id !== 'pending-server-creation' ? 
-                (data.idChat === currentAdminChat._id || data.chatId === currentAdminChat._id) :
-                (data.sender === 'admin' && (data.reciver === 'guest' || data.reciver === currentGuestUserId)); // If no chat ID yet or placeholder, match by sender/receiver
+            const isForCurrentChat = adminChat?._id && adminChat._id !== 'pending-server-creation' ? 
+                (data.idChat === adminChat._id || data.chatId === adminChat._id) :
+                (data.sender === 'admin' && data.reciver === 'guest'); // If no chat ID yet or placeholder, match by sender/receiver
             const isFromAdmin = data.sender === 'admin' || data.senderId === 'admin';
             
             // For authenticated users, check if message is for them
-            // For guest users, check if message is for 'guest' receiver or specific guestUserId
-            const isForCurrentUser = currentAuth?.user?._id ? 
-                (data.reciver === currentAuth.user._id || data.receiverId === currentAuth.user._id) :
-                (data.reciver === 'guest' || data.receiverId === 'guest' || data.reciver === currentGuestUserId || data.receiverId === currentGuestUserId);
+            // For guest users, check if message is for 'guest' receiver
+            const isForCurrentUser = auth?.user?._id ? 
+                (data.reciver === auth.user._id || data.receiverId === auth.user._id) :
+                (data.reciver === 'guest' || data.receiverId === 'guest');
 
             console.log('🔍 Message analysis:', {
                 eventType,
@@ -1035,37 +992,21 @@ const FloatingAdminChat: React.FC = () => {
                 isFromAdmin,
                 isForCurrentUser,
                 chatId: data.idChat || data.chatId,
-                currentChatId: currentAdminChat?._id,
+                currentChatId: adminChat._id,
                 sender: data.sender,
                 receiver: data.reciver || data.receiverId,
-                currentUserId: currentAuth?.user?._id,
-                isGuestUser: !currentAuth?.user?._id
+                currentUserId: auth?.user?._id,
+                isGuestUser: !auth?.user?._id
             });
 
-            // For adminMessage / chatMessageUpdate / newMessage events, we process them
-            if (isForCurrentChat && (isFromAdmin || data.sender === currentAuth?.user?._id || data.sender === currentGuestUserId) && isForCurrentUser) {
+            // For adminMessage events, we only want admin messages for the current user/guest
+            if (isForCurrentChat && isFromAdmin && isForCurrentUser) {
                 console.log(`✅ Processing ${eventType} message for chat display`);
-
-                // If current adminChat has placeholder ID, update it with the real one from the message
-                if (currentAdminChat && currentAdminChat._id === 'pending-server-creation' && (data.idChat || data.chatId)) {
-                    const realChatId = data.idChat || data.chatId;
-                    console.log('🔄 Updating adminChat ID from message:', realChatId);
-                    const updatedChat = {
-                        ...currentAdminChat,
-                        _id: realChatId
-                    };
-                    setAdminChat(updatedChat);
-                    if (!currentAuth?.user?._id) {
-                        setGuestChatId(realChatId);
-                        localStorage.setItem('guestChatId', realChatId);
-                    }
-                }
 
                 setMessages(prev => {
                     // Check if message already exists in state
                     const exists = prev.some(msg =>
                         msg._id === data._id ||
-                        msg._id === data.messageId ||
                         (msg.message === data.message && msg.sender === data.sender &&
                             Math.abs(new Date(msg.createdAt).getTime() - new Date(data.createdAt).getTime()) < 1000)
                     );
@@ -1079,7 +1020,6 @@ const FloatingAdminChat: React.FC = () => {
                     // Ensure attachment is preserved if present
                     const messageToAdd = {
                         ...data,
-                        _id: data._id || data.messageId || `socket-${Date.now()}-${Math.random()}`,
                         attachment: data.attachment ? {
                             ...data.attachment,
                             // Ensure URL is absolute
@@ -1090,8 +1030,8 @@ const FloatingAdminChat: React.FC = () => {
                     };
                     
                     // Check if this is the user's own message and needs to replace a temp message
-                    const isGuestChatCheck = (currentAdminChat as any)?.isGuestChat;
-                    if (data.sender === currentAuth?.user?._id || (isGuestChatCheck && (data.sender === 'guest' || data.sender === currentGuestUserId))) {
+                    const isGuestChatCheck = (adminChat as any)?.isGuestChat;
+                    if (data.sender === auth?.user?._id || (isGuestChatCheck && data.sender === 'guest')) {
                         // For attachment messages, check if message content matches (contains attachment filename)
                         const hasAttachment = data.attachment || data.message?.includes('📎');
                         const isAttachmentMessage = hasAttachment;
@@ -1141,14 +1081,12 @@ const FloatingAdminChat: React.FC = () => {
         const handleAdminMessage = (data: any) => handleIncomingMessage(data, 'adminMessage');
         const handleSendMessage = (data: any) => handleIncomingMessage(data, 'sendMessage');
         const handleNewMessage = (data: any) => handleIncomingMessage(data, 'newMessage');
-        const handleChatMessageUpdate = (data: any) => handleIncomingMessage(data, 'chatMessageUpdate');
 
         // Set up event listeners for all message events
         if (socketContext?.socket) {
-            socketContext.socket.on('adminMessage', handleAdminMessage);
+        socketContext.socket.on('adminMessage', handleAdminMessage);
             socketContext.socket.on('sendMessage', handleSendMessage);
             socketContext.socket.on('newMessage', handleNewMessage);
-            socketContext.socket.on('chatMessageUpdate', handleChatMessageUpdate);
         }
 
         return () => {
@@ -1156,28 +1094,8 @@ const FloatingAdminChat: React.FC = () => {
             socketContext.socket?.off('adminMessage', handleAdminMessage);
             socketContext.socket?.off('sendMessage', handleSendMessage);
             socketContext.socket?.off('newMessage', handleNewMessage);
-            socketContext.socket?.off('chatMessageUpdate', handleChatMessageUpdate);
         };
-    }, [socketContext?.socket]);
-
-    // Join chat room in socket for room broadcast updates
-    useEffect(() => {
-        if (socketContext?.socket && adminChat?._id && adminChat._id !== 'pending-server-creation') {
-            console.log('🔌 Joining socket chat room:', adminChat._id);
-            socketContext.socket.emit('joinChat', { 
-                chatId: adminChat._id, 
-                userId: auth?.user?._id || guestUserId 
-            });
-            
-            return () => {
-                console.log('🔌 Leaving socket chat room:', adminChat._id);
-                socketContext?.socket?.emit('leaveChat', { 
-                    chatId: adminChat._id, 
-                    userId: auth?.user?._id || guestUserId 
-                });
-            };
-        }
-    }, [socketContext?.socket, adminChat?._id, auth?.user?._id, guestUserId]);
+    }, [socketContext?.socket, adminChat?._id, auth?.user?._id]); // Removed 'messages' dependency
 
     // Debug socket connection and events
     useEffect(() => {
@@ -1298,9 +1216,9 @@ const FloatingAdminChat: React.FC = () => {
                         
                         // Strategy 2: Try to find guest chat by guest info
                         if (guestInfo.name && guestInfo.phone) {
-                            console.log('🔍 Searching for guest chat by info:', { name: guestInfo.name, phone: guestInfo.phone, guestUserId });
+                            console.log('🔍 Searching for guest chat by info:', { name: guestInfo.name, phone: guestInfo.phone });
                             try {
-                                const guestChatResponse = await ChatAPI.findGuestChat(guestInfo.name, guestInfo.phone, guestUserId);
+                                const guestChatResponse = await ChatAPI.findGuestChat(guestInfo.name, guestInfo.phone);
                                 if (guestChatResponse.success && guestChatResponse.data && guestChatResponse.data._id) {
                                     console.log('✅ Found guest chat by info:', guestChatResponse.data._id);
                                     
@@ -1485,7 +1403,7 @@ const FloatingAdminChat: React.FC = () => {
                         const guestChat: AdminChat = {
                             _id: savedGuestChatId,
                             users: [
-                                { _id: guestUserId, firstName: parsedInfo.name || 'Guest', lastName: '', AccountType: 'guest' },
+                                { _id: 'guest', firstName: parsedInfo.name || 'Guest', lastName: '', AccountType: 'guest' },
                                 { _id: 'admin', firstName: 'Admin', lastName: 'Support', AccountType: 'admin' }
                             ],
                             createdAt: new Date().toISOString()
@@ -1611,7 +1529,7 @@ const FloatingAdminChat: React.FC = () => {
             const updatedChat = {
                 ...adminChat,
                 users: adminChat.users.map(user => 
-                    (user._id === 'guest' || user._id === guestUserId) 
+                    user._id === 'guest' 
                         ? { ...user, firstName: guestInfo.name.trim(), phone: guestInfo.phone.trim() }
                         : user
                 )
@@ -1624,7 +1542,7 @@ const FloatingAdminChat: React.FC = () => {
             _id: `welcome-${Date.now()}`,
             message: `Welcome ${guestInfo.name}! I'm here to help. Your phone number is ${guestInfo.phone}. Please note that as a guest user, your messages will be visible to our support team. For a better experience, consider creating an account.`,
             sender: 'admin',
-            reciver: guestUserId,
+            reciver: 'guest',
             idChat: adminChat?._id || '',
             createdAt: new Date().toISOString(),
             isSystemMessage: true
@@ -1720,7 +1638,7 @@ const FloatingAdminChat: React.FC = () => {
                                         _id: currentGuestChatId,
                                     users: [
                                         {
-                                            _id: guestUserId,
+                                            _id: 'guest',
                                                 firstName: currentGuestInfo.name || 'Guest',
                                             lastName: 'User',
                                             AccountType: 'guest',
@@ -1820,7 +1738,7 @@ const FloatingAdminChat: React.FC = () => {
                                         _id: 'pending-server-creation', // Placeholder ID - will be set by server on first message
                                         users: [
                                             {
-                                                _id: guestUserId,
+                                                _id: 'guest',
                                                 firstName: currentGuestInfo.name || 'Guest',
                                                 lastName: 'User',
                                                 AccountType: 'guest',
@@ -2034,7 +1952,7 @@ const FloatingAdminChat: React.FC = () => {
             </div>
 
             {/* Chat Dialog */}
-            {isOpen && typeof window !== 'undefined' && createPortal(
+            {isOpen && (
                 <div className="chat-dialog-overlay" onClick={(e) => {
                     if (e.target === e.currentTarget) setIsOpen(false);
                 }}>
@@ -2156,7 +2074,7 @@ const FloatingAdminChat: React.FC = () => {
                                             
                                             // Determine if this is the user's own message
                                             const isOwn = isGuestChat ? 
-                                                (msg.sender === 'guest' || msg.sender === guestUserId) : 
+                                                (msg.sender === 'guest') : 
                                                 isOwnMessage(msg.sender);
 
                                             return (
@@ -2376,7 +2294,7 @@ const FloatingAdminChat: React.FC = () => {
                                                 fontFamily: 'inherit',
                                                 fontSize: '14px',
                                                 lineHeight: '1.4',
-                                                padding: '10px 190px 10px 16px'
+                                                padding: '10px 60px 10px 16px'
                                             }}
                                         />
                                         <div className="input-actions">
@@ -2435,18 +2353,6 @@ const FloatingAdminChat: React.FC = () => {
                                                     </button>
                                                 </div>
                                             )}
-                                            <button
-                                                onClick={sendMessage}
-                                                disabled={!message.trim() || isSending}
-                                                className={`send-btn ${isSending ? 'sending' : ''}`}
-                                                aria-label="Envoyer le message"
-                                            >
-                                                {isSending ? (
-                                                    <div className="sending-spinner"></div>
-                                                ) : (
-                                                    <i className="bi bi-send-fill"></i>
-                                                )}
-                                            </button>
                                         </div>
 
                                         {/* Hidden file input */}
@@ -2522,13 +2428,35 @@ const FloatingAdminChat: React.FC = () => {
                                             </div>
                                         )}
                                     </div>
+                                    <button
+                                        onClick={sendMessage}
+                                        disabled={!message.trim() || isSending}
+                                        className={`send-btn ${isSending ? 'sending' : ''}`}
+                                        aria-label="Envoyer le message"
+                                    >
+                                        {isSending ? (
+                                            <div className="sending-spinner"></div>
+                                        ) : (
+                                            <i className="bi bi-send"></i>
+                                        )}
+                                    </button>
                                 </div>
+                                <div className="input-footer">
+                                    <div className="input-hint">
+                                        Appuyez sur Entrée pour envoyer
+                                    </div>
+                                    {showCharCount && (
+                                        <div className={`char-count ${message.length > 1900 ? 'warning' : ''}`}>
+                                            {message.length}/2000
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                                
                             </div>
+                            )}
                         </div>
-                    </div>,
-                document.body
+                    </div>
+                </div>
             )}
 
             <style>{`
@@ -2621,7 +2549,7 @@ const FloatingAdminChat: React.FC = () => {
           bottom: 0;
           background: rgba(0, 0, 0, 0.6);
           backdrop-filter: blur(8px);
-          z-index: 9999999;
+          z-index: 1400;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -3187,16 +3115,18 @@ const FloatingAdminChat: React.FC = () => {
         }
 
         .message-input-area {
-          padding: 0;
+          padding: 24px;
           background: white;
           border-top: 1px solid #e5e7eb;
           box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
           position: sticky;
           bottom: 0;
           z-index: 10;
+          min-height: 100px;
+          max-height: 140px;
           display: flex;
           flex-direction: column;
-          justify-content: center;
+          justify-content: flex-end;
           margin-top: auto;
         }
 
@@ -3206,13 +3136,10 @@ const FloatingAdminChat: React.FC = () => {
           align-items: flex-end;
           width: 100%;
           max-width: 100%;
-          height: 100%;
-          padding: 16px 24px;
-          box-sizing: border-box;
         }
 
         .input-wrapper {
-          width: 100%;
+          width: calc(100% - 72px);
           min-width: 220px;
           position: relative;
           background: #f9fafb;
@@ -3220,7 +3147,6 @@ const FloatingAdminChat: React.FC = () => {
           border: 2px solid #e5e7eb;
           transition: all 0.3s ease;
           flex: 1;
-          align-self: stretch;
         }
 
         .input-wrapper:focus-within {
@@ -3231,7 +3157,7 @@ const FloatingAdminChat: React.FC = () => {
 
         .message-input {
           width: 100%;
-          padding: 16px 190px 16px 20px;
+          padding: 16px 72px 16px 20px;
           border: none;
           border-radius: 24px;
           resize: none;
@@ -3260,7 +3186,6 @@ const FloatingAdminChat: React.FC = () => {
           top: 50%;
           transform: translateY(-50%);
           display: flex;
-          align-items: center;
           gap: 6px;
         }
 
@@ -3616,52 +3541,45 @@ const FloatingAdminChat: React.FC = () => {
         }
 
         .send-btn {
-          width: 34px;
-          min-width: 34px;
-          height: 34px;
+          width: 56px;
+          min-width: 56px;
+          height: 48px;
           border-radius: 50%;
           border: none;
-          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+          background: linear-gradient(135deg, #3b82f6 0%, #002896 100%);
           color: white;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-          font-size: 14px;
+          transition: all 0.3s ease;
+          font-size: 18px;
           flex-shrink: 0;
-          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+          box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
         }
 
         .send-btn:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
-          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        }
-
-        .send-btn:active:not(:disabled) {
-          transform: translateY(0) scale(0.98);
+          transform: scale(1.1) translateY(-1px);
+          box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
         }
 
         .send-btn:disabled {
-          background: #f1f5f9;
-          color: #94a3b8;
-          border: 1px solid #e2e8f0;
+          background: #9ca3af;
           cursor: not-allowed;
           transform: none;
+          opacity: 0.6;
           box-shadow: none;
         }
 
         .send-btn.sending {
           background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
         }
 
         .sending-spinner {
-          width: 18px;
-          height: 18px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top: 2px solid white;
+          width: 24px;
+          height: 24px;
+          border: 3px solid rgba(255, 255, 255, 0.3);
+          border-top: 3px solid white;
           border-radius: 50%;
           animation: spin 1s linear infinite;
         }
@@ -3807,24 +3725,23 @@ const FloatingAdminChat: React.FC = () => {
 
           .input-container {
             gap: 12px;
-            padding: 12px 16px;
-            box-sizing: border-box;
+            padding: 0 12px;
           }
 
           .input-wrapper {
-            width: 100%;
+            width: calc(100% - 64px);
             min-width: 160px;
           }
 
           .send-btn {
-            width: 30px;
-            min-width: 30px;
-            height: 30px;
-            font-size: 12px;
+            width: 52px;
+            min-width: 52px;
+            height: 44px;
+            font-size: 16px;
           }
 
           .message-input {
-            padding: 14px 150px 14px 18px;
+            padding: 14px 60px 14px 18px;
             font-size: 16px;
           }
 
@@ -3840,7 +3757,7 @@ const FloatingAdminChat: React.FC = () => {
       `}</style>
 
       {/* Image Modal - Click anywhere outside to close, click image to open in browser */}
-      {selectedImage && typeof window !== 'undefined' && createPortal(
+      {selectedImage && (
         <div 
           style={{
             position: 'fixed',
@@ -3852,7 +3769,7 @@ const FloatingAdminChat: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 9999999,
+            zIndex: 9999,
             cursor: 'pointer'
           }}
           onClick={() => setSelectedImage(null)}
@@ -4010,8 +3927,7 @@ const FloatingAdminChat: React.FC = () => {
               →
             </button>
           </div>
-        </div>,
-        document.body
+        </div>
       )}
         </>
     );

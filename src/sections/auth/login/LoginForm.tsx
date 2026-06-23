@@ -16,7 +16,6 @@ import { LoadingButton } from '@mui/lab';
 import Iconify from '../../../components/Iconify';
 import { AuthAPI } from '../../../app/api/auth';
 import { authStore } from '../../../contexts/authStore';
-import { useRateLimiter } from '../../../hooks/useRateLimiter';
 
 // ---------------------------------------------------------------------- 
 
@@ -29,13 +28,6 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
-
-  // Initialize rate limiter: 5 attempts per 60 seconds
-  const { incrementAttempt, isLockedOut, getRemainingLockoutSeconds, resetAttempts } = useRateLimiter({
-    maxAttempts: 5,
-    timeWindowMs: 60 * 1000,
-    lockoutPeriodMs: 60 * 1000
-  });
 
   const LoginSchema = Yup.object().shape({
     login: Yup.string().required('Email ou numéro de téléphone requis'),
@@ -51,21 +43,6 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     onSubmit: async (values, { setSubmitting }) => {
       setLoginError(null);
       
-      if (isLockedOut()) {
-        const remaining = getRemainingLockoutSeconds();
-        setLoginError(`Trop de tentatives. Veuillez réessayer dans ${remaining} secondes.`);
-        setSubmitting(false);
-        return;
-      }
-
-      const allowed = incrementAttempt();
-      if (!allowed) {
-        const remaining = getRemainingLockoutSeconds();
-        setLoginError(`Trop de tentatives. Veuillez réessayer dans ${remaining} secondes.`);
-        setSubmitting(false);
-        return;
-      }
-
       try {
         const trimmedLogin = values.login.trim();
         const normalizedLogin = trimmedLogin.includes('@') 
@@ -80,9 +57,6 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         let loginData = response && response.data ? response.data : response;
 
         if (loginData && loginData.user && loginData.session) {
-          // Success! Reset attempts
-          resetAttempts();
-          
           const { user, session } = loginData;
           
           if (user.isBanned) {
@@ -102,7 +76,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
             user,
             tokens: {
               accessToken: session.accessToken,
-              // refreshToken is now securely handled via HttpOnly cookie
+              refreshToken: session.refreshToken,
             },
           };
 
@@ -371,9 +345,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                const loginValue = formik.values.login;
-                const query = loginValue ? `?login=${encodeURIComponent(loginValue)}` : '';
-                router.push(`/auth/forgot-password${query}`);
+                router.push('/auth/forgot-password');
               }}
               sx={{ 
                 fontSize: '13px',

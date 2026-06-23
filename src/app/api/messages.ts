@@ -52,7 +52,6 @@ export const MessageAPI = {
     idChat?: string;
     guestName?: string;
     guestPhone?: string;
-    guestUserId?: string;
     attachment?: {
       _id: string;
       url: string;
@@ -79,7 +78,6 @@ export const MessageAPI = {
           message: messageData.message.trim(),
           guestName: messageData.guestName,
           guestPhone: messageData.guestPhone,
-          guestUserId: messageData.guestUserId,
           idChat: messageData.idChat || '',
           attachment: messageData.attachment
         };
@@ -273,7 +271,6 @@ export const MessageAPI = {
     message: string;
     guestName: string;
     guestPhone: string;
-    guestUserId?: string;
     idChat?: string;
   }): Promise<ApiResponse<Message>> => {
     try {
@@ -600,7 +597,6 @@ export const MessageAPI = {
     message: string;
     guestName: string;
     guestPhone: string;
-    guestUserId?: string;
     idChat?: string;
   }): Promise<ApiResponse<Message>> => {
     try {

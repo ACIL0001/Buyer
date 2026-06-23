@@ -7,29 +7,9 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import DynamicScrollToTop from "@/components/common/DynamicScrollToTop";
 
-import app from '@/config';
-
 const AboutPage = () => {
   const router = useRouter();
   const [headerHeight, setHeaderHeight] = useState(196);
-  const [proCount, setProCount] = useState<number | string>('+10');
-
-  useEffect(() => {
-    const fetchProCount = async () => {
-      try {
-        const response = await fetch(`${app.baseURL}stats/users`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data.byType && typeof data.byType.professional === 'number') {
-            setProCount(data.byType.professional);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch professional user stats:", err);
-      }
-    };
-    fetchProCount();
-  }, []);
 
   useEffect(() => {
     const checkHeaderHeight = () => {
@@ -69,11 +49,11 @@ const AboutPage = () => {
               style={{
                 color: '#002896',
                 fontFamily: '"DM Sans", sans-serif',
-                fontSize: 'clamp(1.85rem, 5vw, 3rem)',
+                fontSize: 'clamp(1.75rem, 5vw, 3.5rem)',
                 fontWeight: '700',
                 lineHeight: 1.18,
                 textAlign: 'center',
-                marginTop: '10px',
+                marginTop: 'clamp(20px, 4vw, 60px)',
                 marginBottom: '20px',
               }}
             >
@@ -163,15 +143,15 @@ const AboutPage = () => {
             boxSizing: 'border-box'
           }}>
               <div style={{ flex: '1 1 140px' }}>
-                <h2 style={{ color: '#002896', fontSize: 'clamp(2rem, 4.5vw, 3rem)', fontWeight: '800', margin: 0 }}>13</h2>
+                <h2 style={{ color: '#002896', fontSize: 'clamp(2rem, 4.5vw, 3rem)', fontWeight: '800', margin: 0 }}>15</h2>
                 <p style={{ color: '#002896', fontSize: 'clamp(0.8rem, 1.4vw, 0.875rem)', fontWeight: '600', margin: '6px 0 0' }}>Membres de l'équipe</p>
               </div>
               <div style={{ flex: '1 1 140px' }}>
-                <h2 style={{ color: '#002896', fontSize: 'clamp(2rem, 4.5vw, 3rem)', fontWeight: '800', margin: 0 }}>12</h2>
+                <h2 style={{ color: '#002896', fontSize: 'clamp(2rem, 4.5vw, 3rem)', fontWeight: '800', margin: 0 }}>10</h2>
                 <p style={{ color: '#002896', fontSize: 'clamp(0.8rem, 1.4vw, 0.875rem)', fontWeight: '600', margin: '6px 0 0' }}>Fonctionnalités</p>
               </div>
               <div style={{ flex: '1 1 140px' }}>
-                <h2 style={{ color: '#002896', fontSize: 'clamp(2rem, 4.5vw, 3rem)', fontWeight: '800', margin: 0 }}>{proCount}</h2>
+                <h2 style={{ color: '#002896', fontSize: 'clamp(2rem, 4.5vw, 3rem)', fontWeight: '800', margin: 0 }}>+10</h2>
                 <p style={{ color: '#002896', fontSize: 'clamp(0.8rem, 1.4vw, 0.875rem)', fontWeight: '600', margin: '6px 0 0' }}>Entreprises</p>
               </div>
             </div>
@@ -183,7 +163,7 @@ const AboutPage = () => {
             <h2 style={{
               color: '#002896',
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: 'clamp(1.5rem, 4.5vw, 2.25rem)',
+              fontSize: 'clamp(2rem, 6vw, 4rem)',
               fontWeight: '700',
               textAlign: 'center',
               lineHeight: 1.1,
@@ -193,20 +173,19 @@ const AboutPage = () => {
             </h2>
             <div className="values-grid">
               {[
-                { title: "Clarté Totale", desc: "Des processus d'enchères et de soumissions traçables pour une confiance absolue.", icon: "/assets/images/TRANSPARENCE.-1svg.svg" },
-                { title: "Marché Unifié", desc: "Nous organisons les flux pour rendre le marché lisible et accessible à tous.", icon: "/assets/images/TRANSPARENCE.-2svg.svg" },
-                { title: "Économie Inclusive", desc: "Une plateforme pensée pour chaque acteur, de la grande institution à l'artisan local.", icon: "/assets/images/TRANSPARENCE.-3.svg" },
-                { title: "Le Clic Stratégique", desc: "L'usage du numérique au service de l'efficacité réelle et de la prise de décision rapide.", icon: "/assets/images/TRANSPARENCE.-5.svg" },
-                { title: "Tiers de Confiance", desc: "Une infrastructure sécurisée garantissant l'intégrité de chaque échange économique.", icon: "/assets/images/TRANSPARENCE.-7.svg" },
-                { title: "Croissance Collective", desc: "Accélérez les cycles de vente et d'achat pour booster la compétitivité.", icon: "/assets/images/TRANSPARENCE.-6.svg" }
+                { title: "Clarté Totale", desc: "Des processus d'enchères et de soumissions traçables pour une confiance absolue." },
+                { title: "Marché Unifié", desc: "Nous organisons les flux pour rendre le marché lisible et accessible à tous." },
+                { title: "Économie Inclusive", desc: "Une plateforme pensée pour chaque acteur, de la grande institution à l'artisan local." },
+                { title: "Le Clic Stratégique", desc: "L'usage du numérique au service de l'efficacité réelle et de la prise de décision rapide." },
+                { title: "Tiers de Confiance", desc: "Une infrastructure sécurisée garantissant l'intégrité de chaque échange économique." },
+                { title: "Croissance Collective", desc: "Accélérez les cycles de vente et d'achat pour booster la compétitivité." }
               ].map((item, i) => (
-                <div key={i} className="value-card">
-                  <img src={item.icon} alt="" className="value-card-bg" />
-                  <div className="value-card-overlay" />
-                  <div className="value-card-body">
-                    <h3 className="value-card-title">{item.title}</h3>
-                    <p className="value-card-desc">{item.desc}</p>
-                  </div>
+                <div key={i} className="value-card" style={glassStyleGrey}>
+                  <div className="star-icon">★</div>
+                  <h3 style={{ color: '#002896', fontSize: '20px', fontWeight: '700', marginBottom: '12px' }}>{item.title}</h3>
+                  <p style={{ color: '#64748b', fontSize: '14px', lineHeight: '1.5' }}>
+                    {item.desc}
+                  </p>
                 </div>
               ))}
             </div>
@@ -219,7 +198,7 @@ const AboutPage = () => {
             <h2 className="contact-title" style={{
               color: '#002896',
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: 'clamp(1.35rem, 4vw, 2rem)',
+              fontSize: 'clamp(1.5rem, 5vw, 3.5rem)',
               fontWeight: '700',
               lineHeight: 1.2,
               textAlign: 'center',
@@ -230,7 +209,7 @@ const AboutPage = () => {
             <p style={{
               color: '#002896',
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: 'clamp(0.95rem, 1.6vw, 1.125rem)',
+              fontSize: 'clamp(1rem, 2.2vw, 1.5rem)',
               fontWeight: '400',
               lineHeight: 1.4,
               textAlign: 'center',
@@ -257,7 +236,7 @@ const AboutPage = () => {
             color: #64748b;
             font-family: 'Inter', sans-serif;
             font-weight: 400;
-            font-size: clamp(0.9rem, 1.4vw, 1rem);
+            font-size: clamp(1rem, 2vw, 1.5rem);
             line-height: 1.5;
             text-align: center;
             display: flex;
@@ -280,85 +259,24 @@ const AboutPage = () => {
 
           .values-grid {
             display: grid;
-            grid-template-columns: repeat(3, 411px);
-            gap: clamp(20px, 3vw, 32px);
+            grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+            gap: clamp(16px, 3vw, 30px);
             width: 100%;
-            justify-content: center;
-          }
-          @media (max-width: 1320px) {
-            .values-grid {
-              grid-template-columns: repeat(2, 411px);
-            }
-          }
-          @media (max-width: 880px) {
-            .values-grid {
-              grid-template-columns: repeat(1, min(411px, 100%));
-            }
           }
           .value-card {
-            position: relative;
-            border-radius: 20px;
-            overflow: hidden;
-            width: 411px;
-            height: 300px;
-            max-width: 100%;
-            box-shadow: 0 8px 32px rgba(0, 40, 150, 0.12);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            flex-shrink: 0;
+            padding: clamp(28px, 5vw, 50px) clamp(20px, 4vw, 30px);
+            border-radius: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
           }
           .value-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 48px rgba(0, 40, 150, 0.22);
+            transform: translateY(-10px);
+            background: rgba(230, 235, 240, 0.9) !important;
           }
-          .value-card-bg {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-            display: block;
-            transition: transform 0.4s ease;
-            z-index: 0;
-          }
-          .value-card:hover .value-card-bg {
-            transform: scale(1.05);
-          }
-          .value-card-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(
-              to top,
-              rgba(0, 20, 80, 0.88) 0%,
-              rgba(0, 20, 80, 0.45) 55%,
-              transparent 100%
-            );
-            z-index: 1;
-          }
-          .value-card-body {
-            position: relative;
-            z-index: 2;
-            padding: clamp(20px, 4vw, 28px) clamp(20px, 4vw, 28px) clamp(24px, 5vw, 32px);
-            text-align: center;
-          }
-          .value-card-title {
-            color: #ffffff;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 20px;
-            font-weight: 700;
-            margin: 0 0 10px;
-            line-height: 1.2;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
-          }
-          .value-card-desc {
-            color: rgba(255, 255, 255, 0.82);
-            font-family: 'Inter', sans-serif;
-            font-size: 13.5px;
-            line-height: 1.6;
-            margin: 0;
+          .star-icon {
+            color: #fbbf24;
+            font-size: clamp(28px, 5vw, 36px);
+            margin-bottom: 20px;
           }
           .gradient-btn {
             background: linear-gradient(95deg, #002896 0%, #3b82f6 100%);

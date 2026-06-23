@@ -1,10 +1,12 @@
-import Header from '@/components/header/Header';
-import Footer from '@/components/footer/Footer';
+"use client";
+
+import Header from '@/components/header/Header'
+import Footer from '@/components/footer/Footer'
 
 export default function CategoryLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <>
@@ -14,5 +16,5 @@ export default function CategoryLayout({
       </section>
       <Footer />
     </>
-  );
+  )
 } 

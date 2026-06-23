@@ -14,7 +14,6 @@ import { AxiosInterceptor } from '@/app/api/AxiosInterceptor';
 import RequestProvider from "@/contexts/RequestContext";
 import { useQuery } from '@tanstack/react-query';
 import PageSkeleton from "@/components/skeletons/PageSkeleton";
-import tracker from '@/utils/analytics/tracker';
 
 export default function MobilePage() {
   const { t } = useTranslation();
@@ -84,7 +83,6 @@ export default function MobilePage() {
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    tracker.track('search_performed', { query: searchQuery, resultsCount: searchResults?.length || 0 });
     if (searchResults.length > 0) {
       handleCategorySelect(searchResults[0]);
     }

@@ -81,16 +81,12 @@ function getBaseUrl(): string {
  */
 export async function createSlickpayPayment(payment: SubscriptionPayment): Promise<{ paymentId: string; redirectUrl: string }> {
   try {
-    // Slickpay API v2 configuration - credentials must be set via environment variables
+    // Slickpay API v2 configuration - using real test credentials
     const slickpayConfig: SlickpayConfig = {
-      publicKey: process.env.NEXT_PUBLIC_SLICKPAY_PUBLIC_KEY || '',
-      baseUrl: process.env.NEXT_PUBLIC_SLICKPAY_BASE_URL || '',
+      publicKey: process.env.NEXT_PUBLIC_SLICKPAY_PUBLIC_KEY || '54|BZ7F6N4KwSD46GEXToOv3ZBpJpf7WVxnBzK5cOE6',
+      baseUrl: process.env.NEXT_PUBLIC_SLICKPAY_BASE_URL || 'https://devapi.slick-pay.com/api/v2',
       isLive: process.env.NEXT_PUBLIC_SLICKPAY_TEST_MODE !== 'true',
     };
-
-    if (!slickpayConfig.publicKey || !slickpayConfig.baseUrl) {
-      throw new Error('Payment configuration is missing. Set NEXT_PUBLIC_SLICKPAY_PUBLIC_KEY and NEXT_PUBLIC_SLICKPAY_BASE_URL environment variables.');
-    }
 
     // Get the correct base URL for the application
     const baseUrl = getBaseUrl();
@@ -110,7 +106,7 @@ export async function createSlickpayPayment(payment: SubscriptionPayment): Promi
       lastname: payment.customer_name?.split(' ').slice(1).join(' ') || 'User',
       email: payment.customer_email,
       address: 'Algeria', // Required field
-      account: process.env.NEXT_PUBLIC_SLICKPAY_ACCOUNT_ID || '',
+      account: "3fe91007-3142-4268-9133-fa4a54379134", // SlickPay account ID
       items: [
         {
           name: `${payment.plan.charAt(0).toUpperCase() + payment.plan.slice(1)} Plan Subscription`,
@@ -200,14 +196,10 @@ export async function createSlickpayPayment(payment: SubscriptionPayment): Promi
 export async function verifySlickpayPayment(paymentId: string): Promise<{ status: PaymentStatus; amount: number; currency: string }> {
   try {
     const slickpayConfig: SlickpayConfig = {
-      publicKey: process.env.NEXT_PUBLIC_SLICKPAY_PUBLIC_KEY || '',
-      baseUrl: process.env.NEXT_PUBLIC_SLICKPAY_BASE_URL || '',
+      publicKey: process.env.NEXT_PUBLIC_SLICKPAY_PUBLIC_KEY || '54|BZ7F6N4KwSD46GEXToOv3ZBpJpf7WVxnBzK5cOE6',
+      baseUrl: process.env.NEXT_PUBLIC_SLICKPAY_BASE_URL || 'https://devapi.slick-pay.com/api/v2',
       isLive: process.env.NEXT_PUBLIC_SLICKPAY_TEST_MODE !== 'true',
     };
-
-    if (!slickpayConfig.publicKey || !slickpayConfig.baseUrl) {
-      throw new Error('Payment configuration is missing. Set NEXT_PUBLIC_SLICKPAY_PUBLIC_KEY and NEXT_PUBLIC_SLICKPAY_BASE_URL environment variables.');
-    }
 
     const response = await fetch(`${slickpayConfig.baseUrl}/users/invoices/${paymentId}`, {
       method: 'GET',

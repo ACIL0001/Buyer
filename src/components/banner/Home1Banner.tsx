@@ -2,7 +2,6 @@
 import Link from "next/link";
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useTranslation } from 'react-i18next';
-import Image from 'next/image';
 
 import { CategoryAPI } from '@/app/api/category';
 import { AuctionsAPI } from '@/app/api/auctions';
@@ -15,7 +14,6 @@ import CardSkeleton from '@/components/skeletons/CardSkeleton';
 import { normalizeImageUrl } from '@/utils/url';
 import { FaShoppingBag, FaHandshake } from 'react-icons/fa';
 import Fuse from 'fuse.js';
-import tracker from '@/utils/analytics/tracker';
 
 
 type Home1BannerProps = object;
@@ -88,47 +86,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Memoized Fuse instances for search optimization
-  const categoryFuse = useMemo(() => {
-    return new Fuse(allCategories, {
-      keys: ['name'],
-      threshold: 0.6,
-      distance: 100,
-      minMatchCharLength: 2,
-      includeScore: true,
-    });
-  }, [allCategories]);
-
-  const auctionFuse = useMemo(() => {
-    return new Fuse(allAuctions, {
-      keys: ['title', 'name', 'description'],
-      threshold: 0.5,
-      distance: 100,
-      minMatchCharLength: 3,
-      includeScore: true,
-    });
-  }, [allAuctions]);
-
-  const tenderFuse = useMemo(() => {
-    return new Fuse(allTenders, {
-      keys: ['title', 'name', 'description'],
-      threshold: 0.5,
-      distance: 100,
-      minMatchCharLength: 3,
-      includeScore: true,
-    });
-  }, [allTenders]);
-
-  const directSaleFuse = useMemo(() => {
-    return new Fuse(allDirectSales, {
-      keys: ['title', 'name', 'description'],
-      threshold: 0.5,
-      distance: 100,
-      minMatchCharLength: 3,
-      includeScore: true,
-    });
-  }, [allDirectSales]);
-
   // Search handler
   const performSearch = async (query: string, filter: string) => {
     setSearchQuery(query);
@@ -138,55 +95,84 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
       setLoadingSearch(true);
       setShowNotifyMe(false);
       try {
+        const filteredAllCategories = filter === 'all' ? allCategories : allCategories.filter((c: any) => c.type?.toUpperCase() === filter);
+        const filteredAllAuctions = filter === 'all' ? allAuctions : allAuctions.filter((a: any) => a.bidType?.toUpperCase() === filter);
+        const filteredAllTenders = filter === 'all' ? allTenders : allTenders.filter((t: any) => t.bidType?.toUpperCase() === filter);
+        const filteredAllDirectSales = filter === 'all' ? allDirectSales : allDirectSales.filter((d: any) => d.bidType?.toUpperCase() === filter);
+
         // 1. Fuzzy matching for categories
-        console.log('🔍 Home1Banner Fuzzy search - Query:', query, 'Categories count:', allCategories.length);
+        const categoryFuse = new Fuse(filteredAllCategories, {
+          keys: ['name'],
+          threshold: 0.6,
+          distance: 100,
+          minMatchCharLength: 2,
+          includeScore: true,
+        });
+
+        console.log('🔍 Home1Banner Fuzzy search - Query:', query, 'Categories count:', filteredAllCategories.length);
 
         const categorySearchResults = categoryFuse.search(query);
         console.log('🎯 Home1Banner Category fuzzy search results:', categorySearchResults);
         
-        const filteredCategoriesResults = categorySearchResults
-          .filter(result => filter === 'all' || (result.item as any).type?.toUpperCase() === filter)
-          .map(result => ({ 
-            ...(result.item as any), 
-            type: 'category',
-            score: result.score
-          }));
+        const filteredCategoriesResults = categorySearchResults.map(result => ({ 
+          ...(result.item as any), 
+          type: 'category',
+          score: result.score
+        }));
         
         // 2. Fuzzy matching for auctions
+        const auctionFuse = new Fuse(filteredAllAuctions, {
+          keys: ['title', 'name', 'description'],
+          threshold: 0.5,
+          distance: 100,
+          minMatchCharLength: 3,
+          includeScore: true,
+        });
+
         const auctionSearchResults = auctionFuse.search(query);
         console.log('🎯 Home1Banner Auction fuzzy search results:', auctionSearchResults);
         
-        const filteredAuctionsResults = auctionSearchResults
-          .filter(result => filter === 'all' || (result.item as any).bidType?.toUpperCase() === filter)
-          .map(result => ({ 
-            ...(result.item as any), 
-            type: 'auction',
-            score: result.score
-          }));
+        const filteredAuctionsResults = auctionSearchResults.map(result => ({ 
+          ...(result.item as any), 
+          type: 'auction',
+          score: result.score
+        }));
         
         // 3. Fuzzy matching for tenders
+        const tenderFuse = new Fuse(filteredAllTenders, {
+          keys: ['title', 'name', 'description'],
+          threshold: 0.5,
+          distance: 100,
+          minMatchCharLength: 3,
+          includeScore: true,
+        });
+
         const tenderSearchResults = tenderFuse.search(query);
         console.log('🎯 Home1Banner Tender fuzzy search results:', tenderSearchResults);
         
-        const filteredTendersResults = tenderSearchResults
-          .filter(result => filter === 'all' || (result.item as any).bidType?.toUpperCase() === filter)
-          .map(result => ({ 
-            ...(result.item as any), 
-            type: 'tender',
-            score: result.score
-          }));
+        const filteredTendersResults = tenderSearchResults.map(result => ({ 
+          ...(result.item as any), 
+          type: 'tender',
+          score: result.score
+        }));
         
         // 4. Fuzzy matching for direct sales
+        const directSaleFuse = new Fuse(filteredAllDirectSales, {
+          keys: ['title', 'name', 'description'],
+          threshold: 0.5,
+          distance: 100,
+          minMatchCharLength: 3,
+          includeScore: true,
+        });
+
         const directSaleSearchResults = directSaleFuse.search(query);
         console.log('🎯 Home1Banner DirectSale fuzzy search results:', directSaleSearchResults);
         
-        const filteredDirectSalesResults = directSaleSearchResults
-          .filter(result => filter === 'all' || (result.item as any).bidType?.toUpperCase() === filter)
-          .map(result => ({ 
-            ...(result.item as any), 
-            type: 'directSale',
-            score: result.score
-          }));
+        const filteredDirectSalesResults = directSaleSearchResults.map(result => ({ 
+          ...(result.item as any), 
+          type: 'directSale',
+          score: result.score
+        }));
         
         // 5. Combine all local results
         const combinedResults = [
@@ -368,7 +354,6 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    tracker.track('search_performed', { query: searchQuery, filter: searchFilter, resultsCount: searchResults?.length || 0 });
     if (searchResults.length > 0) {
       handleSearchSelect(searchResults[0]);
     }
@@ -1421,12 +1406,12 @@ const Home1Banner: React.FC<Home1BannerProps> = () => {
                   >
                     {isCategory && (
                       item.thumb?.url || item.thumb?.fullUrl || item.image ? (
-                        <Image
+                        <img
                           src={getCategoryImageUrl(item)}
                           alt={item.name}
-                          width={24}
-                          height={24}
                           style={{
+                            width: 'clamp(20px, 4vw, 24px)',
+                            height: 'clamp(20px, 4vw, 24px)',
                             borderRadius: 'clamp(4px, 1vw, 6px)',
                             objectFit: 'cover',
                             border: '1px solid rgba(0, 0, 0, 0.1)',

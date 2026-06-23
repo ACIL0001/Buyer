@@ -2,7 +2,6 @@ import { DirectSale } from '@/types/direct-sale';
 import { normalizeImageUrl } from '@/utils/url';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState, useCallback } from 'react';
 import app from '@/config';
 import { useRouter } from 'next/navigation';
@@ -22,7 +21,6 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
   const router = useRouter();
   const { isLogged, auth } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
-  const [imgError, setImgError] = useState(false);
 
   const availableQuantity = sale.quantity === 0 
     ? 999 
@@ -118,18 +116,21 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-          <Image
-            src={imgError ? DEFAULT_DIRECT_SALE_IMAGE : getDirectSaleImageUrl(sale)}
+          <img
+            src={getDirectSaleImageUrl(sale)}
             alt={sale.title}
-            fill
-            sizes="(max-width: 768px) 100vw, 350px"
             style={{
+              width: '100%',
+              height: '100%',
               objectFit: 'contain',
               transition: 'transform 0.4s ease',
               transform: isHovered ? 'scale(1.05)' : 'scale(1)'
             }}
-            onError={() => {
-                setImgError(true);
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (target.src !== DEFAULT_DIRECT_SALE_IMAGE) {
+                target.src = DEFAULT_DIRECT_SALE_IMAGE;
+              }
             }}
             loading="lazy"
           />
@@ -359,12 +360,12 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
                 textDecoration: 'none',
               }}
             >
-              <Image
+              <img
                 src={sale.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl((typeof sale.owner === 'object' ? (sale.owner?.avatar?.url || sale.owner?.photoURL) : undefined)) || DEFAULT_PROFILE_IMAGE)}
                 alt={displayName}
-                width={28}
-                height={28}
                 style={{
+                  width: '28px',
+                  height: '28px',
                   borderRadius: '50%',
                   objectFit: 'contain',
                 }}
@@ -393,12 +394,12 @@ const DirectSaleCard = ({ sale }: DirectSaleCardProps) => {
             </Link>
           ) : (
             <>
-              <Image
+              <img
                 src={sale.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl((typeof sale.owner === 'object' ? (sale.owner?.avatar?.url || sale.owner?.photoURL) : undefined)) || DEFAULT_PROFILE_IMAGE)}
                 alt={displayName}
-                width={28}
-                height={28}
                 style={{
+                  width: '28px',
+                  height: '28px',
                   borderRadius: '50%',
                   objectFit: 'contain',
                 }}

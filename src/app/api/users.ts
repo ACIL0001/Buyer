@@ -1,7 +1,6 @@
 import { requests } from './utils';
 import axios, { AxiosHeaders } from 'axios';
 import app from '@/config';
-import { authStore } from '@/contexts/authStore';
 
 // Create a direct axios instance as enhanced fallback
 const directAxios = axios.create({
@@ -21,16 +20,29 @@ const getAuthToken = (): string | null => {
       return null;
     }
 
-    // Use authStore directly to get the token from memory
-    const state = authStore.getState();
-    const token = state.auth?.tokens?.accessToken;
-    
-    if (token && typeof token === 'string' && token.trim() !== '') {
-      console.log('✅ Found valid token from authStore');
-      return token;
+    // Get token from localStorage
+    const authData = localStorage.getItem('auth');
+    if (authData) {
+      console.log('📦 Found auth data in localStorage');
+      try {
+        const parsed = JSON.parse(authData);
+        const token = parsed?.tokens?.accessToken;
+        if (token && typeof token === 'string' && token.trim() !== '') {
+          console.log('✅ Found valid token from localStorage');
+          console.log('🎯 Token preview:', token.substring(0, 20) + '...');
+          console.log('🎯 Token length:', token.length);
+          return token;
+        } else {
+          console.warn('⚠️ Token exists but is invalid');
+        }
+      } catch (parseError) {
+        console.warn('⚠️ Error parsing auth data from localStorage:', parseError);
+      }
+    } else {
+      console.warn('⚠️ No auth data found in localStorage');
     }
 
-    console.warn('❌ No valid auth token found in authStore');
+    console.warn('❌ No valid auth token found');
     return null;
 
   } catch (error) {
@@ -87,13 +99,13 @@ directAxios.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-        console.warn('🔐 401 Unauthorized in direct axios - clearing auth');
-        if (typeof window !== 'undefined') {
-          authStore.getState().logout();
-          if (window.location.pathname !== '/auth/login') {
-            window.location.href = '/auth/login';
-          }
+      console.warn('🔐 401 Unauthorized in direct axios - clearing auth');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth');
+        if (window.location.pathname !== '/auth/signin') {
+          window.location.href = '/auth/signin';
         }
+      }
     }
     return Promise.reject(error);
   }
@@ -374,8 +386,8 @@ export const UserAPI = {
       if (error.response?.status === 401) {
         // Clear auth and redirect on 401
         if (typeof window !== 'undefined') {
-          authStore.getState().logout();
-          window.location.href = '/auth/login';
+          localStorage.removeItem('auth');
+          window.location.href = '/auth/signin';
         }
       }
       throw error;
@@ -469,8 +481,8 @@ export const UserAPI = {
       console.error('❌ Original error:', error.response?.data || error.message);
       if (error.response?.status === 401) {
         if (typeof window !== 'undefined') {
-          authStore.getState().logout();
-          window.location.href = '/auth/login';
+          localStorage.removeItem('auth');
+          window.location.href = '/auth/signin';
         }
       }
       throw error;

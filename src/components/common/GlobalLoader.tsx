@@ -16,10 +16,8 @@ const GlobalLoader: React.FC = () => {
   useEffect(() => {
     // Handle page refresh
     const handleBeforeUnload = () => {
-      setTimeout(() => {
-        setIsLoading(true);
-        setLoadingText('Refreshing...');
-      }, 0);
+      setIsLoading(true);
+      setLoadingText('Refreshing...');
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);

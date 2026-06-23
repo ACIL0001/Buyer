@@ -415,7 +415,7 @@ export default function CreateAuctionPage() {
 
                                             {/* 4. Description */}
                                             <Grid size={{ xs: 12 }}>
-                                                <Typography sx={fieldLabelStyle}>Description détaillée</Typography>
+                                                <Typography sx={fieldLabelStyle}>Description détaillée de l'enchère</Typography>
                                                 <TextField
                                                     fullWidth placeholder="Description détaillée du produit ou service" 
                                                     variant="outlined" multiline rows={4}
@@ -468,7 +468,9 @@ export default function CreateAuctionPage() {
                                                     helperText={(formik.touched.reservePrice || formik.submitCount > 0) && formik.errors.reservePrice}
                                                     sx={inputStyle} 
                                                 />
-                                                <Typography variant="caption" sx={{ color: '#64748b', mt: 1, display: 'block', fontStyle: 'italic' }}>
+                                            </Grid>
+                                            <Grid size={{ xs: 12 }} sx={{ mt: -1.5 }}>
+                                                <Typography variant="caption" sx={{ color: '#64748b', mt: 0, display: 'block', fontStyle: 'italic' }}>
                                                     Ce prix sera uniquement visible par le propriétaire de l'annonce
                                                 </Typography>
                                             </Grid>
@@ -528,7 +530,8 @@ export default function CreateAuctionPage() {
                                                         <MdOutlinePrivacyTip size={18} />
                                                     </Box>
                                                     <Box>
-                                                        <Typography variant="body2" fontWeight="700" sx={{ fontSize: '0.85rem' }}>Sans image commerciale</Typography>
+                                                        <Typography variant="body2" fontWeight="700" sx={{ fontSize: '0.85rem' }}>Anonyme</Typography>
+                                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>Publier anonymement</Typography>
                                                     </Box>
                                                 </Box>
                                                 <Switch size="small" checked={formik.values.hidden} onChange={formik.handleChange} name="hidden" />

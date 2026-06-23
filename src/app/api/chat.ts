@@ -171,21 +171,22 @@ export const ChatAPI = {
     }
   },
 
-  // Find guest chat by name, phone and guestUserId
-  findGuestChat: async (name: string, phone: string, guestUserId: string): Promise<ApiResponse<Chat | null>> => {
+  // Find guest chat by name and phone
+  findGuestChat: async (name: string, phone: string): Promise<ApiResponse<Chat | null>> => {
     try {
-      console.log('🔍 ChatAPI.findGuestChat called with:', { name, phone, guestUserId });
+      console.log('🔍 ChatAPI.findGuestChat called with:', { name, phone });
 
-      if (!name || !phone || !guestUserId) {
+      if (!name || !phone) {
         return {
           data: null,
           success: false,
-          message: 'Name, phone, and guestUserId are required'
+          message: 'Name and phone are required'
         };
       }
 
       // Use direct fetch to bypass authentication for guest endpoints
-      const url = `${process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL}/chat/find-guest-chat?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&guestUserId=${encodeURIComponent(guestUserId)}`;
+      // const url = `${process.env.NEXT_PUBLIC_API_URL || app.baseURL.replace(/\/$/, '')}/chat/find-guest-chat?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL}/chat/find-guest-chat?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`;
       console.log('🔍 Finding guest chat:', url);
 
       const response = await fetch(url, {

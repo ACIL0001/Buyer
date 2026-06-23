@@ -2,7 +2,6 @@ import { Auction } from '@/types/auction';
 import { normalizeImageUrl } from '@/utils/url';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import app from '@/config';
 import { useRouter } from 'next/navigation';
@@ -203,18 +202,20 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                 }
             }}
         >
-                <Image
-                    src={imgError ? DEFAULT_AUCTION_IMAGE : getAuctionImageUrl(auction)}
+                <img
+                    src={getAuctionImageUrl(auction)}
                     alt={auction.title || "Auction Item"}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 350px"
                     style={{
+                        width: '100%',
+                        height: '100%',
                         objectFit: 'contain',
                         transition: 'transform 0.5s ease',
                         filter: hasAuctionEnded ? 'grayscale(100%)' : 'none', // Grey out image
                     }}
-                    onError={() => {
-                        setImgError(true);
+                    onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.onerror = null;
+                        target.src = DEFAULT_AUCTION_IMAGE;
                     }}
                     crossOrigin="use-credentials"
                 />
@@ -498,7 +499,7 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                             textDecoration: 'none',
                         }}
                     >
-                        <Image
+                        <img
                             src={(() => {
                                 if (auction.hidden) {
                                     return DEFAULT_PROFILE_IMAGE;
@@ -512,9 +513,9 @@ const AuctionCard = ({ auction }: AuctionCardProps) => {
                                 return DEFAULT_PROFILE_IMAGE;
                             })()}
                             alt={displayName}
-                            width={32}
-                            height={32}
                             style={{
+                                width: '32px',
+                                height: '32px',
                                 borderRadius: '50%',
                                 objectFit: 'contain',
                                 filter: hasAuctionEnded ? 'grayscale(100%)' : 'none',

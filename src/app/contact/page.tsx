@@ -42,7 +42,7 @@ export default function ContactPage() {
 
                     {/* Page Header */}
                     <div style={{ marginBottom: '10px' }}>
-                        <h1 style={{ color: primaryColor, fontSize: 'clamp(1.75rem, 4.5vw, 2.5rem)', fontWeight: '700', marginBottom: '16px', letterSpacing: '-0.5px' }}>
+                        <h1 style={{ color: primaryColor, fontSize: 'clamp(1.5rem, 4vw, 2.25rem)', fontWeight: '700', marginBottom: '16px', letterSpacing: '-0.5px' }}>
                             Une question ? Échangeons ensemble.
                         </h1>
                         <p style={{ color: textGrey, fontSize: 'clamp(0.875rem, 1.4vw, 0.95rem)', maxWidth: '440px', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
@@ -148,7 +148,7 @@ export default function ContactPage() {
                                     border: '1px solid rgba(255, 255, 255, 0.3)'
                                 }}
                             >
-                                <h2 style={{ color: primaryColor, fontSize: 'clamp(1.35rem, 3vw, 1.75rem)', fontWeight: '700', marginBottom: 'clamp(28px, 5vw, 60px)', letterSpacing: '-1px' }}>
+                                <h2 style={{ color: primaryColor, fontSize: 'clamp(1.75rem, 4vw, 2.4rem)', fontWeight: '700', marginBottom: 'clamp(28px, 5vw, 60px)', letterSpacing: '-1px' }}>
                                     Restons en contact
                                 </h2>
 
@@ -158,7 +158,7 @@ export default function ContactPage() {
                                         <p style={{ color: textGrey, fontSize: '13px', fontWeight: '800', letterSpacing: '1px', marginBottom: '25px', textTransform: 'uppercase' }}>
                                             NOTRE ADRESSE
                                         </p>
-                                        <div style={{ color: primaryColor, fontSize: 'clamp(1rem, 2vw, 1.35rem)', fontWeight: '700', lineHeight: '1.2' }}>
+                                        <div style={{ color: primaryColor, fontSize: 'clamp(1.25rem, 2.5vw, 1.875rem)', fontWeight: '700', lineHeight: '1.2' }}>
                                             Cité 2058 Logts LPP, Imm. A7,<br/>Loc. n°4, RDC, Mahelma,<br/>Algérie.
                                         </div>
                                     </div>
@@ -168,7 +168,7 @@ export default function ContactPage() {
                                         <p style={{ color: textGrey, fontSize: '13px', fontWeight: '800', letterSpacing: '1px', marginBottom: '25px', textTransform: 'uppercase' }}>
                                             APPELEZ-NOUS
                                         </p>
-                                        <div style={{ color: primaryColor, fontSize: 'clamp(1rem, 2vw, 1.35rem)', fontWeight: '700' }}>
+                                        <div style={{ color: primaryColor, fontSize: 'clamp(1.25rem, 2.5vw, 1.875rem)', fontWeight: '700' }}>
                                             Tél. : +213 561 07 49 77
                                         </div>
                                     </div>
@@ -178,7 +178,7 @@ export default function ContactPage() {
                                         <p style={{ color: textGrey, fontSize: '13px', fontWeight: '800', letterSpacing: '1px', marginBottom: '25px', textTransform: 'uppercase' }}>
                                             SERVICE CLIENT
                                         </p>
-                                        <div style={{ color: primaryColor, fontSize: 'clamp(1rem, 2vw, 1.35rem)', fontWeight: '700', wordBreak: 'break-all' }}>
+                                        <div style={{ color: primaryColor, fontSize: 'clamp(1.125rem, 2.2vw, 1.75rem)', fontWeight: '700', wordBreak: 'break-all' }}>
                                             contact@mazadclick.com
                                         </div>
                                     </div>

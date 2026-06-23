@@ -229,7 +229,7 @@ export default function CategoryMegaMenu({
                   borderRight: !isMobile && hasSubcategories ? '1px solid #e2e8f0' : 'none',
                   transition: 'width 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}>
-                  {categories.map((category) => {
+                  {categories.slice(0, 5).map((category) => {
                     const isCatActive = activeCategoryId === category._id;
                     const hasChildren = category.children && category.children.length > 0;
                     return (

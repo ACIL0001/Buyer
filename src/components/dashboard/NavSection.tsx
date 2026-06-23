@@ -112,6 +112,10 @@ export default function NavSection({ navConfig, ...other }: any) {
   return (
     <div {...other} style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
       {renderSection('GENERAL', generalItems)}
+      {renderSection('Outils', toolItems.length > 0 ? toolItems : [
+        { title: 'Comptes et réglages', path: '/dashboard/settings', icon: <i className="bi bi-gear" style={{ fontSize: '18px' }} />},
+        { title: 'Aide', path: '/dashboard/help', icon: <i className="bi bi-question-circle" style={{ fontSize: '18px' }} />}
+      ])}
     </div>
   );
 }

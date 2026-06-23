@@ -53,9 +53,9 @@ const Footer = () => {
   const [openColumn, setOpenColumn] = useState(null);
 
   const produitLinks = [
-    { href: '/auction-sidebar', label: 'Enchères' },
-    { href: '/direct-sale', label: 'Vente et services' },
-    { href: '/tenders', label: 'Soumissions' },
+    { href: '/services', label: 'Services' },
+    { href: '/auction-sidebar', label: 'Enchère' },
+    { href: '/tenders', label: 'Offres' },
     { href: '/startup', label: 'Startup' },
     { href: '/international', label: 'International' },
     { href: '/plans', label: 'Tarifs' },
@@ -63,6 +63,7 @@ const Footer = () => {
   const entrepriseLinks = [
     { href: '/about', label: 'Qui sommes-nous ?' },
     { href: '/contact', label: 'Nous contacter' },
+    { href: '/recrutement', label: 'Recrutement' },
   ];
   const supportLinks = [
     { href: '/how-to-bid', label: 'Comment ça marche' },
@@ -324,10 +325,9 @@ const Footer = () => {
           </p>
           <div className="footer-social">
             <Link href="https://www.instagram.com/mazadclick_/" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><i className="bi bi-instagram"></i></Link>
-            <Link href="https://youtube.com/@mazadclick?si=tDgumYS1eFx7WoUr" aria-label="YouTube" target="_blank" rel="noopener noreferrer"><i className="bi bi-youtube"></i></Link>
+            <Link href="#" aria-label="YouTube"><i className="bi bi-youtube"></i></Link>
             <Link href="https://www.facebook.com/p/MazadClick-61579383136812/" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><i className="bi bi-facebook"></i></Link>
             <Link href="https://www.linkedin.com/in/mazad-click-515490389/?originalSubdomain=dz" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><i className="bi bi-linkedin"></i></Link>
-            <Link href="https://www.tiktok.com/@mazad.click?_t=ZS-90qZu4cz6h7&_r=1" aria-label="TikTok" target="_blank" rel="noopener noreferrer"><i className="bi bi-tiktok"></i></Link>
           </div>
         </div>
 

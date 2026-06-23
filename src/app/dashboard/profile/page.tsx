@@ -674,7 +674,10 @@ function ProfilePage() {
                  setActiveTab('documents');
              } else if (!user.isCertified) {
                  setActiveTab('documents');
-                 setActiveUpgradeSection('certified');
+                 // Also ensure the Certified section is active if they go there for certification
+                 if (user.isVerified) {
+                     setActiveUpgradeSection('certified');
+                 }
              } else {
                  setActiveTab('personal-info');
              }
@@ -1615,19 +1618,13 @@ function ProfilePage() {
                                     <div className="figma-card figma-card-verification">
                                         <div className="figma-card-header" style={{ marginBottom: '32px' }}>
                                             <div className="figma-card-title-box" style={{ flexDirection: 'row', alignItems: 'center', gap: '12px' }}>
-                                                <h3 className="figma-card-title" style={{ fontSize: '24px', fontFamily: 'Inter', fontWeight: 600 }}>
-                                                    {activeUpgradeSection === 'certified' ? 'Documents de certification' : 'Documents obligatoires pour vérification'}
-                                                </h3>
-                                                <i className={`bi ${activeUpgradeSection === 'certified' ? 'bi-award-fill' : 'bi-exclamation-diamond-fill'}`} style={{ color: activeUpgradeSection === 'certified' ? '#8B5CF6' : '#F87171', fontSize: '24px' }}></i>
+                                                <h3 className="figma-card-title" style={{ fontSize: '24px', fontFamily: 'Inter', fontWeight: 600 }}>Documents obligatoires pour vérification</h3>
+                                                <i className="bi bi-exclamation-diamond-fill" style={{ color: '#F87171', fontSize: '24px' }}></i>
                                             </div>
                                         </div>
                                         
                                         <div className="figma-verify-status-container">
-                                            <div 
-                                                className={`figma-status-card ${activeUpgradeSection === 'verified' ? 'active' : 'inactive'}`}
-                                                onClick={() => setActiveUpgradeSection('verified')}
-                                                style={{ cursor: 'pointer' }}
-                                            >
+                                            <div className="figma-status-card active">
                                                 <div className="figma-status-info">
                                                     <span className="figma-status-step">ÉTAPE 1</span>
                                                     <h4 className="figma-status-name">VÉRIFIÉ</h4>
@@ -1635,39 +1632,29 @@ function ProfilePage() {
                                                 </div>
                                                 <i className="bi bi-patch-check figma-status-icon-v2"></i>
                                             </div>
-                                            <div 
-                                                className={`figma-status-card ${activeUpgradeSection === 'certified' ? 'active' : 'inactive'}`}
-                                                onClick={() => setActiveUpgradeSection('certified')}
-                                                style={{ cursor: 'pointer' }}
-                                            >
+                                            <div className="figma-status-card inactive">
                                                 <div className="figma-status-info">
                                                     <span className="figma-status-step">ÉTAPE 2</span>
                                                     <h4 className="figma-status-name">CERTIFIÉ</h4>
                                                     <p className="figma-status-desc">Passer au statut "Certifié"</p>
                                                 </div>
-                                                <i className={`bi ${auth.user?.isCertified ? 'bi-patch-check-fill' : 'bi-patch-check'} figma-status-icon-v2`}></i>
+                                                <i className="bi bi-lock figma-status-icon-v2"></i>
                                             </div>
                                         </div>
 
                                         <div className="figma-alert-box-v3">
-                                            <i className={`bi ${activeUpgradeSection === 'certified' ? 'bi-info-circle' : 'bi-exclamation-circle'} figma-alert-icon-v3`} style={{ color: activeUpgradeSection === 'certified' ? '#8B5CF6' : '#FF402F' }}></i>
+                                            <i className="bi bi-exclamation-circle figma-alert-icon-v3"></i>
                                             <div className="figma-alert-content-v2">
-                                                <h4 className="figma-alert-title-v3" style={{ color: activeUpgradeSection === 'certified' ? '#8B5CF6' : '#0050CB' }}>
-                                                    {activeUpgradeSection === 'certified' ? 'Certification:' : 'Vérification:'}
-                                                </h4>
+                                                <h4 className="figma-alert-title-v3">Vérification:</h4>
                                                 <p className="figma-alert-desc-v3">
-                                                    {activeUpgradeSection === 'certified' 
-                                                        ? 'Ajoutez ces documents pour la certification professionnelle. Vous pouvez les soumettre dès maintenant.'
-                                                        : 'Fournir le RC (Registre du Commerce), le NIF ou d\'autres documents réglementaires (ou la Carte Fellah uniquement).'
-                                                    }
-                                                    <br />
-                                                    Cliquez sur "Soumettre" pour envoyer les documents à l'administrateur.
+                                                    Fournir le RC (Registre du Commerce), le NIF ou d'autres documents réglementaires (ou la Carte Fellah uniquement).<br />
+                                                    Cliquez sur "Envoyer" pour soumettre les documents à l'administrateur.
                                                 </p>
                                             </div>
                                         </div>
 
                                         <div className="figma-doc-grid-v2">
-                                            {(activeUpgradeSection === 'certified' ? optionalDocuments : requiredDocuments).map((doc: any, index) => {
+                                            {requiredDocuments.map((doc, index) => {
                                                 const document = identity ? (identity as any)[doc.key] : null;
                                                 const hasDocument = document && document.url;
                                                 const isUploadingThisField = isUploadingDocument === doc.key;
@@ -1677,17 +1664,11 @@ function ProfilePage() {
                                                         <div className="figma-doc-header-v2">
                                                             <img src="/assets/images/add-file-svgrepo-com.svg" className="figma-doc-icon-v2" style={{ width: '28px', height: '28px' }} alt="add file" />
                                                             <h4 className="figma-doc-title-v2">
-                                                                {doc.label} {('required' in doc && doc.required) && <span className="required">*</span>}
+                                                                {doc.label} <span className="required">*</span>
                                                             </h4>
                                                         </div>
-                                                        <p className="figma-doc-subtitle-v2">{'description' in doc ? doc.description : 'Format PDF ou Image'}</p>
+                                                        <p className="figma-doc-subtitle-v2">{doc.description}</p>
                                                         
-                                                        {hasDocument && (
-                                                            <span className="figma-doc-success-badge" style={{ color: '#10B981', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px', fontWeight: 600 }}>
-                                                                <i className="bi bi-check-circle-fill"></i> Document ajouté
-                                                            </span>
-                                                        )}
-
                                                         <input
                                                             ref={el => { documentFileInputRefs.current[doc.key] = el; }}
                                                             type="file"
@@ -1702,157 +1683,14 @@ function ProfilePage() {
                                                             className="figma-doc-btn-v2"
                                                             onClick={() => documentFileInputRefs.current[doc.key]?.click()}
                                                             disabled={isUploadingThisField}
-                                                            style={{
-                                                                borderColor: hasDocument ? '#10B981' : '#757575',
-                                                                color: hasDocument ? '#10B981' : '#757575'
-                                                            }}
                                                         >
-                                                            {isUploadingThisField ? '...' : hasDocument ? 'Remplacer' : 'Ajouter'}
+                                                            {isUploadingThisField ? '...' : 'Ajouter'}
                                                         </button>
                                                     </div>
                                                 );
                                             })}
                                         </div>
-
-                                        <div className="figma-cta-group figma-cta-group-verification" style={{ justifyContent: 'center', marginTop: '32px' }}>
-                                            {activeUpgradeSection === 'verified' && identity && identity._id && (() => {
-                                                const hasRc = identity.registreCommerceCarteAuto && ((identity.registreCommerceCarteAuto as any).url || (identity.registreCommerceCarteAuto as any).fullUrl);
-                                                const hasNif = identity.nifRequired && ((identity.nifRequired as any).url || (identity.nifRequired as any).fullUrl);
-                                                const hasCarteFellah = identity.carteFellah && ((identity.carteFellah as any).url || (identity.carteFellah as any).fullUrl);
-                                                const hasUploadedAnyRequiredDoc = hasRc || hasNif || hasCarteFellah;
-                                                
-                                                if (!hasUploadedAnyRequiredDoc) return null;
-
-                                                return (
-                                                    <motion.button
-                                                        className="figma-btn-primary"
-                                                        onClick={handleSubmitIdentity}
-                                                        disabled={isSubmittingIdentity || identity?.status === 'PENDING' || identity?.status === 'VERIFIED'}
-                                                        whileHover={{ scale: 1.02 }}
-                                                        whileTap={{ scale: 0.98 }}
-                                                        style={{
-                                                            width: 'auto',
-                                                            minWidth: '240px',
-                                                            height: '50px',
-                                                            fontSize: '15px',
-                                                            fontWeight: 700,
-                                                            background: '#1A71F6',
-                                                            color: '#FFFFFF',
-                                                            borderRadius: '12px',
-                                                            border: 'none',
-                                                            cursor: 'pointer',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            gap: '8px'
-                                                        }}
-                                                    >
-                                                        {isSubmittingIdentity ? (
-                                                            <>
-                                                                <div className="modern-spinner-sm" style={{ borderTopColor: '#fff', marginRight: '4px' }}></div>
-                                                                Envoi...
-                                                            </>
-                                                        ) : identity?.status === 'PENDING' ? (
-                                                            <>
-                                                                <i className="bi bi-clock-history"></i>
-                                                                En attente de vérification
-                                                            </>
-                                                        ) : identity?.status === 'VERIFIED' ? (
-                                                            <>
-                                                                <i className="bi bi-patch-check-fill"></i>
-                                                                Vérifié
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <i className="bi bi-send-fill"></i>
-                                                                Soumettre vos documents
-                                                            </>
-                                                        )}
-                                                    </motion.button>
-                                                );
-                                            })()}
-
-                                            {activeUpgradeSection === 'certified' && identity && identity._id && (() => {
-                                                const optionalDocKeys = ['nis', 'c20', 'misesAJourCnas', 'last3YearsBalanceSheet', 'certificates', 'identityCard'];
-                                                const hasAnyOptionalDoc = optionalDocKeys.some(key => {
-                                                    const doc = (identity as any)[key];
-                                                    return doc && (doc.url || doc.fullUrl);
-                                                });
-                                                
-                                                if (!hasAnyOptionalDoc) return null;
-
-                                                const certificationStatus = (identity as any).certificationStatus || 'DRAFT';
-                                                const isCertificationWaiting = certificationStatus === 'PENDING' || certificationStatus === 'WAITING';
-                                                const isCertificationDone = certificationStatus === 'APPROVED' || certificationStatus === 'DONE';
-
-                                                return (
-                                                    <motion.button
-                                                        className="figma-btn-primary"
-                                                        onClick={async () => {
-                                                            try {
-                                                                setIsSubmittingIdentity(true);
-                                                                const response = await IdentityAPI.submitCertification(identity._id);
-                                                                if (response && response.success) {
-                                                                    enqueueSnackbar(
-                                                                        response.message || 'Documents de certification soumis avec succès.',
-                                                                        { variant: 'success' }
-                                                                    );
-                                                                    await queryClient.invalidateQueries({ queryKey: ['identity'] });
-                                                                } else {
-                                                                    throw new Error(response?.message || 'Failed to submit certification');
-                                                                }
-                                                            } catch (error: any) {
-                                                                console.error('Error submitting certification:', error);
-                                                                const errorMessage = error.response?.data?.message || error.message || 'Erreur de soumission';
-                                                                enqueueSnackbar(errorMessage, { variant: 'error' });
-                                                            } finally {
-                                                                setIsSubmittingIdentity(false);
-                                                            }
-                                                        }}
-                                                        disabled={isSubmittingIdentity || isCertificationWaiting || isCertificationDone}
-                                                        whileHover={{ scale: 1.02 }}
-                                                        whileTap={{ scale: 0.98 }}
-                                                        style={{
-                                                            width: 'auto',
-                                                            minWidth: '240px',
-                                                            height: '50px',
-                                                            fontSize: '15px',
-                                                            fontWeight: 700,
-                                                            background: '#8B5CF6',
-                                                            color: '#FFFFFF',
-                                                            borderRadius: '12px',
-                                                            border: 'none',
-                                                            cursor: 'pointer',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            gap: '8px'
-                                                        }}
-                                                    >
-                                                        {isSubmittingIdentity ? (
-                                                            <>
-                                                                <div className="modern-spinner-sm" style={{ borderTopColor: '#fff', marginRight: '4px' }}></div>
-                                                                Envoi...
-                                                            </>
-                                                        ) : isCertificationWaiting ? (
-                                                            <>
-                                                                <i className="bi bi-clock-history"></i>
-                                                                En attente de certification
-                                                            </>
-                                                        ) : isCertificationDone ? (
-                                                            <>
-                                                                <i className="bi bi-award-fill"></i>
-                                                                Certifié
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <i className="bi bi-send-fill"></i>
-                                                                Soumettre pour certification
-                                                            </>
-                                                        )}
-                                                    </motion.button>
-                                                );
-                                            })()}
+                                        <div className="figma-cta-group figma-cta-group-verification" style={{ justifyContent: 'center' }}>
                                         </div>
                                     </div>
                                 </motion.div>

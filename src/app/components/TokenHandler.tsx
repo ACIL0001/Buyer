@@ -20,29 +20,9 @@ export default function TokenHandler({ children }: TokenHandlerProps) {
       // Only process once
       if (hasProcessed || isProcessing) return;
 
-      let token = searchParams.get('token');
-      let refreshToken = searchParams.get('refreshToken');
-      let fromSeller = searchParams.get('from') === 'seller';
-      let isIntercepted = false;
-
-      // Check if we have an intercepted token in localStorage
-      try {
-        const tempRedirect = localStorage.getItem('temp_auth_redirect');
-        if (tempRedirect) {
-          const parsed = JSON.parse(tempRedirect);
-          if (parsed?.tokens?.accessToken) {
-            token = parsed.tokens.accessToken;
-            refreshToken = parsed.tokens.refreshToken || '';
-            fromSeller = true;
-            isIntercepted = true;
-            console.log('🔄 TokenHandler: Found intercepted token in storage');
-            // Remove the temporary key immediately
-            localStorage.removeItem('temp_auth_redirect');
-          }
-        }
-      } catch (e) {
-        console.error('Error checking temp_auth_redirect:', e);
-      }
+      const token = searchParams.get('token');
+      const refreshToken = searchParams.get('refreshToken');
+      const fromSeller = searchParams.get('from') === 'seller';
 
       // Only process if we have a token and it's from seller
       if (token && fromSeller) {
@@ -50,15 +30,14 @@ export default function TokenHandler({ children }: TokenHandlerProps) {
         setIsProcessing(true);
 
         try {
-          // Decode the tokens (only if not already decoded by the interceptor script)
-          const accessToken = isIntercepted ? token : decodeURIComponent(token);
-          const refreshTokenValue = refreshToken ? (isIntercepted ? refreshToken : decodeURIComponent(refreshToken)) : '';
+          // Decode the tokens
+          const accessToken = decodeURIComponent(token);
+          const refreshTokenValue = refreshToken ? decodeURIComponent(refreshToken) : '';
 
           console.log('🔑 TokenHandler: Extracted tokens:', {
             hasAccessToken: !!accessToken,
             hasRefreshToken: !!refreshTokenValue,
-            accessTokenLength: accessToken.length,
-            isIntercepted
+            accessTokenLength: accessToken.length
           });
 
           // Verify the token with the backend

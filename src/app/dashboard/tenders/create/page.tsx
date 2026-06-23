@@ -88,7 +88,7 @@ export default function CreateTenderPage() {
         initialValues: {
             title: '',
             description: '',
-            tenderType: '',
+            tenderType: 'PRODUCT',
             auctionType: TENDER_AUCTION_TYPES.CLASSIC,
             evaluationType: '', // MOINS_DISANT or MIEUX_DISANT
             category: '',
@@ -285,26 +285,6 @@ export default function CreateTenderPage() {
                                              </Box>
 
                                              <Grid container spacing={3}>
-                                                 {/* Statut de produit */}
-                                                 <Grid size={{ xs: 12 }}>
-                                                     <Typography sx={fieldLabelStyle}>Statut de produit</Typography>
-                                                     <TextField
-                                                         select
-                                                         fullWidth
-                                                         variant="outlined"
-                                                         placeholder="Produit ou Service"
-                                                         {...formik.getFieldProps('tenderType')}
-                                                         error={(formik.touched.tenderType || formik.submitCount > 0) && !!formik.errors.tenderType}
-                                                         helperText={(formik.touched.tenderType || formik.submitCount > 0) && formik.errors.tenderType}
-                                                         sx={inputStyle}
-                                                         SelectProps={{ displayEmpty: true }}
-                                                     >
-                                                         <MenuItem value="" disabled>Produit ou Service</MenuItem>
-                                                         <MenuItem value={TENDER_TYPES.PRODUCT}>Produit</MenuItem>
-                                                         <MenuItem value={TENDER_TYPES.SERVICE}>Service</MenuItem>
-                                                     </TextField>
-                                                 </Grid>
-
                                                  {/* 2. Délai */}
                                                  <Grid size={{ xs: 12 }}>
                                                      <Typography sx={fieldLabelStyle}>Délai</Typography>
@@ -403,7 +383,8 @@ export default function CreateTenderPage() {
                                                             <MdOutlinePrivacyTip size={18} />
                                                         </Box>
                                                         <Box>
-                                                            <Typography variant="body2" fontWeight="700" sx={{ fontSize: '0.85rem' }}>Sans image commerciale</Typography>
+                                                            <Typography variant="body2" fontWeight="700" sx={{ fontSize: '0.85rem' }}>Anonyme</Typography>
+                                                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>Publier anonymement</Typography>
                                                         </Box>
                                                     </Box>
                                                     <Switch size="small" checked={formik.values.hidden} onChange={formik.handleChange} name="hidden" />

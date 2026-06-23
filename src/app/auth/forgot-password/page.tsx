@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { 
   Typography, 
   styled, 
@@ -138,8 +138,11 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
 }));
 
 const StyledTextField = styled(TextField)({
+  position: 'absolute',
   width: '315px',
   height: '44px',
+  left: '28px',
+  top: '268px',
   '& .MuiOutlinedInput-root': {
     height: '44px',
     borderRadius: '10px',
@@ -166,8 +169,11 @@ const StyledTextField = styled(TextField)({
 });
 
 const StyledLoadingButton = styled(LoadingButton)({
+  position: 'absolute',
   width: '315px',
   height: '44px',
+  left: '31px',
+  top: '337px',
   background: 'linear-gradient(180deg, #0096E3 0%, rgba(0, 83, 125, 0.7) 100%)',
   borderRadius: '10px',
   textTransform: 'none',
@@ -183,9 +189,12 @@ const StyledLoadingButton = styled(LoadingButton)({
 });
 
 const BackLinkBox = styled(Box)({
-  width: '315px',
+  position: 'absolute',
+  width: '259px',
+  height: '18px',
+  left: '54px',
+  top: '398px',
   textAlign: 'center',
-  marginTop: '10px',
   '& a': {
     fontFamily: "'Poppins', sans-serif",
     fontWeight: 400,
@@ -199,28 +208,13 @@ const BackLinkBox = styled(Box)({
   },
 });
 
-const FormWrapper = styled('div')({
-  position: 'absolute',
-  left: '26px',
-  top: '268px',
-  width: '315px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '20px',
-});
-
 export default function ForgotPassword() {
-  const searchParams = useSearchParams();
   const router = useRouter();
   const { t } = useTranslation();
   const { logoUrl } = useSettingsStore();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  
-  const initialLoginParam = searchParams.get('login') || '';
-  const initialMethod = initialLoginParam && !initialLoginParam.includes('@') ? 'phone' : 'email';
-  
-  const [method, setMethod] = useState<'email' | 'phone'>(initialMethod);
+  const [method, setMethod] = useState<'email' | 'phone'>('email');
 
   const handleMethodChange = (event: React.MouseEvent<HTMLElement>, newMethod: 'email' | 'phone' | null) => {
     if (newMethod !== null) {
@@ -233,13 +227,13 @@ export default function ForgotPassword() {
 
   const formik = useFormik({
     initialValues: {
-      email: initialLoginParam.includes('@') ? initialLoginParam : '',
-      phone: initialLoginParam && !initialLoginParam.includes('@') ? initialLoginParam : '',
+      email: '',
+      phone: '',
     },
     validationSchema: Yup.object({
       email: method === 'email' 
         ? Yup.string().email('Email invalide').required('Email requis')
-        : Yup.string().email('Email invalide (optionnel si non lié)'),
+        : Yup.string(),
       phone: method === 'phone'
         ? Yup.string()
             .required('Numéro de téléphone requis')
@@ -252,7 +246,7 @@ export default function ForgotPassword() {
       try {
         const payload = method === 'email' 
           ? { email: values.email }
-          : { email: values.email || undefined, phone: values.phone };
+          : { phone: values.phone };
 
         const response = await axios.post(`${app.baseURL}auth/forgot-password`, payload);
         
@@ -341,48 +335,37 @@ export default function ForgotPassword() {
           )}
 
           <form onSubmit={formik.handleSubmit}>
-            <FormWrapper>
-              {method === 'email' ? (
-                <StyledTextField
-                  fullWidth
-                  placeholder="Adresse E-mail"
-                  {...formik.getFieldProps('email')}
-                  error={Boolean(formik.touched.email && formik.errors.email)}
-                  helperText={formik.touched.email && formik.errors.email}
-                />
-              ) : (
-                <>
-                  <StyledTextField
-                    fullWidth
-                    placeholder="Adresse E-mail (Liée au compte)"
-                    {...formik.getFieldProps('email')}
-                    error={Boolean(formik.touched.email && formik.errors.email)}
-                    helperText={formik.touched.email && formik.errors.email}
-                  />
-                  <StyledTextField
-                    fullWidth
-                    placeholder="Numéro de téléphone"
-                    {...formik.getFieldProps('phone')}
-                    error={Boolean(formik.touched.phone && formik.errors.phone)}
-                    helperText={formik.touched.phone && formik.errors.phone}
-                  />
-                </>
-              )}
+            {method === 'email' ? (
+              <StyledTextField
+                fullWidth
+                placeholder="Adresse E-mail"
+                {...formik.getFieldProps('email')}
+                error={Boolean(formik.touched.email && formik.errors.email)}
+                helperText={formik.touched.email && formik.errors.email}
+              />
+            ) : (
+              <StyledTextField
+                fullWidth
+                placeholder="Numéro de téléphone"
+                {...formik.getFieldProps('phone')}
+                error={Boolean(formik.touched.phone && formik.errors.phone)}
+                helperText={formik.touched.phone && formik.errors.phone}
+              />
+            )}
 
-              <StyledLoadingButton
-                type="submit"
-                variant="contained"
-                loading={formik.isSubmitting}
-              >
-                Envoyer le code
-              </StyledLoadingButton>
+            <StyledLoadingButton
+              type="submit"
+              variant="contained"
+              loading={formik.isSubmitting}
+            >
+              Envoyer le code
+            </StyledLoadingButton>
 
-              <BackLinkBox>
-                <NextLink href="/auth/login">
-                  Retour a la connextion
-                </NextLink>
-              </BackLinkBox>
-            </FormWrapper>
+            <BackLinkBox>
+              <NextLink href="/auth/login">
+                Retour a la connextion
+              </NextLink>
+            </BackLinkBox>
           </form>
         </StyledCard>
       </Fade>

@@ -183,7 +183,7 @@ function DirectSaleDetailContent() {
 
     try {
       setPurchasing(true);
-      await DirectSaleAPI.purchase({ directSaleId: directSale._id, quantity, price: directSale.price });
+      await DirectSaleAPI.purchase({ directSaleId: directSale._id, quantity });
       enqueueSnackbar(t('details.orderSuccessful'), { variant: 'success' });
       setRefreshKey(prev => prev + 1);
       setQuantity(1);

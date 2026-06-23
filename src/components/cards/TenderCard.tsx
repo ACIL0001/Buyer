@@ -2,7 +2,6 @@ import { Tender } from '@/types/tender';
 import { normalizeImageUrl } from '@/utils/url';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import app from '@/config';
 import { useRouter } from 'next/navigation';
@@ -151,17 +150,22 @@ const TenderCard = ({ tender }: TenderCardProps) => {
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-        <Image
+        <img
           src={imgError ? DEFAULT_TENDER_IMAGE : getTenderImageUrl(tender)}
           alt={tender.title || 'Tender'}
-          fill
-          sizes="(max-width: 768px) 100vw, 350px"
           style={{
+            width: '100%',
+            height: '100%',
             objectFit: 'contain',
             transition: 'transform 0.4s ease',
           }}
-          onError={() => {
-              setImgError(true);
+          onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (target.src !== DEFAULT_TENDER_IMAGE) {
+                  target.src = DEFAULT_TENDER_IMAGE;
+              } else {
+                  setImgError(true);
+              }
           }}
           loading="lazy"
         />
@@ -418,12 +422,12 @@ const TenderCard = ({ tender }: TenderCardProps) => {
                 textDecoration: 'none',
               }}
             >
-              <Image
+              <img
                 src={tender.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE)}
                 alt={displayName}
-                width={28}
-                height={28}
                 style={{
+                  width: '28px',
+                  height: '28px',
                   borderRadius: '50%',
                   objectFit: 'contain',
                 }}
@@ -452,12 +456,12 @@ const TenderCard = ({ tender }: TenderCardProps) => {
             </Link>
           ) : (
             <>
-              <Image
+              <img
                 src={tender.hidden ? DEFAULT_PROFILE_IMAGE : (normalizeImageUrl(tender.owner?.photoURL) || DEFAULT_PROFILE_IMAGE)}
                 alt={displayName}
-                width={28}
-                height={28}
                 style={{
+                  width: '28px',
+                  height: '28px',
                   borderRadius: '50%',
                   objectFit: 'contain',
                 }}

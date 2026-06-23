@@ -179,24 +179,6 @@ export const IdentityAPI = {
     }
   },
 
-  // Remove identity document
-  removeDocument: async (identityId: string, field: string): Promise<ApiResponse<Identity>> => {
-    try {
-      const res = await requests.delete(`identities/${identityId}/document/${field}`);
-      if ('success' in res) {
-        return res as ApiResponse<Identity>;
-      }
-      return {
-        success: (res as any)?.status >= 200 && (res as any)?.status < 300,
-        data: (res as any)?.data?.data ?? (res as any)?.data,
-        message: (res as any)?.data?.message,
-      } as ApiResponse<Identity>;
-    } catch (error: unknown) {
-      console.error('Error removing identity document:', error);
-      throw error;
-    }
-  },
-
   // Submit identity for admin review
   submitIdentity: async (identityId: string): Promise<ApiResponse<Identity>> => {
     try {

@@ -1,10 +1,11 @@
 import axios from "axios";
 import { authStore } from "@/contexts/authStore";
 import app from "@/config";
+import tracker from "@/utils/analytics/tracker";
+import { getCsrfToken } from "@/utils/csrf";
 
 export const loginFunction = async (data: { login: string; password: string }) => {
-  console.log(data);
-  if (data.login == "" || data.password == "") {
+  if (data.login === "" || data.password === "") {
     return "you need to add all information";
   }
 
@@ -19,7 +20,6 @@ export const loginFunction = async (data: { login: string; password: string }) =
         },
       }
     );
-    console.log(res);
 
     // Use authStore to store the authentication data instead of localStorage
     if (res.data && res.data.tokens) {
@@ -35,18 +35,8 @@ export const loginFunction = async (data: { login: string; password: string }) =
     return "success";
 
   } catch (err: any) {
-    console.log("err =>", err);
-    if (err?.response?.data?.message == "Invalid credentials - login") {
-      return "email is wrong";
-    }
-    if (err?.response?.data?.message == "Invalid credentials - password") {
-      return "password is wrong";
-    }
-    if (
-      err?.response?.data?.message ==
-      "login must be a valid email address or a phone number"
-    ) {
-      return "to login you must be a valid email address or a phone number";
+    if (err?.response?.data?.message?.includes("Invalid credentials")) {
+      return "Identifiants incorrects";
     }
   }
 };
@@ -62,15 +52,13 @@ export const registerFunction = async (data: {
   type?: string;
   sellerType?: string;
 }) => {
-  console.log(data);
-
   if (
-    data.email == "" ||
-    data.password == "" ||
-    data.phone == "" ||
-    data.firstname == "" ||
-    data.lastname == "" ||
-    (data as any).gerden == ""
+    data.email === "" ||
+    data.password === "" ||
+    data.phone === "" ||
+    data.firstname === "" ||
+    data.lastname === "" ||
+    (data as any).gerden === ""
   ) {
     return "please enter all information to register";
   }
@@ -94,17 +82,13 @@ export const registerFunction = async (data: {
         },
       }
     );
-    console.log("res register", res);
     return "success";
   } catch (err: any) {
-    console.log(err);
-
-    if (err?.response?.data?.message == "Email already exist") {
-      return "Email already exist";
+    if (err?.response?.data?.message === "Email already exist" || 
+        err?.response?.data?.message === "Phone number already exist") {
+      return "Ce compte existe déjà"; // Unified error
     }
-    if (err?.response?.data?.message == "Phone number already exist") {
-      return "Phone number already exist";
-    }
+    return "Erreur lors de l'inscription";
   }
 };
 
@@ -136,7 +120,7 @@ export const getDeatilsAuction = async (id: string) => {
     });
     return res.data;
   } catch (err) {
-    console.log("Validtion err from function get Details auction");
+    console.error("Error fetching auction details");
     throw err; // Re-throw error to handle it in the component
   }
 }
@@ -153,11 +137,19 @@ export const sendOffer = async (data: { id: string; offer: number }) => {
       headers: {
         Authorization: token ? `Bearer ${token}` : '',
         "x-access-key": process.env.NEXT_PUBLIC_KEY_API_BYUER as string,
+        "X-CSRF-Token": getCsrfToken(),
       }
     });
+
+    // Track bid
+    tracker.track("bid_placed", {
+      auctionId: data.id,
+      bidAmount: Number(data.offer) || 0,
+    });
+
     return res.data;
   } catch (err) {
-    console.log("Validtion err from function send offer auction");
+    console.error("Error sending offer");
     throw err; // Re-throw error to handle it in the component
   }
 };

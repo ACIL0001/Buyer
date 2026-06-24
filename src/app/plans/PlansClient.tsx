@@ -106,7 +106,7 @@ export default function PlansClient() {
           <h1 className="plans-title" style={{ 
             fontFamily: '"DM Sans", sans-serif', 
             fontWeight: 700, 
-            fontSize: 'clamp(32px, 5vw, 56px)', 
+            fontSize: 'clamp(28px, 4.5vw, 48px)', 
             lineHeight: '1.2', 
             textAlign: 'center', 
             margin: '0 auto 24px', 
@@ -120,7 +120,7 @@ export default function PlansClient() {
           <p className="plans-subtitle" style={{ 
             fontFamily: '"Inter", sans-serif', 
             fontWeight: 400, 
-            fontSize: '18px', 
+            fontSize: 'clamp(15px, 1.6vw, 18px)', 
             lineHeight: '1.6', 
             textAlign: 'center', 
             color: '#454545', 
@@ -202,7 +202,8 @@ export default function PlansClient() {
                     >
                       <Typography
                         sx={{
-                          fontSize: '1.4rem',
+                          fontFamily: '"DM Sans", sans-serif',
+                          fontSize: 'clamp(18px, 1.8vw, 22px)',
                           fontWeight: 800,
                           textTransform: 'uppercase',
                           letterSpacing: '0.05em',
@@ -227,13 +228,14 @@ export default function PlansClient() {
                       <Typography 
                         sx={{ 
                           color: '#1E3A8A', 
-                          fontSize: '0.875rem', 
-                          fontWeight: 600, 
+                          fontFamily: '"Inter", sans-serif',
+                          fontSize: 'clamp(13px, 1.4vw, 15px)', 
+                          fontWeight: 500, 
                           fontStyle: 'italic', 
                           textAlign: 'center',
                           mt: 1.5,
                           px: 1,
-                          lineHeight: 1.4,
+                          lineHeight: 1.45,
                           minHeight: '48px'
                         }}
                       >
@@ -241,11 +243,11 @@ export default function PlansClient() {
                       </Typography>
 
                       {/* Price Section */}
-                      <Box display="flex" alignItems="baseline" justifyContent="center" mt={3.5} mb={2.5}>
-                        <Typography sx={{ fontSize: '2.8rem', fontWeight: 800, color: '#1E3A8A', mr: 0.5, lineHeight: 1 }}>
+                      <Box display="flex" alignItems="flex-start" justifyContent="center" mt={3.5} mb={2.5}>
+                        <Typography sx={{ fontSize: 'clamp(2.2rem, 3.5vw, 2.8rem)', fontWeight: 700, color: '#1E3A8A', mr: 0.5, lineHeight: 1 }}>
                           {displayPrice}
                         </Typography>
-                        <Typography sx={{ fontSize: '1.15rem', fontWeight: 700, color: '#1E3A8A' }}>
+                        <Typography sx={{ fontSize: '1.15rem', fontWeight: 700, color: '#1E3A8A', mt: 0.5 }}>
                           {billingPeriod === 'yearly' ? 'DA/an' : 'DA/mois'}
                         </Typography>
                       </Box>
@@ -254,7 +256,7 @@ export default function PlansClient() {
                       <Button
                         variant="contained"
                         onClick={() => handleSubscribe(plan._id)}
-                        disabled={!plan.isActive}
+                        disabled={true}
                         sx={{
                           alignSelf: 'center',
                           background: 'linear-gradient(135deg, #38BDF8 0%, #0EA5E9 100%)',
@@ -274,7 +276,7 @@ export default function PlansClient() {
                           }
                         }}
                       >
-                        {translate('plans.subscribe', "S'abonner")}
+                        Obtenir maintenant
                       </Button>
 
                       {/* Dynamic Bullet Lists */}
@@ -282,12 +284,12 @@ export default function PlansClient() {
                         
                         {/* Ideal For Section */}
                         <Box>
-                          <Typography sx={{ color: '#1E3A8A', fontWeight: 800, fontSize: '0.925rem', mb: 1.5 }}>
+                          <Typography sx={{ color: '#1E3A8A', fontFamily: '"DM Sans", sans-serif', fontWeight: 800, fontSize: 'clamp(14px, 1.4vw, 16px)', mb: 1.5 }}>
                             Idéal pour :
                           </Typography>
                           <Box display="flex" alignItems="flex-start" gap={1.25}>
                             <Typography sx={{ color: '#0EA5E9', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1.2 }}>✓</Typography>
-                            <Typography sx={{ color: '#1E3A8A', fontSize: '0.875rem', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
+                            <Typography sx={{ color: '#1E3A8A', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(13px, 1.3vw, 14.5px)', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
                               Idéal pour les comptes {plan.role?.toLowerCase() === 'professional' ? 'professionnels' : 'particuliers'}, booster votre activité et maximiser vos performances.
                             </Typography>
                           </Box>
@@ -296,14 +298,14 @@ export default function PlansClient() {
                         {/* Key Advantages Section */}
                         {features.length > 0 && (
                           <Box>
-                            <Typography sx={{ color: '#1E3A8A', fontWeight: 800, fontSize: '0.925rem', mb: 1.5 }}>
+                            <Typography sx={{ color: '#1E3A8A', fontFamily: '"DM Sans", sans-serif', fontWeight: 800, fontSize: 'clamp(14px, 1.4vw, 16px)', mb: 1.5 }}>
                               Avantages clés :
                             </Typography>
                             <Stack spacing={1.25}>
                               {features.map((feature, idx) => (
                                 <Box key={idx} display="flex" alignItems="flex-start" gap={1.25}>
                                   <Typography sx={{ color: '#0EA5E9', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1.2 }}>✓</Typography>
-                                  <Typography sx={{ color: '#1E3A8A', fontSize: '0.875rem', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
+                                  <Typography sx={{ color: '#1E3A8A', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(13px, 1.3vw, 14.5px)', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
                                     {feature}
                                   </Typography>
                                 </Box>
@@ -314,14 +316,14 @@ export default function PlansClient() {
 
                         {/* Included Features Section */}
                         <Box>
-                          <Typography sx={{ color: '#1E3A8A', fontWeight: 800, fontSize: '0.925rem', mb: 1.5 }}>
+                          <Typography sx={{ color: '#1E3A8A', fontFamily: '"DM Sans", sans-serif', fontWeight: 800, fontSize: 'clamp(14px, 1.4vw, 16px)', mb: 1.5 }}>
                             Ce qui est inclus :
                           </Typography>
                           <Stack spacing={1.25}>
                             {/* Announces */}
                             <Box display="flex" alignItems="flex-start" gap={1.25}>
                               <Typography sx={{ color: '#0EA5E9', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1.2 }}>✓</Typography>
-                              <Typography sx={{ color: '#1E3A8A', fontSize: '0.875rem', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
+                              <Typography sx={{ color: '#1E3A8A', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(13px, 1.3vw, 14.5px)', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
                                 {plan.announcesPerMonth === -1 ? 'Annonces par mois : Illimitées' : `${plan.announcesPerMonth} annonces par mois`} (active pendant {plan.isDurationUnlimited ? 'illimité' : plan.duration * 30} jours)
                               </Typography>
                             </Box>
@@ -329,13 +331,13 @@ export default function PlansClient() {
                             {/* Media Limits */}
                             <Box display="flex" alignItems="flex-start" gap={1.25}>
                               <Typography sx={{ color: '#0EA5E9', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1.2 }}>✓</Typography>
-                              <Typography sx={{ color: '#1E3A8A', fontSize: '0.875rem', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
+                              <Typography sx={{ color: '#1E3A8A', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(13px, 1.3vw, 14.5px)', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
                                 {plan.photosLimit === -1 ? 'Photos : Illimitées' : `Jusqu'à ${plan.photosLimit || 0} photos`}
                               </Typography>
                             </Box>
                             <Box display="flex" alignItems="flex-start" gap={1.25}>
                               <Typography sx={{ color: '#0EA5E9', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1.2 }}>✓</Typography>
-                              <Typography sx={{ color: '#1E3A8A', fontSize: '0.875rem', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
+                              <Typography sx={{ color: '#1E3A8A', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(13px, 1.3vw, 14.5px)', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
                                 {plan.videosLimit === -1 ? 'Vidéos : Illimitées' : `Jusqu'à ${plan.videosLimit || 0} vidéos`}
                               </Typography>
                             </Box>
@@ -343,7 +345,7 @@ export default function PlansClient() {
                             {/* Soumission Limit */}
                             <Box display="flex" alignItems="flex-start" gap={1.25}>
                               <Typography sx={{ color: '#0EA5E9', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1.2 }}>✓</Typography>
-                              <Typography sx={{ color: '#1E3A8A', fontSize: '0.875rem', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
+                              <Typography sx={{ color: '#1E3A8A', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(13px, 1.3vw, 14.5px)', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
                                 {plan.enchereSoumissionLimit === -1 ? 'Enchères / soumissions simultanées : Illimitées' : `${plan.enchereSoumissionLimit} enchères / soumissions simultanées`}
                               </Typography>
                             </Box>
@@ -351,7 +353,7 @@ export default function PlansClient() {
                             {/* Stats / Analytics */}
                             <Box display="flex" alignItems="flex-start" gap={1.25}>
                               <Typography sx={{ color: '#0EA5E9', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1.2 }}>✓</Typography>
-                              <Typography sx={{ color: '#1E3A8A', fontSize: '0.875rem', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
+                              <Typography sx={{ color: '#1E3A8A', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(13px, 1.3vw, 14.5px)', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
                                 Niveau d'analyse : {plan.statisticsLevel === 'BASIC' ? 'Basique' : plan.statisticsLevel === 'ADVANCED' ? 'Avancé' : 'Standard'}
                               </Typography>
                             </Box>
@@ -360,7 +362,7 @@ export default function PlansClient() {
                             {plan.hasChatAndMessaging && (
                               <Box display="flex" alignItems="flex-start" gap={1.25}>
                                 <Typography sx={{ color: '#0EA5E9', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1.2 }}>✓</Typography>
-                                <Typography sx={{ color: '#1E3A8A', fontSize: '0.875rem', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
+                                <Typography sx={{ color: '#1E3A8A', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(13px, 1.3vw, 14.5px)', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
                                   Chat & messagerie instantanés
                                 </Typography>
                               </Box>
@@ -369,7 +371,7 @@ export default function PlansClient() {
                             {plan.hasRatingAndHistory && (
                               <Box display="flex" alignItems="flex-start" gap={1.25}>
                                 <Typography sx={{ color: '#0EA5E9', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1.2 }}>✓</Typography>
-                                <Typography sx={{ color: '#1E3A8A', fontSize: '0.875rem', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
+                                <Typography sx={{ color: '#1E3A8A', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(13px, 1.3vw, 14.5px)', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
                                   Historique & évaluations
                                 </Typography>
                               </Box>
@@ -378,7 +380,7 @@ export default function PlansClient() {
                             {plan.hasAutoTranslation && (
                               <Box display="flex" alignItems="flex-start" gap={1.25}>
                                 <Typography sx={{ color: '#0EA5E9', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1.2 }}>✓</Typography>
-                                <Typography sx={{ color: '#1E3A8A', fontSize: '0.875rem', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
+                                <Typography sx={{ color: '#1E3A8A', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(13px, 1.3vw, 14.5px)', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
                                   Traduction automatique en temps réel
                                 </Typography>
                               </Box>
@@ -387,7 +389,7 @@ export default function PlansClient() {
                             {plan.hasMiseEnAvant && (
                               <Box display="flex" alignItems="flex-start" gap={1.25}>
                                 <Typography sx={{ color: '#0EA5E9', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1.2 }}>✓</Typography>
-                                <Typography sx={{ color: '#1E3A8A', fontSize: '0.875rem', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
+                                <Typography sx={{ color: '#1E3A8A', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(13px, 1.3vw, 14.5px)', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
                                   Mise en avant prioritaire de l'annonce
                                 </Typography>
                               </Box>
@@ -396,7 +398,7 @@ export default function PlansClient() {
                             {plan.hasEmailNotification && (
                               <Box display="flex" alignItems="flex-start" gap={1.25}>
                                 <Typography sx={{ color: '#0EA5E9', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1.2 }}>✓</Typography>
-                                <Typography sx={{ color: '#1E3A8A', fontSize: '0.875rem', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
+                                <Typography sx={{ color: '#1E3A8A', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(13px, 1.3vw, 14.5px)', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
                                   Notifications par e-mail
                                 </Typography>
                               </Box>
@@ -405,7 +407,7 @@ export default function PlansClient() {
                             {plan.isDurationUnlimited && (
                               <Box display="flex" alignItems="flex-start" gap={1.25}>
                                 <Typography sx={{ color: '#0EA5E9', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1.2 }}>✓</Typography>
-                                <Typography sx={{ color: '#1E3A8A', fontSize: '0.875rem', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
+                                <Typography sx={{ color: '#1E3A8A', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(13px, 1.3vw, 14.5px)', fontWeight: 550, opacity: 0.9, lineHeight: 1.45 }}>
                                   Durée illimitée (N'expire jamais et ne requiert aucun réabonnement)
                                 </Typography>
                               </Box>

@@ -11,10 +11,6 @@ export const IdentityAPI = {
     // Client to professional conversion (with new required fields)
     createProfessionalIdentity: (formData: FormData): Promise<ApiResponse<any>> => requests.post('/identities/professional', formData),
 
-    // Admin verification endpoint
-    verifyIdentity: (identityId: string, action: 'accept' | 'reject'): Promise<ApiResponse<any>> =>
-        requests.put(`/identities/${identityId}/verify`, { action }),
-
     // Get current user's identity
     getMy: (): Promise<ApiResponse<any>> => requests.get('/identities/me'),
     getMyIdentity: (): Promise<ApiResponse<any>> => requests.get('/identities/me'),
@@ -34,28 +30,6 @@ export const IdentityAPI = {
     // Submit certification documents for admin review
     submitCertification: (identityId: string): Promise<ApiResponse<any>> =>
         requests.put(`/identities/${identityId}/submit-certification`, {}),
-
-    // Get identity by ID (admin only)
-    getById: (id: string): Promise<ApiResponse<any>> => requests.get(`/identities/${id}`),
-
-    // Get all identities (admin only)
-    getAll: (): Promise<ApiResponse<any[]>> => requests.get('/identities'),
-
-    // Get pending identities (admin only)
-    getPending: (): Promise<ApiResponse<any[]>> => requests.get('/identities/pending'),
-
-    // Get accepted identities (admin only)
-    getAccepted: (): Promise<ApiResponse<any[]>> => requests.get('/identities/accepted'),
-
-    // Get pending professionals (admin only)
-    getPendingProfessionals: (): Promise<ApiResponse<any[]>> => requests.get('/identities/pending/professionals'),
-
-    // Get pending resellers (admin only)
-    getPendingResellers: (): Promise<ApiResponse<any[]>> => requests.get('/identities/pending/resellers'),
-
-    // Delete multiple identities (admin only)
-    deleteMultiple: (ids: string[]): Promise<ApiResponse<void>> =>
-        requests.delete(`/identities?ids=${ids.join(',')}`),
 
     // Legacy methods (keeping for backward compatibility)
     upload: (form: FormData): Promise<ApiResponse<any>> => requests.post('/identities', form),

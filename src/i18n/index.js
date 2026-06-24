@@ -32,9 +32,11 @@ i18n
     },
     
     detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
-      caches: ['localStorage'],
+      order: ['querystring', 'cookie', 'localStorage', 'navigator', 'htmlTag'],
+      caches: ['localStorage', 'cookie'],
       lookupLocalStorage: 'i18nextLng',
+      lookupCookie: 'i18nextLng',
+      lookupQuerystring: 'lng',
     },
     
     react: {

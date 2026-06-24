@@ -41,7 +41,7 @@ const InternationalPage = () => {
       <main style={{
         width: '100%',
         background: '#ffffff',
-        paddingTop: 'clamp(80px, 18vw, 304px)',
+        paddingTop: 'clamp(80px, 15vw, 220px)',
         paddingBottom: 'clamp(40px, 8vw, 100px)',
         position: 'relative',
         overflowX: 'hidden',
@@ -49,113 +49,16 @@ const InternationalPage = () => {
       }}>
 
         {/* 1. Hero Section with Video Background */}
-        <section style={{
-          position: 'relative',
-          width: '100%',
-          minHeight: 'clamp(420px, 60vw, 657px)',
-          margin: 0,
-          overflow: 'hidden',
-          background: '#002896',
-          display: 'flex',
-          alignItems: 'center',
-          padding: 'clamp(40px, 8vw, 107px) clamp(20px, 5vw, 76px)',
-          boxSizing: 'border-box',
-        }}>
+        <section className="video-banner-container">
           <video
             autoPlay
             loop
             muted
             playsInline
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              zIndex: 0,
-            }}
+            className="video-banner-bg"
           >
-            <source src="/assets/images/teamwork-in-creative-video-production-company-woma-2026-01-21-02-14-14-utc.mp4" type="video/mp4" />
+            <source src="/assets/images/VF_03 - banner international.mp4" type="video/mp4" />
           </video>
-
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(0deg, rgba(0, 40, 150, 0.54), rgba(0, 40, 150, 0.54))',
-            zIndex: 1,
-          }} />
-
-          <div style={{
-            position: 'relative',
-            zIndex: 2,
-            width: '100%',
-            maxWidth: '1440px',
-            margin: '0 auto',
-          }}>
-            <div style={{ maxWidth: '793px', display: 'flex', flexDirection: 'column', gap: 'clamp(20px, 4vw, 45px)' }}>
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{
-                  color: '#FFFFFF',
-                  fontFamily: '"DM Sans", sans-serif',
-                  fontWeight: 700,
-                  fontSize: 'clamp(28px, 5.5vw, 56px)',
-                  lineHeight: 1.18,
-                  margin: 0,
-                }}
-              >
-                Vous êtes une entreprise basée en dehors du territoire algérien ?
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                style={{
-                  color: '#FFFFFF',
-                  fontFamily: '"Inter", sans-serif',
-                  fontWeight: 400,
-                  fontSize: 'clamp(14px, 1.6vw, 18px)',
-                  lineHeight: 1.6,
-                  margin: 0,
-                }}
-              >
-                Développez votre activité et accédez à de nouvelles opportunités de croissance. MazadClick vous accompagne dans votre expansion sur le marché algérien.
-              </motion.p>
-
-              <button
-                onClick={() => router.push('/contact')}
-                style={{
-                  display: 'inline-flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  padding: 'clamp(14px, 2.5vw, 24px) clamp(20px, 4vw, 36px)',
-                  gap: '10px',
-                  width: '100%',
-                  maxWidth: '310px',
-                  minHeight: 'clamp(52px, 8vw, 71px)',
-                  background: 'linear-gradient(88.88deg, #062C90 50.03%, #3F95DD 98.92%)',
-                  boxShadow: 'inset -1px -1px 1px rgba(6, 44, 144, 0.4), inset 1px 1px 1px rgba(6, 44, 144, 0.4), inset -1px -1px 1px rgba(255, 255, 255, 0.25), inset 1px 1px 4px rgba(255, 255, 255, 0.6)',
-                  borderRadius: '40px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s',
-                  fontFamily: '"DM Sans", sans-serif',
-                  fontWeight: 600,
-                  fontSize: 'clamp(15px, 1.6vw, 18px)',
-                  color: '#FFFFFF',
-                  whiteSpace: 'nowrap',
-                  boxSizing: 'border-box',
-                }}
-                onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.02)')}
-                onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-              >
-                Contactez-nous
-              </button>
-            </div>
-          </div>
         </section>
 
         {/* 2. Why Use MazadClick? */}
@@ -170,7 +73,7 @@ const InternationalPage = () => {
             color: '#002896',
             fontFamily: '"DM Sans", sans-serif',
             fontWeight: 700,
-            fontSize: 'clamp(22px, 3vw, 32px)',
+            fontSize: 'clamp(22px, 2.5vw, 32px)',
             lineHeight: 1.3,
             textAlign: 'center',
             margin: '0 0 clamp(32px, 6vw, 64px)',
@@ -199,7 +102,7 @@ const InternationalPage = () => {
                 <h3 style={{
                   color: '#002896',
                   fontFamily: '"DM Sans", sans-serif',
-                  fontSize: 'clamp(17px, 1.6vw, 20px)',
+                  fontSize: 'clamp(16px, 1.8vw, 20px)',
                   fontWeight: 700,
                   margin: 0,
                   lineHeight: 1.3,
@@ -207,11 +110,11 @@ const InternationalPage = () => {
                   {item.title}
                 </h3>
                 <p style={{
-                  fontFamily: '"DM Sans", sans-serif',
+                  fontFamily: '"Inter", sans-serif',
                   fontWeight: 400,
-                  fontSize: 'clamp(15px, 1.5vw, 18px)',
+                  fontSize: 'clamp(14px, 1.5vw, 16px)',
                   lineHeight: 1.6,
-                  color: '#000000',
+                  color: '#444444',
                   margin: 0,
                 }}>
                   {item.desc}
@@ -234,7 +137,7 @@ const InternationalPage = () => {
             color: '#002896',
             fontFamily: '"DM Sans", sans-serif',
             fontWeight: 700,
-            fontSize: 'clamp(22px, 3.6vw, 36px)',
+            fontSize: 'clamp(22px, 2.5vw, 32px)',
             lineHeight: 1.3,
             textAlign: 'center',
             margin: '0 0 clamp(32px, 6vw, 64px)',
@@ -254,15 +157,15 @@ const InternationalPage = () => {
             justifyContent: 'space-between',
           }}>
             <div style={{ flex: '1 1 320px', minWidth: 0, maxWidth: '600px' }}>
-              <p style={{ color: '#444', fontSize: 'clamp(15px, 1.7vw, 18px)', marginBottom: '32px', lineHeight: 1.6 }}>
+              <p style={{ color: '#444', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(14px, 1.5vw, 16px)', marginBottom: '32px', lineHeight: 1.6 }}>
                 <strong>Accélérez votre expansion à l&apos;export</strong><br /><br />
                 L&apos;économie de demain se joue au-delà des frontières. MazadClick offre aux entreprises algériennes une vitrine structurée pour se positionner sur les marchés africains et européens, en les connectant à des partenaires fiables et en transformant leur potentiel export en opportunités concrètes.
               </p>
-              <p style={{ color: '#444', fontSize: 'clamp(15px, 1.7vw, 18px)', marginBottom: '32px', lineHeight: 1.6 }}>
+              <p style={{ color: '#444', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(14px, 1.5vw, 16px)', marginBottom: '32px', lineHeight: 1.6 }}>
                 <strong>Le point de liaison pour la diaspora et les investisseurs.</strong><br /><br />
-                MazadClick simplifie l&apos;investissement en Algérie en centralisant les opportunités et en sécurisant les mises en relation. Une solution claire et fiable pour connecter efficacement diaspora, investisseurs et porteurs de projets.
+                MazadClick simplifie l&apos;investissement en Algérie en centralisant les opportunités et en sécurisant les mises en relation. Une solution claire et fiable pour connecter diaspora, investisseurs et porteurs de projets.
               </p>
-              <p style={{ color: '#444', fontSize: 'clamp(15px, 1.7vw, 18px)', marginBottom: 0, lineHeight: 1.6 }}>
+              <p style={{ color: '#444', fontFamily: '"Inter", sans-serif', fontSize: 'clamp(14px, 1.5vw, 16px)', marginBottom: 0, lineHeight: 1.6 }}>
                 <strong>Une infrastructure pour des échanges sécurisés</strong><br /><br />
                 MazadClick agit comme un tiers de confiance en structurant des échanges transparents et directs. Nous facilitons les partenariats import-export tout en réduisant les intermédiaires informels.
               </p>
@@ -306,9 +209,9 @@ const InternationalPage = () => {
             <h2 style={{
               color: '#002896',
               fontFamily: '"DM Sans", sans-serif',
-              fontSize: 'clamp(26px, 5vw, 56px)',
+              fontSize: 'clamp(22px, 2.5vw, 32px)',
               fontWeight: 700,
-              lineHeight: 1.2,
+              lineHeight: 1.3,
               textAlign: 'center',
               margin: 0,
               maxWidth: '935px',
@@ -318,10 +221,10 @@ const InternationalPage = () => {
 
             <p style={{
               color: '#002896',
-              fontFamily: '"DM Sans", sans-serif',
+              fontFamily: '"Inter", sans-serif',
               fontWeight: 400,
-              fontSize: 'clamp(15px, 2vw, 24px)',
-              lineHeight: 1.4,
+              fontSize: 'clamp(14px, 1.6vw, 18px)',
+              lineHeight: 1.5,
               textAlign: 'center',
               margin: 0,
               maxWidth: '750px',
@@ -371,6 +274,26 @@ const InternationalPage = () => {
           .glass-button:hover {
             opacity: 0.9;
             transform: scale(1.02);
+          }
+
+          .video-banner-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 2436 / 630;
+            max-height: 630px;
+            overflow: hidden;
+            background: #002896;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+          }
+          .video-banner-bg {
+            width: 2436px;
+            height: 630px;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
           }
         `}</style>
 

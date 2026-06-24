@@ -492,7 +492,11 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
     promoCode: Yup.string().nullable(),
     password: Yup.string()
       .required('Le mot de passe est requis')
-      .min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
+      .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
+      .matches(/[A-Z]/, 'Le mot de passe doit contenir au moins une lettre majuscule')
+      .matches(/[a-z]/, 'Le mot de passe doit contenir au moins une lettre minuscule')
+      .matches(/[0-9]/, 'Le mot de passe doit contenir au moins un chiffre')
+      .matches(/[^A-Za-z0-9]/, 'Le mot de passe doit contenir au moins un caractère spécial'),
     confirmPassword: Yup.string()
       .required('Veuillez confirmer votre mot de passe')
       .oneOf([Yup.ref('password')], 'Les mots de passe ne correspondent pas'),
@@ -574,8 +578,11 @@ export default function RegisterForm({ profileType }: { profileType?: CLIENT_TYP
     setLoadingCategories(true);
     CategoryAPI.getCategories()
       .then((res: any) => {
-        if (res.success && Array.isArray(res.data)) setCategories(res.data);
-        else if (Array.isArray(res)) setCategories(res);
+        if (res.success && Array.isArray(res.data)) {
+          setCategories(res.data.filter((c: any) => !c.parent));
+        } else if (Array.isArray(res)) {
+          setCategories(res.filter((c: any) => !c.parent));
+        }
       })
       .catch(() => {})
       .finally(() => setLoadingCategories(false));

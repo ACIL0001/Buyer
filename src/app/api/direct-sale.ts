@@ -129,10 +129,21 @@ export const DirectSaleAPI = {
   purchase: async (data: {
     directSaleId: string;
     quantity: number;
+    price?: number;
     paymentMethod?: string;
     paymentReference?: string;
   }): Promise<Purchase> => {
     const response = await directSaleInstance.post('direct-sale/purchase', data);
+    
+    // Dynamically import tracker to avoid circular deps if any
+    import('@/utils/analytics/tracker').then(({ default: tracker }) => {
+        tracker.track('ds_purchase_completed', {
+            directSaleId: data.directSaleId,
+            quantity: Number(data.quantity) || 1,
+            price: Number(data.price) * (Number(data.quantity) || 1) || 0,
+        });
+    });
+
     return responseBody(response);
   },
 

@@ -162,7 +162,7 @@ export default function Register() {
             flexDirection: 'row',
           }}
         >
-          {/* Left Panel: Image */}
+          {/* Left Panel: Video */}
           <Box
             sx={{
               width: { xs: '0', md: '50%', lg: '55%', xl: '701px' },
@@ -177,62 +177,28 @@ export default function Register() {
               display: { xs: 'none', md: 'flex' },
               alignItems: 'center',
               justifyContent: 'center',
+              backgroundColor: '#030A16', // Matches the video background color
             }}
           >
             <Box
-              component="img"
-              src="/assets/images/login background.jpg"
-              alt="Background"
+              component="video"
+              autoPlay
+              loop
+              muted
+              playsInline
+              src="/assets/images/VF_02 - animation inscription.mp4"
               sx={{
                 position: 'absolute',
                 top: '50%',
                 left: '50%',
-                transform: 'translate(-50%, -50%) rotate(0deg)',
+                transform: 'translate(-50%, -50%)',
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover',
-                objectPosition: 'center',
-                opacity: 1,
+                objectFit: 'cover', // Fits the whole container without leaving any space
+                zIndex: 0,
                 display: 'block',
               }}
             />
-            <Box
-              sx={{
-                position: 'absolute',
-                left: 'clamp(24px, 8vw, 137px)',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: 'clamp(280px, 60%, 548px)',
-                aspectRatio: '548 / 320',
-                background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.32) 0%, transparent 75%)',
-                zIndex: 1,
-                pointerEvents: 'none',
-              }}
-            />
-
-            <Typography
-              sx={{
-                position: 'absolute',
-                maxWidth: 'min(508px, 75%)',
-                left: 'clamp(20px, 6vw, 97px)',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                zIndex: 2,
-                fontFamily: '"DM Sans", sans-serif',
-                fontWeight: 400,
-                fontSize: 'clamp(1.5rem, 3.5vw, 2.5rem)',
-                lineHeight: '140%',
-                letterSpacing: '-0.02em',
-                color: '#FFFFFF',
-                whiteSpace: 'pre-line',
-              }}
-            >
-              Bienvenue{'\n'}
-              Creez votre compte{'\n'}
-              <Box component="span" sx={{ fontWeight: 700 }}>Mazadclick</Box>{'\n'}
-              et commencez a{'\n'}
-              vendre en toute simplicité
-            </Typography>
           </Box>
 
           {/* Right Panel: White Form Area */}

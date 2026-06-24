@@ -2,7 +2,7 @@ import User from '@/types/User';
 import { create } from 'zustand';
 import { VaultService } from '@/services/vault';
 
-const initialState: { tokens?: { accessToken: string; refreshToken: string }; user?: User } = {
+const initialState: { tokens?: { accessToken: string; refreshToken?: string }; user?: User } = {
   tokens: undefined,
   user: undefined,
 };
@@ -23,13 +23,12 @@ interface IAuthStore {
 }
 
 export const authStore = create<IAuthStore>((setValues) => ({
-  isReady: true,
+  isReady: false,
   isLogged: false,
   auth: initialState,
   _lastFetchTime: 0,
 
   set: (auth: Partial<typeof initialState>) => {
-    console.log('🔄 Setting auth data:', { hasUser: !!auth.user, hasTokens: !!auth.tokens });
 
     if (auth.user) {
       // Map backend user fields to frontend User type
@@ -52,13 +51,6 @@ export const authStore = create<IAuthStore>((setValues) => ({
     setValues((state) => {
       const newAuth = { ...state.auth, ...auth };
       const isLogged = !!(newAuth.user && newAuth.tokens?.accessToken);
-
-      console.log('🎯 Auth state update:', {
-        hasUser: !!newAuth.user,
-        hasTokens: !!newAuth.tokens,
-        hasAccessToken: !!newAuth.tokens?.accessToken,
-        isLogged
-      });
 
       return { auth: newAuth, isLogged, isReady: true };
     });
@@ -114,7 +106,7 @@ export const authStore = create<IAuthStore>((setValues) => ({
           console.log('✅ Parsed auth data successfully');
 
           // Validate the stored data structure
-          if (parsed.user && parsed.tokens && parsed.tokens.accessToken && parsed.tokens.refreshToken) {
+          if (parsed.user && parsed.tokens && parsed.tokens.accessToken) {
             console.log('🔑 Valid tokens found in storage');
             console.log('🔑 Access token length:', parsed.tokens.accessToken.length);
 
@@ -151,23 +143,13 @@ export const authStore = create<IAuthStore>((setValues) => ({
           values = { auth: initialState, isLogged: false };
         }
       } else {
-        console.log('🔭 No auth data found, using initial state');
         values = { auth: initialState, isLogged: false };
       }
 
-      console.log('🎯 Setting initial auth values:', {
-        hasUser: !!values.auth.user,
-        hasTokens: !!values.auth.tokens,
-        isLogged: values.isLogged
-      });
-
       setValues({ ...values, isReady: true });
-
+      
       // If user is logged in, fetch fresh data after initialization
       if (values.isLogged && values.auth.tokens?.accessToken) {
-        console.log('🔄 User is logged in, checking data completeness...');
-
-        // Check if user data looks incomplete (generic name or missing fields)
         const user = values.auth.user;
         const isIncomplete = !user?.firstName || user.firstName === 'User' || !user.lastName;
 
@@ -188,29 +170,23 @@ export const authStore = create<IAuthStore>((setValues) => ({
   },
 
   testTokenStorage: () => {
-    console.log('🧪 Testing token storage...');
     if (typeof window === 'undefined') {
-      console.log('🧪 Window undefined');
       return;
     }
 
     VaultService.getItem('auth').then(authData => {
-      console.log('🧪 Raw Secure Vault data:', authData ? 'Found' : 'Not found');
 
       if (authData) {
         try {
-          const parsed = JSON.parse(authData);
-          console.log('🧪 Parsed data structure valid:', !!parsed.tokens);
-          console.log('🧪 Access token:', parsed?.tokens?.accessToken ? 'Present' : 'Missing');
+          JSON.parse(authData);
         } catch (error) {
-          console.error('🧪 Error parsing auth data:', error);
+          console.error('⚠️ Error parsing auth data');
         }
       }
     });
   },
 
   refreshAuthState: () => {
-    console.log('🔄 Refreshing auth state...');
     if (typeof window === 'undefined') return;
 
     VaultService.getItem('auth').then(authData => {
@@ -218,7 +194,6 @@ export const authStore = create<IAuthStore>((setValues) => ({
         try {
           const parsed = JSON.parse(authData);
           if (parsed.user && parsed.tokens && parsed.tokens.accessToken) {
-            console.log('🔄 Found valid auth data, updating store...');
             setValues({
               auth: parsed,
               isLogged: true,
@@ -233,8 +208,6 @@ export const authStore = create<IAuthStore>((setValues) => ({
   },
 
   fetchFreshUserData: async () => {
-    console.log('🔄 Fetching fresh user data from backend...');
-
     try {
       const currentState = authStore.getState();
 
@@ -253,8 +226,6 @@ export const authStore = create<IAuthStore>((setValues) => ({
 
       // Mark that we're fetching - update in a way that doesn't trigger loops
       setValues({ _lastFetchTime: now });
-
-      console.log('🌐 Making API call to get current user...');
 
       // Dynamic import to avoid circular dependency
       const { UserAPI } = await import('@/app/api/users');
@@ -287,9 +258,9 @@ export const authStore = create<IAuthStore>((setValues) => ({
       if (error?.response?.status === 401) {
         authStore.getState().logout();
 
-        if (typeof window !== 'undefined' && window.location.pathname !== '/auth/signin') {
+        if (typeof window !== 'undefined' && window.location.pathname !== '/auth/login') {
           setTimeout(() => {
-            window.location.href = '/auth/signin';
+            window.location.href = '/auth/login';
           }, 100);
         }
       }

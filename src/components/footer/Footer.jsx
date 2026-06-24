@@ -66,9 +66,6 @@ const Footer = () => {
   ];
   const supportLinks = [
     { href: '/how-to-bid', label: 'Comment ça marche' },
-    { href: '/help-center', label: "Centre d'aide" },
-    { href: '/customer-service', label: 'Service client' },
-    { href: '/report-bug', label: 'Signaler un bug' },
   ];
 
   return (

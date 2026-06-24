@@ -196,7 +196,7 @@ export default function PrivacyPolicy() {
             </h2>
             <ul style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <li style={{ padding: '12px 16px', borderRadius: '12px', backgroundColor: '#f8fafc', borderLeft: '4px solid #0063b1' }}>
-                <strong style={{ color: '#0f172a' }}>● Hébergeur :</strong> Les données sont stockées sur les serveurs de la sociétéxxxxxxxxxx situés en xxxxxxxxxxxxxxxx.
+                <strong style={{ color: '#0f172a' }}>● Hébergeur :</strong> Les données sont stockées sur les serveurs de la société djezzy située : Route de la Wilaya, Lot n 37/4, Dar El Beida, Alger - Algérie.
               </li>
               <li style={{ padding: '12px 16px', borderRadius: '12px', backgroundColor: '#f8fafc', borderLeft: '4px solid #0063b1' }}>
                 <strong style={{ color: '#0f172a' }}>● Sécurité :</strong> Cet hébergeur applique des mesures techniques rigoureuses (chiffrement, pare-feu) conformément à l'article 38 de la loi n° 18-07.

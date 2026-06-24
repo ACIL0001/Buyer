@@ -310,9 +310,6 @@ export default function Home() {
                             <h2 style={{ color: '#002896', fontFamily: '"DM Sans", sans-serif', fontWeight: '700', fontSize: '36px', lineHeight: '46px', textAlign: 'center', marginBottom: '15px' }}>
                               Que voulez-vous faire ?
                             </h2>
-                            <p style={{ color: '#757575', fontFamily: '"DM Sans", sans-serif', fontWeight: '400', fontSize: '18px', lineHeight: '30px', textAlign: 'center', maxWidth: '756px', margin: '0 auto 50px' }}>
-                              Lorem ipsum dolor sit amet consectetur. Ultricies semper neque sed justo amet elit consectetur eget pellentesque. In eu fames non et orci elit.
-                            </p>
                           </>
                         )}
 
